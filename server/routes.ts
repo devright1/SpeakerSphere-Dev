@@ -12,10 +12,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category,
         location,
         minRating,
-        maxFee,
-        minFee,
         expertise,
-        availability,
         search
       } = req.query;
 
@@ -23,10 +20,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: category as string,
         location: location as string,
         minRating: minRating ? parseFloat(minRating as string) : undefined,
-        maxFee: maxFee ? parseFloat(maxFee as string) : undefined,
-        minFee: minFee ? parseFloat(minFee as string) : undefined,
         expertise: expertise as string,
-        availability: availability as string,
         search: search as string,
       };
 
@@ -166,10 +160,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
 
-        // Add matching topics
-        speaker.topics.forEach(topic => {
-          if (topic.toLowerCase().includes(q.toLowerCase())) {
-            suggestions.add(topic);
+        // Add matching lectures
+        speaker.lectures.forEach(lecture => {
+          if (lecture.toLowerCase().includes(q.toLowerCase())) {
+            suggestions.add(lecture);
           }
         });
 

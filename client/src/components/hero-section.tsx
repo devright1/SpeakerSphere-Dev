@@ -29,10 +29,10 @@ export default function HeroSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Connect with World-Class Executive Speakers
+            Find & Review Healthcare Speakers
           </h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
-            Find verified keynote speakers, industry experts, and thought leaders for your next corporate event
+            Discover top-rated medical professionals and healthcare experts through authentic peer reviews
           </p>
           
           {/* Search Bar */}

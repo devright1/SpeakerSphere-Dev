@@ -9,23 +9,24 @@ export const speakers = pgTable("speakers", {
   bio: text("bio").notNull(),
   expertise: text("expertise").array().notNull(),
   location: text("location").notNull(),
-  fee: decimal("fee", { precision: 10, scale: 2 }).notNull(),
-  rating: decimal("rating", { precision: 3, scale: 2 }).default("0.00"),
+  overallRating: decimal("overall_rating", { precision: 3, scale: 2 }).default("0.00"),
   reviewCount: integer("review_count").default(0),
   imageUrl: text("image_url").notNull(),
   verified: boolean("verified").default(false),
   featured: boolean("featured").default(false),
   category: text("category").notNull(),
   achievements: text("achievements").array().notNull(),
-  topics: text("topics").array().notNull(),
-  availability: text("availability").notNull(), // "available", "booked", "limited"
+  lectures: text("lectures").array().notNull(),
+  eventPhotos: text("event_photos").array(),
+  speakingVideos: text("speaking_videos").array(),
   email: text("email").notNull(),
   phone: text("phone"),
   website: text("website"),
   socialMedia: text("social_media").array(),
+  instagramHandle: text("instagram_handle"),
   languages: text("languages").array().notNull(),
-  travelWillingness: text("travel_willingness").notNull(), // "local", "national", "international"
-  speakerType: text("speaker_type").notNull(), // "keynote", "motivational", "expert", "panel"
+  medicalSpecialties: text("medical_specialties").array(),
+  speakerType: text("speaker_type").notNull(), // "keynote", "clinical", "research", "educational"
 });
 
 export const reviews = pgTable("reviews", {
@@ -34,7 +35,13 @@ export const reviews = pgTable("reviews", {
   reviewerName: text("reviewer_name").notNull(),
   reviewerTitle: text("reviewer_title").notNull(),
   reviewerCompany: text("reviewer_company").notNull(),
-  rating: integer("rating").notNull(),
+  overallRating: integer("overall_rating").notNull(),
+  speakingStyleRating: integer("speaking_style_rating").notNull(),
+  podiumPresenceRating: integer("podium_presence_rating").notNull(),
+  technicalProficiencyRating: integer("technical_proficiency_rating").notNull(),
+  contentRelevanceRating: integer("content_relevance_rating").notNull(),
+  easeOfWorkingRating: integer("ease_of_working_rating").notNull(),
+  visualDesignRating: integer("visual_design_rating").notNull(),
   comment: text("comment").notNull(),
   eventType: text("event_type").notNull(),
   eventDate: text("event_date").notNull(),
@@ -66,7 +73,7 @@ export const categories = pgTable("categories", {
 
 export const insertSpeakerSchema = createInsertSchema(speakers).omit({
   id: true,
-  rating: true,
+  overallRating: true,
   reviewCount: true,
 });
 

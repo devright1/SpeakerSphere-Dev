@@ -19,10 +19,7 @@ export interface IStorage {
     category?: string;
     location?: string;
     minRating?: number;
-    maxFee?: number;
-    minFee?: number;
     expertise?: string;
-    availability?: string;
     search?: string;
   }): Promise<Speaker[]>;
   getSpeaker(id: number): Promise<Speaker | undefined>;
@@ -69,12 +66,12 @@ export class MemStorage implements IStorage {
   private seedData() {
     // Seed categories
     const categoriesData = [
-      { name: "Keynote Speakers", description: "Inspirational and thought-provoking main stage presentations" },
-      { name: "Technology", description: "Digital transformation, AI, cybersecurity, and innovation" },
-      { name: "Leadership", description: "Executive leadership, team building, and organizational development" },
-      { name: "Healthcare", description: "Medical innovation, patient care, and healthcare transformation" },
-      { name: "Motivational", description: "Personal development, overcoming challenges, and achievement" },
-      { name: "Business Strategy", description: "Strategic planning, market analysis, and business growth" },
+      { name: "Healthcare Leadership", description: "Medical administration and healthcare system leadership" },
+      { name: "Clinical Excellence", description: "Advanced clinical practices and patient care innovations" },
+      { name: "Medical Education", description: "Teaching and training in medical fields" },
+      { name: "Digital Health", description: "Technology integration in healthcare delivery" },
+      { name: "Public Health", description: "Population health and preventive medicine" },
+      { name: "Healthcare Innovation", description: "Breakthrough medical technologies and practices" },
     ];
 
     categoriesData.forEach(cat => {
@@ -82,127 +79,93 @@ export class MemStorage implements IStorage {
       this.categories.set(category.id, category);
     });
 
-    // Seed speakers
+    // Seed speakers with Dr. Larry Brecht and Dr. Phil Walton
     const speakersData = [
       {
-        name: "Dr. Sarah Chen",
-        title: "Technology Innovation & Digital Transformation",
-        bio: "Former CTO at Microsoft, now helping organizations navigate digital disruption with practical strategies and proven frameworks. Dr. Chen has over 15 years of experience leading technology teams and driving digital transformation initiatives across Fortune 500 companies.",
-        expertise: ["Digital Transformation", "AI & Machine Learning", "Cybersecurity", "Innovation Strategy"],
-        location: "San Francisco, CA",
-        fee: "15000.00",
-        rating: "4.90",
-        reviewCount: 127,
-        imageUrl: "https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
+        name: "Dr. Larry Brecht",
+        title: "Interventional Cardiology & Healthcare Innovation",
+        bio: "Dr. Larry Brecht is a renowned interventional cardiologist and healthcare innovation leader based in New York City. With over 20 years of experience in advanced cardiac procedures, he has pioneered several minimally invasive techniques that have become standard practice worldwide. Dr. Brecht is a sought-after speaker who combines clinical expertise with practical insights on healthcare transformation, making complex medical concepts accessible to diverse audiences.",
+        expertise: ["Interventional Cardiology", "Medical Device Innovation", "Healthcare Leadership", "Clinical Research", "Patient Safety"],
+        location: "New York City, NY",
+        overallRating: "4.95",
+        reviewCount: 84,
+        imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         verified: true,
         featured: true,
-        category: "Technology",
-        achievements: ["Former CTO at Microsoft", "Author of 'Digital Future'", "TEDx Speaker", "MIT Technology Review 35 Under 35"],
-        topics: ["AI in Business", "Digital Strategy", "Tech Leadership", "Innovation Culture"],
-        availability: "available",
-        email: "sarah.chen@speakerconnect.com",
-        phone: "+1-555-0101",
-        website: "https://sarahchen.com",
-        socialMedia: ["linkedin.com/in/sarahchen", "twitter.com/sarahchen"],
-        languages: ["English", "Mandarin"],
-        travelWillingness: "international",
-        speakerType: "keynote"
-      },
-      {
-        name: "Marcus Thompson",
-        title: "Leadership & Organizational Excellence",
-        bio: "Former Navy SEAL and Fortune 100 executive specializing in high-performance team building and crisis leadership. Marcus brings unique insights from military and corporate leadership to help organizations excel under pressure.",
-        expertise: ["Leadership Development", "Team Building", "Crisis Management", "Organizational Culture"],
-        location: "New York, NY",
-        fee: "12000.00",
-        rating: "5.00",
-        reviewCount: 89,
-        imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        verified: true,
-        featured: true,
-        category: "Leadership",
-        achievements: ["Former Navy SEAL", "Fortune 100 Executive", "Best-selling Author", "Leadership Institute Faculty"],
-        topics: ["High-Performance Teams", "Leadership Under Pressure", "Organizational Resilience", "Change Management"],
-        availability: "available",
-        email: "marcus.thompson@speakerconnect.com",
-        phone: "+1-555-0102",
-        website: "https://marcusthompson.com",
-        socialMedia: ["linkedin.com/in/marcusthompson"],
+        category: "Clinical Excellence",
+        achievements: [
+          "Chief of Interventional Cardiology at Mount Sinai Hospital",
+          "Author of 150+ peer-reviewed publications",
+          "Pioneer of robotic-assisted cardiac procedures",
+          "Healthcare Innovation Award recipient 2023"
+        ],
+        lectures: [
+          "The Future of Minimally Invasive Cardiac Surgery",
+          "Integrating AI in Interventional Cardiology",
+          "Building High-Performance Cardiac Teams",
+          "Patient-Centered Care in Complex Procedures",
+          "Leadership Lessons from the Cardiac Catheterization Lab"
+        ],
+        eventPhotos: [
+          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        speakingVideos: [
+          "https://example.com/video1",
+          "https://example.com/video2"
+        ],
+        email: "dr.brecht@healthspeakers.com",
+        phone: "+1-212-555-0123",
+        website: "https://drlarrybrecht.com",
+        socialMedia: ["linkedin.com/in/drlarrybrecht", "twitter.com/drlarrybrecht"],
+        instagramHandle: null,
         languages: ["English"],
-        travelWillingness: "national",
-        speakerType: "keynote"
+        medicalSpecialties: ["Interventional Cardiology", "Structural Heart Disease", "Cardiac Imaging"],
+        speakerType: "clinical"
       },
       {
-        name: "Dr. Elena Rodriguez",
-        title: "Healthcare Innovation & Future Medicine",
-        bio: "Renowned surgeon and medical researcher sharing insights on healthcare transformation and patient-centered innovation. Dr. Rodriguez has pioneered several breakthrough medical procedures and led digital health initiatives.",
-        expertise: ["Healthcare Innovation", "Medical Technology", "Patient Care", "Digital Health"],
-        location: "Boston, MA",
-        fee: "18000.00",
-        rating: "4.80",
-        reviewCount: 156,
-        imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
+        name: "Dr. Phil Walton",
+        title: "Emergency Medicine & Healthcare Systems Innovation",
+        bio: "Dr. Phil Walton is a distinguished emergency medicine physician and healthcare systems innovator from Toronto, Canada. As an internationally recognized expert in emergency care optimization and medical team dynamics, he has transformed emergency departments across North America. Dr. Walton's engaging presentation style and real-world case studies make him a highly sought-after speaker for medical conferences and healthcare leadership events.",
+        expertise: ["Emergency Medicine", "Healthcare Systems", "Crisis Leadership", "Medical Team Dynamics", "Quality Improvement"],
+        location: "Toronto, Canada",
+        overallRating: "4.88",
+        reviewCount: 67,
+        imageUrl: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         verified: true,
         featured: true,
-        category: "Healthcare",
-        achievements: ["Harvard Medical School Faculty", "Medical Innovation Award", "Published Researcher", "Healthcare Technology Pioneer"],
-        topics: ["Future of Medicine", "Digital Health", "Patient Experience", "Medical Innovation"],
-        availability: "limited",
-        email: "elena.rodriguez@speakerconnect.com",
-        phone: "+1-555-0103",
-        website: "https://elenarodriguez.com",
-        socialMedia: ["linkedin.com/in/elenarodriguez", "twitter.com/drelena"],
-        languages: ["English", "Spanish"],
-        travelWillingness: "international",
-        speakerType: "expert"
-      },
-      {
-        name: "James Mitchell",
-        title: "Strategic Business Transformation",
-        bio: "Former McKinsey partner specializing in digital transformation and change management for Fortune 500 companies. James has led over 100 transformation projects across various industries.",
-        expertise: ["Business Strategy", "Digital Transformation", "Change Management", "Organizational Development"],
-        location: "Chicago, IL",
-        fee: "14000.00",
-        rating: "4.90",
-        reviewCount: 73,
-        imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        verified: true,
-        featured: false,
-        category: "Business Strategy",
-        achievements: ["Former McKinsey Partner", "Business Transformation Expert", "Strategy Consultant", "Executive Coach"],
-        topics: ["Strategic Planning", "Digital Strategy", "Change Leadership", "Business Innovation"],
-        availability: "available",
-        email: "james.mitchell@speakerconnect.com",
-        phone: "+1-555-0104",
-        website: "https://jamesmitchell.com",
-        socialMedia: ["linkedin.com/in/jamesmitchell"],
-        languages: ["English"],
-        travelWillingness: "national",
+        category: "Healthcare Leadership",
+        achievements: [
+          "Chief of Emergency Medicine at Toronto General Hospital",
+          "Healthcare Quality Innovation Award winner",
+          "Published researcher in emergency medicine protocols",
+          "International speaker at 50+ medical conferences"
+        ],
+        lectures: [
+          "Optimizing Emergency Department Flow and Efficiency",
+          "Crisis Leadership in High-Pressure Medical Environments",
+          "Building Resilient Healthcare Teams",
+          "Quality Improvement in Emergency Care",
+          "The Future of Emergency Medicine Technology"
+        ],
+        eventPhotos: [
+          "https://images.unsplash.com/photo-1551601651-2a8555f1a136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        speakingVideos: [
+          "https://example.com/video3",
+          "https://example.com/video4"
+        ],
+        email: "dr.walton@healthspeakers.com",
+        phone: "+1-416-555-0157",
+        website: "https://drphilwalton.com",
+        socialMedia: ["linkedin.com/in/drphilwalton", "twitter.com/drphilwalton"],
+        instagramHandle: "drphilwalton",
+        languages: ["English", "French"],
+        medicalSpecialties: ["Emergency Medicine", "Critical Care", "Trauma Surgery"],
         speakerType: "keynote"
-      },
-      {
-        name: "Rachel Park",
-        title: "AI & Machine Learning Innovation",
-        bio: "Former Google AI researcher, now helping organizations implement practical AI solutions and navigate ethical considerations. Rachel has published extensively on AI ethics and practical implementation.",
-        expertise: ["Artificial Intelligence", "Machine Learning", "AI Ethics", "Technology Implementation"],
-        location: "Seattle, WA",
-        fee: "16500.00",
-        rating: "5.00",
-        reviewCount: 91,
-        imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        verified: true,
-        featured: false,
-        category: "Technology",
-        achievements: ["Former Google AI Researcher", "AI Ethics Expert", "Published Author", "Technology Advisor"],
-        topics: ["AI in Business", "Machine Learning Applications", "AI Ethics", "Technology Strategy"],
-        availability: "available",
-        email: "rachel.park@speakerconnect.com",
-        phone: "+1-555-0105",
-        website: "https://rachelpark.com",
-        socialMedia: ["linkedin.com/in/rachelpark", "twitter.com/rachelai"],
-        languages: ["English", "Korean"],
-        travelWillingness: "international",
-        speakerType: "expert"
       }
     ];
 
@@ -210,45 +173,48 @@ export class MemStorage implements IStorage {
       const speaker: Speaker = { 
         ...speakerData, 
         id: this.currentSpeakerId++,
-        rating: speakerData.rating,
-        fee: speakerData.fee
+        overallRating: speakerData.overallRating,
+        reviewCount: speakerData.reviewCount,
+        verified: speakerData.verified,
+        featured: speakerData.featured
       };
       this.speakers.set(speaker.id, speaker);
     });
 
-    // Seed reviews
+    // Seed reviews with detailed healthcare-specific ratings
     const reviewsData = [
       {
         speakerId: 1,
-        reviewerName: "Jennifer Walsh",
-        reviewerTitle: "Event Director",
-        reviewerCompany: "TechCorp",
-        rating: 5,
-        comment: "Dr. Chen delivered an exceptional keynote that perfectly captured our audience. Her insights on digital transformation were both practical and inspiring.",
-        eventType: "Corporate Conference",
+        reviewerName: "Dr. Sarah Mitchell",
+        reviewerTitle: "Conference Director",
+        reviewerCompany: "American College of Cardiology",
+        overallRating: 5,
+        speakingStyleRating: 5,
+        podiumPresenceRating: 5,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 4,
+        comment: "Dr. Brecht delivered an exceptional presentation on minimally invasive cardiac procedures. His technical expertise combined with clear communication made complex concepts accessible to our diverse audience. The visual aids were professional and enhanced the learning experience.",
+        eventType: "Medical Conference",
         eventDate: "2024-01-15",
         verified: true
       },
       {
         speakerId: 2,
-        reviewerName: "Michael Chen",
-        reviewerTitle: "Conference Manager",
-        reviewerCompany: "HealthSync",
-        rating: 5,
-        comment: "Marcus brought incredible energy and actionable insights to our leadership summit. The feedback from attendees was overwhelmingly positive.",
-        eventType: "Leadership Summit",
+        reviewerName: "Dr. Michael Chen",
+        reviewerTitle: "Emergency Department Director",
+        reviewerCompany: "Vancouver General Hospital",
+        overallRating: 5,
+        speakingStyleRating: 5,
+        podiumPresenceRating: 5,
+        technicalProficiencyRating: 4,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 5,
+        comment: "Dr. Walton's presentation on emergency department optimization was incredibly valuable. His real-world case studies and practical solutions directly addressed our challenges. Excellent speaker who truly understands healthcare operations.",
+        eventType: "Healthcare Leadership Summit",
         eventDate: "2024-02-20",
-        verified: true
-      },
-      {
-        speakerId: 3,
-        reviewerName: "Sarah Johnson",
-        reviewerTitle: "VP Events",
-        reviewerCompany: "GlobalTech",
-        rating: 5,
-        comment: "Dr. Rodriguez's presentation on the future of healthcare was both informative and engaging. Exactly what we needed for our medical conference.",
-        eventType: "Medical Conference",
-        eventDate: "2024-03-10",
         verified: true
       }
     ];
@@ -267,10 +233,7 @@ export class MemStorage implements IStorage {
     category?: string;
     location?: string;
     minRating?: number;
-    maxFee?: number;
-    minFee?: number;
     expertise?: string;
-    availability?: string;
     search?: string;
   }): Promise<Speaker[]> {
     let speakers = Array.from(this.speakers.values());
@@ -283,21 +246,12 @@ export class MemStorage implements IStorage {
         speakers = speakers.filter(s => s.location.toLowerCase().includes(filters.location!.toLowerCase()));
       }
       if (filters.minRating) {
-        speakers = speakers.filter(s => parseFloat(s.rating || "0") >= filters.minRating!);
-      }
-      if (filters.maxFee) {
-        speakers = speakers.filter(s => parseFloat(s.fee) <= filters.maxFee!);
-      }
-      if (filters.minFee) {
-        speakers = speakers.filter(s => parseFloat(s.fee) >= filters.minFee!);
+        speakers = speakers.filter(s => parseFloat(s.overallRating || "0") >= filters.minRating!);
       }
       if (filters.expertise) {
         speakers = speakers.filter(s => 
           s.expertise.some(e => e.toLowerCase().includes(filters.expertise!.toLowerCase()))
         );
-      }
-      if (filters.availability) {
-        speakers = speakers.filter(s => s.availability === filters.availability);
       }
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
@@ -306,7 +260,7 @@ export class MemStorage implements IStorage {
           s.title.toLowerCase().includes(searchTerm) ||
           s.bio.toLowerCase().includes(searchTerm) ||
           s.expertise.some(e => e.toLowerCase().includes(searchTerm)) ||
-          s.topics.some(t => t.toLowerCase().includes(searchTerm))
+          s.lectures.some(l => l.toLowerCase().includes(searchTerm))
         );
       }
     }
@@ -323,7 +277,7 @@ export class MemStorage implements IStorage {
     const speaker: Speaker = { 
       ...insertSpeaker, 
       id, 
-      rating: "0.00", 
+      overallRating: "0.00", 
       reviewCount: 0 
     };
     this.speakers.set(id, speaker);
@@ -361,12 +315,12 @@ export class MemStorage implements IStorage {
     const speaker = this.speakers.get(insertReview.speakerId);
     if (speaker) {
       const reviews = await this.getReviewsBySpeakerId(insertReview.speakerId);
-      const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+      const totalRating = reviews.reduce((sum, r) => sum + r.overallRating, 0);
       const avgRating = totalRating / reviews.length;
       
       const updatedSpeaker = {
         ...speaker,
-        rating: avgRating.toFixed(2),
+        overallRating: avgRating.toFixed(2),
         reviewCount: reviews.length
       };
       this.speakers.set(speaker.id, updatedSpeaker);
@@ -381,7 +335,8 @@ export class MemStorage implements IStorage {
       ...insertInquiry, 
       id, 
       status: "pending", 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      budget: insertInquiry.budget || null
     };
     this.inquiries.set(id, inquiry);
     return inquiry;
