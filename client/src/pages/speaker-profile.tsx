@@ -519,7 +519,7 @@ export default function SpeakerProfile() {
                       ))}
                     </div>
                   )}
-                </Card>
+                </div>
               </TabsContent>
 
               <TabsContent value="media">
