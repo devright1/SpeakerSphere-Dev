@@ -1,0 +1,190 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { insertReviewSchema, insertInquirySchema } from "@shared/schema";
+import { z } from "zod";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Get all speakers with optional filters
+  app.get("/api/speakers", async (req, res) => {
+    try {
+      const {
+        category,
+        location,
+        minRating,
+        maxFee,
+        minFee,
+        expertise,
+        availability,
+        search
+      } = req.query;
+
+      const filters = {
+        category: category as string,
+        location: location as string,
+        minRating: minRating ? parseFloat(minRating as string) : undefined,
+        maxFee: maxFee ? parseFloat(maxFee as string) : undefined,
+        minFee: minFee ? parseFloat(minFee as string) : undefined,
+        expertise: expertise as string,
+        availability: availability as string,
+        search: search as string,
+      };
+
+      const speakers = await storage.getSpeakers(filters);
+      res.json(speakers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch speakers" });
+    }
+  });
+
+  // Get featured speakers
+  app.get("/api/speakers/featured", async (req, res) => {
+    try {
+      const speakers = await storage.getFeaturedSpeakers();
+      res.json(speakers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch featured speakers" });
+    }
+  });
+
+  // Get single speaker by ID
+  app.get("/api/speakers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+
+      const speaker = await storage.getSpeaker(id);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      res.json(speaker);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch speaker" });
+    }
+  });
+
+  // Get reviews for a speaker
+  app.get("/api/speakers/:id/reviews", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      if (isNaN(speakerId)) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+
+      const reviews = await storage.getReviewsBySpeakerId(speakerId);
+      res.json(reviews);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  // Create a new review
+  app.post("/api/speakers/:id/reviews", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      if (isNaN(speakerId)) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      const reviewData = insertReviewSchema.parse({
+        ...req.body,
+        speakerId
+      });
+
+      const review = await storage.createReview(reviewData);
+      res.status(201).json(review);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid review data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create review" });
+    }
+  });
+
+  // Create an inquiry
+  app.post("/api/speakers/:id/inquiries", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      if (isNaN(speakerId)) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      const inquiryData = insertInquirySchema.parse({
+        ...req.body,
+        speakerId
+      });
+
+      const inquiry = await storage.createInquiry(inquiryData);
+      res.status(201).json(inquiry);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid inquiry data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create inquiry" });
+    }
+  });
+
+  // Get all categories
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Search endpoint for autocomplete/suggestions
+  app.get("/api/search/suggestions", async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== "string") {
+        return res.json([]);
+      }
+
+      const speakers = await storage.getSpeakers();
+      const suggestions = new Set<string>();
+
+      speakers.forEach(speaker => {
+        // Add matching expertise
+        speaker.expertise.forEach(exp => {
+          if (exp.toLowerCase().includes(q.toLowerCase())) {
+            suggestions.add(exp);
+          }
+        });
+
+        // Add matching topics
+        speaker.topics.forEach(topic => {
+          if (topic.toLowerCase().includes(q.toLowerCase())) {
+            suggestions.add(topic);
+          }
+        });
+
+        // Add speaker names if they match
+        if (speaker.name.toLowerCase().includes(q.toLowerCase())) {
+          suggestions.add(speaker.name);
+        }
+      });
+
+      res.json(Array.from(suggestions).slice(0, 10));
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch suggestions" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}

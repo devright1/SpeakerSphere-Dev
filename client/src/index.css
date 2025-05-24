@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --background: 210 11% 98%; /* #F5F7FA */
+  --foreground: 220 14% 20%; /* #2D3748 */
+  --muted: 210 11% 96%; /* #F1F5F9 */
+  --muted-foreground: 220 9% 46%; /* #64748B */
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 14% 20%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 14% 20%;
+  --border: 220 13% 91%; /* #E2E8F0 */
+  --input: 220 13% 91%;
+  --primary: 207 90% 54%; /* #1565C0 */
+  --primary-foreground: 211 100% 99%;
+  --secondary: 200 7% 29%; /* #37474F */
+  --secondary-foreground: 0 0% 98%;
+  --accent: 38 100% 50%; /* #FF8F00 */
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 60 9% 98%;
+  --ring: 207 90% 54%;
+  --radius: 0.5rem;
+  
+  /* Additional custom properties */
+  --success: 122 39% 49%; /* #2E7D32 */
+  --success-foreground: 0 0% 98%;
+  --neutral: 210 11% 98%; /* #F5F7FA */
+}
+
+.dark {
+  --background: 220 13% 9%; /* #1E293B */
+  --foreground: 210 11% 98%;
+  --muted: 220 13% 15%; /* #334155 */
+  --muted-foreground: 220 9% 64%;
+  --popover: 220 13% 9%;
+  --popover-foreground: 210 11% 98%;
+  --card: 220 13% 9%;
+  --card-foreground: 210 11% 98%;
+  --border: 220 13% 20%; /* #475569 */
+  --input: 220 13% 20%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 220 13% 20%;
+  --secondary-foreground: 210 11% 98%;
+  --accent: 38 100% 50%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 11% 98%;
+  --ring: 207 90% 54%;
+  
+  --success: 122 39% 49%;
+  --success-foreground: 0 0% 98%;
+  --neutral: 220 13% 9%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-inter antialiased bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+}
+
+@layer utilities {
+  .font-inter {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .text-success {
+    color: hsl(var(--success));
+  }
+  
+  .bg-success {
+    background-color: hsl(var(--success));
+  }
+  
+  .border-success {
+    border-color: hsl(var(--success));
+  }
+  
+  .text-neutral {
+    color: hsl(var(--neutral));
+  }
+  
+  .bg-neutral {
+    background-color: hsl(var(--neutral));
+  }
+}
