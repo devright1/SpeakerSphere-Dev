@@ -71,6 +71,23 @@ export const categories = pgTable("categories", {
   speakerCount: integer("speaker_count").default(0),
 });
 
+export const videos = pgTable("videos", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  videoUrl: text("video_url").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
+  duration: integer("duration"), // in seconds
+  videoType: text("video_type").notNull(), // "demo_reel", "keynote", "interview", "testimonial", "lecture"
+  eventName: text("event_name"),
+  eventDate: text("event_date"),
+  topics: text("topics").array(),
+  viewCount: integer("view_count").default(0),
+  featured: boolean("featured").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertSpeakerSchema = createInsertSchema(speakers).omit({
   id: true,
   overallRating: true,
@@ -94,6 +111,12 @@ export const insertCategorySchema = createInsertSchema(categories).omit({
   speakerCount: true,
 });
 
+export const insertVideoSchema = createInsertSchema(videos).omit({
+  id: true,
+  viewCount: true,
+  createdAt: true,
+});
+
 export type Speaker = typeof speakers.$inferSelect;
 export type InsertSpeaker = z.infer<typeof insertSpeakerSchema>;
 export type Review = typeof reviews.$inferSelect;
@@ -102,3 +125,5 @@ export type Inquiry = typeof inquiries.$inferSelect;
 export type InsertInquiry = z.infer<typeof insertInquirySchema>;
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type Video = typeof videos.$inferSelect;
+export type InsertVideo = z.infer<typeof insertVideoSchema>;

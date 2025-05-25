@@ -38,6 +38,12 @@ export interface IStorage {
   // Categories
   getCategories(): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
+  
+  // Videos
+  getVideosBySpeakerId(speakerId: number): Promise<Video[]>;
+  getFeaturedVideosBySpeakerId(speakerId: number): Promise<Video[]>;
+  createVideo(video: InsertVideo): Promise<Video>;
+  updateVideoViewCount(videoId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -45,10 +51,12 @@ export class MemStorage implements IStorage {
   private reviews: Map<number, Review>;
   private inquiries: Map<number, Inquiry>;
   private categories: Map<number, Category>;
+  private videos: Map<number, Video>;
   private currentSpeakerId: number;
   private currentReviewId: number;
   private currentInquiryId: number;
   private currentCategoryId: number;
+  private currentVideoId: number;
 
   constructor() {
     this.speakers = new Map();
