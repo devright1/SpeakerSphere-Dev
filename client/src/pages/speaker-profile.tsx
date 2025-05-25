@@ -244,7 +244,7 @@ export default function SpeakerProfile() {
                             />
                           ))}
                         </div>
-                        <span className="font-semibold">{speaker.rating}</span>
+                        <span className="font-semibold">{speaker.overallRating}</span>
                         <span className="text-gray-600 ml-1">({speaker.reviewCount} reviews)</span>
                       </div>
                       
@@ -289,30 +289,30 @@ export default function SpeakerProfile() {
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-3">Key Achievements</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {speaker.achievements.map((achievement, index) => (
+                        {speaker.achievements?.map((achievement, index) => (
                           <div key={index} className="flex items-center">
                             <Award className="w-5 h-5 text-accent mr-2" />
                             <span>{achievement}</span>
                           </div>
-                        ))}
+                        )) || []}
                       </div>
                     </div>
 
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-3">Areas of Expertise</h3>
                       <div className="flex flex-wrap gap-2">
-                        {speaker.expertise.map((skill, index) => (
+                        {speaker.expertise?.map((skill, index) => (
                           <Badge key={index} variant="secondary">{skill}</Badge>
-                        ))}
+                        )) || []}
                       </div>
                     </div>
 
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-3">Languages</h3>
                       <div className="flex flex-wrap gap-2">
-                        {speaker.languages.map((language, index) => (
+                        {speaker.languages?.map((language, index) => (
                           <Badge key={index} variant="outline">{language}</Badge>
-                        ))}
+                        )) || []}
                       </div>
                     </div>
                   </CardContent>

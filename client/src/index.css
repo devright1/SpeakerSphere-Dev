@@ -6,30 +6,33 @@
 
 :root {
   --background: 210 11% 98%; /* #F5F7FA */
-  --foreground: 220 14% 20%; /* #2D3748 */
+  --foreground: 210 8% 17%; /* #2B2C29 DevRight Slate */
   --muted: 210 11% 96%; /* #F1F5F9 */
   --muted-foreground: 220 9% 46%; /* #64748B */
   --popover: 0 0% 100%;
-  --popover-foreground: 220 14% 20%;
+  --popover-foreground: 210 8% 17%;
   --card: 0 0% 100%;
-  --card-foreground: 220 14% 20%;
+  --card-foreground: 210 8% 17%;
   --border: 220 13% 91%; /* #E2E8F0 */
   --input: 220 13% 91%;
-  --primary: 207 90% 54%; /* #1565C0 */
-  --primary-foreground: 211 100% 99%;
+  --primary: 187 37% 20%; /* #1E4347 DevRight Blue */
+  --primary-foreground: 0 0% 100%;
   --secondary: 200 7% 29%; /* #37474F */
   --secondary-foreground: 0 0% 98%;
-  --accent: 38 100% 50%; /* #FF8F00 */
-  --accent-foreground: 0 0% 98%;
+  --accent: 80 61% 55%; /* #A4D047 DevRight Green */
+  --accent-foreground: 210 8% 17%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 60 9% 98%;
-  --ring: 207 90% 54%;
+  --ring: 187 37% 20%;
   --radius: 0.5rem;
   
   /* Additional custom properties */
-  --success: 122 39% 49%; /* #2E7D32 */
-  --success-foreground: 0 0% 98%;
+  --success: 80 61% 55%; /* #A4D047 DevRight Green */
+  --success-foreground: 210 8% 17%;
   --neutral: 210 11% 98%; /* #F5F7FA */
+  --devright-blue: 187 37% 20%; /* #1E4347 */
+  --devright-green: 80 61% 55%; /* #A4D047 */
+  --devright-slate: 210 8% 17%; /* #2B2C29 */
 }
 
 .dark {
@@ -96,5 +99,30 @@
   
   .bg-neutral {
     background-color: hsl(var(--neutral));
+  }
+  
+  /* DevRight Brand Colors */
+  .text-devright-blue {
+    color: hsl(var(--devright-blue));
+  }
+  
+  .bg-devright-blue {
+    background-color: hsl(var(--devright-blue));
+  }
+  
+  .text-devright-green {
+    color: hsl(var(--devright-green));
+  }
+  
+  .bg-devright-green {
+    background-color: hsl(var(--devright-green));
+  }
+  
+  .text-devright-slate {
+    color: hsl(var(--devright-slate));
+  }
+  
+  .bg-devright-slate {
+    background-color: hsl(var(--devright-slate));
   }
 }
