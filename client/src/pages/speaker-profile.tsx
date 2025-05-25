@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import SpeakerVideoPortfolio from "@/components/speaker-video-portfolio";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Star, 
@@ -525,25 +526,10 @@ export default function SpeakerProfile() {
               <TabsContent value="media">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Speaker Media</CardTitle>
+                    <CardTitle>Video Portfolio & Speaker Demos</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-semibold mb-3">Professional Headshot</h4>
-                        <img 
-                          src={speaker.imageUrl} 
-                          alt={speaker.name}
-                          className="w-full rounded-lg object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-3">Demo Reel</h4>
-                        <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                          <p className="text-gray-500">Demo video placeholder</p>
-                        </div>
-                      </div>
-                    </div>
+                    <SpeakerVideoPortfolio speakerId={speaker.id} />
                   </CardContent>
                 </Card>
               </TabsContent>
