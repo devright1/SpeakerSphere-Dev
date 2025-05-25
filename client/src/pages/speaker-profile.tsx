@@ -240,7 +240,7 @@ export default function SpeakerProfile() {
                           {[...Array(5)].map((_, i) => (
                             <Star 
                               key={i} 
-                              className={`w-5 h-5 ${i < Math.floor(parseFloat(speaker.rating || "0")) ? "fill-current" : ""}`} 
+                              className={`w-5 h-5 ${i < Math.floor(parseFloat(speaker.overallRating || "0")) ? "fill-current" : ""}`} 
                             />
                           ))}
                         </div>
@@ -326,12 +326,12 @@ export default function SpeakerProfile() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {speaker.topics.map((topic, index) => (
+                      {speaker.expertise?.map((topic: string, index: number) => (
                         <div key={index} className="p-4 border border-gray-200 rounded-lg">
                           <h4 className="font-semibold text-gray-900 mb-2">{topic}</h4>
                           <p className="text-gray-600 text-sm">Expert-level presentation on {topic.toLowerCase()}</p>
                         </div>
-                      ))}
+                      )) || []}
                     </div>
                   </CardContent>
                 </Card>

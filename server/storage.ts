@@ -89,7 +89,7 @@ export class MemStorage implements IStorage {
         location: "New York City, NY",
         overallRating: "4.95",
         reviewCount: 84,
-        imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+        imageUrl: "/attached_assets/1863_FR-1221.jpg",
         verified: true,
         featured: true,
         category: "Clinical Excellence",
