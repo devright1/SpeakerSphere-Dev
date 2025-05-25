@@ -3,6 +3,7 @@ import {
   reviews, 
   inquiries, 
   categories,
+  videos,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -10,7 +11,9 @@ import {
   type Inquiry,
   type InsertInquiry,
   type Category,
-  type InsertCategory
+  type InsertCategory,
+  type Video,
+  type InsertVideo
 } from "@shared/schema";
 
 export interface IStorage {
@@ -63,12 +66,15 @@ export class MemStorage implements IStorage {
     this.reviews = new Map();
     this.inquiries = new Map();
     this.categories = new Map();
+    this.videos = new Map();
     this.currentSpeakerId = 1;
     this.currentReviewId = 1;
     this.currentInquiryId = 1;
     this.currentCategoryId = 1;
+    this.currentVideoId = 1;
     
     this.seedData();
+    this.seedVideoData();
   }
 
   private seedData() {
@@ -375,6 +381,78 @@ export class MemStorage implements IStorage {
     };
     this.categories.set(id, category);
     return category;
+  }
+
+  private seedVideoData() {
+    // Professional video content for healthcare speakers
+    const videoData = [
+      {
+        speakerId: 1,
+        title: "Healthcare Leadership Excellence",
+        description: "Professional speaking demonstration showcasing leadership insights in healthcare management.",
+        videoUrl: "https://www.youtube.com/embed/ZMByI4s-D-Y",
+        thumbnailUrl: "https://img.youtube.com/vi/ZMByI4s-D-Y/maxresdefault.jpg",
+        duration: 1200,
+        videoType: "demo_reel",
+        eventName: "Healthcare Leadership Summit",
+        eventDate: "2024-01-15",
+        topics: ["Healthcare Leadership", "Management", "Innovation"],
+        viewCount: 150,
+        featured: true
+      },
+      {
+        speakerId: 2,
+        title: "Emergency Medicine Expertise",
+        description: "Professional presentation on emergency medicine best practices and crisis management.",
+        videoUrl: "https://www.youtube.com/embed/9bZkp7q19f0",
+        thumbnailUrl: "https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg",
+        duration: 900,
+        videoType: "keynote",
+        eventName: "Emergency Medicine Conference",
+        eventDate: "2024-02-10",
+        topics: ["Emergency Medicine", "Patient Care", "Medical Education"],
+        viewCount: 89,
+        featured: true
+      }
+    ];
+
+    videoData.forEach(videoInfo => {
+      const video: Video = { 
+        ...videoInfo, 
+        id: this.currentVideoId++,
+        createdAt: new Date()
+      };
+      this.videos.set(video.id, video);
+    });
+  }
+
+  // Video methods
+  async getVideosBySpeakerId(speakerId: number): Promise<Video[]> {
+    return Array.from(this.videos.values()).filter(video => video.speakerId === speakerId);
+  }
+
+  async getFeaturedVideosBySpeakerId(speakerId: number): Promise<Video[]> {
+    return Array.from(this.videos.values())
+      .filter(video => video.speakerId === speakerId && video.featured);
+  }
+
+  async createVideo(insertVideo: InsertVideo): Promise<Video> {
+    const video: Video = { 
+      ...insertVideo, 
+      id: this.currentVideoId++,
+      viewCount: 0,
+      createdAt: new Date()
+    };
+    this.videos.set(video.id, video);
+    return video;
+  }
+
+  async updateVideoViewCount(videoId: number): Promise<void> {
+    const video = this.videos.get(videoId);
+    if (video) {
+      video.viewCount = (video.viewCount || 0) + 1;
+      this.videos.set(videoId, video);
+    }
   }
 }
 
