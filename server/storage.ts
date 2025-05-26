@@ -97,9 +97,9 @@ export class MemStorage implements IStorage {
     const speakersData = [
       {
         name: "Dr. Larry Brecht",
-        title: "Interventional Cardiology & Healthcare Innovation",
-        bio: "Dr. Larry Brecht is a renowned interventional cardiologist and healthcare innovation leader based in New York City. With over 20 years of experience in advanced cardiac procedures, he has pioneered several minimally invasive techniques that have become standard practice worldwide. Dr. Brecht is a sought-after speaker who combines clinical expertise with practical insights on healthcare transformation, making complex medical concepts accessible to diverse audiences.",
-        expertise: ["Interventional Cardiology", "Medical Device Innovation", "Healthcare Leadership", "Clinical Research", "Patient Safety"],
+        title: "Prosthodontics & Maxillofacial Prosthodontics",
+        bio: "Dr. Larry Brecht is a renowned prosthodontist and maxillofacial prosthodontics specialist based in New York City. With over 20 years of experience in complex dental reconstructions, he has pioneered several advanced prosthetic techniques that have become standard practice worldwide. Dr. Brecht is a sought-after speaker who combines clinical expertise with practical insights on dental innovation, making complex prosthodontic concepts accessible to diverse audiences.",
+        expertise: ["Prosthodontics", "Maxillofacial Prosthodontics", "Dental Implants", "Oral Rehabilitation", "Complex Reconstructions"],
         location: "New York City, NY",
         overallRating: "4.95",
         reviewCount: 84,
@@ -108,17 +108,17 @@ export class MemStorage implements IStorage {
         featured: true,
         category: "Clinical Excellence",
         achievements: [
-          "Chief of Interventional Cardiology at Mount Sinai Hospital",
-          "Author of 150+ peer-reviewed publications",
-          "Pioneer of robotic-assisted cardiac procedures",
-          "Healthcare Innovation Award recipient 2023"
+          "Director of Prosthodontics at NYU College of Dentistry",
+          "Author of 150+ peer-reviewed publications in prosthodontics",
+          "Pioneer of advanced maxillofacial prosthetic techniques",
+          "American College of Prosthodontists Excellence Award 2023"
         ],
         lectures: [
-          "The Future of Minimally Invasive Cardiac Surgery",
-          "Integrating AI in Interventional Cardiology",
-          "Building High-Performance Cardiac Teams",
-          "Patient-Centered Care in Complex Procedures",
-          "Leadership Lessons from the Cardiac Catheterization Lab"
+          "Advanced Techniques in Maxillofacial Prosthodontics",
+          "Digital Workflows in Complex Oral Rehabilitation",
+          "Interdisciplinary Approach to Facial Reconstruction",
+          "Innovation in Dental Implant Prosthodontics",
+          "Teaching Excellence in Prosthodontic Education"
         ],
         eventPhotos: [
           "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
