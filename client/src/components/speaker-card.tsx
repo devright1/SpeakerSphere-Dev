@@ -21,7 +21,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         <img 
           src={speaker.imageUrl} 
           alt={speaker.name}
-          className="w-full h-48 object-contain bg-gray-50"
+          className="w-full h-48 object-cover"
         />
         <div className="absolute top-4 left-4 flex gap-2">
           {speaker.verified && (
