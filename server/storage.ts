@@ -142,7 +142,7 @@ export class MemStorage implements IStorage {
       {
         name: "Dr. Phil Walton",
         title: "Periodontics & Implantology",
-        bio: "Dr. Phil Walton is a distinguished periodontal and implant specialist from Toronto, Canada. As an internationally recognized expert in periodontal therapy and dental implant procedures, he has transformed periodontal practices across North America. Dr. Walton's engaging presentation style and real-world case studies make him a highly sought-after speaker for dental conferences and periodontal education events.",
+        bio: "Dr. Philip M. Walton, DDS, from Toronto, specializes in Periodontics and Implantology. His practice includes conventional periodontal therapy for tooth maintenance, periodontal plastic surgery, advanced regenerative techniques, and implant rehabilitation, with a focus on immediate implant placement and temporization for single, multiple, and full arch reconstruction.",
         expertise: ["Periodontics", "Implantology", "Gum Disease Treatment", "Dental Implants", "Bone Regeneration"],
         location: "Toronto, Canada",
         overallRating: "4.88",
