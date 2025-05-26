@@ -21,10 +21,10 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         <img 
           src={speaker.imageUrl} 
           alt={speaker.name}
-          className={`w-full h-48 object-cover bg-white ${
+          className={`w-full h-48 bg-white ${
             speaker.name === "Dr. Larry Brecht" 
-              ? "object-[center_20%]" 
-              : "object-[center_60%]"
+              ? "object-cover object-[center_20%]" 
+              : "object-cover object-[center_30%] scale-110"
           }`}
         />
         <div className="absolute top-4 left-4 flex gap-2">
