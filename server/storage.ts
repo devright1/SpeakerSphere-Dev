@@ -137,7 +137,7 @@ export class MemStorage implements IStorage {
         languages: ["English"],
         medicalSpecialties: ["Prosthodontics", "Maxillofacial Prosthodontics", "Dental Reconstruction"],
         speakerType: "clinical",
-        fee: "15000"
+        fee: "6000"
       },
       {
         name: "Dr. Phil Walton",
@@ -180,7 +180,8 @@ export class MemStorage implements IStorage {
         instagramHandle: "drphilwalton",
         languages: ["English", "French"],
         medicalSpecialties: ["Emergency Medicine", "Critical Care", "Trauma Surgery"],
-        speakerType: "keynote"
+        speakerType: "keynote",
+        fee: "5000"
       }
     ];
 
