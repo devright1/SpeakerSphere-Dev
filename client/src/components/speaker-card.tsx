@@ -17,7 +17,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
 
   return (
     <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg" : "shadow-md"}`}>
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <img 
           src={speaker.imageUrl} 
           alt={speaker.name}
