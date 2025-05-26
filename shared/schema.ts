@@ -27,6 +27,7 @@ export const speakers = pgTable("speakers", {
   languages: text("languages").array().notNull(),
   medicalSpecialties: text("medical_specialties").array(),
   speakerType: text("speaker_type").notNull(), // "keynote", "clinical", "research", "educational"
+  fee: text("fee"), // speaking fee as text to handle currency formatting
 });
 
 export const reviews = pgTable("reviews", {

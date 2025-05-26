@@ -543,7 +543,9 @@ export default function SpeakerProfile() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Book This Speaker</span>
-                  <span className="text-2xl font-bold text-primary">${parseFloat(speaker.fee).toLocaleString()}+</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {(speaker as any).fee ? `$${parseFloat((speaker as any).fee).toLocaleString()}+` : "Contact for pricing"}
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">

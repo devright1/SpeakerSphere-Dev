@@ -11,7 +11,8 @@ interface SpeakerCardProps {
 }
 
 export default function SpeakerCard({ speaker, featured = false }: SpeakerCardProps) {
-  const formatFee = (fee: string) => {
+  const formatFee = (fee: string | undefined | null) => {
+    if (!fee) return "Contact for pricing";
     return `$${parseFloat(fee).toLocaleString()}+`;
   };
 
@@ -87,7 +88,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
             <MapPin className="w-4 h-4 mr-1" />
             {speaker.location}
           </div>
-          <div className="text-lg font-bold text-primary">{formatFee(speaker.fee)}</div>
+          <div className="text-lg font-bold text-primary">{formatFee((speaker as any).fee)}</div>
         </div>
 
         <div className="flex gap-2">
