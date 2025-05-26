@@ -212,8 +212,7 @@ export default function SpeakerProfile() {
                   <img 
                     src={speaker.imageUrl} 
                     alt={speaker.name}
-                    className="w-26 h-42 rounded-2xl object-cover object-bottom mx-auto md:mx-0"
-                    style={{ objectPosition: '50% 80%' }}
+                    className="w-32 h-48 rounded-2xl object-contain mx-auto md:mx-0"
                   />
                   <div className="flex-1 text-center md:text-left">
                     <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
