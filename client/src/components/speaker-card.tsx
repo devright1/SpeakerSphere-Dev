@@ -24,7 +24,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           className={`w-full h-48 ${
             speaker.name === "Dr. Larry Brecht" 
               ? "object-cover object-[center_20%] bg-white" 
-              : "object-cover object-[center_25%] scale-150"
+              : "object-cover object-[center_22%] scale-150"
           }`}
         />
         <div className="absolute top-4 left-4 flex gap-2">
