@@ -98,7 +98,7 @@ export class MemStorage implements IStorage {
       {
         name: "Dr. Larry Brecht",
         title: "Prosthodontics & Maxillofacial Prosthodontics",
-        bio: "Dr. Larry Brecht is a renowned prosthodontist and maxillofacial prosthodontics specialist based in New York City. With over 20 years of experience in complex dental reconstructions, he has pioneered several advanced prosthetic techniques that have become standard practice worldwide. Dr. Brecht is a sought-after speaker who combines clinical expertise with practical insights on dental innovation, making complex prosthodontic concepts accessible to diverse audiences.",
+        bio: "Dr. Lawrence (Larry) E. Brecht, DDS, practices dentistry in New York City, specializing in Prosthodontics and Maxillofacial Prosthodontics. These specialties focus on restoring missing teeth, treating jaw disorders, and providing reconstructive and aesthetic dental care, particularly for patients with complex conditions such as cancer or craniofacial anomalies. Dr. Brecht is a sought-after speaker who combines clinical expertise with practical insights on dental innovation, making complex prosthodontic concepts accessible to diverse audiences.",
         expertise: ["Prosthodontics", "Maxillofacial Prosthodontics", "Dental Implants", "Oral Rehabilitation", "Complex Reconstructions"],
         location: "New York City, NY",
         overallRating: "4.95",
