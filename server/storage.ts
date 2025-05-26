@@ -135,8 +135,9 @@ export class MemStorage implements IStorage {
         socialMedia: ["linkedin.com/in/drlarrybrecht", "twitter.com/drlarrybrecht"],
         instagramHandle: null,
         languages: ["English"],
-        medicalSpecialties: ["Interventional Cardiology", "Structural Heart Disease", "Cardiac Imaging"],
-        speakerType: "clinical"
+        medicalSpecialties: ["Prosthodontics", "Maxillofacial Prosthodontics", "Dental Reconstruction"],
+        speakerType: "clinical",
+        fee: "15000"
       },
       {
         name: "Dr. Phil Walton",
