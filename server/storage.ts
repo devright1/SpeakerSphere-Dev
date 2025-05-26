@@ -147,7 +147,7 @@ export class MemStorage implements IStorage {
         location: "Toronto, Canada",
         overallRating: "4.88",
         reviewCount: 67,
-        imageUrl: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+        imageUrl: "/attached_assets/1951_DVR-830.jpg",
         verified: true,
         featured: true,
         category: "Healthcare Leadership",
