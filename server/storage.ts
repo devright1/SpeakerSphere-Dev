@@ -141,9 +141,9 @@ export class MemStorage implements IStorage {
       },
       {
         name: "Dr. Phil Walton",
-        title: "Emergency Medicine & Healthcare Systems Innovation",
-        bio: "Dr. Phil Walton is a distinguished emergency medicine physician and healthcare systems innovator from Toronto, Canada. As an internationally recognized expert in emergency care optimization and medical team dynamics, he has transformed emergency departments across North America. Dr. Walton's engaging presentation style and real-world case studies make him a highly sought-after speaker for medical conferences and healthcare leadership events.",
-        expertise: ["Emergency Medicine", "Healthcare Systems", "Crisis Leadership", "Medical Team Dynamics", "Quality Improvement"],
+        title: "Periodontics & Implantology",
+        bio: "Dr. Phil Walton is a distinguished periodontal and implant specialist from Toronto, Canada. As an internationally recognized expert in periodontal therapy and dental implant procedures, he has transformed periodontal practices across North America. Dr. Walton's engaging presentation style and real-world case studies make him a highly sought-after speaker for dental conferences and periodontal education events.",
+        expertise: ["Periodontics", "Implantology", "Gum Disease Treatment", "Dental Implants", "Bone Regeneration"],
         location: "Toronto, Canada",
         overallRating: "4.88",
         reviewCount: 67,
