@@ -37,8 +37,8 @@ export default function HeroSection() {
           
           {/* Search Bar */}
           <div className="max-w-4xl mx-auto bg-white rounded-2xl p-6 shadow-2xl">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-2">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 md:flex-[2]">
                 <Input 
                   type="text" 
                   placeholder="Search speakers, topics, or expertise..." 
@@ -48,23 +48,23 @@ export default function HeroSection() {
                   onKeyPress={handleKeyPress}
                 />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger className="w-full h-12 text-gray-900">
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-50">
                     <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="Keynote Speakers">Keynote Speakers</SelectItem>
-                    <SelectItem value="Technology">Technology</SelectItem>
-                    <SelectItem value="Leadership">Leadership</SelectItem>
-                    <SelectItem value="Healthcare">Healthcare</SelectItem>
-                    <SelectItem value="Motivational">Motivational</SelectItem>
-                    <SelectItem value="Business Strategy">Business Strategy</SelectItem>
+                    <SelectItem value="Healthcare Leadership">Healthcare Leadership</SelectItem>
+                    <SelectItem value="Clinical Excellence">Clinical Excellence</SelectItem>
+                    <SelectItem value="Medical Education">Medical Education</SelectItem>
+                    <SelectItem value="Digital Health">Digital Health</SelectItem>
+                    <SelectItem value="Public Health">Public Health</SelectItem>
+                    <SelectItem value="Healthcare Innovation">Healthcare Innovation</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+              <div className="flex-1">
                 <Button 
                   className="w-full bg-accent hover:bg-orange-600 text-white h-12 text-base font-semibold"
                   onClick={handleSearch}
