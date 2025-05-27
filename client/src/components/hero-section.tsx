@@ -55,12 +55,22 @@ export default function HeroSection() {
                   </SelectTrigger>
                   <SelectContent className="z-50">
                     <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="Healthcare Leadership">Healthcare Leadership</SelectItem>
-                    <SelectItem value="Clinical Excellence">Clinical Excellence</SelectItem>
-                    <SelectItem value="Medical Education">Medical Education</SelectItem>
-                    <SelectItem value="Digital Health">Digital Health</SelectItem>
-                    <SelectItem value="Public Health">Public Health</SelectItem>
-                    <SelectItem value="Healthcare Innovation">Healthcare Innovation</SelectItem>
+                    <SelectItem value="Digital Dentistry">Digital Dentistry</SelectItem>
+                    <SelectItem value="Prosthodontics">Prosthodontics</SelectItem>
+                    <SelectItem value="Esthetic Dentistry">Esthetic Dentistry</SelectItem>
+                    <SelectItem value="Orthodontics">Orthodontics</SelectItem>
+                    <SelectItem value="Implant Dentistry">Implant Dentistry</SelectItem>
+                    <SelectItem value="Surgical Pathways">Surgical Pathways</SelectItem>
+                    <SelectItem value="TMJ">TMJ</SelectItem>
+                    <SelectItem value="Periodontics">Periodontics</SelectItem>
+                    <SelectItem value="Oral Surgery">Oral Surgery</SelectItem>
+                    <SelectItem value="Maxillofacial Surgery">Maxillofacial Surgery</SelectItem>
+                    <SelectItem value="Dental Leadership">Dental Leadership</SelectItem>
+                    <SelectItem value="Team Development">Team Development</SelectItem>
+                    <SelectItem value="Business Management">Business Management</SelectItem>
+                    <SelectItem value="AI in Dentistry">AI in Dentistry</SelectItem>
+                    <SelectItem value="Social Media">Social Media</SelectItem>
+                    <SelectItem value="Marketing Strategies">Marketing Strategies</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
