@@ -36,7 +36,8 @@ import {
   Share2,
   AlertCircle
 } from "lucide-react";
-import { FaInstagram, FaFacebook, FaTwitter, FaLinkedin } from "react-icons/fa";
+import { FaInstagram, FaFacebook, FaLinkedin } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import type { Speaker, Review } from "@shared/schema";
 
 const inquirySchema = z.object({
@@ -285,12 +286,12 @@ export default function SpeakerProfile() {
                           <FaFacebook className="w-5 h-5" />
                         </a>
                         <a 
-                          href="https://twitter.com/devrightspeakers" 
+                          href="https://x.com/devrightspeakers" 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-gray-600 hover:text-black transition-colors"
                         >
-                          <FaTwitter className="w-5 h-5" />
+                          <FaXTwitter className="w-5 h-5" />
                         </a>
                         <a 
                           href="https://linkedin.com/company/devrightspeakers" 
