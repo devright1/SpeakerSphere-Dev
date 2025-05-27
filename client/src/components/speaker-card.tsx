@@ -26,7 +26,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
             speaker.name === "Dr. Larry Brecht" 
               ? "object-cover object-[center_20%] bg-white" 
               : speaker.name === "Dr. Will Martin"
-              ? "object-cover object-[center_7%]"
+              ? "object-cover object-[center_17%]"
               : "object-cover object-[center_22%] scale-150"
           }`}
         />
