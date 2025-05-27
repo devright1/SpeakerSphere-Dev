@@ -185,28 +185,29 @@ export class MemStorage implements IStorage {
       },
       {
         name: "Dr. Will Martin",
-        title: "General Dentistry & Comprehensive Dental Care",
-        bio: "Dr. Will Martin, DDS, is a general dentist practicing at Comprehensive Dental Care in Gainesville, Florida. A graduate of the University of Florida College of Dentistry, Dr. Martin provides comprehensive dental services including Suresmile aligners, dental implants, and emergency dental care. He is an active member of the dental community and is known for his patient-centered approach to modern dental care and commitment to continuing education in advanced dental technologies.",
-        expertise: ["General Dentistry", "Dental Implants", "Suresmile Aligners", "Emergency Dental Care", "Comprehensive Oral Health"],
+        title: "Prosthodontics & Implant Dentistry",
+        bio: "Dr. Will Martin, DMD, MS, FACP, is a Clinical Professor in the Department of Oral and Maxillofacial Surgery at the University of Florida's College of Dentistry and serves as Director of the Center for Implant Dentistry. Board-certified in Prosthodontics and a Diplomate of the American Board of Prosthodontics, Dr. Martin is internationally recognized for his expertise in implant dentistry, esthetic dentistry, and digital workflows. He is one of the original creators of the ITI's Esthetic Risk Assessment and has co-authored influential textbooks including ITI Treatment Guides.",
+        expertise: ["Prosthodontics", "Implant Dentistry", "Esthetic Dentistry", "Digital Dentistry", "Implant Biomechanics", "Interdisciplinary Treatment Planning"],
         location: "Gainesville, FL",
-        overallRating: "4.82",
-        reviewCount: 45,
+        overallRating: "4.92",
+        reviewCount: 58,
         imageUrl: "/attached_assets/01667_PHS-319.jpg",
         verified: true,
         featured: true,
         category: "Clinical Excellence",
         achievements: [
-          "DDS from University of Florida College of Dentistry",
-          "Associate Dentist at Comprehensive Dental Care",
-          "Certified in Suresmile Aligner Technology",
-          "Active in Florida Dental Community"
+          "DMD, MS, FACP - University of Florida College of Dentistry",
+          "Clinical Professor & Director of Center for Implant Dentistry at UF",
+          "Diplomate, American Board of Prosthodontics",
+          "Co-creator of ITI's Esthetic Risk Assessment",
+          "Co-author of ITI Treatment Guides Vol. 1 and 10"
         ],
         lectures: [
-          "Modern Approaches to General Dentistry",
-          "Suresmile Technology in Practice",
-          "Comprehensive Dental Care Strategies",
-          "Emergency Dental Care Protocols",
-          "Patient-Centered Dental Practice Management"
+          "Esthetic Risk Assessment in Implant Dentistry",
+          "Digital Workflows in Implant Treatment Planning",
+          "Implant Biomechanics and Loading Protocols",
+          "Interdisciplinary Treatment Planning for Complex Cases",
+          "Advanced Prosthodontic Techniques in Esthetic Dentistry"
         ],
         eventPhotos: [
           "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
@@ -219,12 +220,12 @@ export class MemStorage implements IStorage {
         ],
         email: "wmartin@devrightspeakers.com",
         phone: "214-884-4100",
-        website: "https://comprehensivedmd.com",
+        website: "https://dental.ufl.edu",
         socialMedia: ["linkedin.com/in/drwillmartin", "twitter.com/drwillmartin"],
         instagramHandle: "wmartingator",
         languages: ["English", "Spanish"],
-        medicalSpecialties: ["General Dentistry", "Dental Implants", "Suresmile Aligners"],
-        speakerType: "clinical",
+        medicalSpecialties: ["Prosthodontics", "Implant Dentistry", "Esthetic Dentistry"],
+        speakerType: "academic",
         fee: "7000"
       }
     ];
