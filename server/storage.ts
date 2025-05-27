@@ -310,6 +310,40 @@ export class MemStorage implements IStorage {
         eventType: "Healthcare Leadership Symposium",
         eventDate: "2024-01-25",
         verified: true
+      },
+      {
+        speakerId: 3,
+        reviewerName: "Dr. Amanda Foster",
+        reviewerTitle: "Director of Medical Education",
+        reviewerCompany: "Shands Hospital at UF",
+        overallRating: 5,
+        speakingStyleRating: 5,
+        podiumPresenceRating: 5,
+        technicalProficiencyRating: 4,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 5,
+        comment: "Dr. Martin's session on population health management was exceptional. His ability to translate complex healthcare data into actionable strategies was impressive. The audience was highly engaged throughout his presentation.",
+        eventType: "Medical Education Conference",
+        eventDate: "2024-02-14",
+        verified: true
+      },
+      {
+        speakerId: 3,
+        reviewerName: "Dr. Robert Kim",
+        reviewerTitle: "Chief of Internal Medicine",
+        reviewerCompany: "North Florida Regional Medical Center",
+        overallRating: 4,
+        speakingStyleRating: 4,
+        podiumPresenceRating: 4,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 4,
+        visualDesignRating: 4,
+        comment: "Dr. Martin provided valuable insights on improving primary care workflows. His evidence-based approach and practical recommendations were well-received by our medical staff. Professional and knowledgeable speaker.",
+        eventType: "Internal Medicine Symposium",
+        eventDate: "2024-03-05",
+        verified: true
       }
     ];
 
