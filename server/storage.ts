@@ -246,7 +246,7 @@ export class MemStorage implements IStorage {
         location: "New York City, NY",
         overallRating: "4.85",
         reviewCount: 32,
-        imageUrl: "https://images.unsplash.com/photo-1594824982230-e34cd210de5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        imageUrl: "/attached_assets/1863_FR-1248.jpg",
         verified: true,
         featured: false,
         category: "Digital Dentistry",
@@ -264,8 +264,8 @@ export class MemStorage implements IStorage {
           "Traditional Craftsmanship Meets Digital Innovation"
         ],
         eventPhotos: [
-          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-          "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+          "/attached_assets/1863_FR-1244.jpg",
+          "/attached_assets/1863_FR-1241.jpg"
         ],
         speakingVideos: [
           "https://example.com/video7",
