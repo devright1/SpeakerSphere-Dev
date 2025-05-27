@@ -225,7 +225,7 @@ export class MemStorage implements IStorage {
         languages: ["English", "Spanish"],
         medicalSpecialties: ["General Dentistry", "Dental Implants", "Suresmile Aligners"],
         speakerType: "clinical",
-        fee: "4500"
+        fee: "7000"
       }
     ];
 
