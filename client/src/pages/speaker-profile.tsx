@@ -36,6 +36,7 @@ import {
   Share2,
   AlertCircle
 } from "lucide-react";
+import { FaInstagram, FaFacebook, FaTwitter, FaLinkedin } from "react-icons/fa";
 import type { Speaker, Review } from "@shared/schema";
 
 const inquirySchema = z.object({
@@ -264,6 +265,42 @@ export default function SpeakerProfile() {
                         <Share2 className="w-4 h-4 mr-2" />
                         Share
                       </Button>
+                      
+                      {/* Social Media Icons */}
+                      <div className="flex items-center gap-3 ml-4">
+                        <a 
+                          href={`https://instagram.com/${(speaker as any).instagramHandle || 'devrightspeakers'}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-pink-600 transition-colors"
+                        >
+                          <FaInstagram className="w-5 h-5" />
+                        </a>
+                        <a 
+                          href="https://facebook.com/devrightspeakers" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-blue-600 transition-colors"
+                        >
+                          <FaFacebook className="w-5 h-5" />
+                        </a>
+                        <a 
+                          href="https://twitter.com/devrightspeakers" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-black transition-colors"
+                        >
+                          <FaTwitter className="w-5 h-5" />
+                        </a>
+                        <a 
+                          href="https://linkedin.com/company/devrightspeakers" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-blue-700 transition-colors"
+                        >
+                          <FaLinkedin className="w-5 h-5" />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
