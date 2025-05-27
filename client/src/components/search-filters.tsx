@@ -102,7 +102,7 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
       <CardContent className="space-y-6">
         {/* Categories */}
         <div>
-          <h4 className="font-semibold text-gray-900 mb-3">Categories</h4>
+          <h4 className="font-semibold text-gray-900 mb-3">Topics</h4>
           <div className="space-y-2">
             {categories?.map((category) => (
               <div key={category.id} className="flex items-center justify-between">
