@@ -237,6 +237,49 @@ export class MemStorage implements IStorage {
         medicalSpecialties: ["Prosthodontics", "Implant Dentistry", "Esthetic Dentistry"],
         speakerType: "academic",
         fee: "7000"
+      },
+      {
+        name: "Marisa Notturno",
+        title: "Dental Technician",
+        bio: "Marisa Notturno is a skilled dental technician based in New York City, specializing in advanced dental laboratory techniques and digital workflows. With extensive experience in prosthodontic laboratory procedures, she brings practical insights into the collaboration between dental technicians and clinicians. Marisa is passionate about educating dental professionals on laboratory processes, quality control, and the integration of traditional craftsmanship with modern digital technologies.",
+        expertise: ["Dental Laboratory Techniques", "Digital Dentistry", "Prosthodontic Lab Work", "Quality Control", "CAD/CAM Technology"],
+        location: "New York City, NY",
+        overallRating: "4.85",
+        reviewCount: 32,
+        imageUrl: "https://images.unsplash.com/photo-1594824982230-e34cd210de5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        verified: true,
+        featured: false,
+        category: "Digital Dentistry",
+        achievements: [
+          "Certified Dental Laboratory Technician (CDT)",
+          "Expert in CAD/CAM digital workflows",
+          "Quality assurance specialist for prosthodontic restorations",
+          "Continuing education instructor for dental technicians"
+        ],
+        lectures: [
+          "Digital Integration in Dental Laboratory Workflows",
+          "Quality Control in Prosthodontic Fabrication",
+          "Collaboration Between Clinicians and Laboratory Technicians",
+          "Advanced Materials in Dental Laboratory Applications",
+          "Traditional Craftsmanship Meets Digital Innovation"
+        ],
+        eventPhotos: [
+          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        speakingVideos: [
+          "https://example.com/video7",
+          "https://example.com/video8"
+        ],
+        email: "mnotturno@devrightspeakers.com",
+        phone: "214-884-4100",
+        website: "https://marisanotturno.com",
+        socialMedia: ["linkedin.com/in/marisanotturno"],
+        instagramHandle: null,
+        languages: ["English", "Italian"],
+        medicalSpecialties: ["Dental Laboratory Technology", "Digital Dentistry", "Prosthodontics"],
+        speakerType: "technical",
+        fee: "3500"
       }
     ];
 
@@ -354,6 +397,40 @@ export class MemStorage implements IStorage {
         comment: "Dr. Martin provided valuable insights on patient-centered dental care and modern practice management. His evidence-based approach and practical recommendations from his work in Gainesville were well-received by our dental community. Professional and knowledgeable speaker.",
         eventType: "Practice Management Conference",
         eventDate: "2024-03-05",
+        verified: true
+      },
+      {
+        speakerId: 4,
+        reviewerName: "Dr. Sarah Chen",
+        reviewerTitle: "Prosthodontist",
+        reviewerCompany: "Manhattan Dental Specialists",
+        overallRating: 5,
+        speakingStyleRating: 5,
+        podiumPresenceRating: 4,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 5,
+        comment: "Marisa's presentation on digital laboratory workflows was incredibly informative. Her expertise in CAD/CAM technology and quality control processes provided valuable insights for improving our lab partnerships. The hands-on demonstrations were particularly helpful.",
+        eventType: "Digital Dentistry Conference",
+        eventDate: "2024-01-18",
+        verified: true
+      },
+      {
+        speakerId: 4,
+        reviewerName: "Dr. Michael Rodriguez",
+        reviewerTitle: "Practice Owner",
+        reviewerCompany: "Brooklyn Dental Care",
+        overallRating: 4,
+        speakingStyleRating: 4,
+        podiumPresenceRating: 4,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 4,
+        visualDesignRating: 4,
+        comment: "Marisa brought excellent technical knowledge to our continuing education seminar. Her understanding of laboratory processes and collaboration with clinicians helped bridge the gap between practice and lab. Great practical advice for improving case outcomes.",
+        eventType: "Continuing Education Seminar",
+        eventDate: "2024-02-28",
         verified: true
       }
     ];
