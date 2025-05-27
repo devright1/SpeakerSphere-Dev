@@ -185,9 +185,9 @@ export class MemStorage implements IStorage {
       },
       {
         name: "Dr. Will Martin",
-        title: "Prosthodontics & Advanced Dental Reconstruction",
-        bio: "Dr. William (Will) Martin, DDS, is a prosthodontist practicing in Gainesville, Florida. Specializing in advanced dental reconstruction, implant dentistry, and complex oral rehabilitation, Dr. Martin combines cutting-edge prosthodontic techniques with a patient-centered approach. He is a respected speaker in the dental community, known for his expertise in full-mouth rehabilitation, aesthetic dentistry, and innovative prosthetic solutions for challenging clinical cases.",
-        expertise: ["Prosthodontics", "Dental Implants", "Full Mouth Rehabilitation", "Aesthetic Dentistry", "Complex Oral Reconstruction"],
+        title: "General Dentistry & Comprehensive Dental Care",
+        bio: "Dr. Will Martin, DDS, is a general dentist practicing at Comprehensive Dental Care in Gainesville, Florida. A graduate of the University of Florida College of Dentistry, Dr. Martin provides comprehensive dental services including Suresmile aligners, dental implants, and emergency dental care. He is an active member of the dental community and is known for his patient-centered approach to modern dental care and commitment to continuing education in advanced dental technologies.",
+        expertise: ["General Dentistry", "Dental Implants", "Suresmile Aligners", "Emergency Dental Care", "Comprehensive Oral Health"],
         location: "Gainesville, FL",
         overallRating: "4.82",
         reviewCount: 45,
@@ -196,17 +196,17 @@ export class MemStorage implements IStorage {
         featured: true,
         category: "Clinical Excellence",
         achievements: [
-          "Board Certified Prosthodontist",
-          "Fellow of the American College of Prosthodontists",
-          "Director of Prosthodontics at University of Florida College of Dentistry",
-          "Florida Dental Association Clinical Excellence Award 2023"
+          "DDS from University of Florida College of Dentistry",
+          "Associate Dentist at Comprehensive Dental Care",
+          "Certified in Suresmile Aligner Technology",
+          "Active in Florida Dental Community"
         ],
         lectures: [
-          "Advanced Implant Prosthodontics: From Planning to Delivery",
-          "Full Mouth Rehabilitation: A Systematic Approach",
-          "Aesthetic Prosthodontics in the Digital Age",
-          "Complex Case Management in Prosthodontic Practice",
-          "Innovations in Dental Materials and Techniques"
+          "Modern Approaches to General Dentistry",
+          "Suresmile Technology in Practice",
+          "Comprehensive Dental Care Strategies",
+          "Emergency Dental Care Protocols",
+          "Patient-Centered Dental Practice Management"
         ],
         eventPhotos: [
           "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
@@ -219,11 +219,11 @@ export class MemStorage implements IStorage {
         ],
         email: "wmartin@devrightspeakers.com",
         phone: "214-884-4100",
-        website: "https://drwillmartin.com",
+        website: "https://comprehensivedmd.com",
         socialMedia: ["linkedin.com/in/drwillmartin", "twitter.com/drwillmartin"],
         instagramHandle: "wmartingator",
         languages: ["English", "Spanish"],
-        medicalSpecialties: ["Prosthodontics", "Dental Implantology", "Oral Rehabilitation"],
+        medicalSpecialties: ["General Dentistry", "Dental Implants", "Suresmile Aligners"],
         speakerType: "clinical",
         fee: "4500"
       }
