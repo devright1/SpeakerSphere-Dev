@@ -248,7 +248,7 @@ export class MemStorage implements IStorage {
         reviewCount: 32,
         imageUrl: "/attached_assets/1863_FR-1248.jpg",
         verified: true,
-        featured: false,
+        featured: true,
         category: "Digital Dentistry",
         achievements: [
           "Certified Dental Laboratory Technician (CDT)",
@@ -510,7 +510,23 @@ export class MemStorage implements IStorage {
   }
 
   async getFeaturedSpeakers(): Promise<Speaker[]> {
-    return Array.from(this.speakers.values()).filter(s => s.featured);
+    // Get all verified and featured speakers
+    const verifiedAndFeaturedSpeakers = Array.from(this.speakers.values())
+      .filter(s => s.verified && s.featured);
+    
+    // If we have 6 or fewer, return all of them
+    if (verifiedAndFeaturedSpeakers.length <= 6) {
+      return verifiedAndFeaturedSpeakers;
+    }
+    
+    // Rotate through speakers - use a simple rotation based on current time
+    const rotationIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % verifiedAndFeaturedSpeakers.length;
+    const rotatedSpeakers = [
+      ...verifiedAndFeaturedSpeakers.slice(rotationIndex),
+      ...verifiedAndFeaturedSpeakers.slice(0, rotationIndex)
+    ];
+    
+    return rotatedSpeakers.slice(0, 6);
   }
 
   async getReviewsBySpeakerId(speakerId: number): Promise<Review[]> {

@@ -34,8 +34,8 @@ export default function FeaturedSpeakers() {
         )}
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 gap-8">
+            {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-white rounded-2xl shadow-lg p-6">
                 <Skeleton className="w-full h-48 mb-6" />
                 <div className="space-y-3">
@@ -48,7 +48,7 @@ export default function FeaturedSpeakers() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 gap-8">
             {speakers?.map((speaker) => (
               <div key={speaker.id} className="transform transition-transform hover:scale-105">
                 <SpeakerCard speaker={speaker} featured />
