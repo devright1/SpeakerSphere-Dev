@@ -275,7 +275,7 @@ export class MemStorage implements IStorage {
         phone: "214-884-4100",
         website: "https://marisanotturno.com",
         socialMedia: ["linkedin.com/in/marisanotturno"],
-        instagramHandle: null,
+        instagramHandle: "marisanotturno",
         languages: ["English", "Italian"],
         medicalSpecialties: ["Dental Laboratory Technology", "Digital Dentistry", "Prosthodontics"],
         speakerType: "technical",
