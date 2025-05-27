@@ -80,12 +80,22 @@ export class MemStorage implements IStorage {
   private seedData() {
     // Seed categories
     const categoriesData = [
-      { name: "Healthcare Leadership", description: "Medical administration and healthcare system leadership" },
-      { name: "Clinical Excellence", description: "Advanced clinical practices and patient care innovations" },
-      { name: "Medical Education", description: "Teaching and training in medical fields" },
-      { name: "Digital Health", description: "Technology integration in healthcare delivery" },
-      { name: "Public Health", description: "Population health and preventive medicine" },
-      { name: "Healthcare Innovation", description: "Breakthrough medical technologies and practices" },
+      { name: "Digital Dentistry", description: "CAD/CAM, 3D printing, and digital workflow solutions" },
+      { name: "Prosthodontics", description: "Restorative dentistry and prosthetic rehabilitation" },
+      { name: "Esthetic Dentistry", description: "Cosmetic procedures and smile design" },
+      { name: "Orthodontics", description: "Teeth straightening and bite correction" },
+      { name: "Implant Dentistry", description: "Dental implants and osseointegration" },
+      { name: "Surgical Pathways", description: "Surgical techniques and treatment planning" },
+      { name: "TMJ", description: "Temporomandibular joint disorders and treatment" },
+      { name: "Periodontics", description: "Gum disease treatment and periodontal therapy" },
+      { name: "Oral Surgery", description: "Surgical procedures in the oral cavity" },
+      { name: "Maxillofacial Surgery", description: "Complex facial and jaw surgical procedures" },
+      { name: "Dental Leadership", description: "Practice management and dental team leadership" },
+      { name: "Team Development", description: "Staff training and dental team building" },
+      { name: "Business Management", description: "Dental practice operations and business growth" },
+      { name: "AI in Dentistry", description: "Artificial intelligence applications in dental practice" },
+      { name: "Social Media", description: "Digital marketing and social media for dental practices" },
+      { name: "Marketing Strategies", description: "Patient acquisition and practice marketing" },
     ];
 
     categoriesData.forEach(cat => {
