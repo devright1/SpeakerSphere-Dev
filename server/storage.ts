@@ -185,28 +185,28 @@ export class MemStorage implements IStorage {
       },
       {
         name: "Dr. Will Martin",
-        title: "Internal Medicine & Primary Care",
-        bio: "Dr. William (Will) Martin, MD, practices internal medicine and primary care in Gainesville, Florida. With extensive experience in comprehensive adult healthcare, Dr. Martin specializes in preventive medicine, chronic disease management, and population health initiatives. He is a respected speaker who combines clinical expertise with innovative healthcare delivery models, focusing on improving patient outcomes through evidence-based medicine and healthcare system optimization.",
-        expertise: ["Internal Medicine", "Primary Care", "Preventive Medicine", "Chronic Disease Management", "Population Health"],
+        title: "Prosthodontics & Advanced Dental Reconstruction",
+        bio: "Dr. William (Will) Martin, DDS, is a prosthodontist practicing in Gainesville, Florida. Specializing in advanced dental reconstruction, implant dentistry, and complex oral rehabilitation, Dr. Martin combines cutting-edge prosthodontic techniques with a patient-centered approach. He is a respected speaker in the dental community, known for his expertise in full-mouth rehabilitation, aesthetic dentistry, and innovative prosthetic solutions for challenging clinical cases.",
+        expertise: ["Prosthodontics", "Dental Implants", "Full Mouth Rehabilitation", "Aesthetic Dentistry", "Complex Oral Reconstruction"],
         location: "Gainesville, FL",
         overallRating: "4.82",
         reviewCount: 45,
         imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=800",
         verified: true,
         featured: true,
-        category: "Healthcare Leadership",
+        category: "Clinical Excellence",
         achievements: [
-          "Chief Medical Officer at UF Health Gainesville",
-          "Board Certified in Internal Medicine",
-          "Leading researcher in primary care innovation",
-          "Florida Medical Association Excellence Award 2022"
+          "Board Certified Prosthodontist",
+          "Fellow of the American College of Prosthodontists",
+          "Director of Prosthodontics at University of Florida College of Dentistry",
+          "Florida Dental Association Clinical Excellence Award 2023"
         ],
         lectures: [
-          "Transforming Primary Care in the Digital Age",
-          "Chronic Disease Management: Best Practices and Innovations",
-          "Population Health Strategies for Healthcare Systems",
-          "Preventive Medicine: The Future of Healthcare",
-          "Healthcare Leadership in Rural and Academic Settings"
+          "Advanced Implant Prosthodontics: From Planning to Delivery",
+          "Full Mouth Rehabilitation: A Systematic Approach",
+          "Aesthetic Prosthodontics in the Digital Age",
+          "Complex Case Management in Prosthodontic Practice",
+          "Innovations in Dental Materials and Techniques"
         ],
         eventPhotos: [
           "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
@@ -223,8 +223,8 @@ export class MemStorage implements IStorage {
         socialMedia: ["linkedin.com/in/drwillmartin", "twitter.com/drwillmartin"],
         instagramHandle: "drwillmartin",
         languages: ["English", "Spanish"],
-        medicalSpecialties: ["Internal Medicine", "Primary Care", "Preventive Medicine"],
-        speakerType: "educational",
+        medicalSpecialties: ["Prosthodontics", "Dental Implantology", "Oral Rehabilitation"],
+        speakerType: "clinical",
         fee: "4500"
       }
     ];
@@ -280,8 +280,8 @@ export class MemStorage implements IStorage {
       {
         speakerId: 3,
         reviewerName: "Dr. Lisa Rodriguez",
-        reviewerTitle: "Chief Medical Officer",
-        reviewerCompany: "Florida Health Network",
+        reviewerTitle: "Conference Director",
+        reviewerCompany: "Florida Dental Association",
         overallRating: 5,
         speakingStyleRating: 5,
         podiumPresenceRating: 4,
@@ -289,16 +289,16 @@ export class MemStorage implements IStorage {
         contentRelevanceRating: 5,
         easeOfWorkingRating: 5,
         visualDesignRating: 4,
-        comment: "Dr. Martin's insights on primary care transformation were outstanding. His practical approach to chronic disease management and population health strategies provided actionable solutions for our healthcare system. Highly recommend for any primary care focused event.",
-        eventType: "Primary Care Innovation Conference",
+        comment: "Dr. Martin's presentation on advanced implant prosthodontics was outstanding. His case studies and step-by-step approach to complex full-mouth rehabilitations provided practical solutions that our members could immediately implement. Highly recommend for any prosthodontic-focused event.",
+        eventType: "Dental Implant Conference",
         eventDate: "2024-03-10",
         verified: true
       },
       {
         speakerId: 3,
         reviewerName: "Dr. James Thompson",
-        reviewerTitle: "Medical Director",
-        reviewerCompany: "University of Florida Health",
+        reviewerTitle: "Chair of Prosthodontics",
+        reviewerCompany: "University of Florida College of Dentistry",
         overallRating: 4,
         speakingStyleRating: 4,
         podiumPresenceRating: 5,
@@ -306,16 +306,16 @@ export class MemStorage implements IStorage {
         contentRelevanceRating: 4,
         easeOfWorkingRating: 5,
         visualDesignRating: 4,
-        comment: "Dr. Martin brought excellent expertise to our healthcare leadership symposium. His presentation on preventive medicine was well-structured and evidence-based. Great collaboration throughout the planning process.",
-        eventType: "Healthcare Leadership Symposium",
+        comment: "Dr. Martin brought excellent expertise to our dental education symposium. His presentation on aesthetic prosthodontics was well-structured and evidence-based. Great collaboration throughout the planning process and exceptional clinical insights.",
+        eventType: "Dental Education Symposium",
         eventDate: "2024-01-25",
         verified: true
       },
       {
         speakerId: 3,
         reviewerName: "Dr. Amanda Foster",
-        reviewerTitle: "Director of Medical Education",
-        reviewerCompany: "Shands Hospital at UF",
+        reviewerTitle: "Director of Continuing Education",
+        reviewerCompany: "American College of Prosthodontists",
         overallRating: 5,
         speakingStyleRating: 5,
         podiumPresenceRating: 5,
@@ -323,16 +323,16 @@ export class MemStorage implements IStorage {
         contentRelevanceRating: 5,
         easeOfWorkingRating: 5,
         visualDesignRating: 5,
-        comment: "Dr. Martin's session on population health management was exceptional. His ability to translate complex healthcare data into actionable strategies was impressive. The audience was highly engaged throughout his presentation.",
-        eventType: "Medical Education Conference",
+        comment: "Dr. Martin's session on digital prosthodontics was exceptional. His ability to translate complex technical concepts into practical clinical applications was impressive. The audience of prosthodontists was highly engaged throughout his presentation.",
+        eventType: "Prosthodontic Excellence Conference",
         eventDate: "2024-02-14",
         verified: true
       },
       {
         speakerId: 3,
         reviewerName: "Dr. Robert Kim",
-        reviewerTitle: "Chief of Internal Medicine",
-        reviewerCompany: "North Florida Regional Medical Center",
+        reviewerTitle: "Clinical Director",
+        reviewerCompany: "Gainesville Oral Surgery Center",
         overallRating: 4,
         speakingStyleRating: 4,
         podiumPresenceRating: 4,
@@ -340,8 +340,8 @@ export class MemStorage implements IStorage {
         contentRelevanceRating: 5,
         easeOfWorkingRating: 4,
         visualDesignRating: 4,
-        comment: "Dr. Martin provided valuable insights on improving primary care workflows. His evidence-based approach and practical recommendations were well-received by our medical staff. Professional and knowledgeable speaker.",
-        eventType: "Internal Medicine Symposium",
+        comment: "Dr. Martin provided valuable insights on interdisciplinary treatment planning for complex prosthodontic cases. His evidence-based approach and practical recommendations were well-received by our surgical and restorative teams. Professional and knowledgeable speaker.",
+        eventType: "Interdisciplinary Dental Conference",
         eventDate: "2024-03-05",
         verified: true
       }
