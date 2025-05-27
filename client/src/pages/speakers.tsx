@@ -69,11 +69,11 @@ export default function Speakers() {
       <Header />
       
       {/* Hero Search Section */}
-      <section className="bg-gradient-to-br from-primary to-blue-800 text-white py-16">
+      <section className="bg-devright-blue text-white py-20" style={{backgroundColor: '#1E4347'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Find Your Perfect Speaker</h1>
-            <p className="text-xl opacity-90">Browse our curated collection of verified professional speakers</p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Find Your Perfect Dental Speaker</h1>
+            <p className="text-xl opacity-90 mb-8">Browse our curated collection of verified dental professionals and industry experts</p>
           </div>
           <SpeakerSearch onSearch={handleSearch} />
         </div>
