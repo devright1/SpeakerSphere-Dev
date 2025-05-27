@@ -130,7 +130,7 @@ export class MemStorage implements IStorage {
           "https://example.com/video2"
         ],
         email: "lbrecht@devrightspeakers.com",
-        phone: "+1-212-555-0123",
+        phone: "214-884-4100",
         website: "https://drlarrybrecht.com",
         socialMedia: ["linkedin.com/in/drlarrybrecht", "twitter.com/drlarrybrecht"],
         instagramHandle: null,
@@ -174,7 +174,7 @@ export class MemStorage implements IStorage {
           "https://example.com/video4"
         ],
         email: "pwalton@devrightspeakers.com",
-        phone: "+1-416-555-0157",
+        phone: "214-884-4100",
         website: "https://drphilwalton.com",
         socialMedia: ["linkedin.com/in/drphilwalton", "twitter.com/drphilwalton"],
         instagramHandle: "drphilwalton",
