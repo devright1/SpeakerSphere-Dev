@@ -27,6 +27,8 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               ? "object-cover object-[center_20%] bg-white" 
               : speaker.name === "Dr. Will Martin"
               ? "object-cover object-[center_17%]"
+              : speaker.name === "Marisa Notturno"
+              ? "object-cover object-[center_7%] scale-90"
               : "object-cover object-[center_22%] scale-150"
           }`}
         />
