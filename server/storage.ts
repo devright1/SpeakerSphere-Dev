@@ -221,7 +221,7 @@ export class MemStorage implements IStorage {
         phone: "214-884-4100",
         website: "https://drwillmartin.com",
         socialMedia: ["linkedin.com/in/drwillmartin", "twitter.com/drwillmartin"],
-        instagramHandle: "drwillmartin",
+        instagramHandle: "martingator",
         languages: ["English", "Spanish"],
         medicalSpecialties: ["Prosthodontics", "Dental Implantology", "Oral Rehabilitation"],
         speakerType: "clinical",
