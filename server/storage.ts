@@ -182,6 +182,50 @@ export class MemStorage implements IStorage {
         medicalSpecialties: ["Emergency Medicine", "Critical Care", "Trauma Surgery"],
         speakerType: "keynote",
         fee: "5000"
+      },
+      {
+        name: "Dr. Will Martin",
+        title: "Internal Medicine & Primary Care",
+        bio: "Dr. William (Will) Martin, MD, practices internal medicine and primary care in Gainesville, Florida. With extensive experience in comprehensive adult healthcare, Dr. Martin specializes in preventive medicine, chronic disease management, and population health initiatives. He is a respected speaker who combines clinical expertise with innovative healthcare delivery models, focusing on improving patient outcomes through evidence-based medicine and healthcare system optimization.",
+        expertise: ["Internal Medicine", "Primary Care", "Preventive Medicine", "Chronic Disease Management", "Population Health"],
+        location: "Gainesville, FL",
+        overallRating: "4.82",
+        reviewCount: 45,
+        imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=800",
+        verified: true,
+        featured: true,
+        category: "Healthcare Leadership",
+        achievements: [
+          "Chief Medical Officer at UF Health Gainesville",
+          "Board Certified in Internal Medicine",
+          "Leading researcher in primary care innovation",
+          "Florida Medical Association Excellence Award 2022"
+        ],
+        lectures: [
+          "Transforming Primary Care in the Digital Age",
+          "Chronic Disease Management: Best Practices and Innovations",
+          "Population Health Strategies for Healthcare Systems",
+          "Preventive Medicine: The Future of Healthcare",
+          "Healthcare Leadership in Rural and Academic Settings"
+        ],
+        eventPhotos: [
+          "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1551601651-2a8555f1a136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        speakingVideos: [
+          "https://example.com/video5",
+          "https://example.com/video6"
+        ],
+        email: "wmartin@devrightspeakers.com",
+        phone: "214-884-4100",
+        website: "https://drwillmartin.com",
+        socialMedia: ["linkedin.com/in/drwillmartin", "twitter.com/drwillmartin"],
+        instagramHandle: "drwillmartin",
+        languages: ["English", "Spanish"],
+        medicalSpecialties: ["Internal Medicine", "Primary Care", "Preventive Medicine"],
+        speakerType: "educational",
+        fee: "4500"
       }
     ];
 
@@ -231,6 +275,40 @@ export class MemStorage implements IStorage {
         comment: "Dr. Walton's presentation on emergency department optimization was incredibly valuable. His real-world case studies and practical solutions directly addressed our challenges. Excellent speaker who truly understands healthcare operations.",
         eventType: "Healthcare Leadership Summit",
         eventDate: "2024-02-20",
+        verified: true
+      },
+      {
+        speakerId: 3,
+        reviewerName: "Dr. Lisa Rodriguez",
+        reviewerTitle: "Chief Medical Officer",
+        reviewerCompany: "Florida Health Network",
+        overallRating: 5,
+        speakingStyleRating: 5,
+        podiumPresenceRating: 4,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 4,
+        comment: "Dr. Martin's insights on primary care transformation were outstanding. His practical approach to chronic disease management and population health strategies provided actionable solutions for our healthcare system. Highly recommend for any primary care focused event.",
+        eventType: "Primary Care Innovation Conference",
+        eventDate: "2024-03-10",
+        verified: true
+      },
+      {
+        speakerId: 3,
+        reviewerName: "Dr. James Thompson",
+        reviewerTitle: "Medical Director",
+        reviewerCompany: "University of Florida Health",
+        overallRating: 4,
+        speakingStyleRating: 4,
+        podiumPresenceRating: 5,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 4,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 4,
+        comment: "Dr. Martin brought excellent expertise to our healthcare leadership symposium. His presentation on preventive medicine was well-structured and evidence-based. Great collaboration throughout the planning process.",
+        eventType: "Healthcare Leadership Symposium",
+        eventDate: "2024-01-25",
         verified: true
       }
     ];
