@@ -280,6 +280,59 @@ export class MemStorage implements IStorage {
         medicalSpecialties: ["Dental Laboratory Technology", "Digital Dentistry", "Prosthodontics"],
         speakerType: "technical",
         fee: "2250"
+      },
+      {
+        name: "Dr. Dean Morton",
+        title: "Prosthodontist & Academic Leader",
+        bio: "Dr. Dean Morton is a distinguished prosthodontist who completed his dental training at the University of Sydney and advanced training in prosthodontics at the University of Iowa. He serves as the Indiana Dental Association Professor and Chair of the Department of Prosthodontics at the Indiana University School of Dentistry. Dr. Morton concurrently serves as Director of the Center for Implant, Esthetic and Innovative Dentistry and as Assistant Dean for Strategic Partnerships and Innovation. He is a Fellow of the International Team for Implantology (ITI) and serves on the Board of Directors and as Chair of the Section Management Committee. Dr. Morton is a Diplomate of the American Board of Prosthodontics, serving on the Board of Directors and as an examiner. He is a fellow or member of the American College of Prosthodontists, the International College of Dentists, the Academy of Prosthodontics and the Academy of Restorative Dentistry.",
+        expertise: ["Prosthodontics", "Implant Dentistry", "Esthetic Dentistry", "Digital Dentistry", "Dental Education"],
+        location: "Indianapolis, IN",
+        overallRating: "4.9",
+        reviewCount: 42,
+        imageUrl: "/attached_assets/image_1748648990841.png",
+        verified: true,
+        featured: true,
+        category: "Prosthodontics",
+        achievements: [
+          "Indiana Dental Association Professor and Chair of Prosthodontics at IU School of Dentistry",
+          "Director of Center for Implant, Esthetic and Innovative Dentistry",
+          "Assistant Dean for Strategic Partnerships and Innovation",
+          "Fellow of International Team for Implantology (ITI)",
+          "Board of Directors and Chair of Section Management Committee (ITI)",
+          "Diplomate of American Board of Prosthodontics",
+          "Board of Directors and Examiner (American Board of Prosthodontics)",
+          "Fellow of American College of Prosthodontists",
+          "Fellow of International College of Dentists",
+          "Member of Academy of Prosthodontics",
+          "Member of Academy of Restorative Dentistry"
+        ],
+        lectures: [
+          "Advanced Prosthodontic Treatment Planning",
+          "Digital Workflows in Implant Prosthodontics",
+          "Esthetic Considerations in Complex Rehabilitation",
+          "Innovation in Dental Education",
+          "Interdisciplinary Treatment Approaches",
+          "Contemporary Materials in Prosthodontics",
+          "Leadership in Academic Dentistry"
+        ],
+        eventPhotos: [
+          "https://example.com/morton-event1",
+          "https://example.com/morton-event2",
+          "https://example.com/morton-event3"
+        ],
+        speakingVideos: [
+          "https://example.com/morton-video1",
+          "https://example.com/morton-video2"
+        ],
+        email: "dmorton@devrightspeakers.com",
+        phone: "214-884-4100",
+        website: "https://devrightspeakers.com",
+        socialMedia: ["linkedin.com/in/drdeanmorton", "www.devright.com"],
+        instagramHandle: null,
+        languages: ["English"],
+        medicalSpecialties: ["Prosthodontics", "Implant Dentistry", "Esthetic Dentistry", "Digital Dentistry"],
+        speakerType: "academic",
+        fee: "8500"
       }
     ];
 
@@ -431,6 +484,57 @@ export class MemStorage implements IStorage {
         comment: "Marisa brought excellent technical knowledge to our continuing education seminar. Her understanding of laboratory processes and collaboration with clinicians helped bridge the gap between practice and lab. Great practical advice for improving case outcomes.",
         eventType: "Continuing Education Seminar",
         eventDate: "2024-02-28",
+        verified: true
+      },
+      {
+        speakerId: 5,
+        reviewerName: "Dr. Sarah Mitchell",
+        reviewerTitle: "Program Director",
+        reviewerCompany: "American College of Prosthodontists",
+        overallRating: 5,
+        speakingStyleRating: 5,
+        podiumPresenceRating: 5,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 5,
+        comment: "Dr. Morton delivered an exceptional presentation on advanced prosthodontic treatment planning. His expertise as Chair of Prosthodontics at Indiana University and his work with the ITI brings unparalleled depth to his presentations. Outstanding professional collaboration.",
+        eventType: "Annual Prosthodontic Conference",
+        eventDate: "2024-03-15",
+        verified: true
+      },
+      {
+        speakerId: 5,
+        reviewerName: "Dr. Robert Chen",
+        reviewerTitle: "Department Chair",
+        reviewerCompany: "University of Michigan School of Dentistry",
+        overallRating: 5,
+        speakingStyleRating: 4,
+        podiumPresenceRating: 5,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 4,
+        comment: "Dr. Morton's presentation on digital workflows in implant prosthodontics was incredibly informative. His dual role as educator and clinician provides a unique perspective that resonates with both faculty and practitioners. Excellent speaker with deep expertise.",
+        eventType: "Digital Dentistry Symposium",
+        eventDate: "2024-01-18",
+        verified: true
+      },
+      {
+        speakerId: 5,
+        reviewerName: "Dr. Jennifer Walsh",
+        reviewerTitle: "Conference Chair",
+        reviewerCompany: "International Team for Implantology",
+        overallRating: 4,
+        speakingStyleRating: 4,
+        podiumPresenceRating: 4,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 4,
+        comment: "As a Fellow and Board member of ITI, Dr. Morton brought exceptional clinical expertise to our international congress. His presentation on interdisciplinary treatment approaches was well-received by our global audience. Professional and knowledgeable speaker.",
+        eventType: "ITI World Symposium",
+        eventDate: "2024-04-12",
         verified: true
       }
     ];
