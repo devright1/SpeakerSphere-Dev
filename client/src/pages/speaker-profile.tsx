@@ -79,13 +79,13 @@ export default function SpeakerProfile() {
   });
 
   const { data: reviews, isLoading: reviewsLoading } = useQuery<Review[]>({
-    queryKey: ["/api/speakers", id, "reviews"],
+    queryKey: ["/api/speakers", name, "reviews"],
     queryFn: async () => {
-      const response = await fetch(`/api/speakers/${id}/reviews`);
+      const response = await fetch(`/api/speakers/${name}/reviews`);
       if (!response.ok) throw new Error("Failed to fetch reviews");
       return response.json();
     },
-    enabled: !!id,
+    enabled: !!name,
   });
 
   const inquiryForm = useForm<z.infer<typeof inquirySchema>>({
@@ -117,7 +117,8 @@ export default function SpeakerProfile() {
 
   const inquiryMutation = useMutation({
     mutationFn: async (data: z.infer<typeof inquirySchema>) => {
-      const response = await apiRequest("POST", `/api/speakers/${id}/inquiries`, data);
+      if (!speaker) throw new Error("Speaker not found");
+      const response = await apiRequest("POST", `/api/speakers/${speaker.id}/inquiries`, data);
       return response.json();
     },
     onSuccess: () => {
@@ -139,7 +140,8 @@ export default function SpeakerProfile() {
 
   const reviewMutation = useMutation({
     mutationFn: async (data: z.infer<typeof reviewSchema>) => {
-      const response = await apiRequest("POST", `/api/speakers/${id}/reviews`, data);
+      if (!speaker) throw new Error("Speaker not found");
+      const response = await apiRequest("POST", `/api/speakers/${speaker.id}/reviews`, data);
       return response.json();
     },
     onSuccess: () => {
@@ -149,8 +151,8 @@ export default function SpeakerProfile() {
       });
       setIsReviewOpen(false);
       reviewForm.reset();
-      queryClient.invalidateQueries({ queryKey: ["/api/speakers", id, "reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/speakers", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers", name, "reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers", name] });
     },
     onError: () => {
       toast({
@@ -545,7 +547,7 @@ export default function SpeakerProfile() {
                               <div className="flex items-center">
                                 <div className="flex text-yellow-400 mr-2">
                                   {[...Array(5)].map((_, i) => (
-                                    <Star key={i} className={`w-4 h-4 ${i < review.rating ? "fill-current" : ""}`} />
+                                    <Star key={i} className={`w-4 h-4 ${i < review.overallRating ? "fill-current" : ""}`} />
                                   ))}
                                 </div>
                                 {review.verified && (
@@ -785,7 +787,7 @@ export default function SpeakerProfile() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Average Rating:</span>
-                  <span className="font-semibold">{speaker.rating}/5.0</span>
+                  <span className="font-semibold">{speaker.overallRating}/5.0</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Response Time:</span>
