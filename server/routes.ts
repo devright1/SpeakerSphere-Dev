@@ -41,15 +41,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get single speaker by ID
-  app.get("/api/speakers/:id", async (req, res) => {
+  // Get single speaker by ID or slug
+  app.get("/api/speakers/:identifier", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid speaker ID" });
+      const identifier = req.params.identifier;
+      let speaker;
+
+      // Try to parse as ID first, then fall back to slug
+      const id = parseInt(identifier);
+      if (!isNaN(id)) {
+        speaker = await storage.getSpeaker(id);
+      } else {
+        speaker = await storage.getSpeakerBySlug(identifier);
       }
 
-      const speaker = await storage.getSpeaker(id);
       if (!speaker) {
         return res.status(404).json({ message: "Speaker not found" });
       }
@@ -61,14 +66,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get reviews for a speaker
-  app.get("/api/speakers/:id/reviews", async (req, res) => {
+  app.get("/api/speakers/:identifier/reviews", async (req, res) => {
     try {
-      const speakerId = parseInt(req.params.id);
-      if (isNaN(speakerId)) {
-        return res.status(400).json({ message: "Invalid speaker ID" });
+      const identifier = req.params.identifier;
+      let speaker;
+
+      // Try to parse as ID first, then fall back to slug
+      const id = parseInt(identifier);
+      if (!isNaN(id)) {
+        speaker = await storage.getSpeaker(id);
+      } else {
+        speaker = await storage.getSpeakerBySlug(identifier);
       }
 
-      const reviews = await storage.getReviewsBySpeakerId(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      const reviews = await storage.getReviewsBySpeakerId(speaker.id);
       res.json(reviews);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch reviews" });

@@ -598,6 +598,10 @@ export class MemStorage implements IStorage {
     return this.speakers.get(id);
   }
 
+  async getSpeakerBySlug(slug: string): Promise<Speaker | undefined> {
+    return Array.from(this.speakers.values()).find(speaker => speaker.slug === slug);
+  }
+
   async createSpeaker(insertSpeaker: InsertSpeaker): Promise<Speaker> {
     const id = this.currentSpeakerId++;
     const speaker: Speaker = { 

@@ -96,7 +96,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         </div>
 
         <div className="flex gap-2">
-          <Link href={`/speakers/${speaker.id}`} className="flex-1">
+          <Link href={`/speakers/${(speaker as any).slug}`} className="flex-1">
             <Button className="w-full bg-primary hover:bg-blue-700 text-white">
               View Profile
             </Button>

@@ -62,20 +62,20 @@ const reviewSchema = z.object({
 });
 
 export default function SpeakerProfile() {
-  const { id } = useParams();
+  const { name } = useParams();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   const { data: speaker, isLoading: speakerLoading, error: speakerError } = useQuery<Speaker>({
-    queryKey: ["/api/speakers", id],
+    queryKey: ["/api/speakers", name],
     queryFn: async () => {
-      const response = await fetch(`/api/speakers/${id}`);
+      const response = await fetch(`/api/speakers/${name}`);
       if (!response.ok) throw new Error("Failed to fetch speaker");
       return response.json();
     },
-    enabled: !!id,
+    enabled: !!name,
   });
 
   const { data: reviews, isLoading: reviewsLoading } = useQuery<Review[]>({
