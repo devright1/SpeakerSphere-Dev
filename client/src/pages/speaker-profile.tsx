@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,16 +28,17 @@ import {
   Mail, 
   Calendar, 
   CheckCircle, 
-  Award,
-  User,
-  Building,
-  MessageSquare,
-  Heart,
-  Share2,
-  AlertCircle
+  Users, 
+  Award, 
+  TrendingUp, 
+  Heart, 
+  Share2, 
+  MessageCircle,
+  AlertCircle,
+  Instagram,
+  Linkedin,
+  Facebook
 } from "lucide-react";
-import { FaInstagram, FaFacebook, FaLinkedin } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
 import type { Speaker, Review } from "@shared/schema";
 
 const inquirySchema = z.object({
@@ -47,6 +48,7 @@ const inquirySchema = z.object({
   eventType: z.string().min(1, "Event type is required"),
   eventDate: z.string().min(1, "Event date is required"),
   eventLocation: z.string().min(1, "Event location is required"),
+  expectedAttendees: z.string().min(1, "Expected attendees is required"),
   budget: z.string().optional(),
   message: z.string().min(10, "Message must be at least 10 characters"),
 });
@@ -75,20 +77,24 @@ export default function SpeakerProfile() {
     queryKey: ["/api/speakers", name],
     queryFn: async () => {
       const response = await fetch(`/api/speakers/${name}`);
-      if (!response.ok) throw new Error("Failed to fetch speaker");
+      if (!response.ok) {
+        throw new Error("Speaker not found");
+      }
       return response.json();
     },
-    enabled: !!name,
   });
 
   const { data: reviews, isLoading: reviewsLoading } = useQuery<Review[]>({
     queryKey: ["/api/speakers", name, "reviews"],
     queryFn: async () => {
-      const response = await fetch(`/api/speakers/${name}/reviews`);
-      if (!response.ok) throw new Error("Failed to fetch reviews");
+      if (!speaker) return [];
+      const response = await fetch(`/api/speakers/${speaker.id}/reviews`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch reviews");
+      }
       return response.json();
     },
-    enabled: !!name,
+    enabled: !!speaker,
   });
 
   const inquiryForm = useForm<z.infer<typeof inquirySchema>>({
@@ -100,6 +106,7 @@ export default function SpeakerProfile() {
       eventType: "",
       eventDate: "",
       eventLocation: "",
+      expectedAttendees: "",
       budget: "",
       message: "",
     },
@@ -200,44 +207,37 @@ export default function SpeakerProfile() {
 
   if (speakerLoading) {
     return (
-      <div className="min-h-screen bg-neutral">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="h-64 w-full rounded-xl" />
-              <Skeleton className="h-32 w-full" />
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-48 w-full rounded-xl" />
-              <Skeleton className="h-24 w-full" />
-            </div>
+          <div className="space-y-6">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-64 w-full" />
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
   if (speakerError || !speaker) {
     return (
-      <div className="min-h-screen bg-neutral">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Speaker not found or failed to load. Please try again.
+              Speaker not found. Please check the URL and try again.
             </AlertDescription>
           </Alert>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -247,20 +247,19 @@ export default function SpeakerProfile() {
             {/* Speaker Header */}
             <Card className="mb-8">
               <CardContent className="p-8">
-                <div className="flex flex-col md:flex-row gap-6">
-                  <img 
-                    src={speaker.imageUrl} 
-                    alt={speaker.name}
-                    className={`w-32 h-48 rounded-2xl mx-auto md:mx-0 ${
-                      speaker.name === "Dr. Will Martin" 
-                        ? "object-cover object-[center_17%]" 
-                        : "object-contain"
-                    }`}
-                  />
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={speaker.imageUrl}
+                      alt={speaker.name}
+                      className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                    />
+                  </div>
+                  
                   <div className="flex-1 text-center md:text-left">
-                    <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                    <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
                       <h1 className="text-3xl font-bold text-gray-900">{speaker.name}</h1>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap justify-center md:justify-start gap-2">
                         {speaker.verified && (
                           <Badge variant="default" className="bg-success text-white">
                             <CheckCircle className="w-3 h-3 mr-1" />
@@ -321,36 +320,28 @@ export default function SpeakerProfile() {
                       {/* Social Media Icons */}
                       <div className="flex items-center gap-3 ml-4">
                         <a 
-                          href={`https://instagram.com/${(speaker as any).instagramHandle || 'devrightspeakers'}`} 
+                          href={speaker.socialMedia?.instagram || "#"} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-gray-600 hover:text-pink-600 transition-colors"
                         >
-                          <FaInstagram className="w-5 h-5" />
+                          <Instagram className="w-5 h-5" />
                         </a>
                         <a 
-                          href="https://facebook.com/devrightspeakers" 
+                          href={speaker.socialMedia?.linkedin || "#"} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-gray-600 hover:text-blue-600 transition-colors"
                         >
-                          <FaFacebook className="w-5 h-5" />
+                          <Linkedin className="w-5 h-5" />
                         </a>
                         <a 
-                          href="https://x.com/devrightspeakers" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-black transition-colors"
-                        >
-                          <FaXTwitter className="w-5 h-5" />
-                        </a>
-                        <a 
-                          href="https://linkedin.com/company/devrightspeakers" 
+                          href={speaker.socialMedia?.facebook || "#"} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-gray-600 hover:text-blue-700 transition-colors"
                         >
-                          <FaLinkedin className="w-5 h-5" />
+                          <Facebook className="w-5 h-5" />
                         </a>
                       </div>
                     </div>
@@ -363,38 +354,57 @@ export default function SpeakerProfile() {
             <Tabs defaultValue="overview" className="space-y-6">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="experience">Experience</TabsTrigger>
                 <TabsTrigger value="topics">Topics</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                <TabsTrigger value="media">Media</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview">
                 <Card>
                   <CardHeader>
-                    <CardTitle>About {speaker.name}</CardTitle>
+                    <CardTitle>About</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <p className="text-gray-700 leading-relaxed">{speaker.bio}</p>
+                  <CardContent>
+                    <p className="text-gray-700 leading-relaxed mb-6">{speaker.bio}</p>
                     
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">Key Achievements</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {speaker.achievements?.map((achievement, index) => (
-                          <div key={index} className="flex items-center">
-                            <Award className="w-5 h-5 text-accent mr-2" />
-                            <span>{achievement}</span>
-                          </div>
-                        )) || []}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-3">Expertise</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {speaker.expertise?.map((skill, index) => (
+                            <Badge key={index} variant="secondary">{skill}</Badge>
+                          )) || []}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-3">Speaking Fee</h3>
+                        <p className="text-2xl font-bold text-primary">{speaker.fee || "Contact for pricing"}</p>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
 
+                {/* Video Portfolio */}
+                <SpeakerVideoPortfolio speakerId={speaker.id} />
+              </TabsContent>
+
+              <TabsContent value="experience">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Professional Experience</CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">Areas of Expertise</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {speaker.expertise?.map((skill, index) => (
-                          <Badge key={index} variant="secondary">{skill}</Badge>
+                      <h3 className="font-semibold text-gray-900 mb-3">Achievements</h3>
+                      <ul className="space-y-2">
+                        {speaker.achievements?.map((achievement, index) => (
+                          <li key={index} className="flex items-start">
+                            <Award className="w-4 h-4 text-accent mt-1 mr-2 flex-shrink-0" />
+                            <span className="text-gray-700">{achievement}</span>
+                          </li>
                         )) || []}
-                      </div>
+                      </ul>
                     </div>
 
                     <div>
@@ -433,179 +443,6 @@ export default function SpeakerProfile() {
                     <h2 className="text-2xl font-bold">Reviews</h2>
                     <Button onClick={() => setIsReviewOpen(true)}>Leave a Review</Button>
                   </div>
-                        <Form {...reviewForm}>
-                          <form onSubmit={reviewForm.handleSubmit((data) => reviewMutation.mutate(data))} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                              <FormField
-                                control={reviewForm.control}
-                                name="reviewerName"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Your Name</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={reviewForm.control}
-                                name="reviewerTitle"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Your Title</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-4">
-                              <FormField
-                                control={reviewForm.control}
-                                name="reviewerCompany"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Company</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={reviewForm.control}
-                                name="rating"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Rating *</FormLabel>
-                                    <FormControl>
-                                      <div className="flex items-center gap-1">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                          <button
-                                            key={star}
-                                            type="button"
-                                            className="focus:outline-none"
-                                            onMouseEnter={() => setHoveredRating(star)}
-                                            onMouseLeave={() => setHoveredRating(0)}
-                                            onClick={() => field.onChange(star)}
-                                          >
-                                            <Star
-                                              className={`w-8 h-8 transition-colors ${
-                                                star <= (hoveredRating || field.value)
-                                                  ? "text-yellow-400 fill-yellow-400"
-                                                  : "text-gray-300"
-                                              }`}
-                                            />
-                                          </button>
-                                        ))}
-                                        <span className="ml-2 text-sm text-gray-600">
-                                          {field.value ? `${field.value}/5` : "Click to rate"}
-                                        </span>
-                                      </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <FormField
-                                control={reviewForm.control}
-                                name="eventType"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Event Type</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} placeholder="e.g., Corporate Conference" />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={reviewForm.control}
-                                name="eventDate"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Event Date</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} type="date" />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-
-                            <FormField
-                              control={reviewForm.control}
-                              name="comment"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Written Review *</FormLabel>
-                                  <FormControl>
-                                    <Textarea {...field} rows={4} placeholder="Share your experience with this speaker..." />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={reviewForm.control}
-                              name="photo"
-                              render={({ field: { onChange, ...field } }) => (
-                                <FormItem>
-                                  <FormLabel>Photo from Audience *</FormLabel>
-                                  <FormControl>
-                                    <div className="space-y-2">
-                                      <Input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          if (file) {
-                                            setSelectedFile(file);
-                                            onChange(file);
-                                          }
-                                        }}
-                                        className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                      />
-                                      {selectedFile && (
-                                        <div className="flex items-center gap-2 text-sm text-green-600">
-                                          <span>✓ {selectedFile.name}</span>
-                                        </div>
-                                      )}
-                                      <p className="text-xs text-gray-500">
-                                        Upload a photo of the speaker presenting to your audience
-                                      </p>
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <div className="flex justify-end space-x-2">
-                              <Button type="button" variant="outline" onClick={() => setIsReviewOpen(false)}>
-                                Cancel
-                              </Button>
-                              <Button type="submit" disabled={reviewMutation.isPending}>
-                                {reviewMutation.isPending ? "Submitting..." : "Submit Review"}
-                              </Button>
-                            </div>
-                          </form>
-                        </Form>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
 
                   {reviewsLoading ? (
                     <div className="space-y-4">
@@ -619,15 +456,9 @@ export default function SpeakerProfile() {
                         <Card key={review.id}>
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between mb-4">
-                              <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                                  <User className="w-6 h-6 text-gray-600" />
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold">{review.reviewerName}</h4>
-                                  <p className="text-gray-600 text-sm">{review.reviewerTitle}, {review.reviewerCompany}</p>
-                                  <p className="text-gray-500 text-xs">{review.eventType} • {review.eventDate}</p>
-                                </div>
+                              <div>
+                                <h4 className="font-semibold">{review.reviewerName}</h4>
+                                <p className="text-sm text-gray-600">{review.reviewerTitle} at {review.reviewerCompany}</p>
                               </div>
                               <div className="flex items-center">
                                 <div className="flex text-yellow-400 mr-2">
@@ -635,81 +466,92 @@ export default function SpeakerProfile() {
                                     <Star key={i} className={`w-4 h-4 ${i < review.overallRating ? "fill-current" : ""}`} />
                                   ))}
                                 </div>
-                                {review.verified && (
-                                  <Badge variant="default" className="bg-success text-white text-xs">
-                                    <CheckCircle className="w-3 h-3 mr-1" />
-                                    Verified
-                                  </Badge>
-                                )}
+                                <span className="text-sm font-medium">{review.overallRating}/5</span>
                               </div>
                             </div>
-                            <p className="text-gray-700">{review.comment}</p>
+                            <p className="text-gray-700 mb-3">{review.comment}</p>
+                            <div className="text-xs text-gray-500">
+                              {review.eventType} • {review.eventDate}
+                              {review.verified && (
+                                <span className="ml-2 inline-flex items-center">
+                                  <CheckCircle className="w-3 h-3 text-green-600 mr-1" />
+                                  Verified
+                                </span>
+                              )}
+                            </div>
                           </CardContent>
                         </Card>
-                      ))}
+                      )) || []}
                     </div>
                   )}
                 </div>
-              </TabsContent>
-
-              <TabsContent value="media">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Video Portfolio & Speaker Demos</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <SpeakerVideoPortfolio speakerId={speaker.id} />
-                  </CardContent>
-                </Card>
               </TabsContent>
             </Tabs>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Booking Card */}
+            {/* Book Speaker */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Book This Speaker</span>
-                  <span className="text-2xl font-bold text-primary">
-                    {(speaker as any).fee ? `$${parseFloat((speaker as any).fee).toLocaleString()}+` : "Contact for pricing"}
-                  </span>
-                </CardTitle>
+                <CardTitle>Book This Speaker</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Availability:</span>
-                  <Badge variant={speaker.availability === "available" ? "default" : "secondary"}>
-                    {speaker.availability}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Travel:</span>
-                  <span className="capitalize">{speaker.travelWillingness}</span>
-                </div>
-
-                <Dialog open={isInquiryOpen} onOpenChange={setIsInquiryOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full bg-accent hover:bg-orange-600">
-                      <MessageSquare className="w-4 h-4 mr-2" />
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-1">{speaker.fee || "Contact for pricing"}</div>
+                    <div className="text-sm text-gray-500">Speaking fee</div>
+                  </div>
+                  
+                  <Dialog open={isInquiryOpen} onOpenChange={setIsInquiryOpen}>
+                    <Button 
+                      className="w-full bg-primary hover:bg-blue-700 text-white"
+                      onClick={() => setIsInquiryOpen(true)}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
                       Send Inquiry
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Send Inquiry to {speaker.name}</DialogTitle>
-                    </DialogHeader>
-                    <Form {...inquiryForm}>
-                      <form onSubmit={inquiryForm.handleSubmit((data) => inquiryMutation.mutate(data))} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Send Inquiry to {speaker.name}</DialogTitle>
+                      </DialogHeader>
+                      <Form {...inquiryForm}>
+                        <form onSubmit={inquiryForm.handleSubmit((data) => inquiryMutation.mutate(data))} className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={inquiryForm.control}
+                              name="clientName"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Your Name</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={inquiryForm.control}
+                              name="clientEmail"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Email</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} type="email" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
                           <FormField
                             control={inquiryForm.control}
-                            name="clientName"
+                            name="clientCompany"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Your Name</FormLabel>
+                                <FormLabel>Company</FormLabel>
                                 <FormControl>
                                   <Input {...field} />
                                 </FormControl>
@@ -717,78 +559,76 @@ export default function SpeakerProfile() {
                               </FormItem>
                             )}
                           />
-                          <FormField
-                            control={inquiryForm.control}
-                            name="clientEmail"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                  <Input {...field} type="email" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
 
-                        <FormField
-                          control={inquiryForm.control}
-                          name="clientCompany"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Company</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={inquiryForm.control}
+                              name="eventType"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Event Type</FormLabel>
+                                  <Select onValueChange={field.onChange}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select event type" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="corporate">Corporate Event</SelectItem>
+                                      <SelectItem value="conference">Conference</SelectItem>
+                                      <SelectItem value="workshop">Workshop</SelectItem>
+                                      <SelectItem value="webinar">Webinar</SelectItem>
+                                      <SelectItem value="other">Other</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={inquiryForm.control}
+                              name="eventDate"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Event Date</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} type="date" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={inquiryForm.control}
-                            name="eventType"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Event Type</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="e.g., Corporate Conference" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={inquiryForm.control}
-                            name="eventDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Event Date</FormLabel>
-                                <FormControl>
-                                  <Input {...field} type="date" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={inquiryForm.control}
+                              name="eventLocation"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Location</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="City, State" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={inquiryForm.control}
+                              name="expectedAttendees"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Expected Attendees</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="e.g., 100-200" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={inquiryForm.control}
-                            name="eventLocation"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Event Location</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="City, State" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                           <FormField
                             control={inquiryForm.control}
                             name="budget"
@@ -796,40 +636,49 @@ export default function SpeakerProfile() {
                               <FormItem>
                                 <FormLabel>Budget (Optional)</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="$10,000" />
+                                  <Input {...field} placeholder="e.g., $5,000 - $10,000" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                        </div>
 
-                        <FormField
-                          control={inquiryForm.control}
-                          name="message"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Message</FormLabel>
-                              <FormControl>
-                                <Textarea {...field} rows={4} placeholder="Tell us about your event..." />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                          <FormField
+                            control={inquiryForm.control}
+                            name="message"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Message</FormLabel>
+                                <FormControl>
+                                  <Textarea {...field} rows={4} placeholder="Tell us about your event..." />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                        <div className="flex justify-end space-x-2">
-                          <Button type="button" variant="outline" onClick={() => setIsInquiryOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button type="submit" disabled={inquiryMutation.isPending}>
-                            {inquiryMutation.isPending ? "Sending..." : "Send Inquiry"}
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  </DialogContent>
-                </Dialog>
+                          <div className="flex justify-end space-x-2">
+                            <Button type="button" variant="outline" onClick={() => setIsInquiryOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={inquiryMutation.isPending}>
+                              {inquiryMutation.isPending ? "Sending..." : "Send Inquiry"}
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Response time:</span>
+                      <span>Within 24 hours</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
