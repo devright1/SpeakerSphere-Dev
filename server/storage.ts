@@ -26,6 +26,7 @@ export interface IStorage {
     search?: string;
   }): Promise<Speaker[]>;
   getSpeaker(id: number): Promise<Speaker | undefined>;
+  getSpeakerBySlug(slug: string): Promise<Speaker | undefined>;
   createSpeaker(speaker: InsertSpeaker): Promise<Speaker>;
   updateSpeaker(id: number, speaker: Partial<InsertSpeaker>): Promise<Speaker | undefined>;
   getFeaturedSpeakers(): Promise<Speaker[]>;
@@ -107,6 +108,7 @@ export class MemStorage implements IStorage {
     const speakersData = [
       {
         name: "Dr. Larry Brecht",
+        slug: "larrybrecht",
         title: "Prosthodontics & Maxillofacial Prosthodontics",
         bio: "Dr. Lawrence (Larry) E. Brecht, DDS, practices dentistry in New York City, specializing in Prosthodontics and Maxillofacial Prosthodontics. These specialties focus on restoring missing teeth, treating jaw disorders, and providing reconstructive and aesthetic dental care, particularly for patients with complex conditions such as cancer or craniofacial anomalies. Dr. Brecht is a sought-after speaker who combines clinical expertise with practical insights on dental innovation, making complex prosthodontic concepts accessible to diverse audiences.",
         expertise: ["Prosthodontics", "Maxillofacial Prosthodontics", "Dental Implants", "Oral Rehabilitation", "Complex Reconstructions"],
@@ -151,6 +153,7 @@ export class MemStorage implements IStorage {
       },
       {
         name: "Dr. Phil Walton",
+        slug: "philwalton",
         title: "Periodontics & Implantology",
         bio: "Dr. Philip M. Walton, DDS, from Toronto, specializes in Periodontics and Implantology. His practice includes conventional periodontal therapy for tooth maintenance, periodontal plastic surgery, advanced regenerative techniques, and implant rehabilitation, with a focus on immediate implant placement and temporization for single, multiple, and full arch reconstruction.",
         expertise: ["Periodontics", "Implantology", "Gum Disease Treatment", "Dental Implants", "Bone Regeneration"],
@@ -195,6 +198,7 @@ export class MemStorage implements IStorage {
       },
       {
         name: "Dr. Will Martin",
+        slug: "willmartin",
         title: "Prosthodontics & Implant Dentistry",
         bio: "Dr. Will Martin, DMD, MS, FACP, is a Clinical Professor in the Department of Oral and Maxillofacial Surgery at the University of Florida's College of Dentistry and serves as Director of the Center for Implant Dentistry. Board-certified in Prosthodontics and a Diplomate of the American Board of Prosthodontics, Dr. Martin is internationally recognized for his expertise in implant dentistry, esthetic dentistry, and digital workflows. He is one of the original creators of the ITI's Esthetic Risk Assessment and has co-authored influential textbooks including ITI Treatment Guides.",
         expertise: ["Prosthodontics", "Implant Dentistry", "Esthetic Dentistry", "Digital Dentistry", "Implant Biomechanics", "Interdisciplinary Treatment Planning"],
@@ -240,6 +244,7 @@ export class MemStorage implements IStorage {
       },
       {
         name: "Marisa Notturno",
+        slug: "marisanotturno",
         title: "Dental Technician",
         bio: "Marisa Notturno is a skilled dental technician based in New York City, specializing in advanced dental laboratory techniques and digital workflows. With extensive experience in prosthodontic laboratory procedures, she brings practical insights into the collaboration between dental technicians and clinicians. Marisa is passionate about educating dental professionals on laboratory processes, quality control, and the integration of traditional craftsmanship with modern digital technologies.",
         expertise: ["Dental Laboratory Techniques", "Digital Dentistry", "Prosthodontic Lab Work", "Quality Control", "CAD/CAM Technology"],
@@ -283,6 +288,7 @@ export class MemStorage implements IStorage {
       },
       {
         name: "Dr. Dean Morton",
+        slug: "deanmorton",
         title: "Prosthodontist & Academic Leader",
         bio: "Dr. Dean Morton is a distinguished prosthodontist who completed his dental training at the University of Sydney and advanced training in prosthodontics at the University of Iowa. He serves as the Indiana Dental Association Professor and Chair of the Department of Prosthodontics at the Indiana University School of Dentistry. Dr. Morton concurrently serves as Director of the Center for Implant, Esthetic and Innovative Dentistry and as Assistant Dean for Strategic Partnerships and Innovation. He is a Fellow of the International Team for Implantology (ITI) and serves on the Board of Directors and as Chair of the Section Management Committee. Dr. Morton is a Diplomate of the American Board of Prosthodontics, serving on the Board of Directors and as an examiner. He is a fellow or member of the American College of Prosthodontists, the International College of Dentists, the Academy of Prosthodontics and the Academy of Restorative Dentistry.",
         expertise: ["Prosthodontics", "Implant Dentistry", "Esthetic Dentistry", "Digital Dentistry", "Dental Education"],
