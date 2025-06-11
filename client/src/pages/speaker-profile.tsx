@@ -56,9 +56,10 @@ const reviewSchema = z.object({
   reviewerTitle: z.string().min(1, "Title is required"),
   reviewerCompany: z.string().min(1, "Company is required"),
   rating: z.number().min(1).max(5),
-  comment: z.string().min(10, "Comment must be at least 10 characters"),
+  comment: z.string().min(10, "Written review is required (minimum 10 characters)"),
   eventType: z.string().min(1, "Event type is required"),
   eventDate: z.string().min(1, "Event date is required"),
+  photo: z.any().refine((file) => file instanceof File, { message: "Photo from audience is required" }),
 });
 
 export default function SpeakerProfile() {
@@ -67,6 +68,8 @@ export default function SpeakerProfile() {
   const queryClient = useQueryClient();
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { data: speaker, isLoading: speakerLoading, error: speakerError } = useQuery<Speaker>({
     queryKey: ["/api/speakers", name],
@@ -112,6 +115,7 @@ export default function SpeakerProfile() {
       comment: "",
       eventType: "",
       eventDate: "",
+      photo: undefined,
     },
   });
 
@@ -261,6 +265,16 @@ export default function SpeakerProfile() {
                         <MapPin className="w-4 h-4 mr-1" />
                         {speaker.location}
                       </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <Button 
+                        onClick={() => setIsReviewOpen(true)}
+                        className="bg-primary hover:bg-blue-700 text-white"
+                      >
+                        <Star className="w-4 h-4 mr-2" />
+                        Leave a Review
+                      </Button>
                     </div>
 
                     <div className="flex items-center justify-center md:justify-start gap-4">
@@ -444,21 +458,32 @@ export default function SpeakerProfile() {
                                 name="rating"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Rating</FormLabel>
-                                    <Select onValueChange={(value) => field.onChange(parseInt(value))}>
-                                      <FormControl>
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Select rating" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                        <SelectItem value="5">5 Stars - Excellent</SelectItem>
-                                        <SelectItem value="4">4 Stars - Very Good</SelectItem>
-                                        <SelectItem value="3">3 Stars - Good</SelectItem>
-                                        <SelectItem value="2">2 Stars - Fair</SelectItem>
-                                        <SelectItem value="1">1 Star - Poor</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                    <FormLabel>Rating *</FormLabel>
+                                    <FormControl>
+                                      <div className="flex items-center gap-1">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <button
+                                            key={star}
+                                            type="button"
+                                            className="focus:outline-none"
+                                            onMouseEnter={() => setHoveredRating(star)}
+                                            onMouseLeave={() => setHoveredRating(0)}
+                                            onClick={() => field.onChange(star)}
+                                          >
+                                            <Star
+                                              className={`w-8 h-8 transition-colors ${
+                                                star <= (hoveredRating || field.value)
+                                                  ? "text-yellow-400 fill-yellow-400"
+                                                  : "text-gray-300"
+                                              }`}
+                                            />
+                                          </button>
+                                        ))}
+                                        <span className="ml-2 text-sm text-gray-600">
+                                          {field.value ? `${field.value}/5` : "Click to rate"}
+                                        </span>
+                                      </div>
+                                    </FormControl>
                                     <FormMessage />
                                   </FormItem>
                                 )}
