@@ -106,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a new review
-  app.post("/api/speakers/:id/reviews", async (req, res) => {
+  app.post("/api/speakers/:id/reviews", upload.single('photo'), async (req, res) => {
     try {
       const speakerId = parseInt(req.params.id);
       if (isNaN(speakerId)) {
@@ -118,9 +118,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Speaker not found" });
       }
 
+      // Check if photo was uploaded
+      if (!req.file) {
+        return res.status(400).json({ message: "Photo from audience is required" });
+      }
+
+      // Convert rating to number
+      const rating = parseInt(req.body.rating);
+      if (isNaN(rating) || rating < 1 || rating > 5) {
+        return res.status(400).json({ message: "Rating must be between 1 and 5" });
+      }
+
       const reviewData = insertReviewSchema.parse({
         ...req.body,
-        speakerId
+        rating,
+        speakerId,
+        // For now, we'll store a placeholder for the photo
+        // In a real app, you'd upload to cloud storage and store the URL
+        photoUrl: `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
       });
 
       const review = await storage.createReview(reviewData);

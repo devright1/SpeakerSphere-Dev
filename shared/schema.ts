@@ -47,6 +47,7 @@ export const reviews = pgTable("reviews", {
   comment: text("comment").notNull(),
   eventType: text("event_type").notNull(),
   eventDate: text("event_date").notNull(),
+  photoUrl: text("photo_url"),
   verified: boolean("verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
