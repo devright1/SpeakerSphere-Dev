@@ -145,7 +145,27 @@ export default function SpeakerProfile() {
   const reviewMutation = useMutation({
     mutationFn: async (data: z.infer<typeof reviewSchema>) => {
       if (!speaker) throw new Error("Speaker not found");
-      const response = await apiRequest("POST", `/api/speakers/${speaker.id}/reviews`, data);
+      
+      // Create FormData to handle file upload
+      const formData = new FormData();
+      formData.append('reviewerName', data.reviewerName);
+      formData.append('reviewerTitle', data.reviewerTitle);
+      formData.append('reviewerCompany', data.reviewerCompany);
+      formData.append('rating', data.rating.toString());
+      formData.append('comment', data.comment);
+      formData.append('eventType', data.eventType);
+      formData.append('eventDate', data.eventDate);
+      formData.append('photo', data.photo);
+      
+      const response = await fetch(`/api/speakers/${speaker.id}/reviews`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit review');
+      }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -154,7 +174,18 @@ export default function SpeakerProfile() {
         description: "Your review has been submitted successfully.",
       });
       setIsReviewOpen(false);
-      reviewForm.reset();
+      setSelectedFile(null);
+      setHoveredRating(0);
+      reviewForm.reset({
+        reviewerName: "",
+        reviewerTitle: "",
+        reviewerCompany: "",
+        rating: 5,
+        comment: "",
+        eventType: "",
+        eventDate: "",
+        photo: undefined,
+      });
       queryClient.invalidateQueries({ queryKey: ["/api/speakers", name, "reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/speakers", name] });
     },
@@ -524,9 +555,44 @@ export default function SpeakerProfile() {
                               name="comment"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Review</FormLabel>
+                                  <FormLabel>Written Review *</FormLabel>
                                   <FormControl>
-                                    <Textarea {...field} rows={4} placeholder="Share your experience..." />
+                                    <Textarea {...field} rows={4} placeholder="Share your experience with this speaker..." />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={reviewForm.control}
+                              name="photo"
+                              render={({ field: { onChange, ...field } }) => (
+                                <FormItem>
+                                  <FormLabel>Photo from Audience *</FormLabel>
+                                  <FormControl>
+                                    <div className="space-y-2">
+                                      <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            setSelectedFile(file);
+                                            onChange(file);
+                                          }
+                                        }}
+                                        className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                      />
+                                      {selectedFile && (
+                                        <div className="flex items-center gap-2 text-sm text-green-600">
+                                          <span>✓ {selectedFile.name}</span>
+                                        </div>
+                                      )}
+                                      <p className="text-xs text-gray-500">
+                                        Upload a photo of the speaker presenting to your audience
+                                      </p>
+                                    </div>
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
