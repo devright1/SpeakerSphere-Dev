@@ -19,7 +19,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-primary">DevRight's SpeakerSphere Reviews</h1>
+              <h1 className="text-2xl font-bold text-primary">SpeakerSphere Reviews</h1>
             </Link>
             
             {/* Desktop Navigation */}
