@@ -53,11 +53,11 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               {[...Array(5)].map((_, i) => (
                 <Star 
                   key={i} 
-                  className={`w-4 h-4 ${i < Math.floor(parseFloat(speaker.rating || "0")) ? "fill-current" : ""}`} 
+                  className={`w-4 h-4 ${i < Math.floor(parseFloat(speaker.overallRating || "0")) ? "fill-current" : ""}`} 
                 />
               ))}
             </div>
-            <span className="text-sm text-gray-600">{speaker.rating} ({speaker.reviewCount})</span>
+            <span className="text-sm text-gray-600">{speaker.overallRating} ({speaker.reviewCount})</span>
           </div>
           <Badge variant="outline" className="text-xs">
             {speaker.speakerType}

@@ -319,30 +319,36 @@ export default function SpeakerProfile() {
                       
                       {/* Social Media Icons */}
                       <div className="flex items-center gap-3 ml-4">
-                        <a 
-                          href={speaker.socialMedia?.instagram || "#"} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-pink-600 transition-colors"
-                        >
-                          <Instagram className="w-5 h-5" />
-                        </a>
-                        <a 
-                          href={speaker.socialMedia?.linkedin || "#"} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-blue-600 transition-colors"
-                        >
-                          <Linkedin className="w-5 h-5" />
-                        </a>
-                        <a 
-                          href={speaker.socialMedia?.facebook || "#"} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-blue-700 transition-colors"
-                        >
-                          <Facebook className="w-5 h-5" />
-                        </a>
+                        {speaker.instagramHandle && (
+                          <a 
+                            href={`https://instagram.com/${speaker.instagramHandle}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-gray-600 hover:text-pink-600 transition-colors"
+                          >
+                            <Instagram className="w-5 h-5" />
+                          </a>
+                        )}
+                        {speaker.socialMedia && speaker.socialMedia.find(link => link.includes('linkedin')) && (
+                          <a 
+                            href={speaker.socialMedia.find(link => link.includes('linkedin'))} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-gray-600 hover:text-blue-600 transition-colors"
+                          >
+                            <Linkedin className="w-5 h-5" />
+                          </a>
+                        )}
+                        {speaker.socialMedia && speaker.socialMedia.find(link => link.includes('facebook')) && (
+                          <a 
+                            href={speaker.socialMedia.find(link => link.includes('facebook'))} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-gray-600 hover:text-blue-700 transition-colors"
+                          >
+                            <Facebook className="w-5 h-5" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
