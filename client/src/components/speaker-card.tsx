@@ -11,10 +11,6 @@ interface SpeakerCardProps {
 }
 
 export default function SpeakerCard({ speaker, featured = false }: SpeakerCardProps) {
-  const formatFee = (fee: string | undefined | null) => {
-    if (!fee) return "Contact for pricing";
-    return `$${parseFloat(fee).toLocaleString()}+`;
-  };
 
   return (
     <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg" : "shadow-md"}`}>
@@ -87,12 +83,11 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center mb-4">
           <div className="text-sm text-gray-500 flex items-center">
             <MapPin className="w-4 h-4 mr-1" />
             {speaker.location}
           </div>
-          <div className="text-lg font-bold text-primary">{formatFee((speaker as any).fee)}</div>
         </div>
 
         <div className="flex gap-2">
