@@ -933,7 +933,7 @@ export class MemStorage implements IStorage {
         location: "New York City, NY",
         overallRating: "4.91",
         reviewCount: 48,
-        imageUrl: "/attached_assets/01667_PHS-319.jpg",
+        imageUrl: "/attached_assets/image_1752521292798.png",
         verified: true,
         featured: false,
         category: "Periodontics",
