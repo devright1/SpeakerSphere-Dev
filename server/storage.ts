@@ -883,6 +883,83 @@ export class MemStorage implements IStorage {
         medicalSpecialties: ["Event Management", "Conference Coordination"],
         speakerType: "business",
         fee: "3000"
+      },
+      // Young ITI Day Speakers
+      {
+        name: "Dr. Angel Garcia-Cañas",
+        slug: "angelgarciacanas",
+        title: "Young ITI Specialist",
+        bio: "Dr. Angel Garcia-Cañas is a young ITI specialist focused on contemporary implant dentistry techniques and innovative treatment protocols. As part of the next generation of dental professionals, Dr. Garcia-Cañas brings fresh perspectives to implant therapy and digital workflows.",
+        expertise: ["Implant Dentistry", "Contemporary Techniques", "Digital Workflows", "Young ITI Network", "Innovation in Dentistry"],
+        location: "Multiple Locations",
+        overallRating: "4.84",
+        reviewCount: 26,
+        imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/1739552984891_1751050055872.jpg",
+        verified: true,
+        featured: false,
+        category: "Implant Dentistry",
+        achievements: [
+          "Young ITI Network Member",
+          "Contemporary Implant Techniques Specialist",
+          "Digital Workflow Expert",
+          "Innovation in Dental Practice"
+        ],
+        lectures: [
+          "Contemporary Implant Dentistry for Young Professionals",
+          "Digital Innovation in Implant Therapy",
+          "Next Generation Treatment Protocols",
+          "Young ITI Network Perspectives",
+          "Modern Approaches to Implant Rehabilitation"
+        ],
+        eventPhotos: [],
+        speakingVideos: [],
+        email: "agarcia@devrightspeakers.com",
+        phone: "214-884-4100",
+        website: "https://devrightspeakers.com",
+        socialMedia: [],
+        instagramHandle: "angelgarciacanas",
+        languages: ["English", "Spanish"],
+        medicalSpecialties: ["Implant Dentistry", "Digital Dentistry"],
+        speakerType: "clinical",
+        fee: "3500"
+      },
+      {
+        name: "Dr. Julia Manoukian",
+        slug: "juliamanoukian",
+        title: "Young ITI Researcher",
+        bio: "Dr. Julia Manoukian is a young ITI researcher specializing in advanced implant techniques and contemporary dental research. She represents the future of evidence-based implant dentistry with a focus on innovative treatment approaches and clinical research excellence.",
+        expertise: ["Clinical Research", "Implant Innovation", "Evidence-Based Dentistry", "Young ITI Network", "Advanced Techniques"],
+        location: "Multiple Locations",
+        overallRating: "4.82",
+        reviewCount: 23,
+        imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/1739553024652_1751050055872.jpg",
+        verified: true,
+        featured: false,
+        category: "Implant Dentistry",
+        achievements: [
+          "Young ITI Network Researcher",
+          "Clinical Research Specialist",
+          "Evidence-Based Practice Expert",
+          "Advanced Implant Techniques"
+        ],
+        lectures: [
+          "Research Excellence in Young ITI Network",
+          "Evidence-Based Implant Dentistry",
+          "Advanced Techniques in Clinical Practice",
+          "Future Directions in Implant Research",
+          "Innovation Through Clinical Research"
+        ],
+        eventPhotos: [],
+        speakingVideos: [],
+        email: "jmanoukian@devrightspeakers.com",
+        phone: "214-884-4100",
+        website: "https://devrightspeakers.com",
+        socialMedia: [],
+        instagramHandle: "juliamanoukian",
+        languages: ["English"],
+        medicalSpecialties: ["Clinical Research", "Implant Dentistry"],
+        speakerType: "research",
+        fee: "3500"
       }
     ];
 
