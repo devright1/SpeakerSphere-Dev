@@ -922,44 +922,6 @@ export class MemStorage implements IStorage {
         medicalSpecialties: ["Implant Dentistry", "Digital Dentistry"],
         speakerType: "clinical",
         fee: "3500"
-      },
-      {
-        name: "Dr. Julia Manoukian",
-        slug: "juliamanoukian",
-        title: "Young ITI Researcher",
-        bio: "Dr. Julia Manoukian is a young ITI researcher specializing in advanced implant techniques and contemporary dental research. She represents the future of evidence-based implant dentistry with a focus on innovative treatment approaches and clinical research excellence.",
-        expertise: ["Clinical Research", "Implant Innovation", "Evidence-Based Dentistry", "Young ITI Network", "Advanced Techniques"],
-        location: "Multiple Locations",
-        overallRating: "4.82",
-        reviewCount: 23,
-        imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/1739553024652_1751050055872.jpg",
-        verified: true,
-        featured: false,
-        category: "Implant Dentistry",
-        achievements: [
-          "Young ITI Network Researcher",
-          "Clinical Research Specialist",
-          "Evidence-Based Practice Expert",
-          "Advanced Implant Techniques"
-        ],
-        lectures: [
-          "Research Excellence in Young ITI Network",
-          "Evidence-Based Implant Dentistry",
-          "Advanced Techniques in Clinical Practice",
-          "Future Directions in Implant Research",
-          "Innovation Through Clinical Research"
-        ],
-        eventPhotos: [],
-        speakingVideos: [],
-        email: "jmanoukian@devrightspeakers.com",
-        phone: "214-884-4100",
-        website: "https://devrightspeakers.com",
-        socialMedia: [],
-        instagramHandle: "juliamanoukian",
-        languages: ["English"],
-        medicalSpecialties: ["Clinical Research", "Implant Dentistry"],
-        speakerType: "research",
-        fee: "3500"
       }
     ];
 
