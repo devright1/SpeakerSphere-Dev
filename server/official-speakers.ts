@@ -1763,7 +1763,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     location: "Greenville, NC",
     overallRating: "4.91",
     reviewCount: 167,
-    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    imageUrl: "/attached_assets/image_1752608127526.png",
     verified: true,
     featured: false,
     category: "Periodontics",
