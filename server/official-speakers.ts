@@ -2285,5 +2285,43 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     medicalSpecialties: ["Dental Implant Industry", "Medical Technology", "Strategic Leadership"],
     speakerType: "industry",
     fee: "12000"
+  },
+  {
+    name: "Stacy Feffer-Farley",
+    slug: "stacyfefferfarley",
+    title: "Co-Founder, Full Arch Sales Academy & Case Acceptance Expert",
+    bio: "Stacy Feffer-Farley is a co-founder of Full Arch Sales Academy and Sales and Finance Manager at New Day Smile Dental Group in San Diego. With over 20 years of sales experience and a bachelor's degree in Communication and Business, she specializes in full-arch case acceptance and maintains an exceptional 75% closing rate compared to the 20-30% industry average. She is a faculty member at TeethXpress Courses and a nationally recognized speaker on dental sales methodology.",
+    expertise: ["Full-Arch Case Acceptance", "Dental Sales Training", "Treatment Coordination", "Patient Communication", "Practice Revenue Growth"],
+    location: "San Diego, CA",
+    overallRating: "4.91",
+    reviewCount: 156,
+    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    verified: true,
+    featured: false,
+    category: "Practice Management",
+    achievements: [
+      "Co-Founder - Full Arch Sales Academy",
+      "75% Case Acceptance Rate (vs 20-30% Industry Average)",
+      "Faculty Member - TeethXpress Courses",
+      "Averages 60 Full-Arch Cases Per Month"
+    ],
+    lectures: [
+      "Mastering Full-Arch Case Acceptance",
+      "Overcoming Patient Financial Objections",
+      "Sales Methodology for Dental Practices",
+      "Treatment Coordinator Excellence",
+      "Building Patient Trust and Value Communication"
+    ],
+    eventPhotos: [],
+    speakingVideos: [],
+    email: "sfeffer@devrightspeakers.com",
+    phone: "214-884-4100",
+    website: "https://devrightspeakers.com",
+    socialMedia: ["https://fullarchsalesacademy.com/", "https://teethxpresscourses.com/faculty/stacy-feffer-farley/"],
+    instagramHandle: null,
+    languages: ["English"],
+    medicalSpecialties: ["Practice Management", "Sales Training", "Full-Arch Dentistry"],
+    speakerType: "industry",
+    fee: "7500"
   }
 ];
