@@ -1497,7 +1497,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     location: "Raleigh, NC",
     overallRating: "4.92",
     reviewCount: 178,
-    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    imageUrl: "/attached_assets/image_1752607387469.png",
     verified: true,
     featured: true,
     category: "Digital Dentistry",
