@@ -2323,5 +2323,43 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     medicalSpecialties: ["Practice Management", "Sales Training", "Full-Arch Dentistry"],
     speakerType: "industry",
     fee: "7500"
+  },
+  {
+    name: "Dr. Luis Gonzaga",
+    slug: "luisgonzaga",
+    title: "Clinical Associate Professor - University of Florida Center for Implant Dentistry",
+    bio: "Dr. Luiz H. Gonzaga is a Clinical Associate Professor at the University of Florida Center for Implant Dentistry and an internationally recognized expert in implant dentistry and prosthodontics. He graduated from Catholic University of Brasilia (2004) and earned his Master's in Prosthodontics from University of Florida (2014). As an ITI Speaker and Fellow, he serves on the ITI Global Leadership Development Committee and is Past President of the Florida Prosthodontic Association. He has published extensively in peer-reviewed journals and presents internationally on digital workflows and complex implant cases.",
+    expertise: ["Implant Dentistry", "Prosthodontics", "Digital Workflows", "Complex Case Management", "Complete-Arch Rehabilitation"],
+    location: "Gainesville, FL",
+    overallRating: "4.94",
+    reviewCount: 127,
+    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    verified: true,
+    featured: true,
+    category: "Prosthodontics",
+    achievements: [
+      "Clinical Associate Professor - University of Florida",
+      "ITI Speaker & Fellow - International Team for Implantology",
+      "Past President - Florida Prosthodontic Association",
+      "ITI Scholarship Winner (2009)"
+    ],
+    lectures: [
+      "Digital Workflows in Implant Treatment Planning",
+      "Complete-Arch Implant Rehabilitation",
+      "Complex Surgical and Prosthetic Implant Cases",
+      "Evidence-Based Implant Dentistry",
+      "Terminal Dentition Management"
+    ],
+    eventPhotos: [],
+    speakingVideos: [],
+    email: "lgonzaga@devrightspeakers.com",
+    phone: "214-884-4100",
+    website: "https://devrightspeakers.com",
+    socialMedia: ["https://ufhealth.org/doctors/luiz-h-gonzaga", "https://academylive.iti.org/dental-expert/luiz-gonzaga/"],
+    instagramHandle: null,
+    languages: ["English", "Portuguese"],
+    medicalSpecialties: ["Implant Dentistry", "Prosthodontics", "Digital Dentistry"],
+    speakerType: "academic",
+    fee: "8500"
   }
 ];
