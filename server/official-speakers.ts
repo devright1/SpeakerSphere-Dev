@@ -927,7 +927,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     location: "Sonora, CA",
     overallRating: "4.90",
     reviewCount: 76,
-    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    imageUrl: "/attached_assets/image_1752608279514.png",
     verified: true,
     featured: false,
     category: "Digital Dentistry",
