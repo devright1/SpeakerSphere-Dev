@@ -1383,7 +1383,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     location: "Lima, Peru / São Paulo, Brazil",
     overallRating: "4.95",
     reviewCount: 89,
-    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    imageUrl: "/attached_assets/image_1752606216917.png",
     verified: true,
     featured: true,
     category: "Prosthodontics",
