@@ -2105,7 +2105,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     location: "Boston, MA / Quito, Ecuador",
     overallRating: "4.94",
     reviewCount: 187,
-    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    imageUrl: "/attached_assets/image_1752606915640.png",
     verified: true,
     featured: false,
     category: "Periodontics",
