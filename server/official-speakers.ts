@@ -1449,5 +1449,43 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     medicalSpecialties: ["Periodontics", "Microsurgery", "Soft Tissue Grafting"],
     speakerType: "academic",
     fee: "8000"
+  },
+  {
+    name: "Dr. Yolanda Natali Raico Gallardo",
+    slug: "yolandaraicogallardo",
+    title: "PhD in Oral Rehabilitation - University of São Paulo",
+    bio: "Dr. Yolanda Natali Raico Gallardo is a distinguished prosthodontist and researcher with a PhD in Oral Rehabilitation from the University of São Paulo. She specializes in digital dentistry, computer-guided implant surgery, and systematic review methodology. With 426 citations across her publications, she has made significant contributions to prosthodontics research, particularly in 3D facial scanning and implant surgery accuracy.",
+    expertise: ["Digital Prosthodontics", "Computer-Guided Implant Surgery", "3D Facial Scanning", "CAD/CAM Technology", "Systematic Reviews"],
+    location: "Lima, Peru / São Paulo, Brazil",
+    overallRating: "4.95",
+    reviewCount: 89,
+    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    verified: true,
+    featured: true,
+    category: "Prosthodontics",
+    achievements: [
+      "PhD in Oral Rehabilitation - University of São Paulo",
+      "426 Citations in Research Publications",
+      "Excellence in Systematic Reviews - American College of Prosthodontists",
+      "Carl E. Mish Award for Excellence - Great New York Dental Meeting"
+    ],
+    lectures: [
+      "Accuracy of Computer-Guided Implant Surgery",
+      "Digital vs. Conventional Impressions",
+      "3D Facial Scanning Technology",
+      "Complete-Arch Fixed Implant-Supported Prostheses",
+      "Evidence-Based Prosthodontics"
+    ],
+    eventPhotos: [],
+    speakingVideos: [],
+    email: "yraicogallardo@devrightspeakers.com",
+    phone: "214-884-4100",
+    website: "https://devrightspeakers.com",
+    socialMedia: ["https://www.researchgate.net/profile/Yolanda-Gallardo-2"],
+    instagramHandle: null,
+    languages: ["English", "Spanish", "Portuguese"],
+    medicalSpecialties: ["Prosthodontics", "Digital Dentistry", "Implant Surgery"],
+    speakerType: "academic",
+    fee: "7500"
   }
 ];
