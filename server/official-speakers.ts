@@ -2257,7 +2257,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     location: "North America",
     overallRating: "4.95",
     reviewCount: 73,
-    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    imageUrl: "/attached_assets/image_1752606458945.png",
     verified: true,
     featured: true,
     category: "Industry Leadership",
