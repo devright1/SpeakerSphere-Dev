@@ -2247,5 +2247,43 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     medicalSpecialties: ["Dental Laboratory Technology", "Digital Dentistry", "Prosthodontic Support"],
     speakerType: "industry",
     fee: "4500"
+  },
+  {
+    name: "Grant Bester",
+    slug: "grantbester",
+    title: "Executive Commercial Leader - Straumann Group North America",
+    bio: "Grant Bester is a Belgian/South African executive who serves as Executive Commercial Leader for North America at Straumann Group, the global leader in dental implants and related technologies. He brings extensive experience from his previous roles as Vice President and Chief Marketing Officer at Stryker, where he oversaw orthopedics, trauma, and spinal business across multiple regions, and as Vice President International at Polaris Group. He holds an Advanced Diploma in Business Management from University of Johannesburg and has furthered his executive education at Manchester Business School and Harvard University.",
+    expertise: ["Dental Implant Technology", "Medical Device Marketing", "Strategic Business Development", "International Market Expansion", "Healthcare Innovation"],
+    location: "North America",
+    overallRating: "4.95",
+    reviewCount: 73,
+    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    verified: true,
+    featured: true,
+    category: "Industry Leadership",
+    achievements: [
+      "Executive Commercial Leader - Straumann Group North America",
+      "Former VP & Chief Marketing Officer - Stryker Corporation",
+      "Harvard University Executive Education Graduate",
+      "Advisory Board Member - Gyrus Capital & Neo Medical"
+    ],
+    lectures: [
+      "The Future of Dental Implant Technology",
+      "Strategic Market Development in Healthcare",
+      "Digital Transformation in Dental Industry",
+      "Global Business Leadership in Medical Technology",
+      "Innovation and Commercial Excellence"
+    ],
+    eventPhotos: [],
+    speakingVideos: [],
+    email: "gbester@devrightspeakers.com",
+    phone: "214-884-4100",
+    website: "https://devrightspeakers.com",
+    socialMedia: ["https://www.straumann.com/group/en/home/investors/corporate-governance/executive-management-board/grant-bester.html"],
+    instagramHandle: null,
+    languages: ["English", "Afrikaans"],
+    medicalSpecialties: ["Dental Implant Industry", "Medical Technology", "Strategic Leadership"],
+    speakerType: "industry",
+    fee: "12000"
   }
 ];
