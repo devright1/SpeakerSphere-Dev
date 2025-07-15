@@ -2173,15 +2173,15 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     fee: "7500"
   },
   {
-    name: "Dr. Slahedinne Zidi",
+    name: "Slahedinne Zidi",
     slug: "slaheddinnezidi",
     title: "VP Marketing & Education - Straumann Group",
-    bio: "Dr. Slahedinne Zidi is Vice President, Head of Marketing, Education and Consumer Business Unit at Straumann Group. He led the global expansion of Neodent from 8 to 84+ countries and helped achieve #1 position across Latin America. He has extensive speaking experience with 150+ keynotes annually and focuses on digital transformation and dental education innovation.",
+    bio: "Slahedinne Zidi is Vice President, Head of Marketing, Education and Consumer Business Unit at Straumann Group. He led the global expansion of Neodent from 8 to 84+ countries and helped achieve #1 position across Latin America. He has extensive speaking experience with 150+ keynotes annually and focuses on digital transformation and dental education innovation.",
     expertise: ["Digital Transformation", "Global Market Expansion", "Dental Education", "Industry Leadership", "Healthcare Innovation"],
     location: "Boston, MA",
     overallRating: "4.85",
     reviewCount: 98,
-    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    imageUrl: "/attached_assets/image_1752612094125.png",
     verified: true,
     featured: false,
     category: "Industry Leadership",
