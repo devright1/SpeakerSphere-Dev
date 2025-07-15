@@ -2361,5 +2361,43 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     medicalSpecialties: ["Implant Dentistry", "Prosthodontics", "Digital Dentistry"],
     speakerType: "academic",
     fee: "8500"
+  },
+  {
+    name: "Sam Alawie",
+    slug: "samalawie",
+    title: "Master Dental Technician & Co-Founder, Beverly Hills Dental Laboratory",
+    bio: "Sam Alawie, MDT, is a Master Dental Technician who graduated with distinction from Brussels, Belgium in 1994. He is co-founder and president of Beverly Hills Dental Laboratory and CEO of Magne Education. Sam opened Oral Design Beverly Hills, a state-of-the-art educational facility in 2012, and serves as a Continuing Education Instructor at UCLA School of Dentistry. He has presented internationally throughout Europe, the United States, and Middle East, specializing in crown and bridge techniques, aesthetic prosthetics, and technical clinical communications.",
+    expertise: ["Dental Laboratory Technology", "Crown and Bridge Techniques", "Aesthetic Prosthetics", "Digital Workflows", "Clinical Communications"],
+    location: "Beverly Hills, CA",
+    overallRating: "4.93",
+    reviewCount: 104,
+    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    verified: true,
+    featured: false,
+    category: "Digital Dentistry",
+    achievements: [
+      "Master Dental Technician - Brussels, Belgium (1994)",
+      "Co-Founder & President - Beverly Hills Dental Laboratory",
+      "CEO - Magne Education",
+      "UCLA School of Dentistry CE Instructor"
+    ],
+    lectures: [
+      "Crown and Bridge Restoration Techniques",
+      "Aesthetic Prosthetic Design",
+      "Technical Clinical Communications",
+      "Digital Workflows in Dental Technology",
+      "Laboratory-Clinical Collaboration"
+    ],
+    eventPhotos: [],
+    speakingVideos: [],
+    email: "salamawie@devrightspeakers.com",
+    phone: "214-884-4100",
+    website: "https://devrightspeakers.com",
+    socialMedia: ["https://www.beverlyhillsdentallab.com/", "https://www.oraldesign.org/members/usa/sam-alawie/", "https://www.instagram.com/sam_alawie/"],
+    instagramHandle: "sam_alawie",
+    languages: ["English", "French", "Dutch"],
+    medicalSpecialties: ["Dental Laboratory Technology", "Prosthodontics", "Aesthetic Dentistry"],
+    speakerType: "industry",
+    fee: "6000"
   }
 ];
