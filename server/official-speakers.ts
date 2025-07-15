@@ -1033,7 +1033,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     fee: "7000"
   },
   {
-    name: "Dr. Tracy Butler",
+    name: "Tracy Butler",
     slug: "tracybutler",
     title: "Orthodontist & Same-Day Treatment Specialist",
     bio: "Dr. Tracy Butler is an orthodontist practicing at Tri-City Orthodontics in Washington State. He specializes in same-day braces, Invisalign, and adult orthodontics. A self-described 'tooth nerd,' Dr. Butler focuses on creating confident smiles that reflect each patient's unique personality.",
