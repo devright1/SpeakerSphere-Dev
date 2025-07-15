@@ -1299,7 +1299,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     fee: "8500"
   },
   {
-    name: "Dr. German Gallucci",
+    name: "German Gallucci",
     slug: "germangallucci",
     title: "Chair of Restorative Dentistry - Harvard School of Dental Medicine",
     bio: "Dr. German O. Gallucci is Chair of the Department of Restorative Dentistry and Biomaterials Sciences at Harvard School of Dental Medicine. He established the Postgraduate Education Program in Oral Implantology at Harvard in 2007 and serves on editorial boards of major dental journals. He is a Fellow of the International Team for Implantology.",
