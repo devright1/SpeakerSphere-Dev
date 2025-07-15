@@ -661,7 +661,7 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     location: "New York City, NY",
     overallRating: "4.94",
     reviewCount: 67,
-    imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/image_1752521292798.png",
+    imageUrl: "/attached_assets/image_1752606604465.png",
     verified: true,
     featured: true,
     category: "Periodontics",
