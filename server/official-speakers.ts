@@ -2209,5 +2209,43 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     medicalSpecialties: ["Industry Leadership", "Digital Transformation", "Global Strategy"],
     speakerType: "industry",
     fee: "6500"
+  },
+  {
+    name: "Marisa Notturno",
+    slug: "marisanotturno",
+    title: "Dental Lab Technician - Digital Technology Leader",
+    bio: "Marisa Notturno, RG, is a Dental Lab Technician with nearly 20 years of experience at NYC Prosthodontics, where she serves as co-manager of their full-service, on-site lab. She is a recognized leader in digital technology in dentistry and frequently lectures with Dr. Lawrence Brecht on digital technology in prosthodontics. She holds a degree in Dental Laboratory Technology from NY Technical College and is registered as a Graduate in Dental Technology with the National Board for Certification of Dental Lab Technicians.",
+    expertise: ["Digital Technology in Dentistry", "Prosthodontic Laboratory Techniques", "Complex Esthetic Restorations", "CAD/CAM Technology", "Maxillofacial Prosthetics"],
+    location: "New York, NY",
+    overallRating: "4.92",
+    reviewCount: 89,
+    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600",
+    verified: true,
+    featured: false,
+    category: "Digital Dentistry",
+    achievements: [
+      "Nearly 20 Years Experience at NYC Prosthodontics",
+      "Co-Manager - Full-Service On-Site Dental Lab",
+      "Registered Graduate - National Board Certification",
+      "Frequent Lecturer on Digital Prosthodontics"
+    ],
+    lectures: [
+      "Digital Technology in Prosthodontics",
+      "Complex Esthetic and Reconstructive Restorations",
+      "Interdisciplinary Team Approach to Excellence",
+      "Laboratory Digital Workflows",
+      "Advanced CAD/CAM Techniques"
+    ],
+    eventPhotos: [],
+    speakingVideos: [],
+    email: "mnotturno@devrightspeakers.com",
+    phone: "214-884-4100",
+    website: "https://devrightspeakers.com",
+    socialMedia: ["https://nycpros.com/collaborator/marisa-notturno/"],
+    instagramHandle: null,
+    languages: ["English"],
+    medicalSpecialties: ["Dental Laboratory Technology", "Digital Dentistry", "Prosthodontic Support"],
+    speakerType: "industry",
+    fee: "4500"
   }
 ];
