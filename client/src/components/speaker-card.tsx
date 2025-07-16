@@ -19,11 +19,13 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           src={speaker.imageUrl} 
           alt={speaker.name}
           className={`w-full h-48 object-cover ${
-            // All speakers use original scaling (100% - no scaling)
+            // All speakers use original scaling (100% - no scaling) except special cases
             speaker.name === "Dr. Larry Brecht" 
               ? "speaker-image-position-center speaker-image-scale-md bg-white" 
               : speaker.name === "Marisa Notturno"
               ? "object-[center_7%] speaker-image-scale-md"
+              : speaker.name === "Dr. Sascha Jovanovic"
+              ? "speaker-image-position-center speaker-image-scale-sm"
               : "speaker-image-position-center speaker-image-scale-md"
           }`}
         />
