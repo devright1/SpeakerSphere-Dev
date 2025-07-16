@@ -25,7 +25,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               : speaker.name === "Marisa Notturno"
               ? "object-[center_7%] speaker-image-scale-md"
               : speaker.name === "Dr. Sascha Jovanovic"
-              ? "object-cover object-center speaker-image-scale-xxs"
+              ? "object-contain bg-gray-100"
               : "speaker-image-position-center speaker-image-scale-md"
           }`}
         />
