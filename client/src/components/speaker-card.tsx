@@ -27,7 +27,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               : speaker.name === "Marisa Notturno"
               ? "object-[center_7%] speaker-image-scale-sm"
               : speaker.name === "Dr. Sascha Jovanovic"
-              ? "speaker-image-position-top speaker-image-scale-sm"
+              ? "speaker-image-position-top speaker-image-scale-xs"
               : speaker.name === "Dr. Sonia Leziy"
               ? "speaker-image-position-center speaker-image-scale-sm"
               : speaker.name === "Dr. Lorenzo Tavelli"
