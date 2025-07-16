@@ -253,16 +253,12 @@ export default function SpeakerProfile() {
                       src={speaker.imageUrl}
                       alt={speaker.name}
                       className={`w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover ${
-                        // Apply consistent scaling for profile images - more conservative
+                        // All speakers use original scaling (100% - no scaling)
                         speaker.name === "Dr. Larry Brecht" 
                           ? "speaker-image-position-center speaker-image-scale-md bg-white" 
-                          : speaker.name === "Dr. Will Martin"
-                          ? "speaker-image-position-top speaker-image-scale-md"
                           : speaker.name === "Marisa Notturno"
-                          ? "object-[center_7%] speaker-image-scale-sm"
-                          : speaker.name === "Dr. Sascha Jovanovic"
-                          ? "speaker-image-position-top speaker-image-scale-xs"
-                          : "speaker-image-position-center speaker-image-scale-sm"
+                          ? "object-[center_7%] speaker-image-scale-md"
+                          : "speaker-image-position-center speaker-image-scale-md"
                       }`}
                     />
                   </div>
