@@ -19,16 +19,16 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           src={speaker.imageUrl} 
           alt={speaker.name}
           className={`w-full h-48 ${
-            // All speakers display at natural size
+            // All speakers use object-contain to show complete faces
             speaker.name === "Dr. Larry Brecht" 
-              ? "object-none object-center bg-white" 
+              ? "object-contain object-center bg-white" 
               : speaker.name === "Marisa Notturno"
-              ? "object-none object-[center_7%] bg-gray-100"
+              ? "object-contain object-center bg-gray-100"
               : speaker.name === "Dr. Sascha Jovanovic"
-              ? "object-none object-center bg-gray-100"
+              ? "object-contain object-center bg-gray-100"
               : speaker.name === "Dr. Robert Levine"
               ? "object-contain object-center bg-gray-100"
-              : "object-none object-center bg-gray-100"
+              : "object-contain object-center bg-gray-100"
           }`}
         />
         <div className="absolute top-4 left-4 flex gap-2">
