@@ -16,6 +16,11 @@
     transform-origin: center;
   }
   
+  .speaker-image-scale-xxs {
+    transform: scale(0.6);
+    transform-origin: center;
+  }
+  
   .speaker-image-scale-md {
     transform: scale(1.0);
     transform-origin: center;
