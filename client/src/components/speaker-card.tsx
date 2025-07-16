@@ -27,7 +27,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               : speaker.name === "Dr. Sascha Jovanovic"
               ? "object-none object-center bg-gray-100"
               : speaker.name === "Dr. Robert Levine"
-              ? "object-none object-[center_35%] bg-gray-100"
+              ? "object-contain object-center bg-gray-100"
               : "object-none object-center bg-gray-100"
           }`}
         />
