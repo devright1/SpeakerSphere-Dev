@@ -4,6 +4,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom speaker image scaling utilities */
+@layer utilities {
+  .speaker-image-scale-sm {
+    transform: scale(0.9);
+    transform-origin: center;
+  }
+  
+  .speaker-image-scale-md {
+    transform: scale(1.1);
+    transform-origin: center;
+  }
+  
+  .speaker-image-scale-lg {
+    transform: scale(1.2);
+    transform-origin: center;
+  }
+  
+  .speaker-image-position-top {
+    object-position: center 15%;
+  }
+  
+  .speaker-image-position-center {
+    object-position: center 20%;
+  }
+  
+  .speaker-image-position-bottom {
+    object-position: center 25%;
+  }
+  
+  /* Specific scaling for circular profile images */
+  .speaker-profile-image {
+    transform-origin: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .speaker-profile-image.scale-sm {
+    transform: scale(0.95);
+  }
+  
+  .speaker-profile-image.scale-md {
+    transform: scale(1.05);
+  }
+  
+  .speaker-profile-image.scale-lg {
+    transform: scale(1.15);
+  }
+}
+
 :root {
   --background: 210 11% 98%; /* #F5F7FA */
   --foreground: 210 8% 17%; /* #2B2C29 DevRight Slate */

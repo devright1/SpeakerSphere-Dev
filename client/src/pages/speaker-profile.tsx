@@ -252,7 +252,16 @@ export default function SpeakerProfile() {
                     <img
                       src={speaker.imageUrl}
                       alt={speaker.name}
-                      className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                      className={`w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover ${
+                        // Apply consistent scaling for profile images
+                        speaker.name === "Dr. Larry Brecht" 
+                          ? "speaker-image-position-center speaker-image-scale-md bg-white" 
+                          : speaker.name === "Dr. Will Martin"
+                          ? "speaker-image-position-top speaker-image-scale-lg"
+                          : speaker.name === "Marisa Notturno"
+                          ? "object-[center_7%] speaker-image-scale-sm"
+                          : "speaker-image-position-center speaker-image-scale-md"
+                      }`}
                     />
                   </div>
                   
