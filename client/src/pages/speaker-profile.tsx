@@ -260,6 +260,8 @@ export default function SpeakerProfile() {
                           ? "object-none object-[center_7%] bg-gray-100"
                           : speaker.name === "Dr. Sascha Jovanovic"
                           ? "object-none object-center bg-gray-100"
+                          : speaker.name === "Dr. Robert Levine"
+                          ? "object-none object-[center_20%] bg-gray-100"
                           : "object-none object-center bg-gray-100"
                       }`}
                     />
