@@ -38,6 +38,13 @@
     object-position: center 25%;
   }
   
+  /* Alternative display method for problematic images */
+  .speaker-image-full {
+    object-fit: contain;
+    background-color: #f8f9fa;
+    padding: 4px;
+  }
+  
   /* Specific scaling for circular profile images */
   .speaker-profile-image {
     transform-origin: center;
