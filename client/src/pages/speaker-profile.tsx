@@ -259,7 +259,7 @@ export default function SpeakerProfile() {
                           : speaker.name === "Marisa Notturno"
                           ? "object-[center_7%] speaker-image-scale-md"
                           : speaker.name === "Dr. Sascha Jovanovic"
-                          ? "speaker-image-position-center speaker-image-scale-sm"
+                          ? "object-[center_35%] speaker-image-scale-md"
                           : "speaker-image-position-center speaker-image-scale-md"
                       }`}
                     />
