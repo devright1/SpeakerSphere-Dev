@@ -42,21 +42,26 @@ export default function Header() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/admin-login">
-              <Button variant="ghost" size="icon" className="text-gray-700 hover:text-primary">
-                <Lock className="h-5 w-5" />
-              </Button>
-            </Link>
             <Button variant="ghost" className="text-gray-700 hover:text-primary">
               Sign In
             </Button>
             <Button className="bg-primary hover:bg-blue-700 text-white">
               Get Started
             </Button>
+            <Link href="/admin-login">
+              <div className="ml-4 p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group">
+                <Lock className="h-5 w-5 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+              </div>
+            </Link>
           </div>
 
           {/* Mobile Menu */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            <Link href="/admin-login">
+              <div className="p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group">
+                <Lock className="h-4 w-4 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+              </div>
+            </Link>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
