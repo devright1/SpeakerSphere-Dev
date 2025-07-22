@@ -55,6 +55,10 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("adminAuthenticated");
     localStorage.removeItem("adminEmail");
+    // Clear remembered credentials on explicit logout
+    localStorage.removeItem("adminRememberMe");
+    localStorage.removeItem("adminRememberedEmail");
+    localStorage.removeItem("adminRememberedPassword");
     setLocation("/");
   };
 

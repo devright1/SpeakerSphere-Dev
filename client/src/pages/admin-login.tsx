@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,29 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check for remembered credentials on component mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("adminRememberedEmail");
+    const savedPassword = localStorage.getItem("adminRememberedPassword");
+    const rememberMeEnabled = localStorage.getItem("adminRememberMe");
+
+    if (rememberMeEnabled === "true" && savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+      
+      // Auto-login if credentials are remembered
+      if (savedEmail === "speakers@devright.com" && savedPassword === "Doneright123!") {
+        localStorage.setItem("adminAuthenticated", "true");
+        localStorage.setItem("adminEmail", savedEmail);
+        setLocation("/admin");
+      }
+    }
+  }, [setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +46,19 @@ export default function AdminLogin() {
       // Store admin session in localStorage
       localStorage.setItem("adminAuthenticated", "true");
       localStorage.setItem("adminEmail", email);
+      
+      // Handle remember me functionality
+      if (rememberMe) {
+        localStorage.setItem("adminRememberMe", "true");
+        localStorage.setItem("adminRememberedEmail", email);
+        localStorage.setItem("adminRememberedPassword", password);
+      } else {
+        // Clear remembered credentials if unchecked
+        localStorage.removeItem("adminRememberMe");
+        localStorage.removeItem("adminRememberedEmail");
+        localStorage.removeItem("adminRememberedPassword");
+      }
+      
       setLocation("/admin");
     } else {
       setError("Invalid email or password. Please try again.");
@@ -85,6 +119,20 @@ export default function AdminLogin() {
                   )}
                 </Button>
               </div>
+            </div>
+
+            {/* Remember Me Checkbox */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <Label htmlFor="rememberMe" className="text-sm text-gray-600 cursor-pointer">
+                Remember me and sign in automatically
+              </Label>
             </div>
 
             {error && (
