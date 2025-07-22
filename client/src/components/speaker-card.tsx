@@ -51,17 +51,19 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
       
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center">
-            <div className="flex text-yellow-400 mr-2">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  className={`w-4 h-4 ${i < Math.floor(parseFloat(speaker.overallRating || "0")) ? "fill-current" : ""}`} 
-                />
-              ))}
+          {!speaker.hideRatings && (
+            <div className="flex items-center">
+              <div className="flex text-yellow-400 mr-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star 
+                    key={i} 
+                    className={`w-4 h-4 ${i < Math.floor(parseFloat(speaker.overallRating || "0")) ? "fill-current" : ""}`} 
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-gray-600">{speaker.overallRating} ({speaker.reviewCount})</span>
             </div>
-            <span className="text-sm text-gray-600">{speaker.overallRating} ({speaker.reviewCount})</span>
-          </div>
+          )}
           <Badge variant="outline" className="text-xs">
             {speaker.speakerType}
           </Badge>

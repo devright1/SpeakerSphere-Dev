@@ -332,8 +332,16 @@ export default function AdminDashboard() {
                               {/* Hide Entire Listing */}
                               <div className="flex flex-col items-center group">
                                 <button 
-                                  className="p-2 rounded-lg border hover:bg-red-50 hover:border-red-200 transition-colors"
+                                  className={`p-2 rounded-lg border transition-colors ${
+                                    speaker.hideProfile 
+                                      ? 'bg-red-100 border-red-300 text-red-700' 
+                                      : 'hover:bg-red-50 hover:border-red-200'
+                                  }`}
                                   title="Hide entire speaker listing"
+                                  onClick={() => updateSpeakerMutation.mutate({
+                                    ...speaker,
+                                    hideProfile: !speaker.hideProfile
+                                  })}
                                 >
                                   <EyeOff className="h-4 w-4 text-red-600" />
                                 </button>
@@ -343,8 +351,16 @@ export default function AdminDashboard() {
                               {/* Hide Ratings */}
                               <div className="flex flex-col items-center group">
                                 <button 
-                                  className="p-2 rounded-lg border hover:bg-yellow-50 hover:border-yellow-200 transition-colors"
+                                  className={`p-2 rounded-lg border transition-colors ${
+                                    speaker.hideRatings 
+                                      ? 'bg-yellow-100 border-yellow-300 text-yellow-700' 
+                                      : 'hover:bg-yellow-50 hover:border-yellow-200'
+                                  }`}
                                   title="Hide ratings and reviews"
+                                  onClick={() => updateSpeakerMutation.mutate({
+                                    ...speaker,
+                                    hideRatings: !speaker.hideRatings
+                                  })}
                                 >
                                   <Star className="h-4 w-4 text-yellow-600" />
                                 </button>
@@ -354,8 +370,16 @@ export default function AdminDashboard() {
                               {/* Hide Social Icons */}
                               <div className="flex flex-col items-center group">
                                 <button 
-                                  className="p-2 rounded-lg border hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                                  className={`p-2 rounded-lg border transition-colors ${
+                                    speaker.hideSocial 
+                                      ? 'bg-blue-100 border-blue-300 text-blue-700' 
+                                      : 'hover:bg-blue-50 hover:border-blue-200'
+                                  }`}
                                   title="Hide social media icons"
+                                  onClick={() => updateSpeakerMutation.mutate({
+                                    ...speaker,
+                                    hideSocial: !speaker.hideSocial
+                                  })}
                                 >
                                   <Share2 className="h-4 w-4 text-blue-600" />
                                 </button>
@@ -365,8 +389,16 @@ export default function AdminDashboard() {
                               {/* Hide Contact Details */}
                               <div className="flex flex-col items-center group">
                                 <button 
-                                  className="p-2 rounded-lg border hover:bg-purple-50 hover:border-purple-200 transition-colors"
+                                  className={`p-2 rounded-lg border transition-colors ${
+                                    speaker.hideContact 
+                                      ? 'bg-purple-100 border-purple-300 text-purple-700' 
+                                      : 'hover:bg-purple-50 hover:border-purple-200'
+                                  }`}
                                   title="Hide contact information"
+                                  onClick={() => updateSpeakerMutation.mutate({
+                                    ...speaker,
+                                    hideContact: !speaker.hideContact
+                                  })}
                                 >
                                   <Phone className="h-4 w-4 text-purple-600" />
                                 </button>
@@ -1228,6 +1260,57 @@ export default function AdminDashboard() {
                         value={editingSpeaker.publications || ''} 
                         onChange={(e) => setEditingSpeaker({...editingSpeaker, publications: e.target.value})}
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visibility Controls Section */}
+                <div className="pt-4 border-t">
+                  <h4 className="text-md font-semibold mb-3">Visibility Settings</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="hideProfile"
+                        checked={editingSpeaker.hideProfile || false}
+                        onChange={(e) => setEditingSpeaker({...editingSpeaker, hideProfile: e.target.checked})}
+                        className="rounded"
+                      />
+                      <label htmlFor="hideProfile" className="text-sm">Hide entire profile from public view</label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="hideRatings"
+                        checked={editingSpeaker.hideRatings || false}
+                        onChange={(e) => setEditingSpeaker({...editingSpeaker, hideRatings: e.target.checked})}
+                        className="rounded"
+                      />
+                      <label htmlFor="hideRatings" className="text-sm">Hide ratings and reviews</label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="hideSocial"
+                        checked={editingSpeaker.hideSocial || false}
+                        onChange={(e) => setEditingSpeaker({...editingSpeaker, hideSocial: e.target.checked})}
+                        className="rounded"
+                      />
+                      <label htmlFor="hideSocial" className="text-sm">Hide social media links</label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="hideContact"
+                        checked={editingSpeaker.hideContact || false}
+                        onChange={(e) => setEditingSpeaker({...editingSpeaker, hideContact: e.target.checked})}
+                        className="rounded"
+                      />
+                      <label htmlFor="hideContact" className="text-sm">Hide contact information</label>
                     </div>
                   </div>
                 </div>

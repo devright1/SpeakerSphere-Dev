@@ -289,18 +289,20 @@ export default function SpeakerProfile() {
                     <p className="text-xl text-primary font-semibold mb-3">{speaker.title}</p>
                     
                     <div className="flex items-center justify-center md:justify-start gap-6 mb-4">
-                      <div className="flex items-center">
-                        <div className="flex text-yellow-400 mr-2">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`w-5 h-5 ${i < Math.floor(parseFloat(speaker.overallRating || "0")) ? "fill-current" : ""}`} 
-                            />
-                          ))}
+                      {!speaker.hideRatings && (
+                        <div className="flex items-center">
+                          <div className="flex text-yellow-400 mr-2">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className={`w-5 h-5 ${i < Math.floor(parseFloat(speaker.overallRating || "0")) ? "fill-current" : ""}`} 
+                              />
+                            ))}
+                          </div>
+                          <span className="font-semibold">{speaker.overallRating}</span>
+                          <span className="text-gray-600 ml-1">({speaker.reviewCount} reviews)</span>
                         </div>
-                        <span className="font-semibold">{speaker.overallRating}</span>
-                        <span className="text-gray-600 ml-1">({speaker.reviewCount} reviews)</span>
-                      </div>
+                      )}
                       
                       <div className="flex items-center text-gray-600">
                         <MapPin className="w-4 h-4 mr-1" />
@@ -308,15 +310,17 @@ export default function SpeakerProfile() {
                       </div>
                     </div>
 
-                    <div className="mb-4">
-                      <Button 
-                        onClick={() => setIsReviewOpen(true)}
-                        className="bg-primary hover:bg-blue-700 text-white"
-                      >
-                        <Star className="w-4 h-4 mr-2" />
-                        Leave a Review
-                      </Button>
-                    </div>
+                    {!speaker.hideRatings && (
+                      <div className="mb-4">
+                        <Button 
+                          onClick={() => setIsReviewOpen(true)}
+                          className="bg-primary hover:bg-blue-700 text-white"
+                        >
+                          <Star className="w-4 h-4 mr-2" />
+                          Leave a Review
+                        </Button>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-center md:justify-start gap-4">
                       <Button size="sm" variant="outline">
@@ -329,38 +333,40 @@ export default function SpeakerProfile() {
                       </Button>
                       
                       {/* Social Media Icons */}
-                      <div className="flex items-center gap-3 ml-4">
-                        {speaker.instagramHandle && (
-                          <a 
-                            href={`https://instagram.com/${speaker.instagramHandle}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-pink-600 transition-colors"
-                          >
-                            <Instagram className="w-5 h-5" />
-                          </a>
-                        )}
-                        {speaker.socialMedia && speaker.socialMedia.find(link => link.includes('linkedin')) && (
-                          <a 
-                            href={speaker.socialMedia.find(link => link.includes('linkedin'))} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-blue-600 transition-colors"
-                          >
-                            <Linkedin className="w-5 h-5" />
-                          </a>
-                        )}
-                        {speaker.socialMedia && speaker.socialMedia.find(link => link.includes('facebook')) && (
-                          <a 
-                            href={speaker.socialMedia.find(link => link.includes('facebook'))} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-blue-700 transition-colors"
-                          >
-                            <Facebook className="w-5 h-5" />
-                          </a>
-                        )}
-                      </div>
+                      {!speaker.hideSocial && (
+                        <div className="flex items-center gap-3 ml-4">
+                          {speaker.instagramHandle && (
+                            <a 
+                              href={`https://instagram.com/${speaker.instagramHandle}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-gray-600 hover:text-pink-600 transition-colors"
+                            >
+                              <Instagram className="w-5 h-5" />
+                            </a>
+                          )}
+                          {speaker.socialMedia && speaker.socialMedia.find(link => link.includes('linkedin')) && (
+                            <a 
+                              href={speaker.socialMedia.find(link => link.includes('linkedin'))} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-gray-600 hover:text-blue-600 transition-colors"
+                            >
+                              <Linkedin className="w-5 h-5" />
+                            </a>
+                          )}
+                          {speaker.socialMedia && speaker.socialMedia.find(link => link.includes('facebook')) && (
+                            <a 
+                              href={speaker.socialMedia.find(link => link.includes('facebook'))} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-gray-600 hover:text-blue-700 transition-colors"
+                            >
+                              <Facebook className="w-5 h-5" />
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -369,11 +375,11 @@ export default function SpeakerProfile() {
 
             {/* Tabs */}
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className={`grid w-full ${speaker.hideRatings ? 'grid-cols-3' : 'grid-cols-4'}`}>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="experience">Experience</TabsTrigger>
                 <TabsTrigger value="topics">Topics</TabsTrigger>
-                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                {!speaker.hideRatings && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
               </TabsList>
 
               <TabsContent value="overview">
@@ -535,53 +541,65 @@ export default function SpeakerProfile() {
               </TabsContent>
 
               <TabsContent value="reviews">
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-bold">Reviews</h2>
-                    <Button onClick={() => setIsReviewOpen(true)}>Leave a Review</Button>
-                  </div>
+                {!speaker.hideRatings ? (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-2xl font-bold">Reviews</h2>
+                      <Button onClick={() => setIsReviewOpen(true)}>Leave a Review</Button>
+                    </div>
 
-                  {reviewsLoading ? (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className="h-32 w-full" />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {reviews?.map((review) => (
-                        <Card key={review.id}>
-                          <CardContent className="p-6">
-                            <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <h4 className="font-semibold">{review.reviewerName}</h4>
-                                <p className="text-sm text-gray-600">{review.reviewerTitle} at {review.reviewerCompany}</p>
-                              </div>
-                              <div className="flex items-center">
-                                <div className="flex text-yellow-400 mr-2">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star key={i} className={`w-4 h-4 ${i < review.overallRating ? "fill-current" : ""}`} />
-                                  ))}
+                    {reviewsLoading ? (
+                      <div className="space-y-4">
+                        {[...Array(3)].map((_, i) => (
+                          <Skeleton key={i} className="h-32 w-full" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {reviews?.map((review) => (
+                          <Card key={review.id}>
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div>
+                                  <h4 className="font-semibold">{review.reviewerName}</h4>
+                                  <p className="text-sm text-gray-600">{review.reviewerTitle} at {review.reviewerCompany}</p>
                                 </div>
-                                <span className="text-sm font-medium">{review.overallRating}/5</span>
+                                <div className="flex items-center">
+                                  <div className="flex text-yellow-400 mr-2">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star key={i} className={`w-4 h-4 ${i < review.overallRating ? "fill-current" : ""}`} />
+                                    ))}
+                                  </div>
+                                  <span className="text-sm font-medium">{review.overallRating}/5</span>
+                                </div>
                               </div>
-                            </div>
-                            <p className="text-gray-700 mb-3">{review.comment}</p>
-                            <div className="text-xs text-gray-500">
-                              {review.eventType} • {review.eventDate}
-                              {review.verified && (
-                                <span className="ml-2 inline-flex items-center">
-                                  <CheckCircle className="w-3 h-3 text-green-600 mr-1" />
-                                  Verified
-                                </span>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )) || []}
-                    </div>
-                  )}
-                </div>
+                              <p className="text-gray-700 mb-3">{review.comment}</p>
+                              <div className="text-xs text-gray-500">
+                                {review.eventType} • {review.eventDate}
+                                {review.verified && (
+                                  <span className="ml-2 inline-flex items-center">
+                                    <CheckCircle className="w-3 h-3 text-green-600 mr-1" />
+                                    Verified
+                                  </span>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )) || []}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <div className="text-gray-500 mb-4">
+                        <Star className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <h3 className="text-lg font-semibold mb-2">Reviews Not Available</h3>
+                        <p>This speaker has chosen not to display reviews at this time.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
             </Tabs>
           </div>
@@ -591,31 +609,33 @@ export default function SpeakerProfile() {
 
 
             {/* Contact Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center">
-                  <Mail className="w-4 h-4 mr-3 text-gray-500" />
-                  <span className="text-sm">{speaker.email}</span>
-                </div>
-                {speaker.phone && (
+            {!speaker.hideContact && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
                   <div className="flex items-center">
-                    <Phone className="w-4 h-4 mr-3 text-gray-500" />
-                    <span className="text-sm">{speaker.phone}</span>
+                    <Mail className="w-4 h-4 mr-3 text-gray-500" />
+                    <span className="text-sm">{speaker.email}</span>
                   </div>
-                )}
-                {speaker.website && (
-                  <div className="flex items-center">
-                    <Globe className="w-4 h-4 mr-3 text-gray-500" />
-                    <a href={speaker.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                      Website
-                    </a>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  {speaker.phone && (
+                    <div className="flex items-center">
+                      <Phone className="w-4 h-4 mr-3 text-gray-500" />
+                      <span className="text-sm">{speaker.phone}</span>
+                    </div>
+                  )}
+                  {speaker.website && (
+                    <div className="flex items-center">
+                      <Globe className="w-4 h-4 mr-3 text-gray-500" />
+                      <a href={speaker.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                        Website
+                      </a>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Quick Stats */}
             <Card>
@@ -623,14 +643,18 @@ export default function SpeakerProfile() {
                 <CardTitle>Speaker Stats</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Reviews:</span>
-                  <span className="font-semibold">{speaker.reviewCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Average Rating:</span>
-                  <span className="font-semibold">{speaker.overallRating}/5.0</span>
-                </div>
+                {!speaker.hideRatings && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total Reviews:</span>
+                      <span className="font-semibold">{speaker.reviewCount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Average Rating:</span>
+                      <span className="font-semibold">{speaker.overallRating}/5.0</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Response Time:</span>
                   <span className="font-semibold">Within 24 hours</span>

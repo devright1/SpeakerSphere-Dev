@@ -37,6 +37,11 @@ export const speakers = pgTable("speakers", {
   certifications: text("certifications"), // certifications and awards
   affiliations: text("affiliations"), // professional affiliations
   publications: text("publications"), // publications and research
+  // Visibility controls
+  hideProfile: boolean("hide_profile").default(false),
+  hideRatings: boolean("hide_ratings").default(false),
+  hideSocial: boolean("hide_social").default(false),
+  hideContact: boolean("hide_contact").default(false),
 });
 
 export const reviews = pgTable("reviews", {
