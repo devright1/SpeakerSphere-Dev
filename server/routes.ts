@@ -176,6 +176,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update speaker (admin only)
+  app.patch("/api/speakers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+
+      const updatedSpeaker = await storage.updateSpeaker(id, updates);
+      if (!updatedSpeaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      res.json(updatedSpeaker);
+    } catch (error) {
+      console.error("Failed to update speaker:", error);
+      res.status(500).json({ message: "Failed to update speaker" });
+    }
+  });
+
+  // Delete speaker (admin only - with password verification)
+  app.delete("/api/speakers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { adminPassword } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+
+      // Verify admin password (using the same credentials as login)
+      if (adminPassword !== "Doneright123!") {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
+
+      const deleted = await storage.deleteSpeaker(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      res.json({ 
+        message: "Speaker deleted successfully", 
+        deletedAt: new Date().toISOString(),
+        retentionDays: 14 
+      });
+    } catch (error) {
+      console.error("Failed to delete speaker:", error);
+      res.status(500).json({ message: "Failed to delete speaker" });
+    }
+  });
+
   // Get all categories
   app.get("/api/categories", async (req, res) => {
     try {

@@ -4,12 +4,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [adminEmail, setAdminEmail] = useState("");
+  const [editingSpeaker, setEditingSpeaker] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const { toast } = useToast();
 
   // Check authentication on component mount
   useEffect(() => {
@@ -38,6 +53,81 @@ export default function AdminDashboard() {
     localStorage.removeItem("adminAuthenticated");
     localStorage.removeItem("adminEmail");
     setLocation("/");
+  };
+
+  const handleEditSpeaker = (speaker: any) => {
+    setEditingSpeaker({ ...speaker });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = () => {
+    setIsDeleteDialogOpen(true);
+    setDeletePassword("");
+    setDeleteError("");
+  };
+
+  // Update speaker mutation
+  const updateSpeakerMutation = useMutation({
+    mutationFn: async (updatedSpeaker: any) => {
+      const response = await fetch(`/api/speakers/${updatedSpeaker.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedSpeaker),
+      });
+      if (!response.ok) throw new Error('Failed to update speaker');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Speaker updated successfully" });
+      setIsEditDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update speaker", variant: "destructive" });
+    },
+  });
+
+  // Delete speaker mutation
+  const deleteSpeakerMutation = useMutation({
+    mutationFn: async ({ speakerId, password }: { speakerId: number; password: string }) => {
+      const response = await fetch(`/api/speakers/${speakerId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: password }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete speaker');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ 
+        title: "Speaker Deleted", 
+        description: "Speaker has been moved to recently deleted (14 days retention)" 
+      });
+      setIsDeleteDialogOpen(false);
+      setIsEditDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+    },
+    onError: (error: any) => {
+      setDeleteError(error.message);
+    },
+  });
+
+  const handleDeleteConfirm = () => {
+    if (!deletePassword.trim()) {
+      setDeleteError("Password is required");
+      return;
+    }
+    deleteSpeakerMutation.mutate({ 
+      speakerId: editingSpeaker.id, 
+      password: deletePassword 
+    });
+  };
+
+  const handleSaveSpeaker = () => {
+    updateSpeakerMutation.mutate(editingSpeaker);
   };
 
   const speakersArray = Array.isArray(speakers) ? speakers : [];
@@ -239,7 +329,14 @@ export default function AdminDashboard() {
                               <div className="flex items-center space-x-2">
                                 {speaker.verified && <Badge variant="secondary">Verified</Badge>}
                                 {speaker.featured && <Badge>Featured</Badge>}
-                                <Button variant="outline" size="sm">Edit</Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEditSpeaker(speaker)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -660,6 +757,285 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Speaker Dialog */}
+      {editingSpeaker && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Speaker Profile</DialogTitle>
+              <DialogDescription>
+                Update speaker information and profile details
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Basic Information</h3>
+                
+                <div>
+                  <Label htmlFor="name">Name *</Label>
+                  <Input 
+                    id="name"
+                    value={editingSpeaker.name || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, name: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="title">Title *</Label>
+                  <Input 
+                    id="title"
+                    value={editingSpeaker.title || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, title: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="bio">Biography</Label>
+                  <Textarea 
+                    id="bio"
+                    rows={4}
+                    value={editingSpeaker.bio || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, bio: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="location">Location *</Label>
+                  <Input 
+                    id="location"
+                    value={editingSpeaker.location || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, location: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select 
+                    value={editingSpeaker.category || ''} 
+                    onValueChange={(value) => setEditingSpeaker({...editingSpeaker, category: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Digital Dentistry">Digital Dentistry</SelectItem>
+                      <SelectItem value="Periodontics">Periodontics</SelectItem>
+                      <SelectItem value="Practice Management">Practice Management</SelectItem>
+                      <SelectItem value="Oral Surgery">Oral Surgery</SelectItem>
+                      <SelectItem value="Orthodontics">Orthodontics</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="speakerType">Speaker Type</Label>
+                  <Select 
+                    value={editingSpeaker.speakerType || ''} 
+                    onValueChange={(value) => setEditingSpeaker({...editingSpeaker, speakerType: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select speaker type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="keynote">Keynote</SelectItem>
+                      <SelectItem value="clinical">Clinical</SelectItem>
+                      <SelectItem value="research">Research</SelectItem>
+                      <SelectItem value="educational">Educational</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="fee">Speaking Fee</Label>
+                  <Input 
+                    id="fee"
+                    placeholder="e.g., $5,000 - $10,000"
+                    value={editingSpeaker.fee || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, fee: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              {/* Contact & Media */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Contact & Media</h3>
+                
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input 
+                    id="email"
+                    type="email"
+                    value={editingSpeaker.email || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, email: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input 
+                    id="phone"
+                    value={editingSpeaker.phone || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, phone: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input 
+                    id="website"
+                    placeholder="https://"
+                    value={editingSpeaker.website || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, website: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="imageUrl">Profile Image URL</Label>
+                  <Input 
+                    id="imageUrl"
+                    placeholder="https://"
+                    value={editingSpeaker.imageUrl || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, imageUrl: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="instagramHandle">Instagram Handle</Label>
+                  <Input 
+                    id="instagramHandle"
+                    placeholder="@username"
+                    value={editingSpeaker.instagramHandle || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, instagramHandle: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="expertise">Expertise (comma-separated)</Label>
+                  <Textarea 
+                    id="expertise"
+                    rows={3}
+                    placeholder="Digital Workflows, Guided Surgery, CAD/CAM"
+                    value={editingSpeaker.expertise ? editingSpeaker.expertise.join(', ') : ''} 
+                    onChange={(e) => setEditingSpeaker({
+                      ...editingSpeaker, 
+                      expertise: e.target.value.split(',').map(item => item.trim())
+                    })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="languages">Languages (comma-separated)</Label>
+                  <Input 
+                    id="languages"
+                    placeholder="English, Spanish, German"
+                    value={editingSpeaker.languages ? editingSpeaker.languages.join(', ') : ''} 
+                    onChange={(e) => setEditingSpeaker({
+                      ...editingSpeaker, 
+                      languages: e.target.value.split(',').map(item => item.trim())
+                    })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="flex items-center space-x-6">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={editingSpeaker.verified || false}
+                        onCheckedChange={(checked) => setEditingSpeaker({...editingSpeaker, verified: checked})}
+                      />
+                      <Label>Verified</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={editingSpeaker.featured || false}
+                        onCheckedChange={(checked) => setEditingSpeaker({...editingSpeaker, featured: checked})}
+                      />
+                      <Label>Featured</Label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-6 border-t mt-6">
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteClick}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Profile
+              </Button>
+              
+              <div className="flex space-x-3">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveSpeaker}
+                  disabled={updateSpeakerMutation.isPending}
+                >
+                  {updateSpeakerMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-red-600">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              Confirm Delete
+            </DialogTitle>
+            <DialogDescription>
+              This will permanently delete {editingSpeaker?.name}'s profile. The profile will be moved to recently deleted for 14 days before permanent removal.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Warning:</strong> This action cannot be undone. Please enter your admin password to confirm.
+              </AlertDescription>
+            </Alert>
+            
+            <div>
+              <Label htmlFor="deletePassword">Admin Password *</Label>
+              <Input 
+                id="deletePassword"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleDeleteConfirm()}
+              />
+              {deleteError && (
+                <p className="text-sm text-red-600 mt-1">{deleteError}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteConfirm}
+              disabled={deleteSpeakerMutation.isPending}
+            >
+              {deleteSpeakerMutation.isPending ? "Deleting..." : "Delete Profile"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
