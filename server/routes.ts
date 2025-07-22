@@ -239,6 +239,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add new category (admin only)
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const { name, description } = req.body;
+      
+      if (!name || !description) {
+        return res.status(400).json({ message: "Name and description are required" });
+      }
+
+      const category = await storage.createCategory({ name, description });
+      res.json(category);
+    } catch (error) {
+      console.error("Failed to create category:", error);
+      res.status(500).json({ message: "Failed to create category" });
+    }
+  });
+
+  // Delete category (admin only)
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+
+      const deleted = await storage.deleteCategory(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+
+      res.json({ message: "Category deleted successfully" });
+    } catch (error) {
+      console.error("Failed to delete category:", error);
+      res.status(500).json({ message: "Failed to delete category" });
+    }
+  });
+
   // Search endpoint for autocomplete/suggestions
   app.get("/api/search/suggestions", async (req, res) => {
     try {

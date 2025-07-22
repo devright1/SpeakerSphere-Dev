@@ -44,6 +44,7 @@ export interface IStorage {
   // Categories
   getCategories(): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
+  deleteCategory(id: number): Promise<boolean>;
   
   // Videos
   getVideosBySpeakerId(speakerId: number): Promise<Video[]>;
@@ -367,6 +368,14 @@ export class MemStorage implements IStorage {
     };
     this.categories.set(category.id, category);
     return category;
+  }
+
+  async deleteCategory(id: number): Promise<boolean> {
+    const category = this.categories.get(id);
+    if (!category) return false;
+
+    this.categories.delete(id);
+    return true;
   }
 
   async getVideosBySpeakerId(speakerId: number): Promise<Video[]> {

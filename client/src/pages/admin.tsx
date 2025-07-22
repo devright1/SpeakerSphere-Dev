@@ -24,6 +24,9 @@ export default function AdminDashboard() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
+  const [newCategory, setNewCategory] = useState({ name: "", description: "" });
+  const [newSpeakerType, setNewSpeakerType] = useState("");
+  const [speakerTypes, setSpeakerTypes] = useState(['Keynote', 'Clinical', 'Research', 'Educational', 'Workshop Leader', 'Panel Moderator']);
   const { toast } = useToast();
 
   // Check authentication on component mount
@@ -129,6 +132,54 @@ export default function AdminDashboard() {
   const handleSaveSpeaker = () => {
     updateSpeakerMutation.mutate(editingSpeaker);
   };
+
+  // Add category mutation
+  const addCategoryMutation = useMutation({
+    mutationFn: async (category: { name: string; description: string }) => {
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(category),
+      });
+      if (!response.ok) throw new Error('Failed to add category');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Category added successfully" });
+      setNewCategory({ name: "", description: "" });
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to add category", variant: "destructive" });
+    },
+  });
+
+  // Add speaker type
+  const handleAddSpeakerType = () => {
+    if (newSpeakerType.trim() && !speakerTypes.includes(newSpeakerType.trim())) {
+      setSpeakerTypes([...speakerTypes, newSpeakerType.trim()]);
+      setNewSpeakerType("");
+      toast({ title: "Success", description: "Speaker type added successfully" });
+    }
+  };
+
+  // Delete category mutation
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: number) => {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete category');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Category deleted successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete category", variant: "destructive" });
+    },
+  });
 
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
@@ -748,9 +799,118 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Settings className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>Settings panel coming soon</p>
+                <div className="space-y-8">
+                  {/* Category Management */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Category Management</h3>
+                    
+                    {/* Add New Category */}
+                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                      <h4 className="font-medium mb-3">Add New Category</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <Input
+                          placeholder="Category Name"
+                          value={newCategory.name}
+                          onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                        />
+                        <Input
+                          placeholder="Description"
+                          value={newCategory.description}
+                          onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                        />
+                        <Button 
+                          onClick={() => addCategoryMutation.mutate(newCategory)}
+                          disabled={!newCategory.name || !newCategory.description || addCategoryMutation.isPending}
+                        >
+                          {addCategoryMutation.isPending ? "Adding..." : "Add Category"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Existing Categories */}
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Existing Categories</h4>
+                      <div className="grid gap-3">
+                        {categoriesArray.map((category: any) => (
+                          <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <div className="font-medium">{category.name}</div>
+                              <div className="text-sm text-gray-600">{category.description}</div>
+                              <div className="text-xs text-gray-500">{category.speakerCount || 0} speakers</div>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => deleteCategoryMutation.mutate(category.id)}
+                              disabled={deleteCategoryMutation.isPending}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Speaker Type Management */}
+                  <div className="pt-6 border-t">
+                    <h3 className="text-lg font-semibold mb-4">Speaker Type Management</h3>
+                    
+                    {/* Add New Speaker Type */}
+                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                      <h4 className="font-medium mb-3">Add New Speaker Type</h4>
+                      <div className="flex gap-3">
+                        <Input
+                          placeholder="Speaker Type (e.g., Workshop Leader)"
+                          value={newSpeakerType}
+                          onChange={(e) => setNewSpeakerType(e.target.value)}
+                        />
+                        <Button 
+                          onClick={handleAddSpeakerType}
+                          disabled={!newSpeakerType.trim()}
+                        >
+                          Add Type
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Existing Speaker Types */}
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Available Speaker Types</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {speakerTypes.map((type) => (
+                          <div key={type} className="flex items-center justify-between p-2 border rounded">
+                            <span className="text-sm">{type}</span>
+                            <button
+                              onClick={() => {
+                                setSpeakerTypes(speakerTypes.filter(t => t !== type));
+                                toast({ title: "Success", description: "Speaker type removed" });
+                              }}
+                              className="text-red-500 hover:text-red-700 text-xs"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* System Settings */}
+                  <div className="pt-6 border-t">
+                    <h3 className="text-lg font-semibold mb-4">System Settings</h3>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center space-x-2 text-blue-800">
+                        <Settings className="h-5 w-5" />
+                        <span className="font-medium">Categories and Speaker Types</span>
+                      </div>
+                      <p className="text-sm text-blue-700 mt-2">
+                        Manage available categories and speaker types used throughout the platform. 
+                        Changes will be reflected immediately in speaker profiles and search filters.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -812,42 +972,66 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <Label htmlFor="category">Categories (comma-separated)</Label>
-                  <Textarea 
-                    id="category"
-                    rows={2}
-                    placeholder="Digital Dentistry, Periodontics, Practice Management"
-                    value={Array.isArray(editingSpeaker.category) ? editingSpeaker.category.join(', ') : editingSpeaker.category || ''} 
-                    onChange={(e) => {
-                      const categories = e.target.value.split(',').map(item => item.trim()).filter(item => item);
-                      setEditingSpeaker({
-                        ...editingSpeaker, 
-                        category: categories.length > 0 ? categories.join(', ') : ''
-                      });
-                    }}
-                  />
-                  <div className="text-xs text-gray-500 mt-1">
-                    Available: Digital Dentistry, Periodontics, Practice Management, Oral Surgery, Orthodontics, Prosthodontics, Esthetic Dentistry, Implant Dentistry
+                  <Label>Categories (select multiple)</Label>
+                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-md">
+                    {categoriesArray.map((category: any) => (
+                      <div key={category.name} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`category-${category.name}`}
+                          checked={editingSpeaker.category?.includes(category.name) || false}
+                          onChange={(e) => {
+                            const currentCategories = editingSpeaker.category ? editingSpeaker.category.split(', ') : [];
+                            let newCategories;
+                            if (e.target.checked) {
+                              newCategories = [...currentCategories, category.name];
+                            } else {
+                              newCategories = currentCategories.filter(cat => cat !== category.name);
+                            }
+                            setEditingSpeaker({
+                              ...editingSpeaker,
+                              category: newCategories.join(', ')
+                            });
+                          }}
+                          className="rounded"
+                        />
+                        <label htmlFor={`category-${category.name}`} className="text-sm cursor-pointer">
+                          {category.name}
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="speakerType">Speaker Types (comma-separated)</Label>
-                  <Textarea 
-                    id="speakerType"
-                    rows={2}
-                    placeholder="Keynote, Clinical, Research"
-                    value={Array.isArray(editingSpeaker.speakerType) ? editingSpeaker.speakerType.join(', ') : editingSpeaker.speakerType || ''} 
-                    onChange={(e) => {
-                      const types = e.target.value.split(',').map(item => item.trim()).filter(item => item);
-                      setEditingSpeaker({
-                        ...editingSpeaker, 
-                        speakerType: types.length > 0 ? types.join(', ') : ''
-                      });
-                    }}
-                  />
-                  <div className="text-xs text-gray-500 mt-1">
-                    Available: Keynote, Clinical, Research, Educational, Workshop Leader, Panel Moderator
+                  <Label>Speaker Types (select multiple)</Label>
+                  <div className="grid grid-cols-2 gap-2 p-3 border rounded-md">
+                    {speakerTypes.map((type) => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`type-${type}`}
+                          checked={editingSpeaker.speakerType?.includes(type) || false}
+                          onChange={(e) => {
+                            const currentTypes = editingSpeaker.speakerType ? editingSpeaker.speakerType.split(', ') : [];
+                            let newTypes;
+                            if (e.target.checked) {
+                              newTypes = [...currentTypes, type];
+                            } else {
+                              newTypes = currentTypes.filter(t => t !== type);
+                            }
+                            setEditingSpeaker({
+                              ...editingSpeaker,
+                              speakerType: newTypes.join(', ')
+                            });
+                          }}
+                          className="rounded"
+                        />
+                        <label htmlFor={`type-${type}`} className="text-sm cursor-pointer">
+                          {type}
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
