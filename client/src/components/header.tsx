@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Lock } from "lucide-react";
 
 export default function Header() {
   const [location] = useLocation();
@@ -42,6 +42,11 @@ export default function Header() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            <Link href="/admin-login">
+              <Button variant="ghost" size="icon" className="text-gray-700 hover:text-primary">
+                <Lock className="h-5 w-5" />
+              </Button>
+            </Link>
             <Button variant="ghost" className="text-gray-700 hover:text-primary">
               Sign In
             </Button>
@@ -74,6 +79,12 @@ export default function Header() {
                     </Link>
                   ))}
                   <div className="border-t pt-4 space-y-2">
+                    <Link href="/admin-login" className="w-full">
+                      <Button variant="ghost" className="w-full justify-start text-gray-700">
+                        <Lock className="h-4 w-4 mr-2" />
+                        Admin Access
+                      </Button>
+                    </Link>
                     <Button variant="ghost" className="w-full justify-start text-gray-700">
                       Sign In
                     </Button>
