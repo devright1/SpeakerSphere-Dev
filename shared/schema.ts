@@ -25,10 +25,18 @@ export const speakers = pgTable("speakers", {
   website: text("website"),
   socialMedia: text("social_media").array(),
   instagramHandle: text("instagram_handle"),
+  facebookHandle: text("facebook_handle"),
+  xHandle: text("x_handle"),
+  linkedinHandle: text("linkedin_handle"),
   languages: text("languages").array().notNull(),
   medicalSpecialties: text("medical_specialties").array(),
   speakerType: text("speaker_type").notNull(), // "keynote", "clinical", "research", "educational"
   fee: text("fee"), // speaking fee as text to handle currency formatting
+  experience: integer("experience"), // years of experience
+  education: text("education"), // education and credentials
+  certifications: text("certifications"), // certifications and awards
+  affiliations: text("affiliations"), // professional affiliations
+  publications: text("publications"), // publications and research
 });
 
 export const reviews = pgTable("reviews", {

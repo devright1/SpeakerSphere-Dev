@@ -812,40 +812,43 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select 
-                    value={editingSpeaker.category || ''} 
-                    onValueChange={(value) => setEditingSpeaker({...editingSpeaker, category: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Digital Dentistry">Digital Dentistry</SelectItem>
-                      <SelectItem value="Periodontics">Periodontics</SelectItem>
-                      <SelectItem value="Practice Management">Practice Management</SelectItem>
-                      <SelectItem value="Oral Surgery">Oral Surgery</SelectItem>
-                      <SelectItem value="Orthodontics">Orthodontics</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="category">Categories (comma-separated)</Label>
+                  <Textarea 
+                    id="category"
+                    rows={2}
+                    placeholder="Digital Dentistry, Periodontics, Practice Management"
+                    value={Array.isArray(editingSpeaker.category) ? editingSpeaker.category.join(', ') : editingSpeaker.category || ''} 
+                    onChange={(e) => {
+                      const categories = e.target.value.split(',').map(item => item.trim()).filter(item => item);
+                      setEditingSpeaker({
+                        ...editingSpeaker, 
+                        category: categories.length > 0 ? categories.join(', ') : ''
+                      });
+                    }}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    Available: Digital Dentistry, Periodontics, Practice Management, Oral Surgery, Orthodontics, Prosthodontics, Esthetic Dentistry, Implant Dentistry
+                  </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="speakerType">Speaker Type</Label>
-                  <Select 
-                    value={editingSpeaker.speakerType || ''} 
-                    onValueChange={(value) => setEditingSpeaker({...editingSpeaker, speakerType: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select speaker type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="keynote">Keynote</SelectItem>
-                      <SelectItem value="clinical">Clinical</SelectItem>
-                      <SelectItem value="research">Research</SelectItem>
-                      <SelectItem value="educational">Educational</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="speakerType">Speaker Types (comma-separated)</Label>
+                  <Textarea 
+                    id="speakerType"
+                    rows={2}
+                    placeholder="Keynote, Clinical, Research"
+                    value={Array.isArray(editingSpeaker.speakerType) ? editingSpeaker.speakerType.join(', ') : editingSpeaker.speakerType || ''} 
+                    onChange={(e) => {
+                      const types = e.target.value.split(',').map(item => item.trim()).filter(item => item);
+                      setEditingSpeaker({
+                        ...editingSpeaker, 
+                        speakerType: types.length > 0 ? types.join(', ') : ''
+                      });
+                    }}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    Available: Keynote, Clinical, Research, Educational, Workshop Leader, Panel Moderator
+                  </div>
                 </div>
 
                 <div>
@@ -855,6 +858,31 @@ export default function AdminDashboard() {
                     placeholder="e.g., $5,000 - $10,000"
                     value={editingSpeaker.fee || ''} 
                     onChange={(e) => setEditingSpeaker({...editingSpeaker, fee: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="experience">Experience (Years)</Label>
+                  <Input 
+                    id="experience"
+                    type="number"
+                    placeholder="e.g., 15"
+                    value={editingSpeaker.experience || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, experience: parseInt(e.target.value) || 0})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="topics">Speaking Topics (comma-separated)</Label>
+                  <Textarea 
+                    id="topics"
+                    rows={3}
+                    placeholder="Full Arch Rehabilitation, Digital Workflows, Team Management"
+                    value={editingSpeaker.lectures ? editingSpeaker.lectures.join(', ') : ''} 
+                    onChange={(e) => setEditingSpeaker({
+                      ...editingSpeaker, 
+                      lectures: e.target.value.split(',').map(item => item.trim()).filter(item => item)
+                    })}
                   />
                 </div>
               </div>
@@ -913,6 +941,36 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
+                  <Label htmlFor="facebookHandle">Facebook Handle</Label>
+                  <Input 
+                    id="facebookHandle"
+                    placeholder="@username or profile URL"
+                    value={editingSpeaker.facebookHandle || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, facebookHandle: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="xHandle">X (Twitter) Handle</Label>
+                  <Input 
+                    id="xHandle"
+                    placeholder="@username"
+                    value={editingSpeaker.xHandle || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, xHandle: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="linkedinHandle">LinkedIn Profile</Label>
+                  <Input 
+                    id="linkedinHandle"
+                    placeholder="linkedin.com/in/username or full URL"
+                    value={editingSpeaker.linkedinHandle || ''} 
+                    onChange={(e) => setEditingSpeaker({...editingSpeaker, linkedinHandle: e.target.value})}
+                  />
+                </div>
+
+                <div>
                   <Label htmlFor="expertise">Expertise (comma-separated)</Label>
                   <Textarea 
                     id="expertise"
@@ -934,9 +992,60 @@ export default function AdminDashboard() {
                     value={editingSpeaker.languages ? editingSpeaker.languages.join(', ') : ''} 
                     onChange={(e) => setEditingSpeaker({
                       ...editingSpeaker, 
-                      languages: e.target.value.split(',').map(item => item.trim())
+                      languages: e.target.value.split(',').map(item => item.trim()).filter(item => item)
                     })}
                   />
+                </div>
+
+                {/* Experience Section */}
+                <div className="pt-4 border-t">
+                  <h4 className="text-md font-semibold mb-3">Professional Experience</h4>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="education">Education & Credentials</Label>
+                      <Textarea 
+                        id="education"
+                        rows={2}
+                        placeholder="DDS, University of California San Francisco; Prosthodontic Residency, UCLA"
+                        value={editingSpeaker.education || ''} 
+                        onChange={(e) => setEditingSpeaker({...editingSpeaker, education: e.target.value})}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="certifications">Certifications & Awards</Label>
+                      <Textarea 
+                        id="certifications"
+                        rows={2}
+                        placeholder="Board Certified Prosthodontist; Fellow, American College of Prosthodontists"
+                        value={editingSpeaker.certifications || ''} 
+                        onChange={(e) => setEditingSpeaker({...editingSpeaker, certifications: e.target.value})}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="affiliations">Professional Affiliations</Label>
+                      <Textarea 
+                        id="affiliations"
+                        rows={2}
+                        placeholder="American Dental Association; International Congress of Oral Implantologists"
+                        value={editingSpeaker.affiliations || ''} 
+                        onChange={(e) => setEditingSpeaker({...editingSpeaker, affiliations: e.target.value})}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="publications">Publications & Research</Label>
+                      <Textarea 
+                        id="publications"
+                        rows={2}
+                        placeholder="Author of 50+ peer-reviewed articles; Contributing editor, Journal of Prosthodontics"
+                        value={editingSpeaker.publications || ''} 
+                        onChange={(e) => setEditingSpeaker({...editingSpeaker, publications: e.target.value})}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t">
