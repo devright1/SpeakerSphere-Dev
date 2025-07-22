@@ -49,6 +49,10 @@ export const reviews = pgTable("reviews", {
   eventDate: text("event_date").notNull(),
   photoUrl: text("photo_url"),
   verified: boolean("verified").default(false),
+  approvalStatus: text("approval_status").default("pending"), // "pending", "approved", "tentative", "rejected"
+  adminNotes: text("admin_notes"), // Admin notes for tentative/rejected reviews
+  approvedAt: timestamp("approved_at"),
+  approvedBy: text("approved_by"), // Admin email who approved/rejected
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -100,6 +104,10 @@ export const insertSpeakerSchema = createInsertSchema(speakers).omit({
 export const insertReviewSchema = createInsertSchema(reviews).omit({
   id: true,
   verified: true,
+  approvalStatus: true,
+  adminNotes: true,
+  approvedAt: true,
+  approvedBy: true,
   createdAt: true,
 });
 
