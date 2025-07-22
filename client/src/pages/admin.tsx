@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, ExternalLink, Mail, Phone, Globe } from "lucide-react";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function AdminDashboard() {
@@ -159,6 +159,118 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* All Speakers Management */}
+                  <div className="mt-8 pt-6 border-t">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium">All Speakers</h3>
+                      <div className="text-sm text-gray-600">
+                        Manage visibility settings for each speaker
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-4">
+                      {speakersArray.map((speaker: any) => (
+                        <div key={speaker.slug} className="p-4 border rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              <img 
+                                src={speaker.imageUrl} 
+                                alt={speaker.name}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                              <div>
+                                <h4 className="font-medium">{speaker.name}</h4>
+                                <p className="text-sm text-gray-600">{speaker.title}</p>
+                              </div>
+                            </div>
+
+                            {/* Visibility Controls */}
+                            <div className="flex items-center space-x-3">
+                              {/* Hide Entire Listing */}
+                              <div className="flex flex-col items-center group">
+                                <button 
+                                  className="p-2 rounded-lg border hover:bg-red-50 hover:border-red-200 transition-colors"
+                                  title="Hide entire speaker listing"
+                                >
+                                  <EyeOff className="h-4 w-4 text-red-600" />
+                                </button>
+                                <span className="text-xs text-gray-500 mt-1">Hide Profile</span>
+                              </div>
+
+                              {/* Hide Ratings */}
+                              <div className="flex flex-col items-center group">
+                                <button 
+                                  className="p-2 rounded-lg border hover:bg-yellow-50 hover:border-yellow-200 transition-colors"
+                                  title="Hide ratings and reviews"
+                                >
+                                  <Star className="h-4 w-4 text-yellow-600" />
+                                </button>
+                                <span className="text-xs text-gray-500 mt-1">Hide Ratings</span>
+                              </div>
+
+                              {/* Hide Social Icons */}
+                              <div className="flex flex-col items-center group">
+                                <button 
+                                  className="p-2 rounded-lg border hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                                  title="Hide social media icons"
+                                >
+                                  <Share2 className="h-4 w-4 text-blue-600" />
+                                </button>
+                                <span className="text-xs text-gray-500 mt-1">Hide Social</span>
+                              </div>
+
+                              {/* Hide Contact Details */}
+                              <div className="flex flex-col items-center group">
+                                <button 
+                                  className="p-2 rounded-lg border hover:bg-purple-50 hover:border-purple-200 transition-colors"
+                                  title="Hide contact information"
+                                >
+                                  <Phone className="h-4 w-4 text-purple-600" />
+                                </button>
+                                <span className="text-xs text-gray-500 mt-1">Hide Contact</span>
+                              </div>
+
+                              {/* Separator */}
+                              <div className="h-8 w-px bg-gray-300 mx-2"></div>
+
+                              {/* Status Badges and Edit */}
+                              <div className="flex items-center space-x-2">
+                                {speaker.verified && <Badge variant="secondary">Verified</Badge>}
+                                {speaker.featured && <Badge>Featured</Badge>}
+                                <Button variant="outline" size="sm">Edit</Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Status Indicators Row */}
+                          <div className="mt-3 pt-3 border-t flex items-center justify-between">
+                            <div className="flex items-center space-x-4 text-sm">
+                              <div className="flex items-center space-x-1">
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <span className="text-gray-600">Profile Visible</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <span className="text-gray-600">Ratings Visible</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <span className="text-gray-600">Social Visible</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <span className="text-gray-600">Contact Visible</span>
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Last updated: Today
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>
