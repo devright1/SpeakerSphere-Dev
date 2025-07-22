@@ -222,8 +222,8 @@ export default function AdminDashboard() {
                         <Eye className="h-5 w-5 text-blue-500" />
                         <span className="font-medium">Profile Views</span>
                       </div>
-                      <div className="text-2xl font-bold">12,847</div>
-                      <div className="text-sm text-gray-500">Total speaker profile views</div>
+                      <div className="text-2xl font-bold">0</div>
+                      <div className="text-sm text-gray-500">Total speaker profile views (since today)</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg">
@@ -231,8 +231,8 @@ export default function AdminDashboard() {
                         <MousePointer className="h-5 w-5 text-green-500" />
                         <span className="font-medium">Contact Clicks</span>
                       </div>
-                      <div className="text-2xl font-bold">3,421</div>
-                      <div className="text-sm text-gray-500">Email, phone, website clicks</div>
+                      <div className="text-2xl font-bold">0</div>
+                      <div className="text-sm text-gray-500">Email, phone, website clicks (since today)</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg">
@@ -240,8 +240,8 @@ export default function AdminDashboard() {
                         <ExternalLink className="h-5 w-5 text-purple-500" />
                         <span className="font-medium">External Links</span>
                       </div>
-                      <div className="text-2xl font-bold">1,892</div>
-                      <div className="text-sm text-gray-500">Social media, website visits</div>
+                      <div className="text-2xl font-bold">0</div>
+                      <div className="text-sm text-gray-500">Social media, website visits (since today)</div>
                     </div>
                   </div>
                 </CardContent>
@@ -257,22 +257,22 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="text-sm font-medium text-gray-700 mb-4">Top Performing Speakers (by click engagement)</div>
+                    <div className="text-sm font-medium text-gray-700 mb-4">Speaker Analytics (tracking starts today - {new Date().toLocaleDateString()})</div>
                     
                     {speakersArray.slice(0, 8).map((speaker: any, index: number) => {
-                      // Mock analytics data for each speaker
-                      const mockAnalytics = {
-                        profileViews: Math.floor(Math.random() * 500) + 100,
-                        emailClicks: Math.floor(Math.random() * 50) + 10,
-                        phoneClicks: Math.floor(Math.random() * 30) + 5,
-                        websiteClicks: Math.floor(Math.random() * 40) + 8,
-                        socialClicks: Math.floor(Math.random() * 60) + 15,
-                        inquiryClicks: Math.floor(Math.random() * 25) + 3
+                      // Analytics data reset to 0 for today's base point
+                      const analytics = {
+                        profileViews: 0,
+                        emailClicks: 0,
+                        phoneClicks: 0,
+                        websiteClicks: 0,
+                        socialClicks: 0,
+                        inquiryClicks: 0
                       };
                       
-                      const totalClicks = mockAnalytics.emailClicks + mockAnalytics.phoneClicks + 
-                                        mockAnalytics.websiteClicks + mockAnalytics.socialClicks + 
-                                        mockAnalytics.inquiryClicks;
+                      const totalClicks = analytics.emailClicks + analytics.phoneClicks + 
+                                        analytics.websiteClicks + analytics.socialClicks + 
+                                        analytics.inquiryClicks;
                       
                       return (
                         <div key={speaker.slug} className="p-4 border rounded-lg">
@@ -297,27 +297,27 @@ export default function AdminDashboard() {
                           <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
                             <div className="flex items-center space-x-1">
                               <Eye className="h-4 w-4 text-blue-500" />
-                              <span>{mockAnalytics.profileViews} views</span>
+                              <span>{analytics.profileViews} views</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Mail className="h-4 w-4 text-green-500" />
-                              <span>{mockAnalytics.emailClicks} emails</span>
+                              <span>{analytics.emailClicks} emails</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Phone className="h-4 w-4 text-orange-500" />
-                              <span>{mockAnalytics.phoneClicks} calls</span>
+                              <span>{analytics.phoneClicks} calls</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Globe className="h-4 w-4 text-purple-500" />
-                              <span>{mockAnalytics.websiteClicks} website</span>
+                              <span>{analytics.websiteClicks} website</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <ExternalLink className="h-4 w-4 text-pink-500" />
-                              <span>{mockAnalytics.socialClicks} social</span>
+                              <span>{analytics.socialClicks} social</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <MessageSquare className="h-4 w-4 text-teal-500" />
-                              <span>{mockAnalytics.inquiryClicks} inquiries</span>
+                              <span>{analytics.inquiryClicks} inquiries</span>
                             </div>
                           </div>
                         </div>
@@ -338,12 +338,12 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                      { icon: Mail, label: "Email Links", clicks: 1247, color: "text-green-500" },
-                      { icon: Phone, label: "Phone Links", clicks: 892, color: "text-orange-500" },
-                      { icon: Globe, label: "Website Links", clicks: 673, color: "text-purple-500" },
-                      { icon: ExternalLink, label: "Social Media", clicks: 1156, color: "text-pink-500" },
-                      { icon: MessageSquare, label: "Inquiry Forms", clicks: 534, color: "text-teal-500" },
-                      { icon: Eye, label: "Video Views", clicks: 987, color: "text-blue-500" }
+                      { icon: Mail, label: "Email Links", clicks: 0, color: "text-green-500" },
+                      { icon: Phone, label: "Phone Links", clicks: 0, color: "text-orange-500" },
+                      { icon: Globe, label: "Website Links", clicks: 0, color: "text-purple-500" },
+                      { icon: ExternalLink, label: "Social Media", clicks: 0, color: "text-pink-500" },
+                      { icon: MessageSquare, label: "Inquiry Forms", clicks: 0, color: "text-teal-500" },
+                      { icon: Eye, label: "Video Views", clicks: 0, color: "text-blue-500" }
                     ].map((item, index) => (
                       <div key={index} className="p-4 border rounded-lg">
                         <div className="flex items-center space-x-2 mb-2">
@@ -351,7 +351,7 @@ export default function AdminDashboard() {
                           <span className="font-medium">{item.label}</span>
                         </div>
                         <div className="text-2xl font-bold">{item.clicks.toLocaleString()}</div>
-                        <div className="text-sm text-gray-500">Total clicks</div>
+                        <div className="text-sm text-gray-500">Total clicks (since today)</div>
                       </div>
                     ))}
                   </div>
