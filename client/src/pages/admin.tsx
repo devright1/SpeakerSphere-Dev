@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
   const [newSpeakerType, setNewSpeakerType] = useState("");
   const [speakerTypes, setSpeakerTypes] = useState(['Keynote', 'Clinical', 'Research', 'Educational', 'Workshop Leader', 'Panel Moderator']);
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
   // Check authentication on component mount
@@ -188,6 +189,13 @@ export default function AdminDashboard() {
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
   
+  // Filter speakers based on search query
+  const filteredSpeakers = speakersArray.filter((speaker: any) => 
+    speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    speaker.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    speaker.category?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
   const totalSpeakers = speakersArray.length;
   const verifiedSpeakers = speakersArray.filter((s: any) => s.verified).length;
   const featuredSpeakers = speakersArray.filter((s: any) => s.featured).length;
@@ -310,13 +318,25 @@ export default function AdminDashboard() {
                   <div className="mt-8 pt-6 border-t">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-medium">All Speakers</h3>
-                      <div className="text-sm text-gray-600">
-                        Manage visibility settings for each speaker
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <Input
+                            type="text"
+                            placeholder="Search speakers..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-64 pl-4 pr-4"
+                          />
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Manage visibility settings for each speaker
+                        </div>
                       </div>
                     </div>
                     
                     <div className="grid gap-4">
-                      {speakersArray.map((speaker: any) => (
+                      {filteredSpeakers.length > 0 ? (
+                        filteredSpeakers.map((speaker: any) => (
                         <div key={speaker.slug} className="p-4 border rounded-lg">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
@@ -453,7 +473,13 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                          <p>No speakers found matching "{searchQuery}"</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
