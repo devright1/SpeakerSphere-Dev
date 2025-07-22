@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -47,6 +47,7 @@ export const speakers = pgTable("speakers", {
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
   speakerId: integer("speaker_id").notNull(),
+  userId: text("user_id"), // Optional - links to registered user if logged in
   reviewerName: text("reviewer_name").notNull(),
   reviewerTitle: text("reviewer_title").notNull(),
   reviewerCompany: text("reviewer_company").notNull(),
@@ -141,6 +142,74 @@ export const insertVideoSchema = createInsertSchema(videos).omit({
   createdAt: true,
 });
 
+// User authentication and profile tables
+export const users = pgTable("users", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  title: varchar("title", { length: 200 }),
+  company: varchar("company", { length: 200 }),
+  profileImageUrl: text("profile_image_url"),
+  emailVerified: boolean("email_verified").default(false),
+  isActive: boolean("is_active").default(true),
+  lastLoginAt: timestamp("last_login_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User session management
+export const userSessions = pgTable("user_sessions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User likes on speakers
+export const userLikes = pgTable("user_likes", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  speakerId: integer("speaker_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User bookmarks/favorites
+export const userBookmarks = pgTable("user_bookmarks", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  speakerId: integer("speaker_id").notNull(),
+  notes: text("notes"), // User's private notes about the speaker
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Enhanced reviews - add userId field for registered user reviews
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  emailVerified: true,
+  isActive: true,
+  lastLoginAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserLikeSchema = createInsertSchema(userLikes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserBookmarkSchema = createInsertSchema(userBookmarks).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type Speaker = typeof speakers.$inferSelect;
 export type InsertSpeaker = z.infer<typeof insertSpeakerSchema>;
 export type Review = typeof reviews.$inferSelect;
@@ -151,3 +220,11 @@ export type Category = typeof categories.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type Video = typeof videos.$inferSelect;
 export type InsertVideo = z.infer<typeof insertVideoSchema>;
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type UserLike = typeof userLikes.$inferSelect;
+export type InsertUserLike = z.infer<typeof insertUserLikeSchema>;
+export type UserBookmark = typeof userBookmarks.$inferSelect;
+export type InsertUserBookmark = z.infer<typeof insertUserBookmarkSchema>;

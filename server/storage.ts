@@ -4,6 +4,10 @@ import {
   inquiries, 
   categories,
   videos,
+  users,
+  userSessions,
+  userLikes,
+  userBookmarks,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -13,7 +17,15 @@ import {
   type Category,
   type InsertCategory,
   type Video,
-  type InsertVideo
+  type InsertVideo,
+  type User,
+  type InsertUser,
+  type UserSession,
+  type InsertUserSession,
+  type UserLike,
+  type InsertUserLike,
+  type UserBookmark,
+  type InsertUserBookmark
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -51,6 +63,25 @@ export interface IStorage {
   getFeaturedVideosBySpeakerId(speakerId: number): Promise<Video[]>;
   createVideo(video: InsertVideo): Promise<Video>;
   updateVideoViewCount(videoId: number): Promise<void>;
+  
+  // User Authentication
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  getUserById(id: string): Promise<User | undefined>;
+  updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
+  
+  // User Sessions
+  createUserSession(session: InsertUserSession): Promise<UserSession>;
+  getUserByToken(token: string): Promise<User | undefined>;
+  deleteUserSession(token: string): Promise<boolean>;
+  
+  // User Interactions
+  createUserLike(like: InsertUserLike): Promise<UserLike>;
+  deleteUserLike(userId: string, speakerId: number): Promise<boolean>;
+  getUserLikes(userId: string): Promise<UserLike[]>;
+  createUserBookmark(bookmark: InsertUserBookmark): Promise<UserBookmark>;
+  deleteUserBookmark(userId: string, speakerId: number): Promise<boolean>;
+  getUserBookmarks(userId: string): Promise<UserBookmark[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -59,11 +90,17 @@ export class MemStorage implements IStorage {
   private inquiries: Map<number, Inquiry>;
   private categories: Map<number, Category>;
   private videos: Map<number, Video>;
+  private users: Map<string, User>;
+  private userSessions: Map<string, UserSession>;
+  private userLikes: Map<number, UserLike>;
+  private userBookmarks: Map<number, UserBookmark>;
   private currentSpeakerId: number;
   private currentReviewId: number;
   private currentInquiryId: number;
   private currentCategoryId: number;
   private currentVideoId: number;
+  private currentLikeId: number;
+  private currentBookmarkId: number;
 
   constructor() {
     this.speakers = new Map();
@@ -71,11 +108,17 @@ export class MemStorage implements IStorage {
     this.inquiries = new Map();
     this.categories = new Map();
     this.videos = new Map();
+    this.users = new Map();
+    this.userSessions = new Map();
+    this.userLikes = new Map();
+    this.userBookmarks = new Map();
     this.currentSpeakerId = 1;
     this.currentReviewId = 1;
     this.currentInquiryId = 1;
     this.currentCategoryId = 1;
     this.currentVideoId = 1;
+    this.currentLikeId = 1;
+    this.currentBookmarkId = 1;
     
     this.seedData();
     this.seedVideoData();
@@ -406,6 +449,117 @@ export class MemStorage implements IStorage {
       video.viewCount = (video.viewCount || 0) + 1;
       this.videos.set(videoId, video);
     }
+  }
+
+  // User Authentication Methods
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const user: User = {
+      ...insertUser,
+      id: crypto.randomUUID(),
+      emailVerified: false,
+      isActive: true,
+      lastLoginAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.users.set(user.id, user);
+    return user;
+  }
+
+  async getUserById(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async updateUser(id: string, userUpdates: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+
+    const updatedUser: User = { 
+      ...user, 
+      ...userUpdates, 
+      updatedAt: new Date() 
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  // User Session Methods
+  async createUserSession(insertSession: InsertUserSession): Promise<UserSession> {
+    const session: UserSession = {
+      ...insertSession,
+      id: crypto.randomUUID(),
+      createdAt: new Date()
+    };
+    this.userSessions.set(session.token, session);
+    return session;
+  }
+
+  async getUserByToken(token: string): Promise<User | undefined> {
+    const session = this.userSessions.get(token);
+    if (!session || session.expiresAt < new Date()) {
+      if (session) {
+        this.userSessions.delete(token);
+      }
+      return undefined;
+    }
+    return this.users.get(session.userId);
+  }
+
+  async deleteUserSession(token: string): Promise<boolean> {
+    return this.userSessions.delete(token);
+  }
+
+  // User Interaction Methods
+  async createUserLike(insertLike: InsertUserLike): Promise<UserLike> {
+    const like: UserLike = {
+      ...insertLike,
+      id: this.currentLikeId++,
+      createdAt: new Date()
+    };
+    this.userLikes.set(like.id, like);
+    return like;
+  }
+
+  async deleteUserLike(userId: string, speakerId: number): Promise<boolean> {
+    const like = Array.from(this.userLikes.values())
+      .find(l => l.userId === userId && l.speakerId === speakerId);
+    if (!like) return false;
+    
+    return this.userLikes.delete(like.id);
+  }
+
+  async getUserLikes(userId: string): Promise<UserLike[]> {
+    return Array.from(this.userLikes.values())
+      .filter(like => like.userId === userId)
+      .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+  }
+
+  async createUserBookmark(insertBookmark: InsertUserBookmark): Promise<UserBookmark> {
+    const bookmark: UserBookmark = {
+      ...insertBookmark,
+      id: this.currentBookmarkId++,
+      createdAt: new Date()
+    };
+    this.userBookmarks.set(bookmark.id, bookmark);
+    return bookmark;
+  }
+
+  async deleteUserBookmark(userId: string, speakerId: number): Promise<boolean> {
+    const bookmark = Array.from(this.userBookmarks.values())
+      .find(b => b.userId === userId && b.speakerId === speakerId);
+    if (!bookmark) return false;
+    
+    return this.userBookmarks.delete(bookmark.id);
+  }
+
+  async getUserBookmarks(userId: string): Promise<UserBookmark[]> {
+    return Array.from(this.userBookmarks.values())
+      .filter(bookmark => bookmark.userId === userId)
+      .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
   }
 }
 

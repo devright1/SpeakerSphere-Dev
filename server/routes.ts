@@ -1,8 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
+import bcrypt from "bcryptjs";
 import { storage } from "./storage";
-import { insertReviewSchema, insertInquirySchema } from "@shared/schema";
+import { insertReviewSchema, insertInquirySchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -20,6 +21,187 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   });
+
+  // Authentication middleware
+  const authenticateToken = async (req: any, res: any, next: any) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "Access token required" });
+    }
+
+    try {
+      const user = await storage.getUserByToken(token);
+      if (!user) {
+        return res.status(403).json({ message: "Invalid or expired token" });
+      }
+      req.user = user;
+      next();
+    } catch (error) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+  };
+
+  // User authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists with this email" });
+      }
+
+      // Hash password
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(userData.password, saltRounds);
+
+      // Create user
+      const user = await storage.createUser({
+        ...userData,
+        passwordHash
+      });
+
+      // Create session token
+      const token = crypto.randomUUID();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+
+      await storage.createUserSession({
+        userId: user.id,
+        token,
+        expiresAt
+      });
+
+      // Remove password hash from response
+      const { passwordHash: _, ...userResponse } = user;
+
+      res.status(201).json({
+        user: userResponse,
+        token
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid input data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
+      }
+
+      // Find user
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid email or password" });
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+      if (!isValidPassword) {
+        return res.status(400).json({ message: "Invalid email or password" });
+      }
+
+      // Update last login
+      await storage.updateUser(user.id, { lastLoginAt: new Date() });
+
+      // Create session token
+      const token = crypto.randomUUID();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+
+      await storage.createUserSession({
+        userId: user.id,
+        token,
+        expiresAt
+      });
+
+      // Remove password hash from response
+      const { passwordHash: _, ...userResponse } = user;
+
+      res.json({
+        user: userResponse,
+        token
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/logout", authenticateToken, async (req: any, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+      
+      if (token) {
+        await storage.deleteUserSession(token);
+      }
+      
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Logout failed" });
+    }
+  });
+
+  app.get("/api/auth/me", authenticateToken, async (req: any, res) => {
+    try {
+      const { passwordHash: _, ...userResponse } = req.user;
+      res.json(userResponse);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get user info" });
+    }
+  });
+
+  // User interaction routes
+  app.post("/api/users/likes/:speakerId", authenticateToken, async (req: any, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const like = await storage.createUserLike({
+        userId: req.user.id,
+        speakerId
+      });
+      res.status(201).json(like);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to like speaker" });
+    }
+  });
+
+  app.delete("/api/users/likes/:speakerId", authenticateToken, async (req: any, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const success = await storage.deleteUserLike(req.user.id, speakerId);
+      if (success) {
+        res.json({ message: "Like removed" });
+      } else {
+        res.status(404).json({ message: "Like not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to remove like" });
+    }
+  });
+
+  app.get("/api/users/likes", authenticateToken, async (req: any, res) => {
+    try {
+      const likes = await storage.getUserLikes(req.user.id);
+      res.json(likes);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get user likes" });
+    }
+  });
+
   // Get all speakers with optional filters
   app.get("/api/speakers", async (req, res) => {
     try {
