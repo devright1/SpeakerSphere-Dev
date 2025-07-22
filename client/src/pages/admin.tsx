@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [isCategoryEditDialogOpen, setIsCategoryEditDialogOpen] = useState(false);
   const [categoryAssignments, setCategoryAssignments] = useState<{[key: string]: boolean}>({});
+  const [categorySearchQuery, setCategorySearchQuery] = useState("");
   const { toast } = useToast();
 
   // Check authentication on component mount
@@ -218,6 +219,7 @@ export default function AdminDashboard() {
       assignments[speaker.id] = speaker.category === category.name;
     });
     setCategoryAssignments(assignments);
+    setCategorySearchQuery(""); // Reset search when opening dialog
     setIsCategoryEditDialogOpen(true);
   };
 
@@ -260,6 +262,12 @@ export default function AdminDashboard() {
     speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     speaker.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     speaker.category?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Filter speakers for category assignment dialog
+  const filteredCategorySpeakers = speakersArray.filter((speaker: any) => 
+    speaker.name.toLowerCase().includes(categorySearchQuery.toLowerCase()) ||
+    speaker.title?.toLowerCase().includes(categorySearchQuery.toLowerCase())
   );
   
   const totalSpeakers = speakersArray.length;
@@ -1537,9 +1545,37 @@ export default function AdminDashboard() {
                 </Badge>
               </div>
               
+              {/* Search Box */}
+              <div className="border-b pb-4">
+                <Label className="text-sm font-medium">Search Speakers</Label>
+                <Input
+                  type="text"
+                  placeholder="Type speaker name to search..."
+                  value={categorySearchQuery}
+                  onChange={(e) => setCategorySearchQuery(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                <h4 className="font-medium text-sm text-gray-700">All Speakers:</h4>
-                {speakersArray.map((speaker: any) => (
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm text-gray-700">
+                    {categorySearchQuery ? `Search Results (${filteredCategorySpeakers.length})` : `All Speakers (${speakersArray.length})`}:
+                  </h4>
+                  {categorySearchQuery && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setCategorySearchQuery("")}
+                      className="text-xs"
+                    >
+                      Clear Search
+                    </Button>
+                  )}
+                </div>
+                
+                {filteredCategorySpeakers.length > 0 ? (
+                  filteredCategorySpeakers.map((speaker: any) => (
                   <div key={speaker.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                     <div className="flex items-center space-x-3">
                       <img 
@@ -1574,7 +1610,13 @@ export default function AdminDashboard() {
                       </Label>
                     </div>
                   </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>No speakers found matching "{categorySearchQuery}"</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
