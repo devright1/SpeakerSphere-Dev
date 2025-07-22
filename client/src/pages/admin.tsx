@@ -28,6 +28,9 @@ export default function AdminDashboard() {
   const [newSpeakerType, setNewSpeakerType] = useState("");
   const [speakerTypes, setSpeakerTypes] = useState(['Keynote', 'Clinical', 'Research', 'Educational', 'Workshop Leader', 'Panel Moderator']);
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [isCategoryEditDialogOpen, setIsCategoryEditDialogOpen] = useState(false);
+  const [categoryAssignments, setCategoryAssignments] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
   // Check authentication on component mount
@@ -185,6 +188,69 @@ export default function AdminDashboard() {
       toast({ title: "Error", description: "Failed to delete category", variant: "destructive" });
     },
   });
+
+  // Update category assignment mutation
+  const updateCategoryAssignmentMutation = useMutation({
+    mutationFn: async ({ speakerId, category }: { speakerId: number; category: string | null }) => {
+      const response = await fetch(`/api/speakers/${speakerId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category }),
+      });
+      if (!response.ok) throw new Error('Failed to update speaker category');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update speaker category", variant: "destructive" });
+    },
+  });
+
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category);
+    
+    // Initialize checkbox states for all speakers
+    const currentSpeakers = Array.isArray(speakers) ? speakers : [];
+    const assignments: {[key: string]: boolean} = {};
+    currentSpeakers.forEach((speaker: any) => {
+      assignments[speaker.id] = speaker.category === category.name;
+    });
+    setCategoryAssignments(assignments);
+    setIsCategoryEditDialogOpen(true);
+  };
+
+  const handleSaveCategoryAssignments = async () => {
+    const updatePromises: Promise<any>[] = [];
+    
+    // Process each speaker assignment change
+    Object.entries(categoryAssignments).forEach(([speakerId, isAssigned]) => {
+      const speaker = speakersArray.find((s: any) => s.id === parseInt(speakerId));
+      if (speaker) {
+        const currentlyAssigned = speaker.category === editingCategory.name;
+        
+        if (isAssigned !== currentlyAssigned) {
+          // Need to update this speaker
+          const newCategory = isAssigned ? editingCategory.name : null;
+          updatePromises.push(
+            updateCategoryAssignmentMutation.mutateAsync({
+              speakerId: parseInt(speakerId),
+              category: newCategory
+            })
+          );
+        }
+      }
+    });
+
+    try {
+      await Promise.all(updatePromises);
+      toast({ title: "Success", description: `Updated speaker assignments for ${editingCategory.name}` });
+      setIsCategoryEditDialogOpen(false);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update some speaker assignments", variant: "destructive" });
+    }
+  };
 
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
@@ -516,7 +582,13 @@ export default function AdminDashboard() {
                           <Badge variant="outline">
                             {speakersArray.filter((s: any) => s.category === category.name).length} speakers
                           </Badge>
-                          <Button variant="outline" size="sm">Edit</Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditCategory(category)}
+                          >
+                            Edit
+                          </Button>
                           <Button variant="outline" size="sm">Delete</Button>
                         </div>
                       </div>
@@ -1438,6 +1510,84 @@ export default function AdminDashboard() {
               disabled={deleteSpeakerMutation.isPending}
             >
               {deleteSpeakerMutation.isPending ? "Deleting..." : "Delete Profile"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Edit Dialog */}
+      <Dialog open={isCategoryEditDialogOpen} onOpenChange={setIsCategoryEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Edit Category: {editingCategory?.name}</DialogTitle>
+            <DialogDescription>
+              Select which speakers should be assigned to the "{editingCategory?.name}" category
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto p-1">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <h4 className="font-medium">{editingCategory?.name}</h4>
+                  <p className="text-sm text-gray-600">{editingCategory?.description}</p>
+                </div>
+                <Badge variant="outline">
+                  {Object.values(categoryAssignments).filter(Boolean).length} speakers assigned
+                </Badge>
+              </div>
+              
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                <h4 className="font-medium text-sm text-gray-700">All Speakers:</h4>
+                {speakersArray.map((speaker: any) => (
+                  <div key={speaker.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center space-x-3">
+                      <img 
+                        src={speaker.imageUrl} 
+                        alt={speaker.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="font-medium">{speaker.name}</p>
+                        <p className="text-sm text-gray-600">{speaker.title}</p>
+                        {speaker.category && speaker.category !== editingCategory?.name && (
+                          <p className="text-xs text-gray-500">Currently in: {speaker.category}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`speaker-${speaker.id}`}
+                        checked={categoryAssignments[speaker.id] || false}
+                        onChange={(e) => {
+                          setCategoryAssignments({
+                            ...categoryAssignments,
+                            [speaker.id]: e.target.checked
+                          });
+                        }}
+                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <Label htmlFor={`speaker-${speaker.id}`} className="text-sm cursor-pointer">
+                        Assign to {editingCategory?.name}
+                      </Label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 border-t mt-4">
+            <Button variant="outline" onClick={() => setIsCategoryEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveCategoryAssignments}
+              disabled={updateCategoryAssignmentMutation.isPending}
+            >
+              {updateCategoryAssignmentMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </DialogContent>
