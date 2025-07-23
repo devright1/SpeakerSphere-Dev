@@ -266,6 +266,8 @@ export const insertUserSchema = createInsertSchema(users).omit({
   lastLoginAt: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export const insertUserSessionSchema = createInsertSchema(userSessions).omit({

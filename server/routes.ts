@@ -228,6 +228,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user stats for profile page
+  app.get("/api/users/stats/:userId", authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      // Ensure user can only access their own stats
+      if (req.user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get user's favorites count
+      const favorites = await storage.getUserBookmarks(userId);
+      const favoritesCount = favorites.length;
+
+      // Get user's reviews count  
+      const reviews = await storage.getUserReviews(userId);
+      const reviewsCount = reviews.length;
+
+      // Get user's inquiries count
+      const inquiries = await storage.getUserInquiries(userId);
+      const inquiriesCount = inquiries.length;
+
+      // Calculate total profile views (sum of views on speakers they've interacted with)
+      const totalProfileViews = 0; // Will implement analytics later
+
+      res.json({
+        favoritesCount,
+        reviewsCount,
+        inquiriesCount,
+        totalProfileViews
+      });
+    } catch (error) {
+      console.error("Failed to get user stats:", error);
+      res.status(500).json({ message: "Failed to get user stats" });
+    }
+  });
+
+  // Get user's favorite/bookmarked speakers
+  app.get("/api/users/favorites/:userId", authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      if (req.user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const bookmarks = await storage.getUserBookmarks(userId);
+      
+      // Get full speaker details for each bookmark
+      const favorites = [];
+      for (const bookmark of bookmarks) {
+        const speaker = await storage.getSpeaker(bookmark.speakerId);
+        if (speaker) {
+          favorites.push({
+            ...speaker,
+            bookmarkId: bookmark.id,
+            notes: bookmark.notes,
+            bookmarkedAt: bookmark.createdAt
+          });
+        }
+      }
+
+      res.json(favorites);
+    } catch (error) {
+      console.error("Failed to get user favorites:", error);
+      res.status(500).json({ message: "Failed to get user favorites" });
+    }
+  });
+
+  // Get user's reviews
+  app.get("/api/users/reviews/:userId", authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      if (req.user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const reviews = await storage.getUserReviews(userId);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Failed to get user reviews:", error);
+      res.status(500).json({ message: "Failed to get user reviews" });
+    }
+  });
+
   // Get all speakers with optional filters
   app.get("/api/speakers", async (req, res) => {
     try {

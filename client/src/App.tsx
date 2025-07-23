@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Speakers from "@/pages/speakers";
 import SpeakerProfile from "@/pages/speaker-profile";
 import Auth from "@/pages/auth";
+import Profile from "@/pages/profile";
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin";
 import NotFound from "@/pages/not-found";
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/speakers" component={Speakers} />
       <Route path="/speakers/:name" component={SpeakerProfile} />
       <Route path="/auth" component={Auth} />
+      <Route path="/profile" component={Profile} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin" component={AdminDashboard} />
       <Route component={NotFound} />

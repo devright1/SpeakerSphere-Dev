@@ -273,4 +273,22 @@ export class DatabaseStorage implements IStorage {
     const result = await db.select().from(userBookmarks).where(eq(userBookmarks.userId, userId));
     return result;
   }
+
+  async getUserReviews(userId: string): Promise<Review[]> {
+    const result = await db.select().from(reviews)
+      .where(eq(reviews.userId, userId))
+      .orderBy(desc(reviews.createdAt));
+    return result;
+  }
+
+  async getUserInquiries(userId: string): Promise<Inquiry[]> {
+    // For now, match by email since we don't have user ID in inquiries table
+    const user = await this.getUserById(userId);
+    if (!user) return [];
+    
+    const result = await db.select().from(inquiries)
+      .where(eq(inquiries.clientEmail, user.email))
+      .orderBy(desc(inquiries.createdAt));
+    return result;
+  }
 }

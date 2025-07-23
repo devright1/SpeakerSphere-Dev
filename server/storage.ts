@@ -83,6 +83,10 @@ export interface IStorage {
   createUserBookmark(bookmark: InsertUserBookmark): Promise<UserBookmark>;
   deleteUserBookmark(userId: string, speakerId: number): Promise<boolean>;
   getUserBookmarks(userId: string): Promise<UserBookmark[]>;
+  
+  // User Profile Data
+  getUserReviews(userId: string): Promise<Review[]>;
+  getUserInquiries(userId: string): Promise<Inquiry[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -561,6 +565,18 @@ export class MemStorage implements IStorage {
   async getUserBookmarks(userId: string): Promise<UserBookmark[]> {
     return Array.from(this.userBookmarks.values())
       .filter(bookmark => bookmark.userId === userId)
+      .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+  }
+
+  async getUserReviews(userId: string): Promise<Review[]> {
+    return Array.from(this.reviews.values())
+      .filter(review => review.userId === userId)
+      .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+  }
+
+  async getUserInquiries(userId: string): Promise<Inquiry[]> {
+    return Array.from(this.inquiries.values())
+      .filter(inquiry => inquiry.clientEmail === userId) // Match by user email for now
       .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
   }
 }
