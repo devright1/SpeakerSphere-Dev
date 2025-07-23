@@ -16,6 +16,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
+import SpeakerPerformanceAnalytics from "@/components/speaker-performance-analytics";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -343,8 +344,9 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="speakers">Speakers</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
@@ -618,6 +620,20 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <AnalyticsDashboard />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Speaker Performance Analytics</CardTitle>
+                <CardDescription>
+                  Detailed view and engagement tracking for each speaker, sorted by total views
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SpeakerPerformanceAnalytics />
               </CardContent>
             </Card>
           </TabsContent>
