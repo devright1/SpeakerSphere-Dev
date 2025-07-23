@@ -47,9 +47,11 @@ export class DatabaseStorage implements IStorage {
     const conditions = [];
     
     // Only apply hideProfile filter if not explicitly requesting hidden speakers
-    if (!filters?.includeHidden) {
-      conditions.push(eq(speakers.hideProfile, false));
-    }
+    // For now, disable this filter to show all speakers
+    // TODO: Re-enable this when we want to hide speakers from public view
+    // if (!filters?.includeHidden) {
+    //   conditions.push(eq(speakers.hideProfile, false));
+    // }
 
     if (filters?.category) {
       conditions.push(eq(speakers.category, filters.category));
@@ -93,7 +95,14 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    const result = await db.select().from(speakers).where(and(...conditions));
+    let query = db.select().from(speakers);
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    const result = await query;
+    console.log(`Database query returned ${result.length} speakers`);
     return result;
   }
 

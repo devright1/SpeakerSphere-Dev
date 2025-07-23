@@ -442,14 +442,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } = req.query;
 
       const filters = {
-        category: category as string,
-        location: location as string,
+        category: category && category !== "" ? category as string : undefined,
+        location: location && location !== "" ? location as string : undefined,
         minRating: minRating ? parseFloat(minRating as string) : undefined,
-        expertise: expertise as string,
-        search: search as string,
+        expertise: expertise && expertise !== "" ? expertise as string : undefined,
+        search: search && search !== "" ? search as string : undefined,
       };
 
       const speakers = await storage.getSpeakers(filters);
+      console.log(`API returning ${speakers.length} speakers to client`);
+      // Disable caching for speakers endpoint to ensure fresh data
+      res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.header('Pragma', 'no-cache');
+      res.header('Expires', '0');
       res.json(speakers);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch speakers" });
