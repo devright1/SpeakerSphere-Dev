@@ -4,6 +4,7 @@ import multer from "multer";
 import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { insertReviewSchema, insertInquirySchema, insertUserSchema } from "@shared/schema";
+import { AnalyticsService } from "./analytics";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -58,9 +59,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(userData.password, saltRounds);
 
-      // Create user
+      // Create user  
+      const { password, ...userDataWithoutPassword } = userData;
       const user = await storage.createUser({
-        ...userData,
+        ...userDataWithoutPassword,
         passwordHash
       });
 
@@ -494,6 +496,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(Array.from(suggestions).slice(0, 10));
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch suggestions" });
+    }
+  });
+
+  // Analytics endpoints
+  app.post("/api/analytics/track", async (req, res) => {
+    try {
+      const { speakerId, eventType, metadata } = req.body;
+      
+      if (!speakerId || !eventType) {
+        return res.status(400).json({ message: "Speaker ID and event type are required" });
+      }
+
+      // Get request metadata
+      const userAgent = req.get('User-Agent');
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const referrer = req.get('Referer');
+      const sessionId = req.session?.id;
+
+      await AnalyticsService.trackClick(
+        speakerId, 
+        eventType, 
+        metadata,
+        userAgent,
+        ipAddress,
+        referrer,
+        sessionId
+      );
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to track analytics:", error);
+      res.status(500).json({ message: "Failed to track event" });
+    }
+  });
+
+  app.get("/api/analytics/speaker/:id", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      if (isNaN(speakerId)) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+
+      const analytics = await AnalyticsService.getSpeakerAnalytics(speakerId);
+      const performanceScore = await AnalyticsService.calculatePerformanceScore(speakerId);
+      const demandForecast = await AnalyticsService.getDemandForecast(speakerId);
+      const trends = await AnalyticsService.getAnalyticsTrends(speakerId, 30);
+
+      res.json({
+        analytics,
+        performanceScore,
+        demandForecast,
+        trends,
+      });
+    } catch (error) {
+      console.error("Failed to get speaker analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  app.get("/api/analytics/dashboard", async (req, res) => {
+    try {
+      const dashboardData = await AnalyticsService.getDashboardData();
+      res.json(dashboardData);
+    } catch (error) {
+      console.error("Failed to get dashboard analytics:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard data" });
+    }
+  });
+
+  app.get("/api/analytics/top-performers", async (req, res) => {
+    try {
+      const { limit = 10, metric = 'profileViews' } = req.query;
+      const topPerformers = await AnalyticsService.getTopPerformers(
+        parseInt(limit as string), 
+        metric as string
+      );
+      res.json(topPerformers);
+    } catch (error) {
+      console.error("Failed to get top performers:", error);
+      res.status(500).json({ message: "Failed to fetch top performers" });
     }
   });
 

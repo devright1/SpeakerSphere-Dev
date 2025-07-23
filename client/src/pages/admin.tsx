@@ -15,6 +15,7 @@ import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, Fo
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import AnalyticsDashboard from "@/components/analytics-dashboard";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -341,11 +342,11 @@ export default function AdminDashboard() {
         </div>
 
         {/* Admin Tabs */}
-        <Tabs defaultValue="speakers" className="space-y-6">
+        <Tabs defaultValue="analytics" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="speakers">Speakers</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -608,158 +609,17 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <div className="grid gap-6">
-              {/* Overall Analytics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Click Analytics Overview</CardTitle>
-                  <CardDescription>
-                    Track all clickable interactions across The Speaker Sphere
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Eye className="h-5 w-5 text-blue-500" />
-                        <span className="font-medium">Profile Views</span>
-                      </div>
-                      <div className="text-2xl font-bold">0</div>
-                      <div className="text-sm text-gray-500">Total speaker profile views (since today)</div>
-                    </div>
-                    
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <MousePointer className="h-5 w-5 text-green-500" />
-                        <span className="font-medium">Contact Clicks</span>
-                      </div>
-                      <div className="text-2xl font-bold">0</div>
-                      <div className="text-sm text-gray-500">Email, phone, website clicks (since today)</div>
-                    </div>
-                    
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <ExternalLink className="h-5 w-5 text-purple-500" />
-                        <span className="font-medium">External Links</span>
-                      </div>
-                      <div className="text-2xl font-bold">0</div>
-                      <div className="text-sm text-gray-500">Social media, website visits (since today)</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Speaker-Specific Analytics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Speaker Performance Analytics</CardTitle>
-                  <CardDescription>
-                    Detailed click tracking for each speaker's profile interactions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-sm font-medium text-gray-700 mb-4">Speaker Analytics (tracking starts today - {new Date().toLocaleDateString()})</div>
-                    
-                    {speakersArray.slice(0, 8).map((speaker: any, index: number) => {
-                      // Analytics data reset to 0 for today's base point
-                      const analytics = {
-                        profileViews: 0,
-                        emailClicks: 0,
-                        phoneClicks: 0,
-                        websiteClicks: 0,
-                        socialClicks: 0,
-                        inquiryClicks: 0
-                      };
-                      
-                      const totalClicks = analytics.emailClicks + analytics.phoneClicks + 
-                                        analytics.websiteClicks + analytics.socialClicks + 
-                                        analytics.inquiryClicks;
-                      
-                      return (
-                        <div key={speaker.slug} className="p-4 border rounded-lg">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-3">
-                              <img 
-                                src={speaker.imageUrl} 
-                                alt={speaker.name}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
-                              <div>
-                                <h4 className="font-medium">{speaker.name}</h4>
-                                <p className="text-sm text-gray-600">{speaker.category}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-lg font-bold">{totalClicks}</div>
-                              <div className="text-sm text-gray-500">total clicks</div>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
-                            <div className="flex items-center space-x-1">
-                              <Eye className="h-4 w-4 text-blue-500" />
-                              <span>{analytics.profileViews} views</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Mail className="h-4 w-4 text-green-500" />
-                              <span>{analytics.emailClicks} emails</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Phone className="h-4 w-4 text-orange-500" />
-                              <span>{analytics.phoneClicks} calls</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Globe className="h-4 w-4 text-purple-500" />
-                              <span>{analytics.websiteClicks} website</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <ExternalLink className="h-4 w-4 text-pink-500" />
-                              <span>{analytics.socialClicks} social</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <MessageSquare className="h-4 w-4 text-teal-500" />
-                              <span>{analytics.inquiryClicks} inquiries</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Link Performance Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Link Type Performance</CardTitle>
-                  <CardDescription>
-                    Breakdown of click performance by link type across all speakers
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[
-                      { icon: Mail, label: "Email Links", clicks: 0, color: "text-green-500" },
-                      { icon: Phone, label: "Phone Links", clicks: 0, color: "text-orange-500" },
-                      { icon: Globe, label: "Website Links", clicks: 0, color: "text-purple-500" },
-                      { icon: ExternalLink, label: "Social Media", clicks: 0, color: "text-pink-500" },
-                      { icon: MessageSquare, label: "Inquiry Forms", clicks: 0, color: "text-teal-500" },
-                      { icon: Eye, label: "Video Views", clicks: 0, color: "text-blue-500" }
-                    ].map((item, index) => (
-                      <div key={index} className="p-4 border rounded-lg">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <item.icon className={`h-5 w-5 ${item.color}`} />
-                          <span className="font-medium">{item.label}</span>
-                        </div>
-                        <div className="text-2xl font-bold">{item.clicks.toLocaleString()}</div>
-                        <div className="text-sm text-gray-500">Total clicks (since today)</div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Advanced Speaker Analytics</CardTitle>
+                <CardDescription>
+                  Comprehensive performance metrics, demand forecasting, and engagement analytics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AnalyticsDashboard />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-6">

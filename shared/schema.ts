@@ -185,6 +185,79 @@ export const userBookmarks = pgTable("user_bookmarks", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Analytics tracking tables
+export const speakerAnalytics = pgTable("speaker_analytics", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  profileViews: integer("profile_views").default(0),
+  emailClicks: integer("email_clicks").default(0),
+  phoneClicks: integer("phone_clicks").default(0),
+  websiteClicks: integer("website_clicks").default(0),
+  socialClicks: integer("social_clicks").default(0),
+  inquiryClicks: integer("inquiry_clicks").default(0),
+  videoViews: integer("video_views").default(0),
+  shareCount: integer("share_count").default(0),
+  favoriteCount: integer("favorite_count").default(0),
+  searchAppearances: integer("search_appearances").default(0),
+  searchClicks: integer("search_clicks").default(0),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+});
+
+// Daily analytics snapshots for trend analysis
+export const dailyAnalytics = pgTable("daily_analytics", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD format
+  profileViews: integer("profile_views").default(0),
+  emailClicks: integer("email_clicks").default(0),
+  phoneClicks: integer("phone_clicks").default(0),
+  websiteClicks: integer("website_clicks").default(0),
+  socialClicks: integer("social_clicks").default(0),
+  inquiryClicks: integer("inquiry_clicks").default(0),
+  videoViews: integer("video_views").default(0),
+  shareCount: integer("share_count").default(0),
+  favoriteCount: integer("favorite_count").default(0),
+  searchAppearances: integer("search_appearances").default(0),
+  searchClicks: integer("search_clicks").default(0),
+  averageRating: decimal("average_rating", { precision: 3, scale: 2 }),
+  totalInquiries: integer("total_inquiries").default(0),
+  totalReviews: integer("total_reviews").default(0),
+});
+
+// Click tracking events for real-time analytics
+export const clickEvents = pgTable("click_events", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  eventType: text("event_type").notNull(), // "profile_view", "email_click", "phone_click", etc.
+  userAgent: text("user_agent"),
+  ipAddress: text("ip_address"),
+  referrer: text("referrer"),
+  sessionId: text("session_id"),
+  userId: text("user_id"), // If user is logged in
+  metadata: text("metadata"), // JSON string for additional data
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// Demand forecasting data
+export const demandMetrics = pgTable("demand_metrics", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  period: text("period").notNull(), // "week", "month", "quarter"
+  periodStart: text("period_start").notNull(), // YYYY-MM-DD
+  periodEnd: text("period_end").notNull(), // YYYY-MM-DD
+  inquiryVolume: integer("inquiry_volume").default(0),
+  inquiryRate: decimal("inquiry_rate", { precision: 5, scale: 2 }), // inquiries per view
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 2 }), // bookings per inquiry
+  averageBudget: decimal("average_budget", { precision: 10, scale: 2 }),
+  topEventTypes: text("top_event_types").array(),
+  topLocations: text("top_locations").array(),
+  seasonalityScore: decimal("seasonality_score", { precision: 3, scale: 2 }),
+  trendDirection: text("trend_direction"), // "up", "down", "stable"
+  demandScore: integer("demand_score"), // 1-100 composite score
+  competitivePosition: integer("competitive_position"), // ranking vs similar speakers
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Enhanced reviews - add userId field for registered user reviews
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -210,6 +283,26 @@ export const insertUserBookmarkSchema = createInsertSchema(userBookmarks).omit({
   createdAt: true,
 });
 
+// Analytics schema exports
+export const insertSpeakerAnalyticsSchema = createInsertSchema(speakerAnalytics).omit({
+  id: true,
+  lastUpdated: true,
+});
+
+export const insertDailyAnalyticsSchema = createInsertSchema(dailyAnalytics).omit({
+  id: true,
+});
+
+export const insertClickEventSchema = createInsertSchema(clickEvents).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertDemandMetricsSchema = createInsertSchema(demandMetrics).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type Speaker = typeof speakers.$inferSelect;
 export type InsertSpeaker = z.infer<typeof insertSpeakerSchema>;
 export type Review = typeof reviews.$inferSelect;
@@ -228,3 +321,11 @@ export type UserLike = typeof userLikes.$inferSelect;
 export type InsertUserLike = z.infer<typeof insertUserLikeSchema>;
 export type UserBookmark = typeof userBookmarks.$inferSelect;
 export type InsertUserBookmark = z.infer<typeof insertUserBookmarkSchema>;
+export type SpeakerAnalytics = typeof speakerAnalytics.$inferSelect;
+export type InsertSpeakerAnalytics = z.infer<typeof insertSpeakerAnalyticsSchema>;
+export type DailyAnalytics = typeof dailyAnalytics.$inferSelect;
+export type InsertDailyAnalytics = z.infer<typeof insertDailyAnalyticsSchema>;
+export type ClickEvent = typeof clickEvents.$inferSelect;
+export type InsertClickEvent = z.infer<typeof insertClickEventSchema>;
+export type DemandMetrics = typeof demandMetrics.$inferSelect;
+export type InsertDemandMetrics = z.infer<typeof insertDemandMetricsSchema>;
