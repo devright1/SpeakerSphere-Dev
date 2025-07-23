@@ -129,7 +129,13 @@ The application is designed for healthcare industry professionals seeking to dis
 
 ## Recent Changes
 
-### January 23, 2025 - Deployment Issues Fixed
+### January 23, 2025 - Analytics and Featured Speakers Updates
+- Created comprehensive Speaker Performance Analytics component with sorting by total views (highest to lowest)
+- Added alphabetical sorting for tied view counts in performance analytics
+- Implemented new Performance tab in admin panel for detailed speaker analytics tracking
+- Updated Featured Speakers to display maximum 16 cards with responsive grid layout (1-2-3-4 cards per row)
+- Added shuffle functionality to rotate all featured speakers on each page load for fair exposure
+- Shows all speakers in performance analytics even with no data (analytics populate as users interact)
 - Fixed admin icon visibility by converting Link to Button with onClick handler
 - Fixed Sign In button functionality by replacing Link with Button and onClick navigation
 - Implemented consistent featured speaker card heights (600px fixed height with flexbox layout)
