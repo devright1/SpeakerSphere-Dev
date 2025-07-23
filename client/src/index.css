@@ -190,4 +190,18 @@
   .bg-devright-slate {
     background-color: hsl(var(--devright-slate));
   }
+
+  /* Force admin icon visibility in all environments */
+  .admin-icon-force-visible {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  /* Ensure buttons work in deployment */
+  .deployment-safe-button {
+    cursor: pointer !important;
+    user-select: none !important;
+  }
 }

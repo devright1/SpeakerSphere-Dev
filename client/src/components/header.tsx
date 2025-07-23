@@ -16,6 +16,25 @@ export default function Header() {
   const [location, setLocation] = useLocation();
   const { user, isAuthenticated, logout } = useAuthState();
 
+  // Navigation handlers for deployment compatibility
+  const navigateToAuth = () => {
+    try {
+      setLocation('/auth');
+    } catch (error) {
+      // Fallback for deployment environments
+      window.location.href = '/auth';
+    }
+  };
+
+  const navigateToAdmin = () => {
+    try {
+      setLocation('/admin-login');
+    } catch (error) {
+      // Fallback for deployment environments
+      window.location.href = '/admin-login';
+    }
+  };
+
   const navigationItems = [
     { href: "/speakers", label: "Find Speakers" },
     { href: "/categories", label: "Categories" },
@@ -86,43 +105,51 @@ export default function Header() {
               <>
                 <Button 
                   variant="ghost" 
-                  className="text-gray-700 hover:text-primary"
-                  onClick={() => window.location.href = '/auth'}
+                  className="text-gray-700 hover:text-primary deployment-safe-button"
+                  onClick={navigateToAuth}
+                  data-auth-button="signin"
                 >
                   Sign In
                 </Button>
                 <Button 
-                  className="bg-primary hover:bg-blue-700 text-white"
-                  onClick={() => window.location.href = '/auth'}
+                  className="bg-primary hover:bg-blue-700 text-white deployment-safe-button"
+                  onClick={navigateToAuth}
+                  data-auth-button="getstarted"
                 >
                   Get Started
                 </Button>
               </>
             )}
-            {/* Admin Lock Icon - Always visible */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-4 p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group"
-              onClick={() => window.location.href = '/admin-login'}
-              title="Admin Access"
-            >
-              <Lock className="h-5 w-5 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
-            </Button>
+            {/* Admin Lock Icon - Always visible with forced display */}
+            <div className="ml-4 admin-icon-force-visible">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group admin-icon-force-visible deployment-safe-button"
+                onClick={navigateToAdmin}
+                title="Admin Access"
+                data-admin-button="true"
+              >
+                <Lock className="h-5 w-5 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+              </Button>
+            </div>
           </div>
 
           {/* Mobile Menu */}
           <div className="md:hidden flex items-center space-x-2">
-            {/* Admin Lock Icon - Mobile */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group"
-              onClick={() => window.location.href = '/admin-login'}
-              title="Admin Access"
-            >
-              <Lock className="h-4 w-4 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
-            </Button>
+            {/* Admin Lock Icon - Mobile with forced display */}
+            <div className="admin-icon-force-visible">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group admin-icon-force-visible deployment-safe-button"
+                onClick={navigateToAdmin}
+                title="Admin Access"
+                data-admin-button="true"
+              >
+                <Lock className="h-4 w-4 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+              </Button>
+            </div>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -145,12 +172,25 @@ export default function Header() {
                     </Link>
                   ))}
                   <div className="border-t pt-4 space-y-2">
-                    <Link href="/admin-login" className="w-full">
-                      <Button variant="ghost" className="w-full justify-start text-gray-700">
-                        <Lock className="h-4 w-4 mr-2" />
-                        Admin Access
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-gray-700 deployment-safe-button admin-icon-force-visible"
+                      onClick={navigateToAdmin}
+                      data-admin-button="mobile-menu"
+                    >
+                      <Lock className="h-4 w-4 mr-2" />
+                      Admin Access
+                    </Button>
+                    {/* Backup admin access link */}
+                    <div className="text-xs text-gray-500 px-4">
+                      <span 
+                        onClick={navigateToAdmin}
+                        className="underline cursor-pointer hover:text-primary deployment-safe-button"
+                        data-admin-fallback="true"
+                      >
+                        Admin Login
+                      </span>
+                    </div>
                     {isAuthenticated ? (
                       <>
                         <div className="px-4 py-2">
@@ -178,14 +218,16 @@ export default function Header() {
                       <>
                         <Button 
                           variant="ghost" 
-                          className="w-full justify-start text-gray-700"
-                          onClick={() => window.location.href = '/auth'}
+                          className="w-full justify-start text-gray-700 deployment-safe-button"
+                          onClick={navigateToAuth}
+                          data-auth-button="signin-mobile"
                         >
                           Sign In
                         </Button>
                         <Button 
-                          className="w-full bg-primary hover:bg-blue-700 text-white"
-                          onClick={() => window.location.href = '/auth'}
+                          className="w-full bg-primary hover:bg-blue-700 text-white deployment-safe-button"
+                          onClick={navigateToAuth}
+                          data-auth-button="getstarted-mobile"
                         >
                           Get Started
                         </Button>
