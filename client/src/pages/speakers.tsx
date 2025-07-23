@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import SearchFilters from "@/components/search-filters";
@@ -21,8 +22,35 @@ interface FilterState {
 }
 
 export default function Speakers() {
+  const [location] = useLocation();
   const [filters, setFilters] = useState<FilterState>({});
   const [sortBy, setSortBy] = useState("relevance");
+
+  // Parse URL parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialFilters: FilterState = {};
+    
+    if (urlParams.get('category')) {
+      initialFilters.category = urlParams.get('category')!;
+    }
+    if (urlParams.get('location')) {
+      initialFilters.location = urlParams.get('location')!;
+    }
+    if (urlParams.get('search')) {
+      initialFilters.search = urlParams.get('search')!;
+    }
+    if (urlParams.get('minRating')) {
+      initialFilters.minRating = parseFloat(urlParams.get('minRating')!);
+    }
+    if (urlParams.get('expertise')) {
+      initialFilters.expertise = urlParams.get('expertise')!;
+    }
+    
+    if (Object.keys(initialFilters).length > 0) {
+      setFilters(initialFilters);
+    }
+  }, [location]);
 
   const { data: speakers, isLoading, error } = useQuery<Speaker[]>({
     queryKey: ["/api/speakers", filters],
@@ -90,9 +118,16 @@ export default function Speakers() {
             {/* Results */}
             <div className="lg:col-span-3">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {isLoading ? "Loading..." : `${speakers?.length || 0} Speakers Found`}
-                </h2>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {isLoading ? "Loading..." : `${speakers?.length || 0} Speakers Found`}
+                  </h2>
+                  {filters.category && (
+                    <p className="text-lg text-gray-600 mt-1">
+                      Category: <span className="font-medium text-primary">{filters.category}</span>
+                    </p>
+                  )}
+                </div>
                 <select 
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   value={sortBy}
