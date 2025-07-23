@@ -17,7 +17,6 @@ interface FilterState {
   maxFee?: number;
   minFee?: number;
   expertise?: string;
-  availability?: string;
   search?: string;
 }
 

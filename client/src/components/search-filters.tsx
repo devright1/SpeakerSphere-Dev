@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,13 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
   const [priceRange, setPriceRange] = useState("");
   const [minRating, setMinRating] = useState("");
   const [location, setLocation] = useState("");
-  const [availability, setAvailability] = useState("");
+  const [showFeeRange, setShowFeeRange] = useState(false);
+
+  // Check if fee range should be shown based on admin settings
+  useEffect(() => {
+    const feeRangeVisible = localStorage.getItem("adminFeeRangeVisible");
+    setShowFeeRange(feeRangeVisible === "true");
+  }, []);
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
@@ -73,9 +79,7 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
       filters.location = location;
     }
     
-    if (availability) {
-      filters.availability = availability;
-    }
+
 
     onFilterChange(filters);
   };
@@ -85,7 +89,6 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
     setPriceRange("");
     setMinRating("");
     setLocation("");
-    setAvailability("");
     onFilterChange({});
   };
 
@@ -127,30 +130,33 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
           </div>
         </div>
 
-        <Separator />
-
-        {/* Price Range */}
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-3">Fee Range</h4>
-          <RadioGroup value={priceRange} onValueChange={setPriceRange}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="under-5000" id="under-5000" />
-              <Label htmlFor="under-5000">Under $5,000</Label>
+        {showFeeRange && (
+          <>
+            <Separator />
+            {/* Price Range */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3">Fee Range</h4>
+              <RadioGroup value={priceRange} onValueChange={setPriceRange}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="under-5000" id="under-5000" />
+                  <Label htmlFor="under-5000">Under $5,000</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="5000-10000" id="5000-10000" />
+                  <Label htmlFor="5000-10000">$5,000 - $10,000</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="10000-20000" id="10000-20000" />
+                  <Label htmlFor="10000-20000">$10,000 - $20,000</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="over-20000" id="over-20000" />
+                  <Label htmlFor="over-20000">$20,000+</Label>
+                </div>
+              </RadioGroup>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="5000-10000" id="5000-10000" />
-              <Label htmlFor="5000-10000">$5,000 - $10,000</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="10000-20000" id="10000-20000" />
-              <Label htmlFor="10000-20000">$10,000 - $20,000</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="over-20000" id="over-20000" />
-              <Label htmlFor="over-20000">$20,000+</Label>
-            </div>
-          </RadioGroup>
-        </div>
+          </>
+        )}
 
         <Separator />
 
@@ -194,23 +200,6 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
                 </div>
                 3+ Stars
               </Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <Separator />
-
-        {/* Availability */}
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-3">Availability</h4>
-          <RadioGroup value={availability} onValueChange={setAvailability}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="available" id="available" />
-              <Label htmlFor="available">Available</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="limited" id="limited" />
-              <Label htmlFor="limited">Limited Availability</Label>
             </div>
           </RadioGroup>
         </div>

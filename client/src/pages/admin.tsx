@@ -34,6 +34,7 @@ export default function AdminDashboard() {
   const [isCategoryEditDialogOpen, setIsCategoryEditDialogOpen] = useState(false);
   const [categoryAssignments, setCategoryAssignments] = useState<{[key: string]: boolean}>({});
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
+  const [feeRangeVisible, setFeeRangeVisible] = useState(false);
   const { toast } = useToast();
 
   // Check authentication on component mount
@@ -49,6 +50,10 @@ export default function AdminDashboard() {
     if (email) {
       setAdminEmail(email);
     }
+
+    // Load fee range visibility setting
+    const feeRangeVisibleSetting = localStorage.getItem("adminFeeRangeVisible");
+    setFeeRangeVisible(feeRangeVisibleSetting === "true");
   }, [setLocation]);
 
   const { data: speakers } = useQuery({
@@ -919,6 +924,39 @@ export default function AdminDashboard() {
                             </button>
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filter Settings */}
+                  <div className="pt-6 border-t">
+                    <h3 className="text-lg font-semibold mb-4">Filter Settings</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                      <h4 className="font-medium mb-3">Find Speakers Page Filters</h4>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Fee Range Filter</p>
+                          <p className="text-sm text-gray-600">Show/hide fee range filter on Find Speakers page</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={feeRangeVisible}
+                            onChange={(e) => {
+                              const isVisible = e.target.checked;
+                              setFeeRangeVisible(isVisible);
+                              localStorage.setItem("adminFeeRangeVisible", isVisible.toString());
+                              toast({
+                                title: "Success",
+                                description: `Fee Range filter ${isVisible ? 'enabled' : 'disabled'} on Find Speakers page`,
+                              });
+                            }}
+                            className="sr-only"
+                          />
+                          <div className={`w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${feeRangeVisible ? 'bg-blue-600' : 'bg-gray-200'} relative transition-colors duration-200`}>
+                            <div className={`absolute top-[2px] left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-transform duration-200 ${feeRangeVisible ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                          </div>
+                        </label>
                       </div>
                     </div>
                   </div>
