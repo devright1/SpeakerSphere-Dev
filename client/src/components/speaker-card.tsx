@@ -13,8 +13,8 @@ interface SpeakerCardProps {
 export default function SpeakerCard({ speaker, featured = false }: SpeakerCardProps) {
 
   return (
-    <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg h-[600px]" : "shadow-md"}`}>
-      <div className="relative overflow-hidden">
+    <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg h-[600px] flex flex-col" : "shadow-md"}`}>
+      <div className="relative overflow-hidden flex-shrink-0">
         <img 
           src={speaker.imageUrl} 
           alt={speaker.name}
@@ -37,7 +37,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         </button>
       </div>
       
-      <CardContent className={`p-6 ${featured ? "flex flex-col" : ""}`}>
+      <CardContent className={`p-6 ${featured ? "flex flex-col flex-1" : ""}`}>
         {/* Badges moved below image */}
         <div className="flex gap-2 mb-3">
           {speaker.verified && (
@@ -104,7 +104,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           </div>
         </div>
 
-        <div className="flex gap-2 mt-auto">
+        <div className={`flex gap-2 ${featured ? "mt-auto pt-4" : "mt-4"}`}>
           <Link href={`/speakers/${(speaker as any).slug}`} className="flex-1">
             <Button className="w-full bg-primary hover:bg-blue-700 text-white">
               View Profile
