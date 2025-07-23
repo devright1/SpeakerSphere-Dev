@@ -134,10 +134,12 @@ The application is designed for healthcare industry professionals seeking to dis
 - Resolved API filter handling to properly ignore empty string values instead of treating them as valid filters
 - Fixed frontend filter clearing logic - was merging empty filters with existing ones instead of replacing completely
 - Improved database query logic to handle cases with no filter conditions properly
-- Added debugging logs to track database queries and API responses for better troubleshooting
 - Verified all 62 speakers are now returned when no filters are applied
 - Confirmed speaker filtering by category, location, expertise, and search terms works correctly
 - Categories page routing and speaker filtering via URL parameters working properly
+- **Added multiple category filtering** - users can now select multiple topics and see combined results
+- Updated speaker counts in filter section to show accurate numbers for each category (e.g., "Periodontics (13)")
+- Implemented OR logic for multiple categories - shows speakers from any selected category
 
 ### Previous Updates - Analytics and Featured Speakers
 - Created comprehensive Speaker Performance Analytics component with sorting by total views (highest to lowest)

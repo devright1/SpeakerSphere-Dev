@@ -109,7 +109,6 @@ export class DatabaseStorage implements IStorage {
     }
     
     const result = await query;
-    console.log(`Database query returned ${result.length} speakers`);
     return result;
   }
 

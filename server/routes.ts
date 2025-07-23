@@ -451,9 +451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search: search && search !== "" ? search as string : undefined,
       };
 
-      console.log('Filters received:', JSON.stringify(filters, null, 2));
       const speakers = await storage.getSpeakers(filters);
-      console.log(`API returning ${speakers.length} speakers to client`);
       // Disable caching for speakers endpoint to ensure fresh data
       res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.header('Pragma', 'no-cache');
