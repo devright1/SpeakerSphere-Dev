@@ -57,18 +57,48 @@ export default function ProfilePage() {
   // Fetch user activity stats
   const { data: userStats, isLoading: statsLoading } = useQuery<UserStats>({
     queryKey: ['/api/users/stats', user?.id],
+    queryFn: async () => {
+      const token = localStorage.getItem('userToken');
+      const response = await fetch(`/api/users/stats/${user?.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch stats');
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 
   // Fetch user favorites
   const { data: favorites, isLoading: favoritesLoading } = useQuery<any[]>({
     queryKey: ['/api/users/favorites', user?.id],
+    queryFn: async () => {
+      const token = localStorage.getItem('userToken');
+      const response = await fetch(`/api/users/favorites/${user?.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch favorites');
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 
   // Fetch user reviews
   const { data: userReviews, isLoading: reviewsLoading } = useQuery<any[]>({
     queryKey: ['/api/users/reviews', user?.id],
+    queryFn: async () => {
+      const token = localStorage.getItem('userToken');
+      const response = await fetch(`/api/users/reviews/${user?.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch reviews');
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 

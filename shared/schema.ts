@@ -261,6 +261,7 @@ export const demandMetrics = pgTable("demand_metrics", {
 // Enhanced reviews - add userId field for registered user reviews
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
+  passwordHash: true, // Remove passwordHash from the input schema
   emailVerified: true,
   isActive: true,
   lastLoginAt: true,
