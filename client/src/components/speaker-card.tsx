@@ -31,7 +31,15 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               : "object-contain object-center bg-gray-100"
           }`}
         />
-        <div className="absolute top-4 left-4 flex gap-2">
+
+        <button className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors">
+          <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+        </button>
+      </div>
+      
+      <CardContent className={`p-6 ${featured ? "flex flex-col" : ""}`}>
+        {/* Badges moved below image */}
+        <div className="flex gap-2 mb-3">
           {speaker.verified && (
             <Badge variant="default" className="bg-success text-white">
               <CheckCircle className="w-3 h-3 mr-1" />
@@ -44,12 +52,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
             </Badge>
           )}
         </div>
-        <button className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors">
-          <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
-        </button>
-      </div>
-      
-      <CardContent className={`p-6 ${featured ? "flex flex-col" : ""}`}>
+
         <div className="flex items-center justify-between mb-3">
           {!speaker.hideRatings && (
             <div className="flex items-center">
