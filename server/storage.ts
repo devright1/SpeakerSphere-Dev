@@ -563,4 +563,42 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { DatabaseStorage } from "./database-storage";
+import { DataMigration } from "./data-migration";
+
+// Check if we should use database storage
+const USE_DATABASE = process.env.NODE_ENV === "production" || process.env.USE_DATABASE === "true" || true; // Always use database for domain sync
+
+// Initialize storage based on environment
+let storageInstance: IStorage;
+
+if (USE_DATABASE) {
+  storageInstance = new DatabaseStorage();
+  
+  // Run migration on startup if needed
+  const migration = new DataMigration();
+  migration.checkMigrationStatus().then(async (hasMigratedData) => {
+    if (!hasMigratedData) {
+      console.log("🚀 No existing data found in database. Running initial migration...");
+      try {
+        await migration.migrateAllData();
+        console.log("✅ Initial data migration completed successfully!");
+      } catch (error) {
+        console.error("❌ Failed to migrate initial data:", error);
+        console.log("⚠️  Falling back to memory storage for this session");
+        storageInstance = new MemStorage();
+      }
+    } else {
+      console.log("✅ Database contains existing data. Using PostgreSQL storage.");
+    }
+  }).catch((error) => {
+    console.error("❌ Failed to check migration status:", error);
+    console.log("⚠️  Falling back to memory storage for this session");
+    storageInstance = new MemStorage();
+  });
+} else {
+  storageInstance = new MemStorage();
+  console.log("🔧 Using memory storage for development");
+}
+
+export const storage = storageInstance;

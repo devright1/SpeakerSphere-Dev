@@ -35,6 +35,8 @@
 .scrollable-filters {
   overflow-y: scroll;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+  scroll-behavior: smooth;
 }
 
 /* Custom speaker image scaling utilities */

@@ -265,6 +265,47 @@ export default function AdminDashboard() {
     }
   };
 
+  // Toggle speaker visibility mutation
+  const toggleSpeakerVisibilityMutation = useMutation({
+    mutationFn: async (speakerId: number) => {
+      const response = await fetch(`/api/admin/speakers/${speakerId}/toggle-visibility`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminEmail, password: "Doneright123!" }),
+      });
+      if (!response.ok) throw new Error('Failed to toggle speaker visibility');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      const status = data.speaker.hideProfile ? "hidden" : "visible";
+      toast({ 
+        title: "Speaker Visibility Updated", 
+        description: `Speaker is now ${status} across all domains`,
+        variant: data.speaker.hideProfile ? "destructive" : "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update speaker visibility", variant: "destructive" });
+    },
+  });
+
+  const handleToggleSpeakerVisibility = (speakerId: number) => {
+    toggleSpeakerVisibilityMutation.mutate(speakerId);
+  };
+
+  // Toggle fee range visibility
+  const handleToggleFeeRange = () => {
+    const newValue = !feeRangeVisible;
+    setFeeRangeVisible(newValue);
+    localStorage.setItem("adminFeeRangeVisible", newValue.toString());
+    toast({ 
+      title: "Settings Updated", 
+      description: `Fee Range filter is now ${newValue ? "visible" : "hidden"} on Find Speakers page` 
+    });
+  };
+
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
   
@@ -538,28 +579,41 @@ export default function AdminDashboard() {
                             </div>
                           </div>
 
-                          {/* Status Indicators Row */}
-                          <div className="mt-3 pt-3 border-t flex items-center justify-between">
-                            <div className="flex items-center space-x-4 text-sm">
-                              <div className="flex items-center space-x-1">
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-gray-600">Profile Visible</span>
+                          {/* Visibility Controls Row */}
+                          <div className="mt-3 pt-3 border-t">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4 text-sm">
+                                <div className="flex items-center space-x-2">
+                                  <div className={`w-2 h-2 rounded-full ${speaker.hideProfile ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                                  <span className="text-gray-600">{speaker.hideProfile ? 'Hidden' : 'Visible'} on all domains</span>
+                                </div>
                               </div>
-                              <div className="flex items-center space-x-1">
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-gray-600">Ratings Visible</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-gray-600">Social Visible</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-gray-600">Contact Visible</span>
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  variant={speaker.hideProfile ? "outline" : "destructive"}
+                                  size="sm"
+                                  onClick={() => handleToggleSpeakerVisibility(speaker.id)}
+                                  disabled={toggleSpeakerVisibilityMutation.isPending}
+                                >
+                                  {speaker.hideProfile ? (
+                                    <>
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      Show Speaker
+                                    </>
+                                  ) : (
+                                    <>
+                                      <EyeOff className="h-4 w-4 mr-1" />
+                                      Hide Speaker
+                                    </>
+                                  )}
+                                </Button>
+                                <div className="text-xs text-gray-500">
+                                  Domain Sync
+                                </div>
                               </div>
                             </div>
-                            <div className="text-xs text-gray-500">
-                              Last updated: Today
+                            <div className="mt-2 text-xs text-gray-500">
+                              Changes sync instantly across your domain and Replit environment
                             </div>
                           </div>
                         </div>

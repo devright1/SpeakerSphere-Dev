@@ -102,7 +102,7 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6 max-h-[70vh] overflow-y-auto scrollable-filters">
+      <CardContent className="space-y-6 max-h-[70vh] scrollable-filters">
         {/* Categories */}
         <div>
           <h4 className="font-semibold text-gray-900 mb-3">Topics</h4>

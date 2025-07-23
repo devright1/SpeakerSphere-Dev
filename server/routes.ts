@@ -5,9 +5,12 @@ import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { insertReviewSchema, insertInquirySchema, insertUserSchema } from "@shared/schema";
 import { AnalyticsService } from "./analytics";
+import { registerAdminRoutes } from "./admin-routes";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register admin routes for domain synchronization
+  registerAdminRoutes(app);
   // Configure multer for file uploads
   const upload = multer({
     storage: multer.memoryStorage(),
