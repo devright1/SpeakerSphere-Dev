@@ -13,6 +13,7 @@ import type { Speaker } from "@shared/schema";
 
 interface FilterState {
   category?: string;
+  categories?: string[];
   location?: string;
   minRating?: number;
   maxFee?: number;
@@ -58,7 +59,12 @@ export default function Speakers() {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== "") {
-          params.append(key, value.toString());
+          // Handle arrays (like categories) by adding multiple params
+          if (Array.isArray(value)) {
+            value.forEach(item => params.append(key, item.toString()));
+          } else {
+            params.append(key, value.toString());
+          }
         }
       });
       

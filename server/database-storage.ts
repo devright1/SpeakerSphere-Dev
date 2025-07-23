@@ -35,6 +35,7 @@ export class DatabaseStorage implements IStorage {
   // Speakers
   async getSpeakers(filters?: {
     category?: string;
+    categories?: string[];
     location?: string;
     minRating?: number;
     maxFee?: number;
@@ -53,7 +54,13 @@ export class DatabaseStorage implements IStorage {
     //   conditions.push(eq(speakers.hideProfile, false));
     // }
 
-    if (filters?.category) {
+    // Handle both single category (for backward compatibility) and multiple categories
+    if (filters?.categories && filters.categories.length > 0) {
+      // Multiple categories - use OR condition
+      const categoryConditions = filters.categories.map(cat => eq(speakers.category, cat));
+      conditions.push(or(...categoryConditions));
+    } else if (filters?.category) {
+      // Single category (backward compatibility)
       conditions.push(eq(speakers.category, filters.category));
     }
 

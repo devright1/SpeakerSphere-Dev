@@ -435,6 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const {
         category,
+        categories,
         location,
         minRating,
         expertise,
@@ -443,12 +444,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const filters = {
         category: category && category !== "" ? category as string : undefined,
+        categories: categories ? (Array.isArray(categories) ? categories.filter(c => c !== "") as string[] : [categories as string].filter(c => c !== "")) : undefined,
         location: location && location !== "" ? location as string : undefined,
         minRating: minRating ? parseFloat(minRating as string) : undefined,
         expertise: expertise && expertise !== "" ? expertise as string : undefined,
         search: search && search !== "" ? search as string : undefined,
       };
 
+      console.log('Filters received:', JSON.stringify(filters, null, 2));
       const speakers = await storage.getSpeakers(filters);
       console.log(`API returning ${speakers.length} speakers to client`);
       // Disable caching for speakers endpoint to ensure fresh data

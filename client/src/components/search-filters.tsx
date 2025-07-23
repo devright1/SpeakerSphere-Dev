@@ -49,7 +49,7 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
     const filters: any = {};
     
     if (selectedCategories.length > 0) {
-      filters.category = selectedCategories[0]; // API currently supports single category
+      filters.categories = selectedCategories; // Send all selected categories
     }
     
     if (priceRange) {
