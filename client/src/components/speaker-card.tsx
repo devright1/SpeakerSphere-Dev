@@ -84,14 +84,14 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
 
             <div className="mb-4">
               <div className="flex flex-wrap gap-1 mb-2">
-                {speaker.expertise.slice(0, 3).map((skill, index) => (
+                {speaker.expertise.slice(0, featured ? 2 : 3).map((skill, index) => (
                   <Badge key={index} variant="secondary" className="text-xs">
                     {skill}
                   </Badge>
                 ))}
-                {speaker.expertise.length > 3 && (
+                {speaker.expertise.length > (featured ? 2 : 3) && (
                   <Badge variant="secondary" className="text-xs">
-                    +{speaker.expertise.length - 3} more
+                    +{speaker.expertise.length - (featured ? 2 : 3)} more
                   </Badge>
                 )}
               </div>
