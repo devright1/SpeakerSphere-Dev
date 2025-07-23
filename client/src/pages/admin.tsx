@@ -886,75 +886,94 @@ export default function AdminDashboard() {
                   </div>
                   
                   <div className="grid gap-4">
-                    {speakersArray
-                      .filter((speaker: any) => speaker.verified && speaker.category) // Show only verified speakers with categories
-                      .slice(0, 10)
-                      .map((speaker: any) => (
-                      <div key={speaker.id} className="flex items-center justify-between p-4 border rounded-lg bg-green-50 border-green-200">
-                        <div className="flex items-center space-x-4">
-                          <img 
-                            src={speaker.imageUrl} 
-                            alt={speaker.name}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                          <div>
-                            <h4 className="font-medium">{speaker.name}</h4>
-                            <p className="text-sm text-gray-600">{speaker.title}</p>
-                            <p className="text-xs text-gray-500">{speaker.category} • {speaker.experience} years experience</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
-                            <UserCheck className="h-3 w-3 mr-1" />
-                            Active Account
-                          </Badge>
-                          {speaker.featured && <Badge>Featured</Badge>}
-                          <Button variant="outline" size="sm">
-                            <Settings className="h-4 w-4 mr-1" />
-                            Manage
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleToggleSpeakerVisibility(speaker.id)}
-                            className={speaker.hideProfile ? "border-red-200 text-red-600" : "border-green-200 text-green-600"}
-                          >
-                            {speaker.hideProfile ? (
-                              <>
-                                <EyeOff className="h-4 w-4 mr-1" />
-                                Hidden
-                              </>
-                            ) : (
-                              <>
-                                <Eye className="h-4 w-4 mr-1" />
-                                Visible
-                              </>
-                            )}
-                          </Button>
-                        </div>
+                    {applications && applications.length > 0 ? (
+                      // Find speakers created from approved applications
+                      applications
+                        .filter((app: any) => app.status === 'approved' && app.createdSpeakerId)
+                        .map((app: any) => {
+                          // Find the corresponding speaker
+                          const speaker = speakersArray.find((s: any) => s.id === app.createdSpeakerId);
+                          if (!speaker) return null;
+                          
+                          return (
+                            <div key={speaker.id} className="flex items-center justify-between p-4 border rounded-lg bg-green-50 border-green-200">
+                              <div className="flex items-center space-x-4">
+                                <img 
+                                  src={speaker.imageUrl} 
+                                  alt={speaker.name}
+                                  className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div>
+                                  <h4 className="font-medium">{speaker.name}</h4>
+                                  <p className="text-sm text-gray-600">{speaker.title}</p>
+                                  <p className="text-xs text-gray-500">
+                                    Applied: {new Date(app.createdAt).toLocaleDateString()} • 
+                                    Approved: {new Date(app.reviewedAt).toLocaleDateString()}
+                                  </p>
+                                  <p className="text-xs text-gray-400">Application ID: {app.id}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                  <UserCheck className="h-3 w-3 mr-1" />
+                                  From Application
+                                </Badge>
+                                {speaker.featured && <Badge>Featured</Badge>}
+                                <Button variant="outline" size="sm">
+                                  <Settings className="h-4 w-4 mr-1" />
+                                  Manage
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => handleToggleSpeakerVisibility(speaker.id)}
+                                  className={speaker.hideProfile ? "border-red-200 text-red-600" : "border-green-200 text-green-600"}
+                                >
+                                  {speaker.hideProfile ? (
+                                    <>
+                                      <EyeOff className="h-4 w-4 mr-1" />
+                                      Hidden
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      Visible
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })
+                        .filter(Boolean) // Remove null entries
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <p>No speaker accounts from applications yet</p>
+                        <p className="text-sm">Speaker accounts will appear here when applications are approved and speaker profiles are created</p>
                       </div>
-                    ))}
+                    )}
                   </div>
 
                   {/* Statistics */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">
-                        {speakersArray.filter((s: any) => s.verified).length}
+                        {applications?.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length || 0}
                       </div>
-                      <div className="text-sm text-gray-500">Active Accounts</div>
+                      <div className="text-sm text-gray-500">Active Speaker Accounts</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-600">
-                        {speakersArray.filter((s: any) => s.featured).length}
+                        {applications?.filter((app: any) => app.status === 'pending').length || 0}
                       </div>
-                      <div className="text-sm text-gray-500">Featured Speakers</div>
+                      <div className="text-sm text-gray-500">Pending Applications</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-purple-600">
-                        {speakersArray.filter((s: any) => s.hideProfile).length}
+                        {applications?.filter((app: any) => app.status === 'rejected').length || 0}
                       </div>
-                      <div className="text-sm text-gray-500">Hidden Profiles</div>
+                      <div className="text-sm text-gray-500">Rejected Applications</div>
                     </div>
                   </div>
                 </div>

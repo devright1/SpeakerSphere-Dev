@@ -129,6 +129,14 @@ The application is designed for healthcare industry professionals seeking to dis
 
 ## Recent Changes
 
+### January 23, 2025 - Complete Speaker Application Management System
+
+- **Created "Speaker Accounts" tab in admin panel** specifically for speakers who joined through application approval process
+- Tab displays only speakers created from approved applications (currently empty as intended)
+- Shows application timeline (applied date, approved date, application ID) for full traceability
+- Added application-specific statistics: Active Speaker Accounts, Pending Applications, Rejected Applications
+- Includes management controls for visibility and account settings specific to application-derived speakers
+
 ### January 23, 2025 - Speaker Onboarding System and Enhanced UX
 - **Created comprehensive "For Speakers" page** with professional sign-in and application forms
 - Added dedicated `/for-speakers` route with tabbed interface for existing speakers and new applicants
