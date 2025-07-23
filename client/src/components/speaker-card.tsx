@@ -2,7 +2,8 @@ import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, MapPin, CheckCircle, Heart } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Star, MapPin, CheckCircle, Heart, UserPlus, LogIn } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,7 +20,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   // Check if speaker is bookmarked
   const { data: isBookmarked = false } = useQuery({
@@ -78,14 +79,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
     console.log('Heart clicked for speaker:', speaker.id, 'Currently bookmarked:', isBookmarked);
     
     if (!isAuthenticated) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to save speakers to your favorites",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = '/auth';
-      }, 1000);
+      setShowAuthDialog(true);
       return;
     }
     
@@ -210,6 +204,61 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           </div>
         </div>
       </CardContent>
+
+      {/* Authentication Dialog */}
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Heart className="w-5 h-5 text-red-500" />
+              Save Your Favorite Speakers
+            </DialogTitle>
+            <DialogDescription>
+              Create an account or sign in to save speakers to your favorites and access them anytime.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-4">
+            <Button 
+              onClick={() => window.location.href = '/auth'}
+              className="w-full bg-primary hover:bg-blue-700 text-white"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Sign In to Your Account
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  or
+                </span>
+              </div>
+            </div>
+            
+            <Button 
+              onClick={() => window.location.href = '/auth'}
+              variant="outline" 
+              className="w-full"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Create New Account
+            </Button>
+            
+            <div className="text-center text-sm text-gray-600">
+              <p>With an account you can:</p>
+              <ul className="mt-2 space-y-1 text-xs">
+                <li>• Save your favorite speakers</li>
+                <li>• Access speaker profiles anytime</li>
+                <li>• Get personalized recommendations</li>
+                <li>• Leave reviews and ratings</li>
+              </ul>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
