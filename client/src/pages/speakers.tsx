@@ -69,7 +69,12 @@ export default function Speakers() {
   });
 
   const handleFilterChange = (newFilters: FilterState) => {
-    setFilters({ ...filters, ...newFilters });
+    // If newFilters is empty (clearing filters), replace completely
+    if (Object.keys(newFilters).length === 0) {
+      setFilters({});
+    } else {
+      setFilters({ ...filters, ...newFilters });
+    }
   };
 
   const handleSearch = (searchTerm: string) => {
