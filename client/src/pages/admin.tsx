@@ -35,6 +35,14 @@ export default function AdminDashboard() {
   const [categoryAssignments, setCategoryAssignments] = useState<{[key: string]: boolean}>({});
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
   const [feeRangeVisible, setFeeRangeVisible] = useState(false);
+  
+  // User management states
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [userFilterRole, setUserFilterRole] = useState("all");
+  const [userFilterStatus, setUserFilterStatus] = useState("all");
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [isBulkActionDialogOpen, setIsBulkActionDialogOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState("");
   const { toast } = useToast();
 
   // Check authentication on component mount
@@ -302,6 +310,7 @@ export default function AdminDashboard() {
       setIsDeleteDialogOpen(false);
       setDeletePassword("");
       setDeleteError("");
+      setSelectedUsers(new Set());
       toast({
         title: "Success",
         description: "User deleted successfully",
@@ -311,6 +320,40 @@ export default function AdminDashboard() {
       setDeleteError(error.message);
     },
   });
+
+  // Bulk update users mutation
+  const bulkUpdateUsersMutation = useMutation({
+    mutationFn: async ({ userIds, updates, adminPassword }: { userIds: string[]; updates: any; adminPassword: string }) => {
+      const response = await fetch('/api/admin/users/bulk-update', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds, updates, adminPassword }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to bulk update users');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: "Bulk Update Complete", 
+        description: `Updated ${data.updatedCount} of ${data.totalRequested} users successfully` 
+      });
+      setIsBulkActionDialogOpen(false);
+      setBulkAction("");
+      setDeletePassword("");
+      setDeleteError("");
+      setSelectedUsers(new Set());
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/user-stats"] });
+    },
+    onError: (error: Error) => {
+      setDeleteError(error.message || "Failed to bulk update users");
+    },
+  });
+
+
 
   const handleEditCategory = (category: any) => {
     setEditingCategory(category);
@@ -386,6 +429,56 @@ export default function AdminDashboard() {
 
   const handleToggleSpeakerVisibility = (speakerId: number) => {
     toggleSpeakerVisibilityMutation.mutate(speakerId);
+  };
+
+  // Filter users based on search and filters
+  const filteredUsers = users?.filter((user: any) => {
+    const matchesSearch = userSearchQuery === "" || 
+      user.email.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+      `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase().includes(userSearchQuery.toLowerCase());
+    
+    const matchesRole = userFilterRole === "all" || 
+      (user.role || 'user').toLowerCase() === userFilterRole.toLowerCase();
+    
+    const matchesStatus = userFilterStatus === "all" ||
+      (userFilterStatus === "active" && user.isActive) ||
+      (userFilterStatus === "inactive" && !user.isActive) ||
+      (userFilterStatus === "verified" && user.emailVerified) ||
+      (userFilterStatus === "unverified" && !user.emailVerified);
+    
+    return matchesSearch && matchesRole && matchesStatus;
+  }) || [];
+
+  const handleBulkAction = () => {
+    if (!bulkAction || selectedUsers.size === 0) return;
+    
+    let updates: any = {};
+    switch (bulkAction) {
+      case "activate":
+        updates = { isActive: true };
+        break;
+      case "deactivate":
+        updates = { isActive: false };
+        break;
+      case "verify":
+        updates = { emailVerified: true };
+        break;
+      case "unverify":
+        updates = { emailVerified: false };
+        break;
+      case "promote":
+        updates = { role: "admin" };
+        break;
+      case "demote":
+        updates = { role: "user" };
+        break;
+    }
+
+    bulkUpdateUsersMutation.mutate({
+      userIds: Array.from(selectedUsers),
+      updates,
+      adminPassword: deletePassword
+    });
   };
 
   // Toggle fee range visibility
@@ -774,20 +867,152 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* User List */}
+                  {/* Advanced Filtering & Search */}
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-medium">Registered Users</h3>
-                      <div className="text-sm text-gray-500">
-                        {users?.length || 0} total users
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                      <h3 className="text-lg font-medium">User Management</h3>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const csvContent = users?.map(user => ({
+                              name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+                              email: user.email,
+                              role: user.role || 'User',
+                              status: user.isActive ? 'Active' : 'Inactive',
+                              verified: user.emailVerified ? 'Yes' : 'No',
+                              joinDate: new Date(user.createdAt).toLocaleDateString()
+                            }));
+                            const csv = [
+                              'Name,Email,Role,Status,Verified,Join Date',
+                              ...csvContent?.map(row => Object.values(row).join(',')) || []
+                            ].join('\n');
+                            const blob = new Blob([csv], { type: 'text/csv' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+                            a.click();
+                            toast({
+                              title: "Export Complete",
+                              description: "User data exported to CSV file",
+                            });
+                          }}
+                        >
+                          Export CSV
+                        </Button>
+                        {selectedUsers.size > 0 && (
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsBulkActionDialogOpen(true)}
+                          >
+                            Bulk Actions ({selectedUsers.size})
+                          </Button>
+                        )}
                       </div>
                     </div>
+
+                    {/* Search and Filters */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <Label htmlFor="userSearch">Search Users</Label>
+                        <Input
+                          id="userSearch"
+                          placeholder="Search by name or email..."
+                          value={userSearchQuery}
+                          onChange={(e) => setUserSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="roleFilter">Filter by Role</Label>
+                        <Select value={userFilterRole} onValueChange={setUserFilterRole}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Roles</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="speaker">Speaker</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="statusFilter">Filter by Status</Label>
+                        <Select value={userFilterStatus} onValueChange={setUserFilterStatus}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                            <SelectItem value="verified">Email Verified</SelectItem>
+                            <SelectItem value="unverified">Email Unverified</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="flex items-end">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setUserSearchQuery("");
+                            setUserFilterRole("all");
+                            setUserFilterStatus("all");
+                            setSelectedUsers(new Set());
+                          }}
+                        >
+                          Clear Filters
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedUsers.size === filteredUsers?.length && filteredUsers?.length > 0}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedUsers(new Set(filteredUsers?.map(u => u.id) || []));
+                            } else {
+                              setSelectedUsers(new Set());
+                            }
+                          }}
+                          className="rounded"
+                        />
+                        <span className="text-sm text-gray-600">
+                          Select All ({filteredUsers?.length || 0} users)
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Showing {filteredUsers?.length || 0} of {users?.length || 0} users
+                      </div>
+                    </div>
+                  </div>
                     
                     <div className="space-y-3">
-                      {users && users.length > 0 ? (
-                        users.slice(0, 20).map((user: any) => (
+                      {filteredUsers && filteredUsers.length > 0 ? (
+                        filteredUsers.slice(0, 20).map((user: any) => (
                           <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                             <div className="flex items-center space-x-4">
+                              <input
+                                type="checkbox"
+                                checked={selectedUsers.has(user.id)}
+                                onChange={(e) => {
+                                  const newSelected = new Set(selectedUsers);
+                                  if (e.target.checked) {
+                                    newSelected.add(user.id);
+                                  } else {
+                                    newSelected.delete(user.id);
+                                  }
+                                  setSelectedUsers(newSelected);
+                                }}
+                                className="rounded"
+                              />
                               <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
                                 {user.firstName?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                               </div>
@@ -893,18 +1118,17 @@ export default function AdminDashboard() {
                       )}
                     </div>
                     
-                    {users && users.length > 20 && (
+                    {filteredUsers && filteredUsers.length > 20 && (
                       <div className="text-center py-4">
                         <div className="text-sm text-gray-500">
-                          Showing first 20 users of {users.length} total
+                          Showing first 20 users of {filteredUsers.length} total
                         </div>
                       </div>
                     )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
           <TabsContent value="categories" className="space-y-6">
             <Card>
@@ -1886,6 +2110,67 @@ export default function AdminDashboard() {
               disabled={updateCategoryAssignmentMutation.isPending}
             >
               {updateCategoryAssignmentMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Action Dialog */}
+      <Dialog open={isBulkActionDialogOpen} onOpenChange={setIsBulkActionDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bulk User Actions</DialogTitle>
+            <DialogDescription>
+              Apply actions to {selectedUsers.size} selected users
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="bulkAction">Select Action</Label>
+              <Select value={bulkAction} onValueChange={setBulkAction}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose action..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="activate">Activate Users</SelectItem>
+                  <SelectItem value="deactivate">Deactivate Users</SelectItem>
+                  <SelectItem value="verify">Verify Emails</SelectItem>
+                  <SelectItem value="unverify">Unverify Emails</SelectItem>
+                  <SelectItem value="promote">Promote to Admin</SelectItem>
+                  <SelectItem value="demote">Demote to User</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="bulkPassword">Admin Password *</Label>
+              <Input 
+                id="bulkPassword"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+              />
+              {deleteError && (
+                <p className="text-sm text-red-600 mt-1">{deleteError}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button variant="outline" onClick={() => {
+              setIsBulkActionDialogOpen(false);
+              setBulkAction("");
+              setDeletePassword("");
+              setDeleteError("");
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleBulkAction}
+              disabled={!bulkAction || bulkUpdateUsersMutation.isPending}
+            >
+              {bulkUpdateUsersMutation.isPending ? "Processing..." : "Apply Action"}
             </Button>
           </div>
         </DialogContent>

@@ -397,6 +397,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/admin/users/bulk-update", async (req, res) => {
+    try {
+      const { userIds, updates, adminPassword } = req.body;
+      
+      // Verify admin password
+      if (adminPassword !== "Doneright123!") {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
+
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ message: "No user IDs provided" });
+      }
+
+      let updatedCount = 0;
+      for (const userId of userIds) {
+        const updatedUser = await storage.updateUser(userId, updates);
+        if (updatedUser) {
+          updatedCount++;
+        }
+      }
+
+      res.json({ 
+        message: "Bulk update completed", 
+        updatedCount,
+        totalRequested: userIds.length
+      });
+    } catch (error) {
+      console.error("Failed to bulk update users:", error);
+      res.status(500).json({ message: "Failed to bulk update users" });
+    }
+  });
+
   // Get all speakers with optional filters
   app.get("/api/speakers", async (req, res) => {
     try {
