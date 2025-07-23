@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { insertReviewSchema, insertInquirySchema, insertUserSchema } from "@shared/schema";
 import { AnalyticsService } from "./analytics";

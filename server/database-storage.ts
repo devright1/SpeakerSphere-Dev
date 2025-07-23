@@ -236,6 +236,15 @@ export class DatabaseStorage implements IStorage {
     return result[0]?.user;
   }
 
+  async getUserSessionByToken(token: string): Promise<UserSession | undefined> {
+    const result = await db.select().from(userSessions)
+      .where(and(
+        eq(userSessions.token, token),
+        gte(userSessions.expiresAt, new Date())
+      ));
+    return result[0];
+  }
+
   async deleteUserSession(token: string): Promise<boolean> {
     const result = await db.delete(userSessions).where(eq(userSessions.token, token));
     return result.rowCount ? result.rowCount > 0 : false;
