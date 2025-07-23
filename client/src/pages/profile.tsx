@@ -15,7 +15,9 @@ import {
   TrendingUp,
   Settings,
   Camera,
-  Edit3
+  Edit3,
+  ArrowLeft,
+  Home
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -154,6 +156,17 @@ export default function ProfilePage() {
           animate="visible"
           className="space-y-6"
         >
+          {/* Back to Home Button */}
+          <motion.div variants={itemVariants}>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/'}
+              className="mb-4 bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-primary"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Button>
+          </motion.div>
           {/* Welcome Section */}
           <motion.div variants={itemVariants}>
             <Card className="overflow-hidden">
