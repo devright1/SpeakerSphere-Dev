@@ -151,6 +151,8 @@ export default function ForSpeakers() {
   };
 
   const onApplicationSubmit = (data: SpeakerApplicationForm) => {
+    console.log("Form submitted with data:", data);
+    console.log("Form errors:", applicationForm.formState.errors);
     applicationMutation.mutate(data);
   };
 

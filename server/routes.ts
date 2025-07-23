@@ -531,11 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const applicationData = insertSpeakerApplicationSchema.parse(req.body);
       
       // Create the speaker application
-      const application = await storage.createSpeakerApplication({
-        ...applicationData,
-        status: 'pending',
-        submittedAt: new Date(),
-      });
+      const application = await storage.createSpeakerApplication(applicationData);
 
       res.json({
         success: true,
