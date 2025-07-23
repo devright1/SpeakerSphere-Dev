@@ -525,6 +525,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Speaker Application Submission
+  app.post("/api/speakers/apply", async (req, res) => {
+    try {
+      const applicationData = insertSpeakerApplicationSchema.parse(req.body);
+      
+      // Create the speaker application
+      const application = await storage.createSpeakerApplication({
+        ...applicationData,
+        status: 'pending',
+        submittedAt: new Date(),
+      });
+
+      res.json({
+        success: true,
+        message: "Application submitted successfully",
+        applicationId: application.id
+      });
+    } catch (error) {
+      console.error("Failed to submit speaker application:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Invalid application data",
+          errors: error.errors
+        });
+      }
+      res.status(500).json({ message: "Failed to submit application" });
+    }
+  });
+
   // Get all speakers with optional filters
   app.get("/api/speakers", async (req, res) => {
     try {
