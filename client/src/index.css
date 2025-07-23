@@ -4,43 +4,37 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom scrollbar styles for filter section */
-.hover-scroll-container {
+/* Scrollable filters with better browser compatibility */
+.scrollable-filters {
+  /* Firefox */
   scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.2s ease;
-}
-
-.hover-scroll-container:hover {
   scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
-/* Webkit scrollbar styles for better browser support */
-.hover-scroll-container::-webkit-scrollbar {
-  width: 6px;
+/* Webkit browsers (Chrome, Safari, Edge) */
+.scrollable-filters::-webkit-scrollbar {
+  width: 8px;
 }
 
-.hover-scroll-container::-webkit-scrollbar-track {
-  background: transparent;
-  transition: background 0.2s ease;
-}
-
-.hover-scroll-container::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 3px;
-  transition: background 0.2s ease;
-}
-
-.hover-scroll-container:hover::-webkit-scrollbar-track {
+.scrollable-filters::-webkit-scrollbar-track {
   background: #f1f5f9;
+  border-radius: 4px;
 }
 
-.hover-scroll-container:hover::-webkit-scrollbar-thumb {
+.scrollable-filters::-webkit-scrollbar-thumb {
   background: #cbd5e1;
+  border-radius: 4px;
+  border: 2px solid #f1f5f9;
 }
 
-.hover-scroll-container:hover::-webkit-scrollbar-thumb:hover {
+.scrollable-filters::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Ensure scrolling behavior works on all devices */
+.scrollable-filters {
+  overflow-y: scroll;
+  overscroll-behavior: contain;
 }
 
 /* Custom speaker image scaling utilities */
