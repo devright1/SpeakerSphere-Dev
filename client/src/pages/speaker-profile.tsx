@@ -388,9 +388,17 @@ export default function SpeakerProfile() {
                         variant="outline"
                         onClick={handleFavoriteClick}
                         disabled={toggleBookmarkMutation.isPending}
-                        className={isBookmarked ? "bg-red-50 text-red-600 border-red-200" : ""}
+                        className={`transition-all duration-200 ${
+                          isBookmarked 
+                            ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100" 
+                            : "hover:bg-gray-50"
+                        }`}
                       >
-                        <Heart className={`w-4 h-4 mr-2 ${isBookmarked ? "fill-red-500 text-red-500" : ""}`} />
+                        <Heart className={`w-4 h-4 mr-2 transition-all duration-200 ${
+                          isBookmarked 
+                            ? "fill-red-500 text-red-500" 
+                            : "text-gray-600 hover:text-red-500"
+                        }`} />
                         {isBookmarked ? "Saved" : "Save"}
                       </Button>
                       <Button size="sm" variant="outline">

@@ -63,7 +63,10 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
     },
   });
 
-  const handleFavoriteClick = () => {
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent any parent click handlers
+    e.stopPropagation();
+    
     if (!isAuthenticated) {
       toast({
         title: "Sign in required",
@@ -99,16 +102,17 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           }`}
         />
 
+        {/* Favorite button overlay */}
         <button 
           onClick={handleFavoriteClick}
           disabled={toggleBookmarkMutation.isPending}
-          className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
+          className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-all duration-200 shadow-sm hover:shadow-md"
         >
           <Heart 
-            className={`w-4 h-4 transition-colors ${
+            className={`w-5 h-5 transition-all duration-200 ${
               isBookmarked 
-                ? "text-red-500 fill-red-500" 
-                : "text-gray-600 hover:text-red-500"
+                ? "text-red-500 fill-red-500 scale-110" 
+                : "text-gray-600 hover:text-red-500 hover:scale-105"
             }`} 
           />
         </button>
@@ -192,23 +196,6 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
                 View Profile
               </Button>
             </Link>
-            <Button 
-              onClick={handleFavoriteClick}
-              disabled={toggleBookmarkMutation.isPending}
-              variant="outline" 
-              size="icon" 
-              className={`border-primary hover:bg-primary hover:text-white transition-colors ${
-                isBookmarked 
-                  ? "bg-red-50 text-red-500 border-red-500" 
-                  : "text-primary"
-              }`}
-            >
-              <Heart 
-                className={`w-4 h-4 ${
-                  isBookmarked ? "fill-red-500" : ""
-                }`} 
-              />
-            </Button>
           </div>
         </div>
       </CardContent>
