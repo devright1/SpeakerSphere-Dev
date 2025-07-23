@@ -743,6 +743,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User bookmark endpoints (require authentication)
+  app.post("/api/users/:userId/bookmarks", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { speakerId } = req.body;
+      
+      if (!speakerId || isNaN(parseInt(speakerId))) {
+        return res.status(400).json({ message: "Valid speaker ID is required" });
+      }
+      
+      const result = await storage.toggleUserBookmark(userId, parseInt(speakerId));
+      res.json(result);
+    } catch (error) {
+      console.error("Failed to toggle bookmark:", error);
+      res.status(500).json({ message: "Failed to toggle bookmark" });
+    }
+  });
+
+  app.get("/api/users/:userId/bookmarks", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const bookmarkIds = await storage.getUserBookmarkIds(userId);
+      res.json(bookmarkIds);
+    } catch (error) {
+      console.error("Failed to get user bookmarks:", error);
+      res.status(500).json({ message: "Failed to get bookmarks" });
+    }
+  });
+
+  app.get("/api/users/:userId/bookmarks/check/:speakerId", async (req, res) => {
+    try {
+      const { userId, speakerId } = req.params;
+      
+      if (isNaN(parseInt(speakerId))) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+      
+      const isBookmarked = await storage.isUserBookmarked(userId, parseInt(speakerId));
+      res.json({ bookmarked: isBookmarked });
+    } catch (error) {
+      console.error("Failed to check bookmark status:", error);
+      res.status(500).json({ message: "Failed to check bookmark status" });
+    }
+  });
+
   // Analytics endpoints
   app.post("/api/analytics/track", async (req, res) => {
     try {

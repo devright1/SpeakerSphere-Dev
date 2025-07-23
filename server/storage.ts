@@ -91,6 +91,11 @@ export interface IStorage {
   // Admin User Management
   getAllUsers(): Promise<User[]>;
   deleteUser(userId: string): Promise<boolean>;
+  
+  // Bookmark utility methods
+  toggleUserBookmark(userId: string, speakerId: number): Promise<{ bookmarked: boolean }>;
+  isUserBookmarked(userId: string, speakerId: number): Promise<boolean>;
+  getUserBookmarkIds(userId: string): Promise<number[]>;
 }
 
 export class MemStorage implements IStorage {

@@ -3,6 +3,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, MapPin, CheckCircle, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import type { Speaker } from "@shared/schema";
 import { trackSpeakerView, trackEmailClick, trackPhoneClick, trackWebsiteClick } from "@/lib/analytics";
 
@@ -12,6 +16,68 @@ interface SpeakerCardProps {
 }
 
 export default function SpeakerCard({ speaker, featured = false }: SpeakerCardProps) {
+  const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+
+  // Check if speaker is bookmarked
+  const { data: isBookmarked = false } = useQuery({
+    queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker.id}`],
+    enabled: !!user?.id,
+    retry: false,
+  });
+
+  // Toggle bookmark mutation
+  const toggleBookmarkMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("User not authenticated");
+      
+      const response = await fetch(`/api/users/${user.id}/bookmarks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ speakerId: speaker.id }),
+      });
+      
+      if (!response.ok) throw new Error("Failed to toggle bookmark");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate bookmark queries
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker.id}`] });
+      
+      toast({
+        title: data.bookmarked ? "Speaker saved" : "Speaker removed",
+        description: data.bookmarked 
+          ? `${speaker.name} has been added to your favorites`
+          : `${speaker.name} has been removed from your favorites`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update favorite status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFavoriteClick = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save speakers to your favorites",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1000);
+      return;
+    }
+    
+    toggleBookmarkMutation.mutate();
+  };
 
   return (
     <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg h-[700px] flex flex-col" : "shadow-md"}`}>
@@ -33,8 +99,18 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           }`}
         />
 
-        <button className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors">
-          <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+        <button 
+          onClick={handleFavoriteClick}
+          disabled={toggleBookmarkMutation.isPending}
+          className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
+        >
+          <Heart 
+            className={`w-4 h-4 transition-colors ${
+              isBookmarked 
+                ? "text-red-500 fill-red-500" 
+                : "text-gray-600 hover:text-red-500"
+            }`} 
+          />
         </button>
       </div>
       
@@ -116,8 +192,22 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
                 View Profile
               </Button>
             </Link>
-            <Button variant="outline" size="icon" className="border-primary text-primary hover:bg-primary hover:text-white">
-              <Heart className="w-4 h-4" />
+            <Button 
+              onClick={handleFavoriteClick}
+              disabled={toggleBookmarkMutation.isPending}
+              variant="outline" 
+              size="icon" 
+              className={`border-primary hover:bg-primary hover:text-white transition-colors ${
+                isBookmarked 
+                  ? "bg-red-50 text-red-500 border-red-500" 
+                  : "text-primary"
+              }`}
+            >
+              <Heart 
+                className={`w-4 h-4 ${
+                  isBookmarked ? "fill-red-500" : ""
+                }`} 
+              />
             </Button>
           </div>
         </div>

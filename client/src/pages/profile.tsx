@@ -72,12 +72,12 @@ export default function ProfilePage() {
     enabled: !!user?.id,
   });
 
-  // Fetch user favorites
-  const { data: favorites, isLoading: favoritesLoading } = useQuery<any[]>({
-    queryKey: ['/api/users/favorites', user?.id],
+  // Fetch user bookmarks (favorite speaker IDs)
+  const { data: favoriteIds = [], isLoading: favoritesLoading } = useQuery<number[]>({
+    queryKey: [`/api/users/${user?.id}/bookmarks`],
     queryFn: async () => {
       const token = localStorage.getItem('userToken');
-      const response = await fetch(`/api/users/favorites/${user?.id}`, {
+      const response = await fetch(`/api/users/${user?.id}/bookmarks`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -87,6 +87,16 @@ export default function ProfilePage() {
     },
     enabled: !!user?.id,
   });
+
+  // Fetch all speakers and filter favorites
+  const { data: allSpeakers = [] } = useQuery<any[]>({
+    queryKey: ['/api/speakers'],
+  });
+
+  // Filter favorite speakers
+  const favoriteSpeakers = allSpeakers.filter((speaker: any) => 
+    favoriteIds.includes(speaker.id)
+  );
 
   // Fetch user reviews
   const { data: userReviews, isLoading: reviewsLoading } = useQuery<any[]>({
@@ -323,10 +333,33 @@ export default function ProfilePage() {
                       <div className="flex items-center justify-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                       </div>
-                    ) : favorites && favorites.length > 0 ? (
-                      <div className="space-y-4">
-                        {/* Favorites list will be implemented here */}
-                        <p className="text-gray-600">Your favorite speakers will appear here.</p>
+                    ) : favoriteSpeakers && favoriteSpeakers.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {favoriteSpeakers.map((speaker: any) => (
+                          <div key={speaker.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex items-start gap-3">
+                              <img 
+                                src={speaker.imageUrl} 
+                                alt={speaker.name}
+                                className="w-16 h-16 rounded-full object-cover"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-gray-900 truncate">{speaker.name}</h4>
+                                <p className="text-sm text-blue-600 truncate">{speaker.title}</p>
+                                <p className="text-xs text-gray-500 mt-1">{speaker.location}</p>
+                                <div className="flex items-center mt-2 gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => window.location.href = `/speakers/${speaker.slug}`}
+                                  >
+                                    View Profile
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <div className="text-center py-8">

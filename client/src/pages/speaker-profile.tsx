@@ -1,6 +1,7 @@
 import { useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ export default function SpeakerProfile() {
   const { name } = useParams();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuth();
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -96,6 +98,64 @@ export default function SpeakerProfile() {
     },
     enabled: !!speaker,
   });
+
+  // Check if speaker is bookmarked
+  const { data: isBookmarked = false } = useQuery({
+    queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker?.id}`],
+    enabled: !!user?.id && !!speaker?.id,
+    retry: false,
+  });
+
+  // Toggle bookmark mutation
+  const toggleBookmarkMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id || !speaker?.id) throw new Error("User not authenticated or speaker not found");
+      
+      const response = await fetch(`/api/users/${user.id}/bookmarks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ speakerId: speaker.id }),
+      });
+      
+      if (!response.ok) throw new Error("Failed to toggle bookmark");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate bookmark queries
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker?.id}`] });
+      
+      toast({
+        title: data.bookmarked ? "Speaker saved" : "Speaker removed",
+        description: data.bookmarked 
+          ? `${speaker?.name} has been added to your favorites`
+          : `${speaker?.name} has been removed from your favorites`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update favorite status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFavoriteClick = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save speakers to your favorites",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1000);
+      return;
+    }
+    
+    toggleBookmarkMutation.mutate();
+  };
 
   const inquiryForm = useForm<z.infer<typeof inquirySchema>>({
     resolver: zodResolver(inquirySchema),
@@ -323,9 +383,15 @@ export default function SpeakerProfile() {
                     )}
 
                     <div className="flex items-center justify-center md:justify-start gap-4">
-                      <Button size="sm" variant="outline">
-                        <Heart className="w-4 h-4 mr-2" />
-                        Save
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={handleFavoriteClick}
+                        disabled={toggleBookmarkMutation.isPending}
+                        className={isBookmarked ? "bg-red-50 text-red-600 border-red-200" : ""}
+                      >
+                        <Heart className={`w-4 h-4 mr-2 ${isBookmarked ? "fill-red-500 text-red-500" : ""}`} />
+                        {isBookmarked ? "Saved" : "Save"}
                       </Button>
                       <Button size="sm" variant="outline">
                         <Share2 className="w-4 h-4 mr-2" />

@@ -337,4 +337,33 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  // Bookmark utility methods
+  async toggleUserBookmark(userId: string, speakerId: number): Promise<{ bookmarked: boolean }> {
+    // Check if bookmark exists
+    const existing = await db.select().from(userBookmarks)
+      .where(and(eq(userBookmarks.userId, userId), eq(userBookmarks.speakerId, speakerId)));
+    
+    if (existing.length > 0) {
+      // Remove bookmark
+      await this.deleteUserBookmark(userId, speakerId);
+      return { bookmarked: false };
+    } else {
+      // Add bookmark
+      await this.createUserBookmark({ userId, speakerId });
+      return { bookmarked: true };
+    }
+  }
+
+  async isUserBookmarked(userId: string, speakerId: number): Promise<boolean> {
+    const result = await db.select().from(userBookmarks)
+      .where(and(eq(userBookmarks.userId, userId), eq(userBookmarks.speakerId, speakerId)));
+    return result.length > 0;
+  }
+
+  async getUserBookmarkIds(userId: string): Promise<number[]> {
+    const result = await db.select().from(userBookmarks)
+      .where(eq(userBookmarks.userId, userId));
+    return result.map(bookmark => bookmark.speakerId);
+  }
 }
