@@ -74,45 +74,48 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
 
         <h3 className="text-xl font-bold text-gray-900 mb-2">{speaker.name}</h3>
         
-        {/* Fixed height content area for featured speakers - exactly 10 lines */}
-        <div className={featured ? "flex-1 flex flex-col" : ""}>
-          <p className="text-primary font-semibold mb-2">{speaker.title}</p>
-          <p className={`text-gray-600 mb-4 ${featured ? "line-clamp-3 flex-1" : "line-clamp-3"}`}>
-            {speaker.bio}
-          </p>
+        {/* Content area with proper flex layout */}
+        <div className={featured ? "flex-1 flex flex-col justify-between" : ""}>
+          <div className="flex-1">
+            <p className="text-primary font-semibold mb-2">{speaker.title}</p>
+            <p className={`text-gray-600 mb-4 ${featured ? "line-clamp-3" : "line-clamp-3"}`}>
+              {speaker.bio}
+            </p>
 
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-1 mb-2">
-              {speaker.expertise.slice(0, 3).map((skill, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {skill}
-                </Badge>
-              ))}
-              {speaker.expertise.length > 3 && (
-                <Badge variant="secondary" className="text-xs">
-                  +{speaker.expertise.length - 3} more
-                </Badge>
-              )}
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-1 mb-2">
+                {speaker.expertise.slice(0, 3).map((skill, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {skill}
+                  </Badge>
+                ))}
+                {speaker.expertise.length > 3 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{speaker.expertise.length - 3} more
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <div className="text-sm text-gray-500 flex items-center">
+                <MapPin className="w-4 h-4 mr-1" />
+                {speaker.location}
+              </div>
             </div>
           </div>
 
-          <div className={`flex items-center ${featured ? "mb-4" : "mb-4"}`}>
-            <div className="text-sm text-gray-500 flex items-center">
-              <MapPin className="w-4 h-4 mr-1" />
-              {speaker.location}
-            </div>
-          </div>
-        </div>
-
-        <div className={`flex gap-2 ${featured ? "mt-auto pt-4" : "mt-4"}`}>
-          <Link href={`/speakers/${(speaker as any).slug}`} className="flex-1">
-            <Button className="w-full bg-primary hover:bg-blue-700 text-white">
-              View Profile
+          {/* Button area - always visible at bottom */}
+          <div className="flex gap-2 mt-4">
+            <Link href={`/speakers/${(speaker as any).slug}`} className="flex-1">
+              <Button className="w-full bg-primary hover:bg-blue-700 text-white">
+                View Profile
+              </Button>
+            </Link>
+            <Button variant="outline" size="icon" className="border-primary text-primary hover:bg-primary hover:text-white">
+              <Heart className="w-4 h-4" />
             </Button>
-          </Link>
-          <Button variant="outline" size="icon" className="border-primary text-primary hover:bg-primary hover:text-white">
-            <Heart className="w-4 h-4" />
-          </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
