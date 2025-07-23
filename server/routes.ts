@@ -4,7 +4,7 @@ import multer from "multer";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { storage } from "./storage";
-import { insertReviewSchema, insertInquirySchema, insertUserSchema } from "@shared/schema";
+import { insertReviewSchema, insertInquirySchema, insertUserSchema, insertSpeakerApplicationSchema } from "@shared/schema";
 import { AnalyticsService } from "./analytics";
 import { registerAdminRoutes } from "./admin-routes";
 import { z } from "zod";
@@ -427,6 +427,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Failed to bulk update users:", error);
       res.status(500).json({ message: "Failed to bulk update users" });
+    }
+  });
+
+  // Speaker application routes
+  app.post("/api/speaker-applications", async (req, res) => {
+    try {
+      const applicationData = req.body;
+      
+      // Basic validation
+      if (!applicationData.firstName || !applicationData.lastName || !applicationData.email) {
+        return res.status(400).json({ message: "Required fields missing" });
+      }
+
+      const application = await storage.createSpeakerApplication(applicationData);
+      res.status(201).json(application);
+    } catch (error) {
+      console.error("Failed to create speaker application:", error);
+      res.status(500).json({ message: "Failed to submit application" });
+    }
+  });
+
+  app.get("/api/admin/speaker-applications", async (req, res) => {
+    try {
+      const applications = await storage.getSpeakerApplications();
+      res.json(applications);
+    } catch (error) {
+      console.error("Failed to get speaker applications:", error);
+      res.status(500).json({ message: "Failed to fetch applications" });
+    }
+  });
+
+  app.patch("/api/admin/speaker-applications/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, reviewedBy } = req.body;
+      
+      const application = await storage.updateSpeakerApplication(parseInt(id), {
+        status,
+        reviewedBy,
+        reviewedAt: new Date()
+      });
+
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      // If approved, create speaker profile
+      if (status === 'approved') {
+        try {
+          const speakerData = {
+            name: `${application.firstName} ${application.lastName}`,
+            slug: `${application.firstName}-${application.lastName}`.toLowerCase().replace(/\s+/g, '-'),
+            title: application.title,
+            bio: application.biography,
+            expertise: application.speakingTopics.split(',').map(s => s.trim()),
+            location: 'Not specified',
+            imageUrl: '/api/placeholder/400/400',
+            verified: true,
+            featured: false,
+            category: application.specialty,
+            achievements: [],
+            lectures: [],
+            email: application.email,
+            phone: application.phone,
+            website: application.website || '',
+            socialMedia: [],
+            languages: ['English'],
+            medicalSpecialties: [application.specialty],
+            speakerType: 'clinical',
+            fee: 'Contact for pricing',
+            experience: parseInt(application.yearsExperience) || 0,
+            education: application.credentials,
+            certifications: application.credentials,
+            affiliations: 'Professional Associations',
+            publications: 'Available upon request'
+          };
+
+          const newSpeaker = await storage.createSpeaker(speakerData);
+          
+          // Update application with created speaker ID
+          await storage.updateSpeakerApplication(parseInt(id), {
+            createdSpeakerId: newSpeaker.id
+          });
+
+          res.json({ application, createdSpeaker: newSpeaker });
+        } catch (speakerError) {
+          console.error("Failed to create speaker from application:", speakerError);
+          res.json({ application, warning: "Application approved but speaker creation failed" });
+        }
+      } else {
+        res.json(application);
+      }
+    } catch (error) {
+      console.error("Failed to update speaker application:", error);
+      res.status(500).json({ message: "Failed to update application" });
     }
   });
 

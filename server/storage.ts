@@ -8,6 +8,7 @@ import {
   userSessions,
   userLikes,
   userBookmarks,
+  speakerApplications,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -25,7 +26,9 @@ import {
   type UserLike,
   type InsertUserLike,
   type UserBookmark,
-  type InsertUserBookmark
+  type InsertUserBookmark,
+  type SpeakerApplication,
+  type InsertSpeakerApplication
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -96,6 +99,11 @@ export interface IStorage {
   toggleUserBookmark(userId: string, speakerId: number): Promise<{ bookmarked: boolean }>;
   isUserBookmarked(userId: string, speakerId: number): Promise<boolean>;
   getUserBookmarkIds(userId: string): Promise<number[]>;
+  
+  // Speaker Applications
+  createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;
+  getSpeakerApplications(): Promise<SpeakerApplication[]>;
+  updateSpeakerApplication(id: number, updates: Partial<SpeakerApplication>): Promise<SpeakerApplication | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -611,6 +619,33 @@ export class MemStorage implements IStorage {
     userSessionsToDelete.forEach(session => this.userSessions.delete(session.id));
     
     return this.users.delete(userId);
+  }
+
+  // Speaker Applications
+  async createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication> {
+    const newApplication: SpeakerApplication = {
+      id: Date.now(), // Simple ID generation for memory storage
+      ...application,
+      status: 'pending',
+      adminNotes: null,
+      reviewedBy: null,
+      reviewedAt: null,
+      createdAt: new Date(),
+      createdSpeakerId: null
+    };
+    
+    // Store in a temporary way (in memory, applications would be lost on restart)
+    return newApplication;
+  }
+
+  async getSpeakerApplications(): Promise<SpeakerApplication[]> {
+    // For memory storage, return empty array since we don't persist applications
+    return [];
+  }
+
+  async updateSpeakerApplication(id: number, updates: Partial<SpeakerApplication>): Promise<SpeakerApplication | undefined> {
+    // For memory storage, return undefined since we don't persist applications
+    return undefined;
   }
 }
 

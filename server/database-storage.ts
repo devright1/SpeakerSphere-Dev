@@ -8,6 +8,7 @@ import {
   userSessions,
   userLikes,
   userBookmarks,
+  speakerApplications,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -25,7 +26,9 @@ import {
   type UserLike,
   type InsertUserLike,
   type UserBookmark,
-  type InsertUserBookmark
+  type InsertUserBookmark,
+  type SpeakerApplication,
+  type InsertSpeakerApplication
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql } from "drizzle-orm";
@@ -365,5 +368,23 @@ export class DatabaseStorage implements IStorage {
     const result = await db.select().from(userBookmarks)
       .where(eq(userBookmarks.userId, userId));
     return result.map(bookmark => bookmark.speakerId);
+  }
+
+  // Speaker Applications
+  async createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication> {
+    const [result] = await db.insert(speakerApplications).values(application).returning();
+    return result;
+  }
+
+  async getSpeakerApplications(): Promise<SpeakerApplication[]> {
+    return await db.select().from(speakerApplications).orderBy(desc(speakerApplications.createdAt));
+  }
+
+  async updateSpeakerApplication(id: number, updates: Partial<SpeakerApplication>): Promise<SpeakerApplication | undefined> {
+    const [result] = await db.update(speakerApplications)
+      .set(updates)
+      .where(eq(speakerApplications.id, id))
+      .returning();
+    return result;
   }
 }

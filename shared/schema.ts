@@ -109,10 +109,57 @@ export const videos = pgTable("videos", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const speakerApplications = pgTable("speaker_applications", {
+  id: serial("id").primaryKey(),
+  // Personal Information
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  website: text("website"),
+  
+  // Professional Information
+  title: text("title").notNull(),
+  specialty: text("specialty").notNull(),
+  yearsExperience: text("years_experience").notNull(),
+  credentials: text("credentials").notNull(),
+  
+  // Speaking Information
+  speakingTopics: text("speaking_topics").notNull(),
+  previousExperience: text("previous_experience").notNull(),
+  availableFormats: text("available_formats").array().notNull(),
+  travelWillingness: text("travel_willingness").notNull(),
+  
+  // Additional Information
+  biography: text("biography").notNull(),
+  specialRequirements: text("special_requirements"),
+  references: text("references"),
+  
+  // Application Status
+  status: text("status").default("pending"), // "pending", "approved", "rejected", "under_review"
+  adminNotes: text("admin_notes"),
+  reviewedBy: text("reviewed_by"), // Admin email who reviewed
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  
+  // If approved, the created speaker ID
+  createdSpeakerId: integer("created_speaker_id"),
+});
+
 export const insertSpeakerSchema = createInsertSchema(speakers).omit({
   id: true,
   overallRating: true,
   reviewCount: true,
+});
+
+export const insertSpeakerApplicationSchema = createInsertSchema(speakerApplications).omit({
+  id: true,
+  status: true,
+  adminNotes: true,
+  reviewedBy: true,
+  reviewedAt: true,
+  createdAt: true,
+  createdSpeakerId: true,
 });
 
 export const insertReviewSchema = createInsertSchema(reviews).omit({
@@ -332,3 +379,5 @@ export type ClickEvent = typeof clickEvents.$inferSelect;
 export type InsertClickEvent = z.infer<typeof insertClickEventSchema>;
 export type DemandMetrics = typeof demandMetrics.$inferSelect;
 export type InsertDemandMetrics = z.infer<typeof insertDemandMetricsSchema>;
+export type SpeakerApplication = typeof speakerApplications.$inferSelect;
+export type InsertSpeakerApplication = z.infer<typeof insertSpeakerApplicationSchema>;

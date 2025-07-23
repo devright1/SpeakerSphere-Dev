@@ -96,6 +96,15 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: applications } = useQuery({
+    queryKey: ["/api/admin/speaker-applications"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/speaker-applications");
+      if (!response.ok) throw new Error("Failed to fetch speaker applications");
+      return response.json();
+    },
+  });
+
   const handleLogout = () => {
     localStorage.removeItem("adminAuthenticated");
     localStorage.removeItem("adminEmail");
@@ -353,7 +362,35 @@ export default function AdminDashboard() {
     },
   });
 
-
+  // Update application mutation
+  const updateApplicationMutation = useMutation({
+    mutationFn: async ({ applicationId, status }: { applicationId: number; status: string }) => {
+      const response = await fetch(`/api/admin/speaker-applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, reviewedBy: adminEmail }),
+      });
+      if (!response.ok) throw new Error('Failed to update application');
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      const statusText = variables.status === 'approved' ? 'approved' : 
+                         variables.status === 'rejected' ? 'rejected' : 
+                         variables.status === 'under_review' ? 'marked for review' : 'updated';
+      toast({ 
+        title: "Success", 
+        description: `Application ${statusText} successfully${variables.status === 'approved' ? '. Speaker profile will be created.' : ''}` 
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-applications"] });
+      if (variables.status === 'approved') {
+        queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      }
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update application", variant: "destructive" });
+    },
+  });
 
   const handleEditCategory = (category: any) => {
     setEditingCategory(category);
@@ -492,6 +529,11 @@ export default function AdminDashboard() {
     });
   };
 
+  // Handle application status change
+  const handleApplicationAction = (applicationId: number, newStatus: string) => {
+    updateApplicationMutation.mutate({ applicationId, status: newStatus });
+  };
+
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
   
@@ -590,7 +632,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="speakers">Speakers</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="applications">Applications</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -1204,25 +1246,25 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="reviews" className="space-y-6">
+          <TabsContent value="applications" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Review Management</CardTitle>
+                <CardTitle>Speaker Applications</CardTitle>
                 <CardDescription>
-                  Approve, reject, or flag reviews for further consideration. Only approved reviews affect rankings and appear on speaker profiles.
+                  Review and manage speaker applications. Approve qualified speakers to add them to the platform.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {/* Review Status Summary */}
+                  {/* Application Status Summary */}
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="p-4 border rounded-lg">
                       <div className="flex items-center space-x-2 mb-2">
                         <MessageSquare className="h-5 w-5 text-blue-500" />
-                        <span className="font-medium">Pending Reviews</span>
+                        <span className="font-medium">Pending</span>
                       </div>
-                      <div className="text-2xl font-bold">8</div>
-                      <div className="text-sm text-gray-500">Awaiting approval</div>
+                      <div className="text-2xl font-bold">{applications?.filter((app: any) => app.status === 'pending').length || 0}</div>
+                      <div className="text-sm text-gray-500">Awaiting review</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg">
@@ -1230,17 +1272,17 @@ export default function AdminDashboard() {
                         <Star className="h-5 w-5 text-green-500" />
                         <span className="font-medium">Approved</span>
                       </div>
-                      <div className="text-2xl font-bold">0</div>
-                      <div className="text-sm text-gray-500">Live on profiles</div>
+                      <div className="text-2xl font-bold">{applications?.filter((app: any) => app.status === 'approved').length || 0}</div>
+                      <div className="text-sm text-gray-500">Speakers created</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg">
                       <div className="flex items-center space-x-2 mb-2">
                         <TrendingUp className="h-5 w-5 text-yellow-500" />
-                        <span className="font-medium">Tentative</span>
+                        <span className="font-medium">Under Review</span>
                       </div>
-                      <div className="text-2xl font-bold">0</div>
-                      <div className="text-sm text-gray-500">Need review</div>
+                      <div className="text-2xl font-bold">{applications?.filter((app: any) => app.status === 'under_review').length || 0}</div>
+                      <div className="text-sm text-gray-500">Being evaluated</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg">
@@ -1248,125 +1290,100 @@ export default function AdminDashboard() {
                         <Settings className="h-5 w-5 text-red-500" />
                         <span className="font-medium">Rejected</span>
                       </div>
-                      <div className="text-2xl font-bold">0</div>
-                      <div className="text-sm text-gray-500">Not published</div>
+                      <div className="text-2xl font-bold">{applications?.filter((app: any) => app.status === 'rejected').length || 0}</div>
+                      <div className="text-sm text-gray-500">Not approved</div>
                     </div>
                   </div>
 
-                  {/* Pending Reviews */}
+                  {/* Pending Applications */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Pending Reviews for Approval</h3>
+                    <h3 className="text-lg font-medium">Speaker Applications</h3>
                     
-                    {/* Sample pending reviews */}
-                    {[
-                      {
-                        id: 1,
-                        speaker: "Dr. Sascha Jovanovic",
-                        reviewer: "Dr. Michael Thompson",
-                        date: "2025-01-22",
-                        rating: 4.8,
-                        content: "Exceptional speaker with incredible knowledge of digital workflows. His presentation on guided surgery was both informative and practical. Highly recommend for any dental conference.",
-                        categories: {
-                          expertise: 5,
-                          delivery: 5,
-                          engagement: 4,
-                          practical: 5
-                        }
-                      },
-                      {
-                        id: 2,
-                        speaker: "Dr. Robert Levine",
-                        reviewer: "Dr. Sarah Chen",
-                        date: "2025-01-22",
-                        rating: 4.9,
-                        content: "Dr. Levine's expertise in periodontics is unmatched. His SameDay Smile protocols have revolutionized our practice. Clear, concise, and actionable content.",
-                        categories: {
-                          expertise: 5,
-                          delivery: 5,
-                          engagement: 5,
-                          practical: 4
-                        }
-                      },
-                      {
-                        id: 3,
-                        speaker: "Dr. Will Martin",
-                        reviewer: "Dr. Jennifer Adams",
-                        date: "2025-01-22",
-                        rating: 4.6,
-                        content: "Great insights into team-based workflows. The collaborative approach he teaches has improved our case outcomes significantly.",
-                        categories: {
-                          expertise: 5,
-                          delivery: 4,
-                          engagement: 4,
-                          practical: 5
-                        }
-                      }
-                    ].map((review) => (
-                      <div key={review.id} className="p-6 border rounded-lg bg-yellow-50 border-yellow-200">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h4 className="font-semibold text-lg">{review.speaker}</h4>
-                            <p className="text-sm text-gray-600">Reviewed by: {review.reviewer}</p>
-                            <p className="text-sm text-gray-500">{review.date}</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center space-x-1">
-                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                              <span className="font-bold">{review.rating}</span>
+                    {applications && applications.length > 0 ? (
+                      applications.map((application: any) => (
+                        <div key={application.id} className="p-6 border rounded-lg bg-blue-50 border-blue-200">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h4 className="font-semibold text-lg">{application.firstName} {application.lastName}</h4>
+                              <p className="text-sm text-gray-600">{application.email}</p>
+                              <p className="text-sm text-gray-500">Applied: {new Date(application.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <div className="text-right">
+                              <Badge 
+                                className={`${application.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                                  application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                  application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'}`}
+                              >
+                                {application.status?.charAt(0).toUpperCase() + application.status?.slice(1)}
+                              </Badge>
                             </div>
                           </div>
-                        </div>
+                          
+                          <div className="mb-4 space-y-2">
+                            <div className="text-sm">
+                              <span className="font-medium">Title:</span> {application.title}
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-medium">Specialty:</span> {application.specialty}
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-medium">Experience:</span> {application.yearsExperience}
+                            </div>
+                            <div className="text-sm">
+                              <span className="font-medium">Speaking Topics:</span> {application.speakingTopics}
+                            </div>
+                          </div>
                         
-                        <div className="mb-4">
-                          <p className="text-gray-700 italic">"{review.content}"</p>
+                          <div className="flex space-x-3 pt-4 border-t">
+                            {application.status === 'pending' && (
+                              <>
+                                <Button 
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => handleApplicationAction(application.id, 'approved')}
+                                >
+                                  ✓ Approve
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
+                                  onClick={() => handleApplicationAction(application.id, 'under_review')}
+                                >
+                                  👁 Review
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  className="border-red-600 text-red-700 hover:bg-red-50"
+                                  onClick={() => handleApplicationAction(application.id, 'rejected')}
+                                >
+                                  ✗ Reject
+                                </Button>
+                              </>
+                            )}
+                            <Button 
+                              variant="outline"
+                              onClick={() => window.open(`mailto:${application.email}`, '_blank')}
+                            >
+                              <Mail className="h-4 w-4 mr-2" />
+                              Contact
+                            </Button>
+                          </div>
                         </div>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
-                          <div>
-                            <span className="font-medium">Expertise:</span> {review.categories.expertise}/5
-                          </div>
-                          <div>
-                            <span className="font-medium">Delivery:</span> {review.categories.delivery}/5
-                          </div>
-                          <div>
-                            <span className="font-medium">Engagement:</span> {review.categories.engagement}/5
-                          </div>
-                          <div>
-                            <span className="font-medium">Practical Value:</span> {review.categories.practical}/5
-                          </div>
-                        </div>
-                        
-                        <div className="flex space-x-3 pt-4 border-t">
-                          <Button 
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => {/* Handle approve */}}
-                          >
-                            ✓ Approve
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
-                            onClick={() => {/* Handle tentative */}}
-                          >
-                            ⚠ Tentative
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            className="border-red-600 text-red-700 hover:bg-red-50"
-                            onClick={() => {/* Handle reject */}}
-                          >
-                            ✗ Reject
-                          </Button>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <p>No speaker applications found</p>
+                        <p className="text-sm">Applications will appear here when speakers submit them</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                   
-                  {/* Recently Processed Reviews */}
+                  {/* Recently Processed Applications */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Recently Processed Reviews</h3>
+                    <h3 className="text-lg font-medium">Recently Processed Applications</h3>
                     <div className="text-sm text-gray-500">
-                      No reviews have been processed yet. Approved reviews will appear on speaker profiles and affect rankings.
+                      {applications?.filter((app: any) => app.status !== 'pending').length || 0} applications have been processed.
                     </div>
                   </div>
                 </div>
