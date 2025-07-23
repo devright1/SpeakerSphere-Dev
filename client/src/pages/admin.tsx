@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home } from "lucide-react";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -626,10 +626,11 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="speakers">Speakers</TabsTrigger>
+            <TabsTrigger value="speaker-accounts">Speaker Accounts</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="applications">Applications</TabsTrigger>
@@ -853,6 +854,107 @@ export default function AdminDashboard() {
                           <p>No speakers found matching "{searchQuery}"</p>
                         </div>
                       )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="speaker-accounts" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Speaker Accounts</CardTitle>
+                <CardDescription>
+                  Manage speakers who joined through application approval process
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Approved Speaker Accounts</h3>
+                    <div className="flex space-x-2">
+                      <Button variant="outline">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export List
+                      </Button>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Manual Add
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {speakersArray
+                      .filter((speaker: any) => speaker.verified && speaker.category) // Show only verified speakers with categories
+                      .slice(0, 10)
+                      .map((speaker: any) => (
+                      <div key={speaker.id} className="flex items-center justify-between p-4 border rounded-lg bg-green-50 border-green-200">
+                        <div className="flex items-center space-x-4">
+                          <img 
+                            src={speaker.imageUrl} 
+                            alt={speaker.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div>
+                            <h4 className="font-medium">{speaker.name}</h4>
+                            <p className="text-sm text-gray-600">{speaker.title}</p>
+                            <p className="text-xs text-gray-500">{speaker.category} • {speaker.experience} years experience</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            <UserCheck className="h-3 w-3 mr-1" />
+                            Active Account
+                          </Badge>
+                          {speaker.featured && <Badge>Featured</Badge>}
+                          <Button variant="outline" size="sm">
+                            <Settings className="h-4 w-4 mr-1" />
+                            Manage
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleToggleSpeakerVisibility(speaker.id)}
+                            className={speaker.hideProfile ? "border-red-200 text-red-600" : "border-green-200 text-green-600"}
+                          >
+                            {speaker.hideProfile ? (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-1" />
+                                Hidden
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-4 w-4 mr-1" />
+                                Visible
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Statistics */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {speakersArray.filter((s: any) => s.verified).length}
+                      </div>
+                      <div className="text-sm text-gray-500">Active Accounts</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {speakersArray.filter((s: any) => s.featured).length}
+                      </div>
+                      <div className="text-sm text-gray-500">Featured Speakers</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {speakersArray.filter((s: any) => s.hideProfile).length}
+                      </div>
+                      <div className="text-sm text-gray-500">Hidden Profiles</div>
                     </div>
                   </div>
                 </div>
