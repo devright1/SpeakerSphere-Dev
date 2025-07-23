@@ -291,4 +291,26 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(inquiries.createdAt));
     return result;
   }
+
+  async getAllUsers(): Promise<User[]> {
+    const result = await db.select().from(users)
+      .orderBy(desc(users.createdAt));
+    return result;
+  }
+
+  async deleteUser(userId: string): Promise<boolean> {
+    try {
+      // Clean up related data first
+      await db.delete(userSessions).where(eq(userSessions.userId, userId));
+      await db.delete(userLikes).where(eq(userLikes.userId, userId));
+      await db.delete(userBookmarks).where(eq(userBookmarks.userId, userId));
+      
+      // Delete the user
+      const result = await db.delete(users).where(eq(users.id, userId));
+      return result.rowCount ? result.rowCount > 0 : false;
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      return false;
+    }
+  }
 }

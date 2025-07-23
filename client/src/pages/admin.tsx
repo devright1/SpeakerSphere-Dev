@@ -70,6 +70,24 @@ export default function AdminDashboard() {
     queryKey: ["/api/categories"],
   });
 
+  const { data: users } = useQuery({
+    queryKey: ["/api/admin/users"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/users");
+      if (!response.ok) throw new Error("Failed to fetch users");
+      return response.json();
+    },
+  });
+
+  const { data: userStats } = useQuery({
+    queryKey: ["/api/admin/user-stats"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/user-stats");
+      if (!response.ok) throw new Error("Failed to fetch user stats");
+      return response.json();
+    },
+  });
+
   const handleLogout = () => {
     localStorage.removeItem("adminAuthenticated");
     localStorage.removeItem("adminEmail");
@@ -151,10 +169,19 @@ export default function AdminDashboard() {
       setDeleteError("Password is required");
       return;
     }
-    deleteSpeakerMutation.mutate({ 
-      speakerId: editingSpeaker.id, 
-      password: deletePassword 
-    });
+    
+    // Check if we're deleting a user (users have email property, speakers have title/name)
+    if (editingSpeaker.email && typeof editingSpeaker.id === 'string') {
+      deleteUserMutation.mutate({ 
+        userId: editingSpeaker.id, 
+        adminPassword: deletePassword 
+      });
+    } else {
+      deleteSpeakerMutation.mutate({ 
+        speakerId: editingSpeaker.id, 
+        password: deletePassword 
+      });
+    }
   };
 
   const handleSaveSpeaker = () => {
@@ -225,6 +252,63 @@ export default function AdminDashboard() {
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker category", variant: "destructive" });
+    },
+  });
+
+  // User management mutations
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, updates }: { userId: string; updates: any }) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) throw new Error("Failed to update user");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/user-stats"] });
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async ({ userId, adminPassword }: { userId: string; adminPassword: string }) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminPassword }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to delete user");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/user-stats"] });
+      setIsDeleteDialogOpen(false);
+      setDeletePassword("");
+      setDeleteError("");
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      setDeleteError(error.message);
     },
   });
 
@@ -407,10 +491,11 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="speakers">Speakers</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -634,6 +719,187 @@ export default function AdminDashboard() {
                         </div>
                       )}
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>
+                  Manage registered users, view profiles, and handle user accounts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* User Statistics */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="p-4 border rounded-lg bg-blue-50">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Users className="h-5 w-5 text-blue-600" />
+                        <span className="font-medium text-blue-800">Total Users</span>
+                      </div>
+                      <div className="text-2xl font-bold text-blue-900">{userStats?.totalUsers || 0}</div>
+                      <div className="text-sm text-blue-600">Registered accounts</div>
+                    </div>
+                    
+                    <div className="p-4 border rounded-lg bg-green-50">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Users className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-green-800">Active Users</span>
+                      </div>
+                      <div className="text-2xl font-bold text-green-900">{userStats?.activeUsers || 0}</div>
+                      <div className="text-sm text-green-600">Currently active</div>
+                    </div>
+                    
+                    <div className="p-4 border rounded-lg bg-purple-50">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Mail className="h-5 w-5 text-purple-600" />
+                        <span className="font-medium text-purple-800">Verified</span>
+                      </div>
+                      <div className="text-2xl font-bold text-purple-900">{userStats?.verifiedUsers || 0}</div>
+                      <div className="text-sm text-purple-600">Email verified</div>
+                    </div>
+                    
+                    <div className="p-4 border rounded-lg bg-orange-50">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <TrendingUp className="h-5 w-5 text-orange-600" />
+                        <span className="font-medium text-orange-800">Recent</span>
+                      </div>
+                      <div className="text-2xl font-bold text-orange-900">{userStats?.recentRegistrations || 0}</div>
+                      <div className="text-sm text-orange-600">Last 7 days</div>
+                    </div>
+                  </div>
+
+                  {/* User List */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium">Registered Users</h3>
+                      <div className="text-sm text-gray-500">
+                        {users?.length || 0} total users
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {users && users.length > 0 ? (
+                        users.slice(0, 20).map((user: any) => (
+                          <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                            <div className="flex items-center space-x-4">
+                              <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                {user.firstName?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="font-medium">
+                                  {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email}
+                                </div>
+                                <div className="text-sm text-gray-600">{user.email}</div>
+                                <div className="text-xs text-gray-500">
+                                  Joined: {new Date(user.createdAt).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-3">
+                              <div className="text-right text-sm">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  {user.emailVerified ? (
+                                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                                      Verified
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="border-yellow-300 text-yellow-700">
+                                      Unverified
+                                    </Badge>
+                                  )}
+                                  
+                                  {user.isActive ? (
+                                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                      Active
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="border-gray-300 text-gray-600">
+                                      Inactive
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                <div className="text-xs text-gray-500">
+                                  Role: {user.role || 'User'}
+                                </div>
+                              </div>
+                              
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateUserMutation.mutate({
+                                    userId: user.id,
+                                    updates: { isActive: !user.isActive }
+                                  })}
+                                  disabled={updateUserMutation.isPending}
+                                >
+                                  {user.isActive ? (
+                                    <>
+                                      <EyeOff className="h-4 w-4 mr-1" />
+                                      Deactivate
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      Activate
+                                    </>
+                                  )}
+                                </Button>
+                                
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateUserMutation.mutate({
+                                    userId: user.id,
+                                    updates: { emailVerified: !user.emailVerified }
+                                  })}
+                                  disabled={updateUserMutation.isPending}
+                                >
+                                  <Mail className="h-4 w-4 mr-1" />
+                                  {user.emailVerified ? 'Unverify' : 'Verify'}
+                                </Button>
+                                
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingSpeaker({ id: user.id, email: user.email, name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email });
+                                    setIsDeleteDialogOpen(true);
+                                    setDeletePassword("");
+                                    setDeleteError("");
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Delete
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                          <p>No users found</p>
+                          <p className="text-sm">Users will appear here once they register</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {users && users.length > 20 && (
+                      <div className="text-center py-4">
+                        <div className="text-sm text-gray-500">
+                          Showing first 20 users of {users.length} total
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -1466,7 +1732,11 @@ export default function AdminDashboard() {
               Confirm Delete
             </DialogTitle>
             <DialogDescription>
-              This will permanently delete {editingSpeaker?.name}'s profile. The profile will be moved to recently deleted for 14 days before permanent removal.
+              {editingSpeaker?.email && typeof editingSpeaker?.id === 'string' ? (
+                <>This will permanently delete the user account for {editingSpeaker?.name || editingSpeaker?.email}. All user data will be removed immediately.</>
+              ) : (
+                <>This will permanently delete {editingSpeaker?.name}'s profile. The profile will be moved to recently deleted for 14 days before permanent removal.</>
+              )}
             </DialogDescription>
           </DialogHeader>
           
@@ -1500,9 +1770,10 @@ export default function AdminDashboard() {
             <Button 
               variant="destructive" 
               onClick={handleDeleteConfirm}
-              disabled={deleteSpeakerMutation.isPending}
+              disabled={deleteSpeakerMutation.isPending || deleteUserMutation.isPending}
             >
-              {deleteSpeakerMutation.isPending ? "Deleting..." : "Delete Profile"}
+              {(deleteSpeakerMutation.isPending || deleteUserMutation.isPending) ? "Deleting..." : 
+               editingSpeaker?.email && typeof editingSpeaker?.id === 'string' ? "Delete User" : "Delete Profile"}
             </Button>
           </div>
         </DialogContent>

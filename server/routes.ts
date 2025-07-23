@@ -314,6 +314,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin user management endpoints
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove password hashes from response
+      const safeUsers = users.map(({ passwordHash, ...user }) => user);
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Failed to get users:", error);
+      res.status(500).json({ message: "Failed to get users" });
+    }
+  });
+
+  app.patch("/api/admin/users/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const updates = req.body;
+      
+      // Don't allow updating password hash directly
+      delete updates.passwordHash;
+      delete updates.id;
+      
+      const updatedUser = await storage.updateUser(userId, updates);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Remove password hash from response
+      const { passwordHash, ...safeUser } = updatedUser;
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/admin/users/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const { adminPassword } = req.body;
+      
+      // Verify admin password
+      if (adminPassword !== "Doneright123!") {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
+
+      const deleted = await storage.deleteUser(userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ 
+        message: "User deleted successfully", 
+        deletedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  app.get("/api/admin/user-stats", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      
+      const stats = {
+        totalUsers: users.length,
+        activeUsers: users.filter(u => u.isActive).length,
+        verifiedUsers: users.filter(u => u.emailVerified).length,
+        recentRegistrations: users.filter(u => {
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return new Date(u.createdAt) > weekAgo;
+        }).length
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Failed to get user stats:", error);
+      res.status(500).json({ message: "Failed to get user stats" });
+    }
+  });
+
   // Get all speakers with optional filters
   app.get("/api/speakers", async (req, res) => {
     try {

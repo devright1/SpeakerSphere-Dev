@@ -87,6 +87,10 @@ export interface IStorage {
   // User Profile Data
   getUserReviews(userId: string): Promise<Review[]>;
   getUserInquiries(userId: string): Promise<Inquiry[]>;
+  
+  // Admin User Management
+  getAllUsers(): Promise<User[]>;
+  deleteUser(userId: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -578,6 +582,30 @@ export class MemStorage implements IStorage {
     return Array.from(this.inquiries.values())
       .filter(inquiry => inquiry.clientEmail === userId) // Match by user email for now
       .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values())
+      .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+  }
+
+  async deleteUser(userId: string): Promise<boolean> {
+    if (!this.users.has(userId)) return false;
+    
+    // Clean up related data
+    const userLikesToDelete = Array.from(this.userLikes.values())
+      .filter(like => like.userId === userId);
+    userLikesToDelete.forEach(like => this.userLikes.delete(like.id));
+    
+    const userBookmarksToDelete = Array.from(this.userBookmarks.values())
+      .filter(bookmark => bookmark.userId === userId);
+    userBookmarksToDelete.forEach(bookmark => this.userBookmarks.delete(bookmark.id));
+    
+    const userSessionsToDelete = Array.from(this.userSessions.values())
+      .filter(session => session.userId === userId);
+    userSessionsToDelete.forEach(session => this.userSessions.delete(session.id));
+    
+    return this.users.delete(userId);
   }
 }
 
