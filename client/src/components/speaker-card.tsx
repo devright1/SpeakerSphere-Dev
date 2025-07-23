@@ -24,8 +24,16 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
   // Check if speaker is bookmarked
   const { data: isBookmarked = false } = useQuery({
     queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker.id}`],
+    queryFn: async () => {
+      if (!user?.id) return false;
+      const response = await fetch(`/api/users/${user.id}/bookmarks/check/${speaker.id}`);
+      if (!response.ok) return false;
+      const data = await response.json();
+      return data.bookmarked || false;
+    },
     enabled: !!user?.id,
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   // Toggle bookmark mutation
@@ -66,6 +74,8 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent any parent click handlers
     e.stopPropagation();
+    
+    console.log('Heart clicked for speaker:', speaker.id, 'Currently bookmarked:', isBookmarked);
     
     if (!isAuthenticated) {
       toast({
@@ -109,11 +119,12 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-all duration-200 shadow-sm hover:shadow-md"
         >
           <Heart 
-            className={`w-5 h-5 transition-all duration-200 ${
-              isBookmarked 
-                ? "text-red-500 fill-red-500 scale-110" 
-                : "text-gray-600 hover:text-red-500 hover:scale-105"
-            }`} 
+            className={`w-5 h-5 transition-all duration-200`}
+            style={{
+              color: isBookmarked ? '#ef4444' : '#6b7280',
+              fill: isBookmarked ? '#ef4444' : 'transparent',
+              transform: isBookmarked ? 'scale(1.1)' : 'scale(1)'
+            }}
           />
         </button>
       </div>

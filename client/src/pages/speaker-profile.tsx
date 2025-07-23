@@ -394,11 +394,13 @@ export default function SpeakerProfile() {
                             : "hover:bg-gray-50"
                         }`}
                       >
-                        <Heart className={`w-4 h-4 mr-2 transition-all duration-200 ${
-                          isBookmarked 
-                            ? "fill-red-500 text-red-500" 
-                            : "text-gray-600 hover:text-red-500"
-                        }`} />
+                        <Heart 
+                          className="w-4 h-4 mr-2 transition-all duration-200"
+                          style={{
+                            color: isBookmarked ? '#ef4444' : '#6b7280',
+                            fill: isBookmarked ? '#ef4444' : 'transparent'
+                          }}
+                        />
                         {isBookmarked ? "Saved" : "Save"}
                       </Button>
                       <Button size="sm" variant="outline">
