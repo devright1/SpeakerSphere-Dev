@@ -37,6 +37,7 @@ export interface IStorage {
     minRating?: number;
     expertise?: string;
     search?: string;
+    includeHidden?: boolean;
   }): Promise<Speaker[]>;
   getSpeaker(id: number): Promise<Speaker | undefined>;
   getSpeakerBySlug(slug: string): Promise<Speaker | undefined>;
@@ -270,6 +271,7 @@ export class MemStorage implements IStorage {
     minRating?: number;
     expertise?: string;
     search?: string;
+    includeHidden?: boolean;
   }): Promise<Speaker[]> {
     let speakers = Array.from(this.speakers.values());
 

@@ -41,10 +41,15 @@ export class DatabaseStorage implements IStorage {
     minFee?: number;
     expertise?: string;
     search?: string;
+    includeHidden?: boolean; // Add option to include hidden speakers
   }): Promise<Speaker[]> {
-    let query = db.select().from(speakers).where(eq(speakers.hideProfile, false));
-
-    const conditions = [eq(speakers.hideProfile, false)];
+    // Only hide speakers from public view, not admin view
+    const conditions = [];
+    
+    // Only apply hideProfile filter if not explicitly requesting hidden speakers
+    if (!filters?.includeHidden) {
+      conditions.push(eq(speakers.hideProfile, false));
+    }
 
     if (filters?.category) {
       conditions.push(eq(speakers.category, filters.category));

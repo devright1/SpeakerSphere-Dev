@@ -56,11 +56,8 @@ export function registerAdminRoutes(app: Express) {
   // Get all speakers including hidden ones (for admin panel)
   app.get("/api/admin/speakers", async (req, res) => {
     try {
-      // Get all speakers regardless of visibility status
-      const allSpeakers = await storage.getSpeakers({});
-      
-      // Also get hidden speakers by bypassing the filter
-      // This requires a direct database query for DatabaseStorage
+      // Get all speakers including hidden ones for admin panel
+      const allSpeakers = await storage.getSpeakers({ includeHidden: true });
       res.json(allSpeakers);
     } catch (error) {
       console.error("Failed to fetch all speakers:", error);

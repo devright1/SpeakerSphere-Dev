@@ -56,8 +56,14 @@ export default function AdminDashboard() {
     setFeeRangeVisible(feeRangeVisibleSetting === "true");
   }, [setLocation]);
 
+  // Use admin endpoint to get all speakers including hidden ones
   const { data: speakers } = useQuery({
-    queryKey: ["/api/speakers"],
+    queryKey: ["/api/admin/speakers"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/speakers");
+      if (!response.ok) throw new Error("Failed to fetch speakers");
+      return response.json();
+    },
   });
 
   const { data: categories } = useQuery({
@@ -104,6 +110,7 @@ export default function AdminDashboard() {
       toast({ title: "Success", description: "Speaker updated successfully" });
       setIsEditDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker", variant: "destructive" });
@@ -132,6 +139,7 @@ export default function AdminDashboard() {
       setIsDeleteDialogOpen(false);
       setIsEditDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: (error: any) => {
       setDeleteError(error.message);
@@ -285,6 +293,7 @@ export default function AdminDashboard() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker visibility", variant: "destructive" });
