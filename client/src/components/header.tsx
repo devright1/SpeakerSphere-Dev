@@ -84,32 +84,45 @@ export default function Header() {
               </DropdownMenu>
             ) : (
               <>
-                <Link href="/auth">
-                  <Button variant="ghost" className="text-gray-700 hover:text-primary">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/auth">
-                  <Button className="bg-primary hover:bg-blue-700 text-white">
-                    Get Started
-                  </Button>
-                </Link>
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-700 hover:text-primary"
+                  onClick={() => window.location.href = '/auth'}
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  className="bg-primary hover:bg-blue-700 text-white"
+                  onClick={() => window.location.href = '/auth'}
+                >
+                  Get Started
+                </Button>
               </>
             )}
-            <Link href="/admin-login">
-              <div className="ml-4 p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group">
-                <Lock className="h-5 w-5 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
-              </div>
-            </Link>
+            {/* Admin Lock Icon - Always visible */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-4 p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group"
+              onClick={() => window.location.href = '/admin-login'}
+              title="Admin Access"
+            >
+              <Lock className="h-5 w-5 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+            </Button>
           </div>
 
           {/* Mobile Menu */}
           <div className="md:hidden flex items-center space-x-2">
-            <Link href="/admin-login">
-              <div className="p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group">
-                <Lock className="h-4 w-4 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
-              </div>
-            </Link>
+            {/* Admin Lock Icon - Mobile */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="p-2 border-2 border-gray-300 rounded-lg hover:border-primary transition-all duration-300 hover:shadow-md group"
+              onClick={() => window.location.href = '/admin-login'}
+              title="Admin Access"
+            >
+              <Lock className="h-4 w-4 text-gray-700 group-hover:text-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+            </Button>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -163,16 +176,19 @@ export default function Header() {
                       </>
                     ) : (
                       <>
-                        <Link href="/auth" className="w-full">
-                          <Button variant="ghost" className="w-full justify-start text-gray-700">
-                            Sign In
-                          </Button>
-                        </Link>
-                        <Link href="/auth" className="w-full">
-                          <Button className="w-full bg-primary hover:bg-blue-700 text-white">
-                            Get Started
-                          </Button>
-                        </Link>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-gray-700"
+                          onClick={() => window.location.href = '/auth'}
+                        >
+                          Sign In
+                        </Button>
+                        <Button 
+                          className="w-full bg-primary hover:bg-blue-700 text-white"
+                          onClick={() => window.location.href = '/auth'}
+                        >
+                          Get Started
+                        </Button>
                       </>
                     )}
                   </div>

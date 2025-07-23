@@ -126,3 +126,12 @@ Preferred communication style: Simple, everyday language.
 5. **Maintainability**: Clear separation of concerns and modular component architecture
 
 The application is designed for healthcare industry professionals seeking to discover and evaluate medical speakers for conferences, training sessions, and educational events.
+
+## Recent Changes
+
+### January 23, 2025 - Deployment Issues Fixed
+- Fixed admin icon visibility by converting Link to Button with onClick handler
+- Fixed Sign In button functionality by replacing Link with Button and onClick navigation
+- Implemented consistent featured speaker card heights (600px fixed height with flexbox layout)
+- Updated mobile menu Sign In buttons to use proper onClick handlers
+- All authentication buttons now use `window.location.href = '/auth'` for reliable navigation

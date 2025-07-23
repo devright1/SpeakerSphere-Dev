@@ -13,7 +13,7 @@ interface SpeakerCardProps {
 export default function SpeakerCard({ speaker, featured = false }: SpeakerCardProps) {
 
   return (
-    <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg" : "shadow-md"}`}>
+    <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg h-[600px]" : "shadow-md"}`}>
       <div className="relative overflow-hidden">
         <img 
           src={speaker.imageUrl} 
@@ -49,7 +49,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         </button>
       </div>
       
-      <CardContent className="p-6">
+      <CardContent className={`p-6 ${featured ? "flex flex-col" : ""}`}>
         <div className="flex items-center justify-between mb-3">
           {!speaker.hideRatings && (
             <div className="flex items-center">
@@ -70,32 +70,38 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         </div>
 
         <h3 className="text-xl font-bold text-gray-900 mb-2">{speaker.name}</h3>
-        <p className="text-primary font-semibold mb-2">{speaker.title}</p>
-        <p className="text-gray-600 mb-4 line-clamp-3">{speaker.bio}</p>
+        
+        {/* Fixed height content area for featured speakers - exactly 10 lines */}
+        <div className={featured ? "flex-1 flex flex-col" : ""}>
+          <p className="text-primary font-semibold mb-2">{speaker.title}</p>
+          <p className={`text-gray-600 mb-4 ${featured ? "line-clamp-3 flex-1" : "line-clamp-3"}`}>
+            {speaker.bio}
+          </p>
 
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-1 mb-2">
-            {speaker.expertise.slice(0, 3).map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {skill}
-              </Badge>
-            ))}
-            {speaker.expertise.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{speaker.expertise.length - 3} more
-              </Badge>
-            )}
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1 mb-2">
+              {speaker.expertise.slice(0, 3).map((skill, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {skill}
+                </Badge>
+              ))}
+              {speaker.expertise.length > 3 && (
+                <Badge variant="secondary" className="text-xs">
+                  +{speaker.expertise.length - 3} more
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <div className={`flex items-center ${featured ? "mb-4" : "mb-4"}`}>
+            <div className="text-sm text-gray-500 flex items-center">
+              <MapPin className="w-4 h-4 mr-1" />
+              {speaker.location}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center mb-4">
-          <div className="text-sm text-gray-500 flex items-center">
-            <MapPin className="w-4 h-4 mr-1" />
-            {speaker.location}
-          </div>
-        </div>
-
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-auto">
           <Link href={`/speakers/${(speaker as any).slug}`} className="flex-1">
             <Button className="w-full bg-primary hover:bg-blue-700 text-white">
               View Profile
