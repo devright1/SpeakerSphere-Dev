@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, MapPin, CheckCircle, Heart } from "lucide-react";
 import type { Speaker } from "@shared/schema";
+import { trackSpeakerView, trackEmailClick, trackPhoneClick, trackWebsiteClick } from "@/lib/analytics";
 
 interface SpeakerCardProps {
   speaker: Speaker;
@@ -108,7 +109,10 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           {/* Button area - always visible at bottom */}
           <div className="flex gap-2 mt-4">
             <Link href={`/speakers/${(speaker as any).slug}`} className="flex-1">
-              <Button className="w-full bg-primary hover:bg-blue-700 text-white">
+              <Button 
+                className="w-full bg-primary hover:bg-blue-700 text-white"
+                onClick={() => trackSpeakerView(speaker.id, { source: 'speaker_card' })}
+              >
                 View Profile
               </Button>
             </Link>

@@ -8,9 +8,30 @@ import { AnalyticsService } from "./analytics";
 import { registerAdminRoutes } from "./admin-routes";
 import { z } from "zod";
 
+// Analytics tracking middleware
+const trackEvent = async (req: any, res: any, next: any) => {
+  req.trackAnalytics = (speakerId: number, eventType: string, metadata?: any) => {
+    // Don't wait for analytics to complete
+    AnalyticsService.trackClick(
+      speakerId,
+      eventType,
+      metadata,
+      req.get('User-Agent'),
+      req.ip,
+      req.get('Referer'),
+      req.sessionID,
+      req.user?.id?.toString()
+    ).catch(error => console.error('Analytics tracking error:', error));
+  };
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register admin routes for domain synchronization
   registerAdminRoutes(app);
+  
+  // Add analytics tracking middleware
+  app.use(trackEvent);
   // Configure multer for file uploads
   const upload = multer({
     storage: multer.memoryStorage(),
@@ -260,6 +281,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!speaker) {
         return res.status(404).json({ message: "Speaker not found" });
       }
+
+      // Track profile view analytics
+      await AnalyticsService.trackClick(
+        speaker.id,
+        'profile_view',
+        { identifier },
+        req.get('User-Agent'),
+        req.ip,
+        req.get('Referer'),
+        req.sessionID,
+        req.user?.id?.toString()
+      );
 
       res.json(speaker);
     } catch (error) {
