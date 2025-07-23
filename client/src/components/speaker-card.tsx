@@ -13,7 +13,7 @@ interface SpeakerCardProps {
 export default function SpeakerCard({ speaker, featured = false }: SpeakerCardProps) {
 
   return (
-    <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg h-[800px] flex flex-col" : "shadow-md"}`}>
+    <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg h-[650px] flex flex-col" : "shadow-md"}`}>
       <div className="relative overflow-hidden flex-shrink-0">
         <img 
           src={speaker.imageUrl} 
