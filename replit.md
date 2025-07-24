@@ -129,6 +129,30 @@ The application is designed for healthcare industry professionals seeking to dis
 
 ## Recent Changes
 
+### January 24, 2025 - Major Admin Panel Reorganization and Enhanced Separation
+
+- **Completely reorganized admin panel with distinct "Speaker Accounts" and "Applications" sections**
+- **Enhanced Speaker Accounts Management:**
+  - Created dedicated section with comprehensive header and statistics
+  - Added visual distinction between application-based and manually-added speakers
+  - Implemented gradient card designs with enhanced visual hierarchy
+  - Added detailed application timeline tracking (applied date, approved date, application ID)
+  - Created separate statistics for Application-Based Accounts, Manual Accounts, and Total Speakers
+  - Enhanced account management controls with improved visibility toggles
+
+- **Enhanced Applications Review System:**
+  - Created dedicated application review section with comprehensive header
+  - Added detailed application status overview with color-coded statistics cards
+  - Implemented enhanced application queue with detailed applicant information
+  - Added comprehensive application details display (contact info, specialty, experience, topics)
+  - Enhanced approval workflow with clear action buttons and status indicators
+  - Added cross-navigation between Applications and Speaker Accounts tabs
+
+- **Fixed API Parameter Order Issues:**
+  - Corrected speaker application form submission API call parameter order
+  - Fixed sign-in mutation parameter order in for-speakers page
+  - Applications now submit successfully without unhandled promise rejections
+
 ### January 23, 2025 - Complete Speaker Application Management System
 
 - **Created "Speaker Accounts" tab in admin panel** specifically for speakers who joined through application approval process
