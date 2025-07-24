@@ -106,7 +106,7 @@ export default function ForSpeakers() {
   // Sign In Mutation
   const signInMutation = useMutation({
     mutationFn: async (data: SignInForm) => {
-      return apiRequest("/api/auth/signin", "POST", data);
+      return apiRequest("POST", "/api/auth/signin", data);
     },
     onSuccess: () => {
       toast({
@@ -128,7 +128,7 @@ export default function ForSpeakers() {
   // Application Submission Mutation
   const applicationMutation = useMutation({
     mutationFn: async (data: SpeakerApplicationForm) => {
-      return apiRequest("/api/speakers/apply", "POST", data);
+      return apiRequest("POST", "/api/speakers/apply", data);
     },
     onSuccess: () => {
       toast({
