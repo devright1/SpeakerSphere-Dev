@@ -36,9 +36,6 @@ export function DetailedSpeakerAnalytics() {
   });
 
   const speakersArray = Array.isArray(speakers) ? speakers : [];
-  
-  console.log('Speakers data:', speakers);
-  console.log('Speakers array:', speakersArray);
   const uniqueCategories = Array.from(new Set(speakersArray.map((s: any) => s.category).filter(Boolean)));
 
   // Filter and sort speakers

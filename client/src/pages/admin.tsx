@@ -630,9 +630,8 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="speakers">Speakers</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
@@ -1233,9 +1232,8 @@ export default function AdminDashboard() {
                 <AnalyticsDashboard />
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="performance" className="space-y-6">
+            
+            {/* Speaker Performance Analytics */}
             <Card>
               <CardHeader>
                 <CardTitle>Speaker Performance Analytics</CardTitle>
@@ -1261,9 +1259,6 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
-
-
-
           <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
