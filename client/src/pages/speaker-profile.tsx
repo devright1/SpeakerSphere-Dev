@@ -1,7 +1,8 @@
 import { useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSpeakerTracking } from "@/hooks/useSpeakerTracking";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -101,6 +102,16 @@ export default function SpeakerProfile() {
     enabled: !!speaker,
   });
 
+  // Initialize speaker tracking
+  const tracking = useSpeakerTracking(speaker?.id || 0);
+
+  // Track profile view when speaker data loads
+  useEffect(() => {
+    if (speaker?.id) {
+      tracking.trackProfileView();
+    }
+  }, [speaker?.id, tracking]);
+
   // Check if speaker is bookmarked
   const { data: isBookmarked = false } = useQuery({
     queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker?.id}`],
@@ -123,6 +134,13 @@ export default function SpeakerProfile() {
       return response.json();
     },
     onSuccess: (data) => {
+      // Track favorite interaction
+      if (data.bookmarked) {
+        tracking.trackFavoriteAdd();
+      } else {
+        tracking.trackFavoriteRemove();
+      }
+      
       // Invalidate bookmark queries
       queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks`] });
       queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker?.id}`] });
@@ -189,7 +207,15 @@ export default function SpeakerProfile() {
       const response = await apiRequest("POST", `/api/speakers/${speaker.id}/inquiries`, data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Track inquiry submission
+      tracking.trackInquirySubmit({
+        eventType: variables.eventType,
+        eventLocation: variables.eventLocation,
+        expectedAttendees: variables.expectedAttendees,
+        budget: variables.budget
+      });
+      
       toast({
         title: "Inquiry Sent",
         description: "Your inquiry has been sent to the speaker. They will respond within 24 hours.",
@@ -400,7 +426,19 @@ export default function SpeakerProfile() {
                         />
                         {isBookmarked ? "Saved" : "Save"}
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          tracking.trackShareClick();
+                          // Copy current URL to clipboard
+                          navigator.clipboard.writeText(window.location.href);
+                          toast({
+                            title: "Link copied",
+                            description: "Speaker profile link copied to clipboard",
+                          });
+                        }}
+                      >
                         <Share2 className="w-4 h-4 mr-2" />
                         Share
                       </Button>
@@ -413,6 +451,7 @@ export default function SpeakerProfile() {
                               href={`https://instagram.com/${speaker.instagramHandle}`} 
                               target="_blank" 
                               rel="noopener noreferrer"
+                              onClick={() => tracking.trackSocialClick('instagram')}
                               className="text-gray-600 hover:text-pink-600 transition-colors"
                             >
                               <Instagram className="w-5 h-5" />
@@ -423,6 +462,7 @@ export default function SpeakerProfile() {
                               href={speaker.socialMedia.find(link => link.includes('linkedin'))} 
                               target="_blank" 
                               rel="noopener noreferrer"
+                              onClick={() => tracking.trackSocialClick('linkedin')}
                               className="text-gray-600 hover:text-blue-600 transition-colors"
                             >
                               <Linkedin className="w-5 h-5" />
@@ -433,6 +473,7 @@ export default function SpeakerProfile() {
                               href={speaker.socialMedia.find(link => link.includes('facebook'))} 
                               target="_blank" 
                               rel="noopener noreferrer"
+                              onClick={() => tracking.trackSocialClick('facebook')}
                               className="text-gray-600 hover:text-blue-700 transition-colors"
                             >
                               <Facebook className="w-5 h-5" />
@@ -468,7 +509,14 @@ export default function SpeakerProfile() {
                         <h3 className="font-semibold text-gray-900 mb-3">Expertise</h3>
                         <div className="flex flex-wrap gap-2">
                           {speaker.expertise?.map((skill, index) => (
-                            <Badge key={index} variant="secondary">{skill}</Badge>
+                            <Badge 
+                              key={index} 
+                              variant="secondary"
+                              className="cursor-pointer hover:bg-secondary/80 transition-colors"
+                              onClick={() => tracking.trackTagClick(skill)}
+                            >
+                              {skill}
+                            </Badge>
                           )) || []}
                         </div>
                       </div>
@@ -618,7 +666,14 @@ export default function SpeakerProfile() {
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
                       <h2 className="text-2xl font-bold">Reviews</h2>
-                      <Button onClick={() => setIsReviewOpen(true)}>Leave a Review</Button>
+                      <Button 
+                        onClick={() => {
+                          tracking.trackReviewSectionView();
+                          setIsReviewOpen(true);
+                        }}
+                      >
+                        Leave a Review
+                      </Button>
                     </div>
 
                     {reviewsLoading ? (
@@ -690,18 +745,36 @@ export default function SpeakerProfile() {
                 <CardContent className="space-y-3">
                   <div className="flex items-center">
                     <Mail className="w-4 h-4 mr-3 text-gray-500" />
-                    <span className="text-sm">{speaker.email}</span>
+                    <a 
+                      href={`mailto:${speaker.email}`}
+                      onClick={() => tracking.trackEmailClick()}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {speaker.email}
+                    </a>
                   </div>
                   {speaker.phone && (
                     <div className="flex items-center">
                       <Phone className="w-4 h-4 mr-3 text-gray-500" />
-                      <span className="text-sm">{speaker.phone}</span>
+                      <a 
+                        href={`tel:${speaker.phone}`}
+                        onClick={() => tracking.trackPhoneClick()}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        {speaker.phone}
+                      </a>
                     </div>
                   )}
                   {speaker.website && (
                     <div className="flex items-center">
                       <Globe className="w-4 h-4 mr-3 text-gray-500" />
-                      <a href={speaker.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                      <a 
+                        href={speaker.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        onClick={() => tracking.trackWebsiteClick()}
+                        className="text-sm text-primary hover:underline"
+                      >
                         Website
                       </a>
                     </div>
@@ -709,6 +782,41 @@ export default function SpeakerProfile() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Book Speaker */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Book This Speaker</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-1">{speaker.fee || "Contact for pricing"}</div>
+                    <div className="text-sm text-gray-500">Speaking fee</div>
+                  </div>
+                  
+                  <Button 
+                    className="w-full bg-primary hover:bg-blue-700 text-white"
+                    onClick={() => {
+                      tracking.trackContactFormOpen();
+                      setIsInquiryOpen(true);
+                    }}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Send Inquiry
+                  </Button>
+
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Response time:</span>
+                        <span>Within 24 hours</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Quick Stats */}
             <Card>
@@ -913,6 +1021,167 @@ export default function SpeakerProfile() {
                 </Button>
                 <Button type="submit" disabled={reviewMutation.isPending}>
                   {reviewMutation.isPending ? "Submitting..." : "Submit Review"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Inquiry Dialog */}
+      <Dialog open={isInquiryOpen} onOpenChange={setIsInquiryOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Send Inquiry to {speaker?.name}</DialogTitle>
+          </DialogHeader>
+          <Form {...inquiryForm}>
+            <form onSubmit={inquiryForm.handleSubmit((data) => inquiryMutation.mutate(data))} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={inquiryForm.control}
+                  name="clientName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={inquiryForm.control}
+                  name="clientEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="email" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={inquiryForm.control}
+                name="clientCompany"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={inquiryForm.control}
+                  name="eventType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Event Type</FormLabel>
+                      <Select onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select event type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="corporate">Corporate Event</SelectItem>
+                          <SelectItem value="conference">Conference</SelectItem>
+                          <SelectItem value="workshop">Workshop</SelectItem>
+                          <SelectItem value="webinar">Webinar</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={inquiryForm.control}
+                  name="eventDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Event Date</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="date" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={inquiryForm.control}
+                  name="eventLocation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Location</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="City, State" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={inquiryForm.control}
+                  name="expectedAttendees"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Expected Attendees</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="e.g., 100-200" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={inquiryForm.control}
+                name="budget"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Budget (Optional)</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="e.g., $5,000 - $10,000" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={inquiryForm.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Message</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={4} placeholder="Tell us about your event..." />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsInquiryOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={inquiryMutation.isPending}>
+                  {inquiryMutation.isPending ? "Sending..." : "Send Inquiry"}
                 </Button>
               </div>
             </form>

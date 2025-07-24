@@ -17,6 +17,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
 import SpeakerPerformanceAnalytics from "@/components/speaker-performance-analytics";
+import { SpeakerInteractionAnalytics } from "@/components/speaker-interaction-analytics";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -1243,6 +1244,56 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <SpeakerPerformanceAnalytics />
+              </CardContent>
+            </Card>
+            
+            {/* Individual Speaker Interaction Analytics */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Detailed Speaker Interaction Analytics</CardTitle>
+                <CardDescription>
+                  Click-by-click tracking for individual speakers. Select a speaker to view their detailed interaction metrics, engagement patterns, and user behavior data.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 border border-blue-200 bg-blue-50 rounded-lg">
+                    <div className="flex items-center space-x-2 text-blue-800 mb-2">
+                      <MousePointer className="h-5 w-5" />
+                      <span className="font-medium">Advanced Interaction Tracking</span>
+                    </div>
+                    <p className="text-sm text-blue-700">
+                      Track detailed user interactions for each speaker including profile views, video plays, contact form submissions, 
+                      favorite actions, social media clicks, and device/engagement analytics. Data updates in real-time as users interact with speaker profiles.
+                    </p>
+                  </div>
+                  
+                  {speakers && speakers.length > 0 ? (
+                    <div className="grid gap-4">
+                      {speakers.slice(0, 5).map((speaker: any) => (
+                        <div key={speaker.id} className="border rounded-lg p-4">
+                          <SpeakerInteractionAnalytics 
+                            speakerId={speaker.id} 
+                            speakerName={speaker.name}
+                          />
+                        </div>
+                      ))}
+                      
+                      {speakers.length > 5 && (
+                        <div className="text-center py-4">
+                          <p className="text-sm text-gray-500">
+                            Showing detailed analytics for top 5 speakers. More analytics available for remaining {speakers.length - 5} speakers.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <MousePointer className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>No speakers available for interaction analytics</p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -550,6 +550,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Speaker interaction tracking endpoint for analytics
+  app.post("/api/speakers/:speakerId/track", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const { 
+        interactionType, 
+        elementClicked, 
+        metadata, 
+        timeOnPage, 
+        scrollDepth 
+      } = req.body;
+
+      // Generate session ID if not provided (for anonymous tracking)
+      const sessionId = req.sessionID || crypto.randomUUID();
+      
+      // Detect device type from user agent
+      const userAgent = req.get('User-Agent') || '';
+      let deviceType = 'desktop';
+      if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
+        deviceType = /iPad/.test(userAgent) ? 'tablet' : 'mobile';
+      }
+
+      // Get authenticated user ID if available
+      let userId = null;
+      const authHeader = req.get('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const token = authHeader.substring(7);
+          const session = await storage.getUserSession(token);
+          if (session && session.expiresAt > new Date()) {
+            userId = session.userId;
+          }
+        } catch (error) {
+          // Continue with anonymous tracking
+        }
+      }
+
+      const interactionData = {
+        speakerId,
+        userId,
+        sessionId,
+        interactionType,
+        elementClicked,
+        metadata: metadata ? JSON.stringify(metadata) : null,
+        pageUrl: req.get('Referer') || '',
+        timeOnPage: timeOnPage || null,
+        scrollDepth: scrollDepth || null,
+        deviceType,
+        referrerSource: req.get('Referer') || null
+      };
+
+      await storage.createSpeakerInteraction(interactionData);
+
+      // Also update the existing analytics counters for backward compatibility
+      await storage.updateSpeakerAnalytics(speakerId, interactionType);
+
+      res.json({ success: true, tracked: interactionType });
+    } catch (error) {
+      console.error("Failed to track speaker interaction:", error);
+      res.status(500).json({ message: "Failed to track interaction" });
+    }
+  });
+
+  // Get speaker interaction analytics for admin
+  app.get("/api/speakers/:speakerId/analytics", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const { timeframe = '7d' } = req.query;
+
+      const analytics = await storage.getSpeakerInteractionAnalytics(speakerId, timeframe as string);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Failed to get speaker analytics:", error);
+      res.status(500).json({ message: "Failed to get analytics" });
+    }
+  });
+
   // Get all speakers with optional filters
   app.get("/api/speakers", async (req, res) => {
     try {

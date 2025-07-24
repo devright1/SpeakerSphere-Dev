@@ -9,6 +9,7 @@ import {
   userLikes,
   userBookmarks,
   speakerApplications,
+  speakerInteractions,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -28,7 +29,9 @@ import {
   type UserBookmark,
   type InsertUserBookmark,
   type SpeakerApplication,
-  type InsertSpeakerApplication
+  type InsertSpeakerApplication,
+  type SpeakerInteraction,
+  type InsertSpeakerInteraction
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -104,6 +107,12 @@ export interface IStorage {
   createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;
   getSpeakerApplications(): Promise<SpeakerApplication[]>;
   updateSpeakerApplication(id: number, updates: Partial<SpeakerApplication>): Promise<SpeakerApplication | undefined>;
+
+  // Speaker Interaction Tracking
+  createSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<SpeakerInteraction>;
+  getSpeakerInteractionAnalytics(speakerId: number, timeframe: string): Promise<any>;
+  updateSpeakerAnalytics(speakerId: number, interactionType: string): Promise<void>;
+  getUserSession(token: string): Promise<UserSession | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -646,6 +655,50 @@ export class MemStorage implements IStorage {
   async updateSpeakerApplication(id: number, updates: Partial<SpeakerApplication>): Promise<SpeakerApplication | undefined> {
     // For memory storage, return undefined since we don't persist applications
     return undefined;
+  }
+
+  // Speaker Interaction Tracking (basic implementation for memory storage)
+  async createSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<SpeakerInteraction> {
+    const newInteraction: SpeakerInteraction = {
+      id: Date.now(),
+      ...interaction,
+      createdAt: new Date()
+    };
+    return newInteraction;
+  }
+
+  async getSpeakerInteractionAnalytics(speakerId: number, timeframe: string): Promise<any> {
+    // Basic analytics for memory storage
+    return {
+      totalInteractions: 0,
+      profileViews: 0,
+      videoPlays: 0,
+      contactFormOpens: 0,
+      inquirySubmissions: 0,
+      favoriteAdds: 0,
+      socialClicks: 0,
+      phoneClicks: 0,
+      emailClicks: 0,
+      websiteClicks: 0,
+      reviewSectionViews: 0,
+      tagClicks: 0,
+      bioExpands: 0,
+      shareClicks: 0,
+      deviceBreakdown: { desktop: 0, mobile: 0, tablet: 0 },
+      averageTimeOnPage: 0,
+      averageScrollDepth: 0,
+      timeframe,
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString()
+    };
+  }
+
+  async updateSpeakerAnalytics(speakerId: number, interactionType: string): Promise<void> {
+    // No-op for memory storage
+  }
+
+  async getUserSession(token: string): Promise<UserSession | undefined> {
+    return Array.from(this.userSessions.values()).find(session => session.token === token);
   }
 }
 

@@ -9,6 +9,7 @@ import {
   userLikes,
   userBookmarks,
   speakerApplications,
+  speakerInteractions,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -28,7 +29,9 @@ import {
   type UserBookmark,
   type InsertUserBookmark,
   type SpeakerApplication,
-  type InsertSpeakerApplication
+  type InsertSpeakerApplication,
+  type SpeakerInteraction,
+  type InsertSpeakerInteraction
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql } from "drizzle-orm";
@@ -385,6 +388,93 @@ export class DatabaseStorage implements IStorage {
       .set(updates)
       .where(eq(speakerApplications.id, id))
       .returning();
+    return result;
+  }
+
+  // Speaker Interaction Tracking
+  async createSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<SpeakerInteraction> {
+    const [result] = await db.insert(speakerInteractions).values(interaction).returning();
+    return result;
+  }
+
+  async getSpeakerInteractionAnalytics(speakerId: number, timeframe: string): Promise<any> {
+    const now = new Date();
+    let startDate = new Date();
+
+    // Calculate start date based on timeframe
+    switch (timeframe) {
+      case '1d':
+        startDate.setDate(now.getDate() - 1);
+        break;
+      case '7d':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case '30d':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case '90d':
+        startDate.setDate(now.getDate() - 90);
+        break;
+      default:
+        startDate.setDate(now.getDate() - 7);
+    }
+
+    const interactions = await db.select()
+      .from(speakerInteractions)
+      .where(
+        and(
+          eq(speakerInteractions.speakerId, speakerId),
+          gte(speakerInteractions.createdAt, startDate)
+        )
+      )
+      .orderBy(desc(speakerInteractions.createdAt));
+
+    // Group interactions by type and calculate statistics
+    const analytics = {
+      totalInteractions: interactions.length,
+      profileViews: interactions.filter(i => i.interactionType === 'profile_view').length,
+      videoPlays: interactions.filter(i => i.interactionType === 'video_play').length,
+      contactFormOpens: interactions.filter(i => i.interactionType === 'contact_form_open').length,
+      inquirySubmissions: interactions.filter(i => i.interactionType === 'inquiry_submit').length,
+      favoriteAdds: interactions.filter(i => i.interactionType === 'favorite_add').length,
+      socialClicks: interactions.filter(i => i.interactionType === 'social_click').length,
+      phoneClicks: interactions.filter(i => i.interactionType === 'phone_click').length,
+      emailClicks: interactions.filter(i => i.interactionType === 'email_click').length,
+      websiteClicks: interactions.filter(i => i.interactionType === 'website_click').length,
+      reviewSectionViews: interactions.filter(i => i.interactionType === 'review_section_view').length,
+      tagClicks: interactions.filter(i => i.interactionType === 'tag_click').length,
+      bioExpands: interactions.filter(i => i.interactionType === 'bio_expand').length,
+      shareClicks: interactions.filter(i => i.interactionType === 'share_click').length,
+      deviceBreakdown: {
+        desktop: interactions.filter(i => i.deviceType === 'desktop').length,
+        mobile: interactions.filter(i => i.deviceType === 'mobile').length,
+        tablet: interactions.filter(i => i.deviceType === 'tablet').length,
+      },
+      averageTimeOnPage: interactions
+        .filter(i => i.timeOnPage)
+        .reduce((acc, i) => acc + (i.timeOnPage || 0), 0) / 
+        interactions.filter(i => i.timeOnPage).length || 0,
+      averageScrollDepth: interactions
+        .filter(i => i.scrollDepth)
+        .reduce((acc, i) => acc + (i.scrollDepth || 0), 0) / 
+        interactions.filter(i => i.scrollDepth).length || 0,
+      timeframe,
+      startDate: startDate.toISOString(),
+      endDate: now.toISOString()
+    };
+
+    return analytics;
+  }
+
+  async updateSpeakerAnalytics(speakerId: number, interactionType: string): Promise<void> {
+    // This method can be used to update aggregate analytics tables if needed
+    // For now, we're just tracking individual interactions
+    // In the future, we could add logic to update speakerAnalytics table for faster queries
+  }
+
+  async getUserSession(token: string): Promise<UserSession | undefined> {
+    const [result] = await db.select().from(userSessions)
+      .where(eq(userSessions.token, token));
     return result;
   }
 }

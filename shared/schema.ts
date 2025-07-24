@@ -285,6 +285,27 @@ export const clickEvents = pgTable("click_events", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Enhanced speaker profile interaction tracking for detailed analytics
+export const speakerInteractions = pgTable("speaker_interactions", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  userId: text("user_id"), // Optional - anonymous tracking allowed
+  sessionId: text("session_id"), // For anonymous user tracking
+  interactionType: text("interaction_type").notNull(), 
+  // Interaction types: 'profile_view', 'video_play', 'video_pause', 'video_complete', 
+  // 'contact_form_open', 'inquiry_submit', 'favorite_add', 'favorite_remove', 
+  // 'social_click', 'bio_expand', 'review_section_view', 'tag_click', 'photo_view',
+  // 'phone_click', 'email_click', 'website_click', 'share_click', 'download_bio'
+  elementClicked: text("element_clicked"), // Specific element/button clicked
+  metadata: text("metadata"), // JSON string for additional data (video duration, tag name, social platform, scroll depth, etc.)
+  pageUrl: text("page_url"), // Full URL where interaction occurred
+  timeOnPage: integer("time_on_page"), // Time spent on page in seconds
+  scrollDepth: integer("scroll_depth"), // Percentage of page scrolled
+  deviceType: text("device_type"), // 'desktop', 'tablet', 'mobile'
+  referrerSource: text("referrer_source"), // Where user came from
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Demand forecasting data
 export const demandMetrics = pgTable("demand_metrics", {
   id: serial("id").primaryKey(),
@@ -353,6 +374,11 @@ export const insertDemandMetricsSchema = createInsertSchema(demandMetrics).omit(
   createdAt: true,
 });
 
+export const insertSpeakerInteractionSchema = createInsertSchema(speakerInteractions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type Speaker = typeof speakers.$inferSelect;
 export type InsertSpeaker = z.infer<typeof insertSpeakerSchema>;
 export type Review = typeof reviews.$inferSelect;
@@ -379,5 +405,7 @@ export type ClickEvent = typeof clickEvents.$inferSelect;
 export type InsertClickEvent = z.infer<typeof insertClickEventSchema>;
 export type DemandMetrics = typeof demandMetrics.$inferSelect;
 export type InsertDemandMetrics = z.infer<typeof insertDemandMetricsSchema>;
+export type SpeakerInteraction = typeof speakerInteractions.$inferSelect;
+export type InsertSpeakerInteraction = z.infer<typeof insertSpeakerInteractionSchema>;
 export type SpeakerApplication = typeof speakerApplications.$inferSelect;
 export type InsertSpeakerApplication = z.infer<typeof insertSpeakerApplicationSchema>;
