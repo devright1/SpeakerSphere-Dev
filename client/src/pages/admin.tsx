@@ -16,7 +16,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
-import SpeakerPerformanceAnalytics from "@/components/speaker-performance-analytics";
 import { SpeakerInteractionAnalytics } from "@/components/speaker-interaction-analytics";
 import { DetailedSpeakerAnalytics } from "@/components/detailed-speaker-analytics";
 
@@ -1230,19 +1229,6 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <AnalyticsDashboard />
-              </CardContent>
-            </Card>
-            
-            {/* Speaker Performance Analytics */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Speaker Performance Analytics</CardTitle>
-                <CardDescription>
-                  Detailed view and engagement tracking for each speaker, sorted by total views
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SpeakerPerformanceAnalytics />
               </CardContent>
             </Card>
             
