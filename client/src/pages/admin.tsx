@@ -468,6 +468,11 @@ export default function AdminDashboard() {
     toggleSpeakerVisibilityMutation.mutate(speakerId);
   };
 
+  // Handle application action for the separate speaker management section
+  const handleApplicationAction = (applicationId: number, status: string) => {
+    updateApplicationMutation.mutate({ applicationId, status });
+  };
+
   // Filter users based on search and filters
   const filteredUsers = users?.filter((user: any) => {
     const matchesSearch = userSearchQuery === "" || 
@@ -529,10 +534,7 @@ export default function AdminDashboard() {
     });
   };
 
-  // Handle application status change
-  const handleApplicationAction = (applicationId: number, newStatus: string) => {
-    updateApplicationMutation.mutate({ applicationId, status: newStatus });
-  };
+
 
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
@@ -626,14 +628,12 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="speakers">Speakers</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="speaker-accounts">Speaker Accounts</TabsTrigger>
-            <TabsTrigger value="applications">Applications</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -856,186 +856,6 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="speaker-accounts" className="space-y-8">
-            {/* Section Header */}
-            <div className="text-center border-b border-gray-200 pb-6">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Speaker Accounts Management</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Manage speakers who joined through the application approval process. These accounts were created from approved speaker applications submitted via the "For Speakers" portal.
-              </p>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-6 text-center">
-                  <UserCheck className="h-12 w-12 mx-auto mb-3 text-green-600" />
-                  <div className="text-3xl font-bold text-green-700 mb-1">
-                    {applications?.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length || 0}
-                  </div>
-                  <div className="text-sm font-medium text-green-800">Application-Based Accounts</div>
-                  <div className="text-xs text-green-600 mt-1">From approved applications</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-6 text-center">
-                  <Users className="h-12 w-12 mx-auto mb-3 text-blue-600" />
-                  <div className="text-3xl font-bold text-blue-700 mb-1">
-                    {speakersArray.filter((s: any) => !applications?.some((app: any) => app.createdSpeakerId === s.id)).length || 0}
-                  </div>
-                  <div className="text-sm font-medium text-blue-800">Manual Accounts</div>
-                  <div className="text-xs text-blue-600 mt-1">Added directly by admin</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                <CardContent className="p-6 text-center">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-3 text-purple-600" />
-                  <div className="text-3xl font-bold text-purple-700 mb-1">
-                    {speakersArray.length || 0}
-                  </div>
-                  <div className="text-sm font-medium text-purple-800">Total Speaker Accounts</div>
-                  <div className="text-xs text-purple-600 mt-1">All speakers combined</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Application-Based Accounts Section */}
-            <Card>
-              <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl text-gray-900 flex items-center">
-                      <UserCheck className="h-6 w-6 mr-3 text-green-600" />
-                      Application-Based Speaker Accounts
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 mt-2">
-                      Speakers who applied through the "For Speakers" portal and were approved by admin review
-                    </CardDescription>
-                  </div>
-                  <div className="flex space-x-3">
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Accounts
-                    </Button>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Manual Add Speaker
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {applications && applications.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length > 0 ? (
-                    // Find speakers created from approved applications
-                    applications
-                      .filter((app: any) => app.status === 'approved' && app.createdSpeakerId)
-                      .map((app: any) => {
-                        // Find the corresponding speaker
-                        const speaker = speakersArray.find((s: any) => s.id === app.createdSpeakerId);
-                        if (!speaker) return null;
-                        
-                        return (
-                          <div key={speaker.id} className="p-6 border rounded-xl bg-gradient-to-r from-green-50 via-white to-blue-50 border-green-200 hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center space-x-4">
-                                <img 
-                                  src={speaker.imageUrl} 
-                                  alt={speaker.name}
-                                  className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg"
-                                />
-                                <div>
-                                  <h4 className="font-semibold text-xl text-gray-900">{speaker.name}</h4>
-                                  <p className="text-gray-600 font-medium">{speaker.title}</p>
-                                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
-                                    <span className="flex items-center">
-                                      📧 Applied: {new Date(app.createdAt).toLocaleDateString()}
-                                    </span>
-                                    <span className="flex items-center">
-                                      ✅ Approved: {new Date(app.reviewedAt).toLocaleDateString()}
-                                    </span>
-                                    <span className="text-xs text-gray-400">
-                                      Application #{app.id}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex flex-col items-end space-y-3">
-                                <Badge className="bg-green-100 text-green-800 border-green-300 px-3 py-1">
-                                  <UserCheck className="h-3 w-3 mr-1" />
-                                  Application-Based Account
-                                </Badge>
-                                <div className="flex space-x-2">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => handleEditSpeaker(speaker)}
-                                  >
-                                    <Edit className="h-4 w-4 mr-1" />
-                                    Edit
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => window.open(`/speaker/${speaker.slug}`, '_blank')}
-                                  >
-                                    <ExternalLink className="h-4 w-4 mr-1" />
-                                    View
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => handleToggleSpeakerVisibility(speaker.id)}
-                                    className={speaker.hideProfile ? "border-red-200 text-red-600 hover:bg-red-50" : "border-green-200 text-green-600 hover:bg-green-50"}
-                                  >
-                                    {speaker.hideProfile ? (
-                                      <>
-                                        <EyeOff className="h-4 w-4 mr-1" />
-                                        Hidden
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        Visible
-                                      </>
-                                    )}
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                      .filter(Boolean) // Remove null entries
-                  ) : (
-                    <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                      <UserCheck className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-3">No Application-Based Speaker Accounts</h3>
-                      <p className="text-gray-500 max-w-lg mx-auto mb-6">
-                        Speaker accounts will appear here when applications are approved and speaker profiles are created through the application review process.
-                      </p>
-                      <div className="flex justify-center space-x-3">
-                        <Button variant="outline" onClick={() => {
-                          // Switch to applications tab - you'll need to implement this
-                          const applicationsTab = document.querySelector('[value="applications"]') as HTMLElement;
-                          applicationsTab?.click();
-                        }}>
-                          View Pending Applications →
-                        </Button>
-                        <Button>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Speaker Manually
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1427,225 +1247,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="applications" className="space-y-8">
-            {/* Section Header */}
-            <div className="text-center border-b border-gray-200 pb-6">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Speaker Applications Review</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Review and manage speaker applications submitted through the "For Speakers" portal. Approve qualified speakers to add them to the platform as new speaker accounts.
-              </p>
-            </div>
 
-            {/* Application Status Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-6 text-center">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-3 text-blue-600" />
-                  <div className="text-3xl font-bold text-blue-700 mb-1">
-                    {applications?.filter((app: any) => app.status === 'pending').length || 0}
-                  </div>
-                  <div className="text-sm font-medium text-blue-800">Pending Review</div>
-                  <div className="text-xs text-blue-600 mt-1">Awaiting admin action</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-6 text-center">
-                  <Star className="h-12 w-12 mx-auto mb-3 text-green-600" />
-                  <div className="text-3xl font-bold text-green-700 mb-1">
-                    {applications?.filter((app: any) => app.status === 'approved').length || 0}
-                  </div>
-                  <div className="text-sm font-medium text-green-800">Approved</div>
-                  <div className="text-xs text-green-600 mt-1">Speaker accounts created</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-                <CardContent className="p-6 text-center">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-3 text-yellow-600" />
-                  <div className="text-3xl font-bold text-yellow-700 mb-1">
-                    {applications?.filter((app: any) => app.status === 'under_review').length || 0}
-                  </div>
-                  <div className="text-sm font-medium text-yellow-800">Under Review</div>
-                  <div className="text-xs text-yellow-600 mt-1">Being evaluated</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-                <CardContent className="p-6 text-center">
-                  <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-red-600" />
-                  <div className="text-3xl font-bold text-red-700 mb-1">
-                    {applications?.filter((app: any) => app.status === 'rejected').length || 0}
-                  </div>
-                  <div className="text-sm font-medium text-red-800">Rejected</div>
-                  <div className="text-xs text-red-600 mt-1">Not approved</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Applications Management */}
-            <Card>
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl text-gray-900 flex items-center">
-                      <MessageSquare className="h-6 w-6 mr-3 text-blue-600" />
-                      Speaker Application Queue
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 mt-2">
-                      Review applications submitted by speakers who want to join the platform
-                    </CardDescription>
-                  </div>
-                  <div className="flex space-x-3">
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Applications
-                    </Button>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      {applications?.length || 0} Total Applications
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  {applications && applications.length > 0 ? (
-                    applications.map((application: any) => (
-                      <div key={application.id} className={`p-6 border rounded-xl transition-shadow hover:shadow-lg ${
-                        application.status === 'pending' ? 'bg-gradient-to-r from-blue-50 via-white to-blue-50 border-blue-200' :
-                        application.status === 'approved' ? 'bg-gradient-to-r from-green-50 via-white to-green-50 border-green-200' :
-                        application.status === 'under_review' ? 'bg-gradient-to-r from-yellow-50 via-white to-yellow-50 border-yellow-200' :
-                        'bg-gradient-to-r from-red-50 via-white to-red-50 border-red-200'
-                      }`}>
-                        <div className="flex justify-between items-start mb-6">
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-3">
-                              <div>
-                                <h4 className="font-bold text-xl text-gray-900">{application.firstName} {application.lastName}</h4>
-                                <p className="text-gray-600 font-medium">{application.title}</p>
-                              </div>
-                              <Badge 
-                                className={`px-3 py-1 ${
-                                  application.status === 'pending' ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                                  application.status === 'approved' ? 'bg-green-100 text-green-800 border-green-300' :
-                                  application.status === 'under_review' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
-                                  'bg-red-100 text-red-800 border-red-300'
-                                }`}
-                              >
-                                {application.status?.charAt(0).toUpperCase() + application.status?.slice(1)}
-                              </Badge>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                              <div className="space-y-2">
-                                <div className="text-sm">
-                                  <span className="font-semibold text-gray-700">📧 Email:</span> 
-                                  <span className="text-gray-600 ml-2">{application.email}</span>
-                                </div>
-                                <div className="text-sm">
-                                  <span className="font-semibold text-gray-700">🏥 Specialty:</span> 
-                                  <span className="text-gray-600 ml-2">{application.specialty}</span>
-                                </div>
-                                <div className="text-sm">
-                                  <span className="font-semibold text-gray-700">⏱️ Experience:</span> 
-                                  <span className="text-gray-600 ml-2">{application.yearsExperience}</span>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <div className="text-sm">
-                                  <span className="font-semibold text-gray-700">📅 Applied:</span> 
-                                  <span className="text-gray-600 ml-2">{new Date(application.createdAt).toLocaleDateString()}</span>
-                                </div>
-                                <div className="text-sm">
-                                  <span className="font-semibold text-gray-700">📞 Phone:</span> 
-                                  <span className="text-gray-600 ml-2">{application.phone || 'Not provided'}</span>
-                                </div>
-                                <div className="text-sm">
-                                  <span className="font-semibold text-gray-700">🌐 Website:</span> 
-                                  <span className="text-gray-600 ml-2">{application.website || 'Not provided'}</span>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                              <div className="text-sm">
-                                <span className="font-semibold text-gray-700">🎤 Speaking Topics:</span>
-                                <p className="text-gray-600 mt-1">{application.speakingTopics}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-                          {application.status === 'pending' && (
-                            <>
-                              <Button 
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                                onClick={() => handleApplicationAction(application.id, 'approved')}
-                              >
-                                ✅ Approve Application
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
-                                onClick={() => handleApplicationAction(application.id, 'under_review')}
-                              >
-                                👁️ Mark Under Review
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                className="border-red-600 text-red-700 hover:bg-red-50"
-                                onClick={() => handleApplicationAction(application.id, 'rejected')}
-                              >
-                                ❌ Reject Application
-                              </Button>
-                            </>
-                          )}
-                          <Button 
-                            variant="outline"
-                            onClick={() => window.open(`mailto:${application.email}`, '_blank')}
-                          >
-                            <Mail className="h-4 w-4 mr-2" />
-                            Contact Applicant
-                          </Button>
-                          {application.status === 'approved' && application.createdSpeakerId && (
-                            <Button 
-                              variant="outline"
-                              onClick={() => {
-                                // Switch to speaker accounts tab
-                                const speakerAccountsTab = document.querySelector('[value="speaker-accounts"]') as HTMLElement;
-                                speakerAccountsTab?.click();
-                              }}
-                            >
-                              <UserCheck className="h-4 w-4 mr-2" />
-                              View Speaker Account
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                      <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-3">No Speaker Applications</h3>
-                      <p className="text-gray-500 max-w-lg mx-auto mb-6">
-                        Applications will appear here when speakers submit them through the "For Speakers" portal. Speakers can apply by visiting the dedicated application page.
-                      </p>
-                      <div className="flex justify-center space-x-3">
-                        <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
-                          View Application Portal →
-                        </Button>
-                        <Button>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Speaker Manually
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
             <Card>
@@ -1806,6 +1408,423 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Speaker Management Section - Separate from Main Admin */}
+        <div className="mt-16 border-t-2 border-gray-300 pt-12">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Speaker Management System</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Dedicated management system for speaker applications and accounts. This section handles the complete speaker onboarding process from application review to account management.
+            </p>
+          </div>
+
+          <Tabs defaultValue="applications" className="space-y-8">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+              <TabsTrigger value="applications">Applications Review</TabsTrigger>
+              <TabsTrigger value="speaker-accounts">Speaker Accounts</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="applications" className="space-y-8">
+              {/* Section Header */}
+              <div className="text-center border-b border-gray-200 pb-6">
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">Speaker Applications Review</h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Review and manage speaker applications submitted through the "For Speakers" portal. Approve qualified speakers to add them to the platform as new speaker accounts.
+                </p>
+              </div>
+
+              {/* Application Status Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                  <CardContent className="p-6 text-center">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-3 text-blue-600" />
+                    <div className="text-3xl font-bold text-blue-700 mb-1">
+                      {applications?.filter((app: any) => app.status === 'pending').length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-blue-800">Pending Review</div>
+                    <div className="text-xs text-blue-600 mt-1">Awaiting admin action</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                  <CardContent className="p-6 text-center">
+                    <Star className="h-12 w-12 mx-auto mb-3 text-green-600" />
+                    <div className="text-3xl font-bold text-green-700 mb-1">
+                      {applications?.filter((app: any) => app.status === 'approved').length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-green-800">Approved</div>
+                    <div className="text-xs text-green-600 mt-1">Speaker accounts created</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+                  <CardContent className="p-6 text-center">
+                    <TrendingUp className="h-12 w-12 mx-auto mb-3 text-yellow-600" />
+                    <div className="text-3xl font-bold text-yellow-700 mb-1">
+                      {applications?.filter((app: any) => app.status === 'under_review').length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-yellow-800">Under Review</div>
+                    <div className="text-xs text-yellow-600 mt-1">Being evaluated</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+                  <CardContent className="p-6 text-center">
+                    <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-red-600" />
+                    <div className="text-3xl font-bold text-red-700 mb-1">
+                      {applications?.filter((app: any) => app.status === 'rejected').length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-red-800">Rejected</div>
+                    <div className="text-xs text-red-600 mt-1">Not approved</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Applications Management */}
+              <Card>
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl text-gray-900 flex items-center">
+                        <MessageSquare className="h-6 w-6 mr-3 text-blue-600" />
+                        Speaker Application Queue
+                      </CardTitle>
+                      <CardDescription className="text-gray-600 mt-2">
+                        Review applications submitted by speakers who want to join the platform
+                      </CardDescription>
+                    </div>
+                    <div className="flex space-x-3">
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Applications
+                      </Button>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        {applications?.length || 0} Total Applications
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    {applications && applications.length > 0 ? (
+                      applications.map((application: any) => (
+                        <div key={application.id} className={`p-6 border rounded-xl transition-shadow hover:shadow-lg ${
+                          application.status === 'pending' ? 'bg-gradient-to-r from-blue-50 via-white to-blue-50 border-blue-200' :
+                          application.status === 'approved' ? 'bg-gradient-to-r from-green-50 via-white to-green-50 border-green-200' :
+                          application.status === 'under_review' ? 'bg-gradient-to-r from-yellow-50 via-white to-yellow-50 border-yellow-200' :
+                          'bg-gradient-to-r from-red-50 via-white to-red-50 border-red-200'
+                        }`}>
+                          <div className="flex justify-between items-start mb-6">
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <h4 className="font-bold text-xl text-gray-900">{application.firstName} {application.lastName}</h4>
+                                  <p className="text-gray-600 font-medium">{application.title}</p>
+                                </div>
+                                <Badge 
+                                  className={`px-3 py-1 ${
+                                    application.status === 'pending' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                                    application.status === 'approved' ? 'bg-green-100 text-green-800 border-green-300' :
+                                    application.status === 'under_review' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                                    'bg-red-100 text-red-800 border-red-300'
+                                  }`}
+                                >
+                                  {application.status?.charAt(0).toUpperCase() + application.status?.slice(1)}
+                                </Badge>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div className="space-y-2">
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">📧 Email:</span> 
+                                    <span className="text-gray-600 ml-2">{application.email}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">🏥 Specialty:</span> 
+                                    <span className="text-gray-600 ml-2">{application.specialty}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">⏱️ Experience:</span> 
+                                    <span className="text-gray-600 ml-2">{application.yearsExperience}</span>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">📅 Applied:</span> 
+                                    <span className="text-gray-600 ml-2">{new Date(application.createdAt).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">📞 Phone:</span> 
+                                    <span className="text-gray-600 ml-2">{application.phone || 'Not provided'}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">🌐 Website:</span> 
+                                    <span className="text-gray-600 ml-2">{application.website || 'Not provided'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                                <div className="text-sm">
+                                  <span className="font-semibold text-gray-700">🎤 Speaking Topics:</span>
+                                  <p className="text-gray-600 mt-1">{application.speakingTopics}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+                            {application.status === 'pending' && (
+                              <>
+                                <Button 
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => handleApplicationAction(application.id, 'approved')}
+                                >
+                                  ✅ Approve Application
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
+                                  onClick={() => handleApplicationAction(application.id, 'under_review')}
+                                >
+                                  👁️ Mark Under Review
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  className="border-red-600 text-red-700 hover:bg-red-50"
+                                  onClick={() => handleApplicationAction(application.id, 'rejected')}
+                                >
+                                  ❌ Reject Application
+                                </Button>
+                              </>
+                            )}
+                            <Button 
+                              variant="outline"
+                              onClick={() => window.open(`mailto:${application.email}`, '_blank')}
+                            >
+                              <Mail className="h-4 w-4 mr-2" />
+                              Contact Applicant
+                            </Button>
+                            {application.status === 'approved' && application.createdSpeakerId && (
+                              <Button 
+                                variant="outline"
+                                onClick={() => {
+                                  // Switch to speaker accounts tab
+                                  const speakerAccountsTab = document.querySelector('[value="speaker-accounts"]') as HTMLElement;
+                                  speakerAccountsTab?.click();
+                                }}
+                              >
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                View Speaker Account
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                        <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">No Speaker Applications</h3>
+                        <p className="text-gray-500 max-w-lg mx-auto mb-6">
+                          Applications will appear here when speakers submit them through the "For Speakers" portal. Speakers can apply by visiting the dedicated application page.
+                        </p>
+                        <div className="flex justify-center space-x-3">
+                          <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
+                            View Application Portal →
+                          </Button>
+                          <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Speaker Manually
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="speaker-accounts" className="space-y-8">
+              {/* Section Header */}
+              <div className="text-center border-b border-gray-200 pb-6">
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">Speaker Accounts Management</h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Manage speakers who joined through the application approval process. These accounts were created from approved speaker applications submitted via the "For Speakers" portal.
+                </p>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                  <CardContent className="p-6 text-center">
+                    <UserCheck className="h-12 w-12 mx-auto mb-3 text-green-600" />
+                    <div className="text-3xl font-bold text-green-700 mb-1">
+                      {applications?.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-green-800">Application-Based Accounts</div>
+                    <div className="text-xs text-green-600 mt-1">From approved applications</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                  <CardContent className="p-6 text-center">
+                    <Users className="h-12 w-12 mx-auto mb-3 text-blue-600" />
+                    <div className="text-3xl font-bold text-blue-700 mb-1">
+                      {speakersArray.filter((s: any) => !applications?.some((app: any) => app.createdSpeakerId === s.id)).length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-blue-800">Manual Accounts</div>
+                    <div className="text-xs text-blue-600 mt-1">Added directly by admin</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                  <CardContent className="p-6 text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-3 text-purple-600" />
+                    <div className="text-3xl font-bold text-purple-700 mb-1">
+                      {speakersArray.length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-purple-800">Total Speaker Accounts</div>
+                    <div className="text-xs text-purple-600 mt-1">All speakers combined</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Application-Based Accounts Section */}
+              <Card>
+                <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl text-gray-900 flex items-center">
+                        <UserCheck className="h-6 w-6 mr-3 text-green-600" />
+                        Application-Based Speaker Accounts
+                      </CardTitle>
+                      <CardDescription className="text-gray-600 mt-2">
+                        Speakers who applied through the "For Speakers" portal and were approved by admin review
+                      </CardDescription>
+                    </div>
+                    <div className="flex space-x-3">
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Accounts
+                      </Button>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Manual Add Speaker
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {applications && applications.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length > 0 ? (
+                      // Find speakers created from approved applications
+                      applications
+                        .filter((app: any) => app.status === 'approved' && app.createdSpeakerId)
+                        .map((app: any) => {
+                          // Find the corresponding speaker
+                          const speaker = speakersArray.find((s: any) => s.id === app.createdSpeakerId);
+                          if (!speaker) return null;
+                          
+                          return (
+                            <div key={speaker.id} className="p-6 border rounded-xl bg-gradient-to-r from-green-50 via-white to-blue-50 border-green-200 hover:shadow-md transition-shadow">
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-center space-x-4">
+                                  <img 
+                                    src={speaker.imageUrl} 
+                                    alt={speaker.name}
+                                    className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg"
+                                  />
+                                  <div>
+                                    <h4 className="font-semibold text-xl text-gray-900">{speaker.name}</h4>
+                                    <p className="text-gray-600 font-medium">{speaker.title}</p>
+                                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
+                                      <span className="flex items-center">
+                                        📧 Applied: {new Date(app.createdAt).toLocaleDateString()}
+                                      </span>
+                                      <span className="flex items-center">
+                                        ✅ Approved: {new Date(app.reviewedAt).toLocaleDateString()}
+                                      </span>
+                                      <span className="text-xs text-gray-400">
+                                        Application #{app.id}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col items-end space-y-3">
+                                  <Badge className="bg-green-100 text-green-800 border-green-300 px-3 py-1">
+                                    <UserCheck className="h-3 w-3 mr-1" />
+                                    Application-Based Account
+                                  </Badge>
+                                  <div className="flex space-x-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => handleEditSpeaker(speaker)}
+                                    >
+                                      <Edit className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => window.open(`/speaker/${speaker.slug}`, '_blank')}
+                                    >
+                                      <ExternalLink className="h-4 w-4 mr-1" />
+                                      View
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => handleToggleSpeakerVisibility(speaker.id)}
+                                      className={speaker.hideProfile ? "border-red-200 text-red-600 hover:bg-red-50" : "border-green-200 text-green-600 hover:bg-green-50"}
+                                    >
+                                      {speaker.hideProfile ? (
+                                        <>
+                                          <EyeOff className="h-4 w-4 mr-1" />
+                                          Hidden
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="h-4 w-4 mr-1" />
+                                          Visible
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                        .filter(Boolean) // Remove null entries
+                    ) : (
+                      <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                        <UserCheck className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">No Application-Based Speaker Accounts</h3>
+                        <p className="text-gray-500 max-w-lg mx-auto mb-6">
+                          Speaker accounts will appear here when applications are approved and speaker profiles are created through the application review process.
+                        </p>
+                        <div className="flex justify-center space-x-3">
+                          <Button variant="outline" onClick={() => {
+                            // Switch to applications tab - you'll need to implement this
+                            const applicationsTab = document.querySelector('[value="applications"]') as HTMLElement;
+                            applicationsTab?.click();
+                          }}>
+                            View Pending Applications →
+                          </Button>
+                          <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Speaker Manually
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       {/* Edit Speaker Dialog */}
