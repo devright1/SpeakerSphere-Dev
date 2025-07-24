@@ -35,7 +35,10 @@ export function DetailedSpeakerAnalytics() {
     queryKey: ['/api/categories'],
   });
 
-  const speakersArray = Array.isArray((speakers as any)?.data) ? (speakers as any).data : [];
+  const speakersArray = Array.isArray(speakers) ? speakers : [];
+  
+  console.log('Speakers data:', speakers);
+  console.log('Speakers array:', speakersArray);
   const uniqueCategories = Array.from(new Set(speakersArray.map((s: any) => s.category).filter(Boolean)));
 
   // Filter and sort speakers
