@@ -518,6 +518,40 @@ export default function ForSpeakers() {
                         
                         <FormField
                           control={applicationForm.control}
+                          name="availableFormats"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Available Speaking Formats * (Select all that apply)</FormLabel>
+                              <div className="grid grid-cols-2 gap-3">
+                                {speakingFormats.map((format) => (
+                                  <div key={format} className="flex items-center space-x-2">
+                                    <input
+                                      type="checkbox"
+                                      id={format}
+                                      checked={field.value?.includes(format) || false}
+                                      onChange={(e) => {
+                                        const currentFormats = field.value || [];
+                                        if (e.target.checked) {
+                                          field.onChange([...currentFormats, format]);
+                                        } else {
+                                          field.onChange(currentFormats.filter((f: string) => f !== format));
+                                        }
+                                      }}
+                                      className="rounded border-gray-300"
+                                    />
+                                    <label htmlFor={format} className="text-sm font-medium">
+                                      {format}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={applicationForm.control}
                           name="travelWillingness"
                           render={({ field }) => (
                             <FormItem>
