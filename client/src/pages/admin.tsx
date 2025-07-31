@@ -1681,13 +1681,9 @@ export default function AdminDashboard() {
                         <p className="text-gray-500 max-w-lg mx-auto mb-6">
                           Applications will appear here when speakers submit them through the "For Speakers" portal. Speakers can apply by visiting the dedicated application page.
                         </p>
-                        <div className="flex justify-center space-x-3">
+                        <div className="flex justify-center">
                           <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
                             View Application Portal →
-                          </Button>
-                          <Button onClick={() => setIsManualAddDialogOpen(true)}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Speaker Manually
                           </Button>
                         </div>
                       </div>
