@@ -44,6 +44,24 @@ export default function AdminDashboard() {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [isBulkActionDialogOpen, setIsBulkActionDialogOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState("");
+  
+  // Manual Add Speaker Dialog states
+  const [isManualAddDialogOpen, setIsManualAddDialogOpen] = useState(false);
+  const [manualSpeakerData, setManualSpeakerData] = useState({
+    name: "",
+    title: "",
+    bio: "",
+    email: "",
+    phone: "",
+    website: "",
+    location: "",
+    category: "",
+    expertise: "",
+    imageUrl: "",
+    verified: false,
+    featured: false
+  });
+  
   const { toast } = useToast();
 
   // Check authentication on component mount
@@ -205,6 +223,45 @@ export default function AdminDashboard() {
   const handleSaveSpeaker = () => {
     updateSpeakerMutation.mutate(editingSpeaker);
   };
+
+  // Manual Add Speaker mutation
+  const addSpeakerMutation = useMutation({
+    mutationFn: async (speakerData: any) => {
+      const response = await fetch('/api/admin/speakers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...speakerData,
+          slug: speakerData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to add speaker');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Speaker added successfully" });
+      setIsManualAddDialogOpen(false);
+      setManualSpeakerData({
+        name: "",
+        title: "",
+        bio: "",
+        email: "",
+        phone: "",
+        website: "",
+        location: "",
+        category: "",
+        expertise: "",
+        imageUrl: "",
+        verified: false,
+        featured: false
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to add speaker", variant: "destructive" });
+    },
+  });
 
   // Add category mutation
   const addCategoryMutation = useMutation({
@@ -1628,7 +1685,7 @@ export default function AdminDashboard() {
                           <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
                             View Application Portal →
                           </Button>
-                          <Button>
+                          <Button onClick={() => setIsManualAddDialogOpen(true)}>
                             <Plus className="h-4 w-4 mr-2" />
                             Add Speaker Manually
                           </Button>
@@ -1808,7 +1865,7 @@ export default function AdminDashboard() {
                           }}>
                             View Pending Applications →
                           </Button>
-                          <Button>
+                          <Button onClick={() => setIsManualAddDialogOpen(true)}>
                             <Plus className="h-4 w-4 mr-2" />
                             Add Speaker Manually
                           </Button>
@@ -2459,6 +2516,174 @@ export default function AdminDashboard() {
               disabled={!bulkAction || bulkUpdateUsersMutation.isPending}
             >
               {bulkUpdateUsersMutation.isPending ? "Processing..." : "Apply Action"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manual Add Speaker Dialog */}
+      <Dialog open={isManualAddDialogOpen} onOpenChange={setIsManualAddDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Speaker Manually</DialogTitle>
+            <DialogDescription>
+              Create a new speaker profile manually. This speaker will be marked as manually added for tracking purposes.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Basic Information</h3>
+              
+              <div>
+                <Label htmlFor="manualName">Speaker Name *</Label>
+                <Input 
+                  id="manualName"
+                  value={manualSpeakerData.name}
+                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, name: e.target.value})}
+                  placeholder="Dr. John Smith"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="manualTitle">Professional Title *</Label>
+                <Input 
+                  id="manualTitle"
+                  value={manualSpeakerData.title}
+                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, title: e.target.value})}
+                  placeholder="Orthodontist, CEO of Smith Dental Group"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="manualCategory">Category</Label>
+                <Select 
+                  value={manualSpeakerData.category} 
+                  onValueChange={(value) => setManualSpeakerData({...manualSpeakerData, category: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories?.map((category: any) => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="manualLocation">Location</Label>
+                <Input 
+                  id="manualLocation"
+                  value={manualSpeakerData.location}
+                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, location: e.target.value})}
+                  placeholder="New York, NY"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="manualExpertise">Expertise Areas</Label>
+                <Input 
+                  id="manualExpertise"
+                  value={manualSpeakerData.expertise}
+                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, expertise: e.target.value})}
+                  placeholder="Orthodontics, Digital Dentistry, Practice Management"
+                />
+              </div>
+            </div>
+
+            {/* Contact & Additional Info */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Contact & Additional Info</h3>
+              
+              <div>
+                <Label htmlFor="manualEmail">Email</Label>
+                <Input 
+                  id="manualEmail"
+                  type="email"
+                  value={manualSpeakerData.email}
+                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, email: e.target.value})}
+                  placeholder="speaker@example.com"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="manualPhone">Phone</Label>
+                <Input 
+                  id="manualPhone"
+                  value={manualSpeakerData.phone}
+                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, phone: e.target.value})}
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="manualWebsite">Website</Label>
+                <Input 
+                  id="manualWebsite"
+                  value={manualSpeakerData.website}
+                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, website: e.target.value})}
+                  placeholder="https://www.example.com"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="manualImageUrl">Profile Image URL</Label>
+                <Input 
+                  id="manualImageUrl"
+                  value={manualSpeakerData.imageUrl}
+                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, imageUrl: e.target.value})}
+                  placeholder="https://example.com/profile.jpg"
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={manualSpeakerData.verified}
+                    onCheckedChange={(checked) => setManualSpeakerData({...manualSpeakerData, verified: checked})}
+                  />
+                  <Label>Verified Speaker</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={manualSpeakerData.featured}
+                    onCheckedChange={(checked) => setManualSpeakerData({...manualSpeakerData, featured: checked})}
+                  />
+                  <Label>Featured Speaker</Label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Biography */}
+          <div className="space-y-4 mt-6">
+            <h3 className="text-lg font-semibold">Biography</h3>
+            <div>
+              <Label htmlFor="manualBio">Professional Biography</Label>
+              <Textarea 
+                id="manualBio"
+                value={manualSpeakerData.bio}
+                onChange={(e) => setManualSpeakerData({...manualSpeakerData, bio: e.target.value})}
+                placeholder="Enter speaker's professional background, achievements, and speaking expertise..."
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-6 border-t mt-6">
+            <Button variant="outline" onClick={() => setIsManualAddDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => addSpeakerMutation.mutate(manualSpeakerData)}
+              disabled={addSpeakerMutation.isPending || !manualSpeakerData.name.trim() || !manualSpeakerData.title.trim()}
+            >
+              {addSpeakerMutation.isPending ? "Adding Speaker..." : "Add Speaker"}
             </Button>
           </div>
         </DialogContent>

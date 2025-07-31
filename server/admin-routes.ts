@@ -65,6 +65,52 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Manually add a new speaker (admin only)
+  app.post("/api/admin/speakers", async (req, res) => {
+    try {
+      const speakerData = req.body;
+      
+      // Basic validation
+      if (!speakerData.name || !speakerData.title) {
+        return res.status(400).json({ message: "Name and title are required" });
+      }
+
+      // Create the speaker with admin-added metadata
+      const newSpeaker = await storage.createSpeaker({
+        name: speakerData.name,
+        title: speakerData.title,
+        bio: speakerData.bio || "",
+        slug: speakerData.slug,
+        imageUrl: speakerData.imageUrl || "/placeholder-speaker.jpg",
+        email: speakerData.email || "",
+        phone: speakerData.phone || "",
+        website: speakerData.website || "",
+        location: speakerData.location || "",
+        category: speakerData.category || "",
+        expertise: speakerData.expertise ? [speakerData.expertise] : [],
+        achievements: [],
+        lectures: [],
+        languages: ["English"],
+        medicalSpecialties: [],
+        speakerType: "keynote",
+        featured: speakerData.featured || false,
+        verified: speakerData.verified || false,
+        socialMedia: []
+      });
+
+      res.json({ 
+        success: true, 
+        message: "Speaker added successfully",
+        speaker: newSpeaker 
+      });
+      
+      console.log(`✅ New speaker manually added: ${speakerData.name}`);
+    } catch (error) {
+      console.error("Failed to add speaker:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Bulk operations for speakers
   app.post("/api/admin/speakers/bulk-hide", async (req, res) => {
     try {
@@ -84,7 +130,7 @@ export function registerAdminRoutes(app: Express) {
             results.push({ id: speakerId, status: "hidden" });
           }
         } catch (error) {
-          results.push({ id: speakerId, status: "error", error: error.message });
+          results.push({ id: speakerId, status: "error", error: (error as Error).message });
         }
       }
 
@@ -120,7 +166,7 @@ export function registerAdminRoutes(app: Express) {
             results.push({ id: speakerId, status: "visible" });
           }
         } catch (error) {
-          results.push({ id: speakerId, status: "error", error: error.message });
+          results.push({ id: speakerId, status: "error", error: (error as Error).message });
         }
       }
 
