@@ -82,8 +82,7 @@ const updatedLines = lines.map((line, index) => {
   // Generate the profile URL if we found a match
   let profileUrl = '';
   if (matchingSlug) {
-    // Use your actual domain here - replace with your purchased domain
-    profileUrl = `https://your-domain.com/speakers/${matchingSlug}`;
+    profileUrl = `https://thespeakersphere.com/speakers/${matchingSlug}`;
   }
   
   // Update the profile_url column (index 6)
