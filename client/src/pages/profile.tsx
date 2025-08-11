@@ -17,7 +17,8 @@ import {
   Camera,
   Edit3,
   ArrowLeft,
-  Home
+  Home,
+  UserPlus
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -338,11 +339,22 @@ export default function ProfilePage() {
                         {favoriteSpeakers.map((speaker: any) => (
                           <div key={speaker.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-3">
-                              <img 
-                                src={speaker.imageUrl} 
-                                alt={speaker.name}
-                                className="w-16 h-16 rounded-full object-cover"
-                              />
+                              {speaker.imageUrl ? (
+                                <img 
+                                  src={speaker.imageUrl} 
+                                  alt={speaker.name}
+                                  className="w-16 h-16 rounded-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const fallback = target.nextSibling as HTMLElement;
+                                    if (fallback) fallback.style.display = 'flex';
+                                  }}
+                                />
+                              ) : null}
+                              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center" style={{display: speaker.imageUrl ? 'none' : 'flex'}}>
+                                <UserPlus className="w-8 h-8 text-gray-400" />
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-gray-900 truncate">{speaker.name}</h4>
                                 <p className="text-sm text-blue-600 truncate">{speaker.title}</p>

@@ -77,6 +77,7 @@ export default function SpeakerProfile() {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   const { data: speaker, isLoading: speakerLoading, error: speakerError } = useQuery<Speaker>({
     queryKey: ["/api/speakers", name],
@@ -332,22 +333,29 @@ export default function SpeakerProfile() {
               <CardContent className="p-8">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                   <div className="flex-shrink-0">
-                    <img
-                      src={speaker.imageUrl}
-                      alt={speaker.name}
-                      className={`w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover ${
-                        // Profile headshots use original scaling system
-                        speaker.name === "Dr. Larry Brecht" 
-                          ? "speaker-image-position-center speaker-image-scale-md bg-white" 
-                          : speaker.name === "Marisa Notturno"
-                          ? "object-[center_7%] speaker-image-scale-md"
-                          : speaker.name === "Dr. Sascha Jovanovic"
-                          ? "object-contain bg-gray-100"
-                          : speaker.name === "Dr. Robert Levine"
-                          ? "object-[center_20%] speaker-image-scale-md"
-                          : "speaker-image-position-center speaker-image-scale-md"
-                      }`}
-                    />
+                    {!imageError && speaker.imageUrl ? (
+                      <img
+                        src={speaker.imageUrl}
+                        alt={speaker.name}
+                        onError={() => setImageError(true)}
+                        className={`w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover ${
+                          // Profile headshots use original scaling system
+                          speaker.name === "Dr. Larry Brecht" 
+                            ? "speaker-image-position-center speaker-image-scale-md bg-white" 
+                            : speaker.name === "Marisa Notturno"
+                            ? "object-[center_7%] speaker-image-scale-md"
+                            : speaker.name === "Dr. Sascha Jovanovic"
+                            ? "object-contain bg-gray-100"
+                            : speaker.name === "Dr. Robert Levine"
+                            ? "object-[center_20%] speaker-image-scale-md"
+                            : "speaker-image-position-center speaker-image-scale-md"
+                        }`}
+                      />
+                    ) : (
+                      <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-100 flex items-center justify-center">
+                        <UserPlus className="w-16 h-16 text-gray-400" />
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex-1 text-center md:text-left">

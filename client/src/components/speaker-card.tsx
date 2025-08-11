@@ -21,6 +21,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Check if speaker is bookmarked
   const { data: isBookmarked = false } = useQuery({
@@ -89,22 +90,35 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
   return (
     <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg h-[700px] flex flex-col" : "shadow-md"}`}>
       <div className="relative overflow-hidden flex-shrink-0">
-        <img 
-          src={speaker.imageUrl} 
-          alt={speaker.name}
-          className={`w-full h-48 ${
-            // All speakers use object-contain to show complete faces
-            speaker.name === "Dr. Larry Brecht" 
-              ? "object-contain object-center bg-white" 
-              : speaker.name === "Marisa Notturno"
-              ? "object-contain object-center bg-gray-100"
-              : speaker.name === "Dr. Sascha Jovanovic"
-              ? "object-contain object-center bg-gray-100"
-              : speaker.name === "Dr. Robert Levine"
-              ? "object-contain object-center bg-gray-100"
-              : "object-contain object-center bg-gray-100"
-          }`}
-        />
+        {!imageError && speaker.imageUrl ? (
+          <img 
+            src={speaker.imageUrl} 
+            alt={speaker.name}
+            onError={() => setImageError(true)}
+            className={`w-full h-48 ${
+              // All speakers use object-contain to show complete faces
+              speaker.name === "Dr. Larry Brecht" 
+                ? "object-contain object-center bg-white" 
+                : speaker.name === "Marisa Notturno"
+                ? "object-contain object-center bg-gray-100"
+                : speaker.name === "Dr. Sascha Jovanovic"
+                ? "object-contain object-center bg-gray-100"
+                : speaker.name === "Dr. Robert Levine"
+                ? "object-contain object-center bg-gray-100"
+                : "object-contain object-center bg-gray-100"
+            }`}
+          />
+        ) : (
+          <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center">
+                <UserPlus className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-sm font-medium">{speaker.name}</p>
+              <p className="text-xs">Image unavailable</p>
+            </div>
+          </div>
+        )}
 
         {/* Favorite button overlay */}
         <button 
