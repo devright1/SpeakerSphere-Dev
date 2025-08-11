@@ -5,6 +5,7 @@ import { ComprehensiveSpeakerImporter } from "./comprehensive-speaker-import";
 import { GNYAPSpeakerImporter } from "./gnyap-speaker-import";
 import { AAEDSpeakerImporter } from "./aaed-speaker-import";
 import { UFCIDSpeakerImporter } from "./uf-cid-speaker-import";
+import { BeckersSpeakerImporter } from "./beckers-speaker-import";
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -223,6 +224,34 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ 
         success: false,
         message: "UF CID import failed", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
+  // Becker's speakers import from event 16
+  app.post("/api/admin/speakers/beckers-import", async (req, res) => {
+    try {
+      console.log("🚀 Starting Becker's speaker import from event 16...");
+      const importer = new BeckersSpeakerImporter();
+      const results = await importer.importAllSpeakers();
+
+      res.json({
+        success: true,
+        message: `Becker's import completed: ${results.success} speakers imported successfully`,
+        results: {
+          successCount: results.success,
+          errorCount: results.errors.length,
+          errors: results.errors
+        }
+      });
+
+      console.log(`✅ Becker's import completed: ${results.success} speakers imported, ${results.errors.length} errors`);
+    } catch (error) {
+      console.error("❌ Becker's import failed:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Becker's import failed", 
         error: error instanceof Error ? error.message : String(error) 
       });
     }
