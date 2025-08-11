@@ -32,7 +32,7 @@ export function useSpeakerTracking(speakerId: number) {
 
   // Track initial profile view
   useEffect(() => {
-    if (!hasTrackedView.current) {
+    if (!hasTrackedView.current && speakerId > 0) {
       hasTrackedView.current = true;
       trackInteraction('profile_view', 'page_load');
     }
@@ -44,6 +44,9 @@ export function useSpeakerTracking(speakerId: number) {
     elementClicked?: string,
     metadata?: any
   ) => {
+    // Only track if we have a valid speaker ID
+    if (!speakerId || speakerId === 0) return;
+
     try {
       const trackingData: TrackingData = {
         interactionType,
@@ -53,10 +56,7 @@ export function useSpeakerTracking(speakerId: number) {
         scrollDepth: maxScrollDepth.current
       };
 
-      await apiRequest(`/api/speakers/${speakerId}/track`, {
-        method: 'POST',
-        body: JSON.stringify(trackingData)
-      });
+      await apiRequest('POST', `/api/speakers/${speakerId}/track`, trackingData);
     } catch (error) {
       // Silent fail for tracking - don't disrupt user experience
       console.debug('Tracking failed:', error);
@@ -173,8 +173,13 @@ export function useSpeakerTracking(speakerId: number) {
     });
   }, [trackInteraction]);
 
+  const trackProfileView = useCallback(() => {
+    trackInteraction('profile_view', 'page_load');
+  }, [trackInteraction]);
+
   return {
     trackInteraction,
+    trackProfileView,
     trackVideoPlay,
     trackVideoComplete,
     trackContactFormOpen,
