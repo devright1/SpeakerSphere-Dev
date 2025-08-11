@@ -61,14 +61,15 @@ async function updateSpeakerHeadshots() {
     
     console.log(`📋 Found ${headshotData.length} headshots to process`);
     
-    // Get speakers that could benefit from better headshots
+    // Get speakers that need better headshots
     const allSpeakers = await db.select().from(speakers);
     const speakersNeedingHeadshots = allSpeakers.filter(speaker => 
       !speaker.imageUrl || 
       speaker.imageUrl === '' ||
       speaker.imageUrl === '/api/placeholder/300/300' ||
+      speaker.imageUrl === '/api/placeholder/150/150' ||
       speaker.imageUrl.startsWith('/attached_assets/') ||
-      speaker.imageUrl.includes('dev-right-conference-devright.replit.app')
+      speaker.imageUrl.includes('dev-right-conference')
     );
     
     console.log(`🔍 Found ${speakersNeedingHeadshots.length} speakers without proper headshots`);
