@@ -129,12 +129,20 @@ The application is designed for healthcare industry professionals seeking to dis
 
 ## Recent Changes
 
+### January 24, 2025 - American Academy of Esthetic Dentistry (AAED) Speaker Integration
+
+- **Successfully imported 27 speakers from American Academy of Esthetic Dentistry 50th Annual Meeting**
+- **Added world-renowned aesthetic dentistry experts** including Dr. Christian Coachman (Digital Smile Design), Dr. Galip Gurel (Aesthetic Dentistry 4.0), Dr. Frank M. Spear
+- **Comprehensive coverage of aesthetic specialties** including advanced prosthodontics, digital dentistry, periodontics, and practice management
+- **Expanded database to 134 total speakers** with diverse medical and dental expertise
+- **Enhanced event-specific import system** with dedicated AAED import endpoint for prestigious aesthetic dentistry conference
+
 ### January 24, 2025 - GNYAP Event Speaker Integration
 
 - **Successfully imported 16 speakers from Greater New York Academy of Prosthodontics 70th Scientific Meeting**
 - **Created targeted import system** for specific dental events with comprehensive speaker data extraction
 - **Added notable specialists** including Dr. Giacomo Fabbri (Zirconia), Dr. Yu Zhang (Ceramics), Dr. Stephen J. Chu (Esthetics)
-- **Expanded database to 107 total speakers** with diverse specialties and verified professional profiles
+- **Expanded database to 134 total speakers** with diverse specialties and verified professional profiles
 - **Enhanced event-specific import functionality** with dedicated GNYAP import endpoint and processing
 
 ### January 24, 2025 - Comprehensive Bulk Speaker Import System Integration
@@ -147,7 +155,7 @@ The application is designed for healthcare industry professionals seeking to dis
 - **Created comprehensive BulkSpeakerImporter service** that scrapes speaker data and transfers images from external sources
 - **Enhanced admin panel with progress tracking** and detailed error handling for import operations
 - **Integrated with existing speaker management system** - all imported speakers appear in standard speaker listings
-- **Total speaker database now contains 107 professionals** (62 existing + 29 bulk imported + 16 GNYAP event speakers) with comprehensive profiles
+- **Total speaker database now contains 134 professionals** (62 existing + 29 bulk imported + 16 GNYAP + 27 AAED event speakers) with comprehensive profiles
 
 ### January 24, 2025 - Major Admin Panel Reorganization and Enhanced Separation
 

@@ -3,6 +3,7 @@ import { storage } from "./storage";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
 import { ComprehensiveSpeakerImporter } from "./comprehensive-speaker-import";
 import { GNYAPSpeakerImporter } from "./gnyap-speaker-import";
+import { AAEDSpeakerImporter } from "./aaed-speaker-import";
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -165,6 +166,34 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ 
         success: false,
         message: "GNYAP import failed", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
+  // AAED speakers import from event 7
+  app.post("/api/admin/speakers/aaed-import", async (req, res) => {
+    try {
+      console.log("🚀 Starting AAED speaker import from event 7...");
+      const importer = new AAEDSpeakerImporter();
+      const results = await importer.importAllSpeakers();
+
+      res.json({
+        success: true,
+        message: `AAED import completed: ${results.success} speakers imported successfully`,
+        results: {
+          successCount: results.success,
+          errorCount: results.errors.length,
+          errors: results.errors
+        }
+      });
+
+      console.log(`✅ AAED import completed: ${results.success} speakers imported, ${results.errors.length} errors`);
+    } catch (error) {
+      console.error("❌ AAED import failed:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "AAED import failed", 
         error: error instanceof Error ? error.message : String(error) 
       });
     }
