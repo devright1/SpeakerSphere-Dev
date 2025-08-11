@@ -8,6 +8,7 @@ import { UFCIDSpeakerImporter } from "./uf-cid-speaker-import";
 import { BeckersSpeakerImporter } from "./beckers-speaker-import";
 import { importEvent5Speakers } from "./event5-speaker-import";
 import { importEvent24Speakers } from "./event24-speaker-import";
+import { importEvent22Speakers } from "./event22-speaker-import";
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -308,6 +309,33 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ 
         success: false,
         message: "Event 24 import failed", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
+  // Event 22 speakers import from AAP 111th Annual Meeting 2025
+  app.post("/api/admin/speakers/event22-import", async (req, res) => {
+    try {
+      console.log("🚀 Starting Event 22 speaker import from AAP 111th Annual Meeting 2025...");
+      const results = await importEvent22Speakers();
+
+      res.json({
+        success: true,
+        message: `Event 22 import completed: ${results.successCount} speakers imported successfully`,
+        results: {
+          successCount: results.successCount,
+          errorCount: results.errorCount,
+          errors: results.errors
+        }
+      });
+
+      console.log(`✅ Event 22 import completed: ${results.successCount} speakers imported, ${results.errorCount} errors`);
+    } catch (error) {
+      console.error("❌ Event 22 import failed:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Event 22 import failed", 
         error: error instanceof Error ? error.message : String(error) 
       });
     }

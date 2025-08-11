@@ -3,6 +3,12 @@
 ## Overview
 This project is a full-stack healthcare speaker review platform, "SpeakerSphere Reviews," designed to connect healthcare professionals with medical speakers. It enables users to discover, browse, search, and review speakers across various healthcare specialties. The platform aims to be a comprehensive resource for evaluating speaker quality, facilitating bookings, and showcasing speaker expertise through detailed profiles and video portfolios. Its core capabilities include advanced speaker discovery, a multi-dimensional review system, and direct inquiry management, supporting the business vision of becoming a leading platform for healthcare speaker evaluation and booking.
 
+## Recent Changes (January 2025)
+- **Database Growth**: Platform now contains 234 verified medical and dental professionals, up from initial 199 speakers
+- **Event 22 Import**: Successfully added 35 periodontology specialists from AAP 111th Annual Meeting 2025, including regeneration experts, military dental officers, and academic researchers
+- **Event Coverage**: Platform provides speaker discovery across 9+ major dental/medical events with diverse specialties including oral surgery, anesthesia, sleep medicine, digital technology, and periodontology
+- **Import System**: Robust bulk speaker import functionality with automatic web scraping, duplicate detection, and comprehensive error handling
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
