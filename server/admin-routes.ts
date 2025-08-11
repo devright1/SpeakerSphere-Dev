@@ -10,6 +10,7 @@ import { importEvent5Speakers } from "./event5-speaker-import";
 import { importEvent24Speakers } from "./event24-speaker-import";
 import { importEvent22Speakers } from "./event22-speaker-import";
 import { importEvent26Speakers } from "./event26-speaker-import";
+import { importEvent9Speakers } from "./event9-speaker-import";
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -364,6 +365,33 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ 
         success: false,
         message: "Event 26 import failed", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
+  // Event 9 speakers import from AAID Annual Meeting 2025
+  app.post("/api/admin/speakers/event9-import", async (req, res) => {
+    try {
+      console.log("🚀 Starting Event 9 speaker import from AAID Annual Meeting 2025...");
+      const results = await importEvent9Speakers();
+
+      res.json({
+        success: true,
+        message: `Event 9 import completed: ${results.successCount} speakers imported successfully`,
+        results: {
+          successCount: results.successCount,
+          errorCount: results.errorCount,
+          errors: results.errors
+        }
+      });
+
+      console.log(`✅ Event 9 import completed: ${results.successCount} speakers imported, ${results.errorCount} errors`);
+    } catch (error) {
+      console.error("❌ Event 9 import failed:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Event 9 import failed", 
         error: error instanceof Error ? error.message : String(error) 
       });
     }
