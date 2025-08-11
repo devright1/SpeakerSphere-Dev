@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { storage } from "./storage";
+import { BulkSpeakerImporter } from "./bulk-speaker-import";
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -108,6 +109,34 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error("Failed to add speaker:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Bulk import speakers from dentalsymposiumhub.com
+  app.post("/api/admin/speakers/bulk-import", async (req, res) => {
+    try {
+      console.log("🚀 Starting bulk speaker import from dentalsymposiumhub.com...");
+      const importer = new BulkSpeakerImporter();
+      const results = await importer.importAllSpeakers();
+
+      res.json({
+        success: true,
+        message: `Bulk import completed: ${results.success} speakers imported successfully`,
+        results: {
+          successCount: results.success,
+          errorCount: results.errors.length,
+          errors: results.errors
+        }
+      });
+
+      console.log(`✅ Bulk import completed: ${results.success} speakers imported, ${results.errors.length} errors`);
+    } catch (error) {
+      console.error("❌ Bulk import failed:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Bulk import failed", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
     }
   });
 

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck } from "lucide-react";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +61,9 @@ export default function AdminDashboard() {
     verified: false,
     featured: false
   });
+
+  // Bulk import state
+  const [isBulkImporting, setIsBulkImporting] = useState(false);
   
   const { toast } = useToast();
 
@@ -419,6 +422,44 @@ export default function AdminDashboard() {
       setDeleteError(error.message || "Failed to bulk update users");
     },
   });
+
+  // Bulk import speakers mutation
+  const bulkImportSpeakersMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/speakers/bulk-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to import speakers');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: "Bulk Import Complete", 
+        description: `Successfully imported ${data.results.successCount} speakers from dental symposium hub.` 
+      });
+      setIsBulkImporting(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Import Failed",
+        description: error.message || "Failed to import speakers",
+        variant: "destructive",
+      });
+      setIsBulkImporting(false);
+    },
+  });
+
+  // Handle bulk import
+  const handleBulkImport = async () => {
+    setIsBulkImporting(true);
+    bulkImportSpeakersMutation.mutate();
+  };
 
   // Update application mutation
   const updateApplicationMutation = useMutation({
@@ -1755,6 +1796,24 @@ export default function AdminDashboard() {
                       <Button variant="outline" size="sm">
                         <Download className="h-4 w-4 mr-2" />
                         Export Accounts
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={handleBulkImport}
+                        disabled={isBulkImporting}
+                      >
+                        {isBulkImporting ? (
+                          <>
+                            <div className="animate-spin h-4 w-4 mr-2 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                            Importing...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Bulk Import Speakers
+                          </>
+                        )}
                       </Button>
                       <Button size="sm">
                         <Plus className="h-4 w-4 mr-2" />
