@@ -54,11 +54,9 @@ export class DatabaseStorage implements IStorage {
     const conditions = [];
     
     // Only apply hideProfile filter if not explicitly requesting hidden speakers
-    // For now, disable this filter to show all speakers
-    // TODO: Re-enable this when we want to hide speakers from public view
-    // if (!filters?.includeHidden) {
-    //   conditions.push(eq(speakers.hideProfile, false));
-    // }
+    if (!filters?.includeHidden) {
+      conditions.push(or(eq(speakers.hideProfile, false), sql`${speakers.hideProfile} IS NULL`));
+    }
 
     // Handle both single category (for backward compatibility) and multiple categories
     if (filters?.categories && filters.categories.length > 0) {

@@ -34,6 +34,35 @@ export function registerAdminRoutes(app: Express) {
     res.json({ success: true, message: "Admin authenticated" });
   });
 
+  // Delete speaker (soft delete by hiding profile)
+  app.delete("/api/admin/speakers/:id", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      const speaker = await storage.getSpeaker(speakerId);
+      
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      // Delete speaker (this sets hideProfile: true)
+      const deleted = await storage.deleteSpeaker(speakerId);
+
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete speaker" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Speaker deleted successfully" 
+      });
+      
+      console.log(`🗑️ Speaker ${speaker.name} has been deleted (hidden) from all domains`);
+    } catch (error) {
+      console.error("Failed to delete speaker:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Toggle speaker visibility (this is the key feature for domain sync)
   app.post("/api/admin/speakers/:id/toggle-visibility", async (req, res) => {
     try {

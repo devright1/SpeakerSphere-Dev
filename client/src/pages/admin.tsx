@@ -177,7 +177,7 @@ export default function AdminDashboard() {
   // Delete speaker mutation
   const deleteSpeakerMutation = useMutation({
     mutationFn: async ({ speakerId, password }: { speakerId: number; password: string }) => {
-      const response = await fetch(`/api/speakers/${speakerId}`, {
+      const response = await fetch(`/api/admin/speakers/${speakerId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminPassword: password }),
