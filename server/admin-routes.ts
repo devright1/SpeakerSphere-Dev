@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
+import { ComprehensiveSpeakerImporter } from "./comprehensive-speaker-import";
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -112,16 +113,16 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Bulk import speakers from dentalsymposiumhub.com
+  // Comprehensive bulk import speakers from dentalsymposiumhub.com
   app.post("/api/admin/speakers/bulk-import", async (req, res) => {
     try {
-      console.log("🚀 Starting bulk speaker import from dentalsymposiumhub.com...");
-      const importer = new BulkSpeakerImporter();
+      console.log("🚀 Starting comprehensive bulk speaker import from dentalsymposiumhub.com...");
+      const importer = new ComprehensiveSpeakerImporter();
       const results = await importer.importAllSpeakers();
 
       res.json({
         success: true,
-        message: `Bulk import completed: ${results.success} speakers imported successfully`,
+        message: `Comprehensive bulk import completed: ${results.success} speakers imported successfully`,
         results: {
           successCount: results.success,
           errorCount: results.errors.length,
@@ -129,12 +130,12 @@ export function registerAdminRoutes(app: Express) {
         }
       });
 
-      console.log(`✅ Bulk import completed: ${results.success} speakers imported, ${results.errors.length} errors`);
+      console.log(`✅ Comprehensive bulk import completed: ${results.success} speakers imported, ${results.errors.length} errors`);
     } catch (error) {
-      console.error("❌ Bulk import failed:", error);
+      console.error("❌ Comprehensive bulk import failed:", error);
       res.status(500).json({ 
         success: false,
-        message: "Bulk import failed", 
+        message: "Comprehensive bulk import failed", 
         error: error instanceof Error ? error.message : String(error) 
       });
     }
