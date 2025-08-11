@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
-import { ComprehensiveSpeakerImporter } from "./comprehensive-speaker-import";
+
 import { GNYAPSpeakerImporter } from "./gnyap-speaker-import";
 import { AAEDSpeakerImporter } from "./aaed-speaker-import";
 import { UFCIDSpeakerImporter } from "./uf-cid-speaker-import";
@@ -13,6 +13,7 @@ import { importEvent26Speakers } from "./event26-speaker-import";
 import { importEvent9Speakers } from "./event9-speaker-import";
 import { importEvent23Speakers } from "./event23-speaker-import";
 import { importEvent14Speakers } from "./event14-speaker-import";
+import { importSpeakersFromCSV } from "./comprehensive-speaker-import";
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -522,6 +523,34 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error("Failed to bulk show speakers:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // CSV import from attached file
+  app.post("/api/admin/speakers/csv-import", async (req, res) => {
+    try {
+      console.log("🚀 Starting CSV speaker import...");
+      const results = await importSpeakersFromCSV();
+
+      res.json({
+        success: true,
+        message: `CSV import completed: ${results.imported} speakers imported successfully`,
+        results: {
+          imported: results.imported,
+          skipped: results.skipped,
+          errors: results.errors,
+          total: results.total
+        }
+      });
+
+      console.log(`✅ CSV import completed: ${results.imported} speakers imported, ${results.skipped} skipped, ${results.errors} errors`);
+    } catch (error) {
+      console.error("❌ CSV import failed:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "CSV import failed", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
     }
   });
 }

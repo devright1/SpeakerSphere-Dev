@@ -1,0 +1,558 @@
+id,name,slug,profile_url,category,title,email
+6,"Dr. Wael Att",waelatt,https://thespeakersphere.com/speakers/waelatt,"Prosthodontics","Prosthodontist",watt@devrightspeakers.com
+5,"Dr. Ghida Lawand",ghidalawand,https://thespeakersphere.com/speakers/ghidalawand,"Digital Dentistry","AI and Digital Dentistry Expert",glawand@devrightspeakers.com
+3,"Dr. Kostas Chochlidakis",kostaschochlidakis,https://thespeakersphere.com/speakers/kostaschochlidakis,"Prosthodontics","Prosthodontist and Full Arch Specialist",kchochlidakis@devrightspeakers.com
+7,"Dr. Phil Walton",philwalton,https://thespeakersphere.com/speakers/philwalton,"Digital Dentistry","Digital Implant Specialist",pwalton@devrightspeakers.com
+8,"Dr. Sam Bakuri",sambakuri,https://thespeakersphere.com/speakers/sambakuri,"Practice Management","Practice Management Expert",sbakuri@devrightspeakers.com
+9,"Dr. Edgard El Chaar",edgardelchaar,https://thespeakersphere.com/speakers/edgardelchaar,"Implant Dentistry","Implant Dentist",eelchaar@devrightspeakers.com
+10,"Jason Coss",jasoncoss,https://thespeakersphere.com/speakers/jasoncoss,"Event Management","Event Coordinator",jason.coss@devright.com
+11,"Dr. Mark Schlam",markschlam,https://thespeakersphere.com/speakers/markschlam,"Oral Surgery","Oral Surgeon",mark.schlam@devright.com
+12,"Dr. Curry Leavitt",curryleavitt,https://thespeakersphere.com/speakers/curryleavitt,"Periodontics","Periodontist",curry.leavitt@devright.com
+13,"Dr. Kimberly Schlam",kimberlyschlam,https://thespeakersphere.com/speakers/kimberlyschlam,"Esthetic Dentistry","Esthetic Dentistry & Technology Integration Specialist",kschlam@devrightspeakers.com
+14,"Dr. Panos Papaspyridakis",panospapaspyridakis,https://thespeakersphere.com/speakers/panospapaspyridakis,"Prosthodontics","Prosthodontist & Implant Specialist",panos.papaspyridakis@example.com
+15,"Dr. Armand Bedrossian",armandbedrossian,https://thespeakersphere.com/speakers/armandbedrossian,"Digital Dentistry","Digital Technology & Full Arch Specialist",abedrossian@devrightspeakers.com
+16,"Dr. Berfin Jacobs",berfinjacobs,https://thespeakersphere.com/speakers/berfinjacobs,"Implant Dentistry","Implant Dentistry Researcher",bjacobs@devrightspeakers.com
+17,"Dr. Angel Garcia-Cañas",angelgarciacanas,https://thespeakersphere.com/speakers/angelgarciacanas,"Implant Dentistry","Contemporary Implant Dentistry Specialist",agarcia@devrightspeakers.com
+18,"Dr. Allie Rascon",allierascon,https://thespeakersphere.com/speakers/allierascon,"Periodontics","Board-Certified Periodontist & Implant Specialist",arascon@devrightspeakers.com
+19,"Dr. James Mah",jamesmah,https://thespeakersphere.com/speakers/jamesmah,"Orthodontics","Dean & Professor, UNLV School of Dental Medicine",jmah@devrightspeakers.com
+20,"Dr. Jasper Thoolen",jasperthoolen,https://thespeakersphere.com/speakers/jasperthoolen,"Digital Dentistry","Digital Dentistry & Clear Aligner Specialist",jthoolen@devrightspeakers.com
+21,"Dr. Jeff Briney",jeffbriney,https://thespeakersphere.com/speakers/jeffbriney,"Laser Dentistry","Comprehensive Dentistry & Laser Specialist",jbriney@devrightspeakers.com
+22,"Dr. Katie Lee",katielee,https://thespeakersphere.com/speakers/katielee,"Orthodontics","Orthodontist & Board-Certified Specialist",klee@devrightspeakers.com
+23,"Dr. Larissa Trojan",larissatrojan,https://thespeakersphere.com/speakers/larissatrojan,"Digital Dentistry","Digital Implant Dentistry & Bioengineering Specialist",ltrojan@devrightspeakers.com
+24,"Dr. Mark Lowe",marklowe,https://thespeakersphere.com/speakers/marklowe,"Orthodontics","Orthodontist & Invisalign Elite Premier Provider",mlowe@devrightspeakers.com
+25,"Dr. Melissa Shotell",melissashotell,https://thespeakersphere.com/speakers/melissashotell,"Digital Dentistry","Orthodontist & Digital Technology Expert",mshotell@devrightspeakers.com
+26,"Dr. Mostafa Altalib",mostafaaltalib,https://thespeakersphere.com/speakers/mostafaaltalib,"Orthodontics","Orthodontist & Sleep Medicine Specialist",maltalib@devrightspeakers.com
+27,"Dr. Sonia Leziy",sonialeziy,https://thespeakersphere.com/speakers/sonialeziy,"Periodontics","Periodontist & Implant Esthetics Expert",sleziy@devrightspeakers.com
+28,"Tracy Butler",tracybutler,https://thespeakersphere.com/speakers/tracybutler,"Orthodontics","Orthodontist & Same-Day Treatment Specialist",tbutler@devrightspeakers.com
+29,"Dr. Naif Sinada",naifsinada,https://thespeakersphere.com/speakers/naifsinada,"Digital Dentistry","Prosthodontist & Digital Dentistry Pioneer",nsinada@devrightspeakers.com
+31,"Dr. David Lipton",davidlipton,https://thespeakersphere.com/speakers/davidlipton,"Periodontics","Periodontal Specialist & Implant Expert",dlipton@devrightspeakers.com
+32,"Dr. Larry Brecht",larrybrecht,https://thespeakersphere.com/speakers/larrybrecht,"Prosthodontics","Multidisciplinary Prosthodontist & Maxillofacial Expert",lbrecht@devrightspeakers.com
+33,"Dr. Alex Gillone",alexgillone,https://thespeakersphere.com/speakers/alexgillone,"Periodontics","Division Director of Periodontology - East Carolina University",agillone@devrightspeakers.com
+34,"Dr. Eduardo Lorenzana",eduardolorenzana,https://thespeakersphere.com/speakers/eduardolorenzana,"Periodontics","Board-Certified Periodontist & ITI Section Chair",elorenzana@devrightspeakers.com
+35,"German Gallucci",germangallucci,https://thespeakersphere.com/speakers/germangallucci,"Prosthodontics","Chair of Restorative Dentistry - Harvard School of Dental Medicine",ggallucci@devrightspeakers.com
+36,"Dr. Lorenzo Tavelli",lorenzotavelli,https://thespeakersphere.com/speakers/lorenzotavelli,"Periodontics","Director of Postgraduate Periodontology - Harvard School of Dental Medicine",ltavelli@devrightspeakers.com
+37,"Dr. Yolanda Natali Raico Gallardo",yolandaraicogallardo,https://thespeakersphere.com/speakers/yolandaraicogallardo,"Prosthodontics","PhD in Oral Rehabilitation - University of São Paulo",yraicogallardo@devrightspeakers.com
+38,"Dr. Robert Levine",robertlevine,https://thespeakersphere.com/speakers/robertlevine,"Periodontics","Periodontist & ITI Fellow - US ITI Section Chair",rlevine@devrightspeakers.com
+39,"Dr. Michael Cohen",michaelcohen,https://thespeakersphere.com/speakers/michaelcohen,"Periodontics","Periodontal & Implant Specialist - Founder of Seattle Study Club",mcohen@devrightspeakers.com
+40,"Dr. Tarun Agarwal",tarunagarwal,https://thespeakersphere.com/speakers/tarunagarwal,"Digital Dentistry","General Dentist & Founder of 3D Dentists - 'T-Bone'",tagarwal@devrightspeakers.com
+42,"Dr. Sergio Bernardes",sergiobernandes,https://thespeakersphere.com/speakers/sergiobernandes,"Prosthodontics","Head of New Product Development - Neodent (Straumann Group)",sbernandes@devrightspeakers.com
+43,"Dr. Ryan Dunlop",ryandunlop,https://thespeakersphere.com/speakers/ryandunlop,"Oral Surgery","Harvard-trained Implant Specialist & Founder of Full Arch Masters",rdunlop@devrightspeakers.com
+44,"Dr. Vishy Broumand",vishybroumand,https://thespeakersphere.com/speakers/vishybroumand,"Oral Surgery","Oral & Maxillofacial Surgeon - Zygomatic Implant Specialist",vbroumand@devrightspeakers.com
+45,"Dr. Drew Phillips",drewphillips,https://thespeakersphere.com/speakers/drewphillips,"Oral Surgery","Valedictorian & Multi-State Implant Educator",dphillips@devrightspeakers.com
+46,"Edward Khalameizer",edwardkhalameizer,https://thespeakersphere.com/speakers/edwardkhalameizer,"Dental Technology","CDT - Director, Lab Services NAM - Straumann Group",ekhalameizer@devrightspeakers.com
+47,"Dr. Acela Martinez",acelamartinez,https://thespeakersphere.com/speakers/acelamartinez,"Periodontics","Division Director of Clinical Implantology - East Carolina University",amartinez@devrightspeakers.com
+48,"Dr. Alexandra Tsigarda",alexandratsigarda,https://thespeakersphere.com/speakers/alexandratsigarda,"Periodontics","Chair, Department of Periodontology - University of Rochester",atsigarda@devrightspeakers.com
+49,"Dr. James Fetsch",jamesfetsch,https://thespeakersphere.com/speakers/jamesfetsch,"General Dentistry","Fellow Academy of General Dentistry - Implant Specialist",jfetsch@devrightspeakers.com
+50,"Dr. Clark Damon",clarkdamon,https://thespeakersphere.com/speakers/clarkdamon,"Oral Surgery","CEO Texas Implant Institute - Nobel Biocare Lecturer",cdamon@devrightspeakers.com
+51,"Dr. Athena Goodarzi",athenagoodarzi,https://thespeakersphere.com/speakers/athenagoodarzi,"Oral Surgery","Key Opinion Leader Straumann Group - Full-Arch Specialist",agoodarzi@devrightspeakers.com
+52,"Dr. Azam Saeed",azamsaeed,https://thespeakersphere.com/speakers/azamsaeed,"Digital Dentistry","International Speaker - Straumann Digital Excellence Center",asaeed@devrightspeakers.com
+53,"Dr. Karim El Khouly",karimelkhouly,https://thespeakersphere.com/speakers/karimelkhouly,"Periodontics","Associate Professor Columbia University - ITI Study Club Co-Director",kelkhouly@devrightspeakers.com
+54,"Dr. Luiz Gonzaga",luizgonzaga,https://thespeakersphere.com/speakers/luizgonzaga,"Prosthodontics","Clinical Associate Professor University of Florida - ITI Speaker",lgonzaga@devrightspeakers.com
+55,"Dr. Manrique Fonseca",manriquefonseca,https://thespeakersphere.com/speakers/manriquefonseca,"Prosthodontics","Senior Lecturer University of Bern - ITI Future Leader",mfonseca@devrightspeakers.com
+56,"Dr. Maria Elisa Galarraga-Vinueza",mariagalarragavinueza,https://thespeakersphere.com/speakers/mariagalarragavinueza,"Periodontics","Professor Tufts University - Osteology Foundation Expert",mgalarraga@devrightspeakers.com
+57,"Dr. Peyman Raissi",peymanraissi,https://thespeakersphere.com/speakers/peymanraissi,"Oral Surgery","DABOI Diplomate - Zest Dental Advisory Board Member",praissi@devrightspeakers.com
+58,"Slahedinne Zidi",slaheddinnezidi,https://thespeakersphere.com/speakers/slaheddinnezidi,"Industry Leadership","VP Marketing & Education - Straumann Group",szidi@devrightspeakers.com
+59,"Marisa Notturno",marisanotturno,https://thespeakersphere.com/speakers/marisanotturno,"Digital Dentistry","Dental Lab Technician - Digital Technology Leader",mnotturno@devrightspeakers.com
+60,"Grant Bester",grantbester,https://thespeakersphere.com/speakers/grantbester,"Industry Leadership","Executive Commercial Leader - Straumann Group North America",gbester@devrightspeakers.com
+61,"Stacy Feffer-Farley",stacyfefferfarley,https://thespeakersphere.com/speakers/stacyfefferfarley,"Practice Management","Co-Founder, Full Arch Sales Academy & Case Acceptance Expert",sfeffer@devrightspeakers.com
+62,"Sam Alawie",samalawie,https://thespeakersphere.com/speakers/samalawie,"Digital Dentistry","Master Dental Technician & Co-Founder, Beverly Hills Dental Laboratory",salamawie@devrightspeakers.com
+1,"Dr. Waldemar Polido",waldemarpolido,https://thespeakersphere.com/speakers/waldemarpolido,"Oral Surgery","Oral and Maxillofacial Surgeon",wpolido@devrightspeakers.com
+30,"Dr. Sascha Jovanovic",saschajovanovic,https://thespeakersphere.com/speakers/saschajovanovic,"Oral Surgery","Oral Surgeon & Guided Bone Regeneration Pioneer",sjovanovic@devrightspeakers.com
+41,"Dr. Seth Chambers",sethchambers,https://thespeakersphere.com/speakers/sethchambers,"Oral Surgery","Implant Surgeon & 3D Printing Pioneer",schambers@devrightspeakers.com
+4,"Dr. Edmond Bedrossian",edmondbedrossian,https://thespeakersphere.com/speakers/edmondbedrossian,"Oral Surgery","Oral and Maxillofacial Surgeon",ebedrossian@devrightspeakers.com
+63,"Dr. Eric Caron",dr-eric-caron,https://thespeakersphere.com/speakers/dr-eric-caron,"Digital Dentistry","Prosthodontist",ecaron@devrightspeakers.com
+64,"Dr. Luca Cordaro",dr-luca-cordaro,https://thespeakersphere.com/speakers/dr-luca-cordaro,"Implant Dentistry","Prosthodontist",lcordaro@devrightspeakers.com
+65,"Dr. Amara Abreu-Serrano",dr-amara-abreu-serrano,https://thespeakersphere.com/speakers/dr-amara-abreu-serrano,"Oral Surgery","Prosthodontist",aabreu-serrano@devrightspeakers.com
+66,"Dr. Tara Aghaloo",dr-tara-aghaloo,https://thespeakersphere.com/speakers/dr-tara-aghaloo,"Oral Surgery","Oral and Maxillofacial Surgeon",taghaloo@devrightspeakers.com
+67,"Dr. Hongseok An",dr-hongseok-an,https://thespeakersphere.com/speakers/dr-hongseok-an,"Digital Dentistry","Digital Dentistry Specialist",han@devrightspeakers.com
+68,"Dr. Marco Ferrari",dr-marco-ferrari,https://thespeakersphere.com/speakers/dr-marco-ferrari,"Restorative Dentistry","Professor of Restorative Dentistry",mferrari@devrightspeakers.com
+69,"Dr. Lily Garcia",dr-lily-garcia,https://thespeakersphere.com/speakers/dr-lily-garcia,"Education","Dental Association Executive",lgarcia@devrightspeakers.com
+70,"Dr. Tom Deans",dr-tom-deans,https://thespeakersphere.com/speakers/dr-tom-deans,"Practice Management","Financial Strategist",tdeans@devrightspeakers.com
+71,"Dr. Heather Conrad",dr-heather-conrad,https://thespeakersphere.com/speakers/dr-heather-conrad,"Prosthodontics","Prosthodontist",hconrad@devrightspeakers.com
+72,"Dr. Sarah Knox",dr-sarah-knox,https://thespeakersphere.com/speakers/dr-sarah-knox,"Oral Surgery","Oral and Maxillofacial Surgeon",sknox@devrightspeakers.com
+73,"Dr. Antonia Kolokythas",dr-antonia-kolokythas,https://thespeakersphere.com/speakers/dr-antonia-kolokythas,"Oral Surgery","Oral and Maxillofacial Surgeon",akolokythas@devrightspeakers.com
+74,"Dr. Effie Ioannidou",dr-effie-ioannidou,https://thespeakersphere.com/speakers/dr-effie-ioannidou,"Education","Academic Leader",eioannidou@devrightspeakers.com
+75,"Dr. Mariam Margvelashvili-Malament",dr-mariam-margvelashvili-malament,https://thespeakersphere.com/speakers/dr-mariam-margvelashvili-malament,"Prosthodontics","Prosthodontist",mmargvelashvili@devrightspeakers.com
+76,"Dr. Sarah Lee",dr-sarah-lee,https://thespeakersphere.com/speakers/dr-sarah-lee,"Prosthodontics","Maxillofacial Prosthodontist",slee@devrightspeakers.com
+77,"Dr. Mark Montana",dr-mark-montana,https://thespeakersphere.com/speakers/dr-mark-montana,"Digital Dentistry","Prosthodontist",mmontana@devrightspeakers.com
+78,"Dr. Mijin Choi",dr-mijin-choi,https://thespeakersphere.com/speakers/dr-mijin-choi,"Education","Academy President",mchoi@devrightspeakers.com
+79,"Dr. John Sorensen",dr-john-sorensen,https://thespeakersphere.com/speakers/dr-john-sorensen,"Digital Dentistry","Prosthodontist",jsorensen@devrightspeakers.com
+80,"Dr. David Wands",dr-david-wands,https://thespeakersphere.com/speakers/dr-david-wands,"Education","Leadership Expert",dwands@devrightspeakers.com
+81,"Dr. Michael Reddy",dr-michael-reddy,https://thespeakersphere.com/speakers/dr-michael-reddy,"Education","Dean of Academic Affairs",mreddy@devrightspeakers.com
+82,"Dr. Tony Rotondo",dr-tony-rotondo,https://thespeakersphere.com/speakers/dr-tony-rotondo,"Implant Dentistry","Prosthodontist",trotondo@devrightspeakers.com
+83,"Dr. Frank Tuminelli",dr-frank-tuminelli,https://thespeakersphere.com/speakers/dr-frank-tuminelli,"Education","Prosthodontist",ftuminelli@devrightspeakers.com
+84,"Dr. George Tysowsky",dr-george-tysowsky,https://thespeakersphere.com/speakers/dr-george-tysowsky,"Practice Management","Dental Technology Economist",gtysowsky@devrightspeakers.com
+85,"Dr. Ahmet Orgev",dr-ahmet-orgev,https://thespeakersphere.com/speakers/dr-ahmet-orgev,"Digital Dentistry","Digital Dentistry Specialist",aorgev@devrightspeakers.com
+86,"Dr. Carol Lefebvre",dr-carol-lefebvre,https://thespeakersphere.com/speakers/dr-carol-lefebvre,"Practice Management","Executive Leadership Coach",clefebvre@devrightspeakers.com
+87,"Dr. Steve Parel",dr-steve-parel,https://thespeakersphere.com/speakers/dr-steve-parel,"Implant Dentistry","Prosthodontist",sparel@devrightspeakers.com
+88,"Dr. Steve Sadowsky",dr-steve-sadowsky,https://thespeakersphere.com/speakers/dr-steve-sadowsky,"Implant Dentistry","Prosthodontist",ssadowsky@devrightspeakers.com
+89,"Dr. Dean Morton",dr-dean-morton,https://thespeakersphere.com/speakers/dr-dean-morton,"Prosthodontics","Prosthodontist",dmorton@devrightspeakers.com
+90,"Dr. Sully Sullivan",dr-sully-sullivan,https://thespeakersphere.com/speakers/dr-sully-sullivan,"Practice Management","Implant Dentist",ssullivan@devrightspeakers.com
+91,"Mike Graham",mike-graham,https://thespeakersphere.com/speakers/mike-graham,"Practice Management","VP of Sales",mgraham@devrightspeakers.com
+92,"Dr. Giacomo Fabbri",giacomo-fabbri,https://thespeakersphere.com/speakers/giacomo-fabbri,"Digital Dentistry","Prosthodontist",gfabbri@devrightspeakers.com
+93,"Dr. Yu Zhang",yu-zhang,https://thespeakersphere.com/speakers/yu-zhang,"Digital Dentistry","Professor of Digital Dentistry",yzhang@devrightspeakers.com
+94,"Dr. Carlos de Carvalho",carlos-de-carvalho,https://thespeakersphere.com/speakers/carlos-de-carvalho,"Restorative Dentistry","Prosthodontist",cdecarvalho@devrightspeakers.com
+95,"Dr. Iñaki Gamborena",iaki-gamborena,https://thespeakersphere.com/speakers/iaki-gamborena,"Aesthetic Dentistry","Prosthodontist",igamborena@devrightspeakers.com
+96,"Dr. Andrea Ricci",andrea-ricci,https://thespeakersphere.com/speakers/andrea-ricci,"Aesthetic Dentistry","Prosthodontist",aricci@devrightspeakers.com
+97,"Dr. Thomas D. Taylor",thomas-d-taylor,https://thespeakersphere.com/speakers/thomas-d-taylor,"Implant Dentistry","Oral Surgeon",ttaylor@devrightspeakers.com
+98,"Dr. Marta Revilla León",marta-revilla-len,https://thespeakersphere.com/speakers/marta-revilla-len,"Digital Dentistry","Digital Dentistry Specialist",mrevillaleon@devrightspeakers.com
+99,"Dr. David Norré",david-norr,https://thespeakersphere.com/speakers/david-norr,"Prosthodontics","Prosthodontist",dnorre@devrightspeakers.com
+100,"Dr. Algirdas Puisys",algirdas-puisys,https://thespeakersphere.com/speakers/algirdas-puisys,"Periodontics","Periodontist",apuisys@devrightspeakers.com
+101,"Dr. Isabella Rocchietta",isabella-rocchietta,https://thespeakersphere.com/speakers/isabella-rocchietta,"Oral Surgery","Oral Surgeon",irocchietta@devrightspeakers.com
+102,"Dr. Howard Gluckman",howard-gluckman,https://thespeakersphere.com/speakers/howard-gluckman,"Oral Surgery","Oral Surgeon",hgluckman@devrightspeakers.com
+103,"Dr. Renato Cocconi",renato-cocconi,https://thespeakersphere.com/speakers/renato-cocconi,"Orthodontics","Orthodontist",rcocconi@devrightspeakers.com
+104,"Dr. Oscar González-Martin",oscar-gonzlez-martin,https://thespeakersphere.com/speakers/oscar-gonzlez-martin,"Periodontics","Periodontist",ogonzalezmartin@devrightspeakers.com
+105,"Dr. Stephen J. Chu",stephen-j-chu,https://thespeakersphere.com/speakers/stephen-j-chu,"Aesthetic Dentistry","Prosthodontist",schu@devrightspeakers.com
+106,"Dr. Jim Janakievski",jim-janakievski,https://thespeakersphere.com/speakers/jim-janakievski,"Oral Surgery","Oral Surgeon",jjanakievski@devrightspeakers.com
+107,"Dr. Anthony Sallustio",anthony-sallustio,https://thespeakersphere.com/speakers/anthony-sallustio,"Digital Dentistry","Prosthodontist",asallustio@devrightspeakers.com
+108,"Dr. John C. Kois",john-c-kois,https://thespeakersphere.com/speakers/john-c-kois,"Prosthodontics","Prosthodontist",jkois@devrightspeakers.com
+109,"Dr. Marianna Evans",marianna-evans,https://thespeakersphere.com/speakers/marianna-evans,"Orthodontics","Orthodontist",mevans@devrightspeakers.com
+110,"Dr. Eric Van Dooren",eric-van-dooren,https://thespeakersphere.com/speakers/eric-van-dooren,"Periodontics","Periodontist",evandooren@devrightspeakers.com
+111,"Dr. Nitzan Bichacho",nitzan-bichacho,https://thespeakersphere.com/speakers/nitzan-bichacho,"Aesthetic Dentistry","Prosthodontist",nbichacho@devrightspeakers.com
+112,"Dr. Gonzalo Blasi",gonzalo-blasi,https://thespeakersphere.com/speakers/gonzalo-blasi,"Aesthetic Dentistry","Prosthodontist",gblasi@devrightspeakers.com
+113,"Dr. Alvaro Blasi",alvaro-blasi,https://thespeakersphere.com/speakers/alvaro-blasi,"Orthodontics","Orthodontist",ablasi@devrightspeakers.com
+114,"Dr. Didier Dietschi",didier-dietschi,https://thespeakersphere.com/speakers/didier-dietschi,"Restorative Dentistry","Prosthodontist",ddietschi@devrightspeakers.com
+115,"Dr. Agne Malisauskiene",agne-malisauskiene,https://thespeakersphere.com/speakers/agne-malisauskiene,"Restorative Dentistry","Restorative Dentist",amalisauskiene@devrightspeakers.com
+116,"Dr. Jeff Rouse",jeff-rouse,https://thespeakersphere.com/speakers/jeff-rouse,"Prosthodontics","Prosthodontist",jrouse@devrightspeakers.com
+117,"Dr. Michael Gunson",michael-gunson,https://thespeakersphere.com/speakers/michael-gunson,"Oral Surgery","Oral Surgeon",mgunson@devrightspeakers.com
+118,"Dr. Jeffrey McClendon",jeffrey-mcclendon,https://thespeakersphere.com/speakers/jeffrey-mcclendon,"Orthodontics","Orthodontist",jmcclendon@devrightspeakers.com
+119,"Dr. Christian Coachman",christian-coachman,https://thespeakersphere.com/speakers/christian-coachman,"Digital Dentistry","Prosthodontist",ccoachman@devrightspeakers.com
+120,"Dr. Lorenzo Breschi",lorenzo-breschi,https://thespeakersphere.com/speakers/lorenzo-breschi,"Restorative Dentistry","Restorative Dentist",lbreschi@devrightspeakers.com
+121,"Dr. Galip Gurel",galip-gurel,https://thespeakersphere.com/speakers/galip-gurel,"Aesthetic Dentistry","Prosthodontist",ggurel@devrightspeakers.com
+122,"Dr. Jonathan Esquivel",jonathan-esquivel,https://thespeakersphere.com/speakers/jonathan-esquivel,"Periodontics","Periodontist",jesquivel@devrightspeakers.com
+123,"Dr. Ramon Gomez-Meda",ramon-gomez-meda,https://thespeakersphere.com/speakers/ramon-gomez-meda,"Prosthodontics","Prosthodontist",rgomezmeda@devrightspeakers.com
+124,"Dr. Junji Tagami",junji-tagami,https://thespeakersphere.com/speakers/junji-tagami,"Restorative Dentistry","Restorative Dentist",jtagami@devrightspeakers.com
+125,"Dr. Alonso Carrasco-Labra",alonso-carrasco-labra,https://thespeakersphere.com/speakers/alonso-carrasco-labra,"Research and Evidence","Evidence-Based Dentistry Specialist",acarrasco@devrightspeakers.com
+126,"Dr. Gerard J. Chiche",gerard-j-chiche,https://thespeakersphere.com/speakers/gerard-j-chiche,"Prosthodontics","Prosthodontist",gchiche@devrightspeakers.com
+127,"Dr. Oded Bahat",oded-bahat,https://thespeakersphere.com/speakers/oded-bahat,"Oral Surgery","Oral Surgeon",obahat@devrightspeakers.com
+128,"Dr. Peter Wohrle",peter-wohrle,https://thespeakersphere.com/speakers/peter-wohrle,"Implant Dentistry","Prosthodontist",pwohrle@devrightspeakers.com
+129,"Naoki Hayashi",naoki-hayashi,https://thespeakersphere.com/speakers/naoki-hayashi,"Dental Technology","Dental Technician",nhayashi@devrightspeakers.com
+130,"James Cowherd",james-cowherd,https://thespeakersphere.com/speakers/james-cowherd,"Practice Management","Business Consultant",jcowherd@devrightspeakers.com
+131,"Dr. Markus Hürzeler",markus-hrzeler,https://thespeakersphere.com/speakers/markus-hrzeler,"Implant Dentistry","Periodontist",mhurzeler@devrightspeakers.com
+132,"Dr. Marco Veneziani",marco-veneziani,https://thespeakersphere.com/speakers/marco-veneziani,"Restorative Dentistry","Prosthodontist",mvenezioni@devrightspeakers.com
+133,"Dr. Gustavo Giordani",gustavo-giordani,https://thespeakersphere.com/speakers/gustavo-giordani,"Digital Dentistry","Digital Dentist",ggiordani@devrightspeakers.com
+134,"Dr. Frank M. Spear",frank-m-spear,https://thespeakersphere.com/speakers/frank-m-spear,"Practice Management","Prosthodontist",fspear@devrightspeakers.com
+135,"Dr. Daniel Buser",daniel-buser,https://thespeakersphere.com/speakers/daniel-buser,"Implant Dentistry","Professor of Oral Surgery",dbuser@devrightspeakers.com
+136,"Dr. German Gallucci",german-gallucci,https://thespeakersphere.com/speakers/german-gallucci,"Implant Dentistry","Professor of Prosthodontics",ggallucci@devrightspeakers.com
+137,"Alicia Kieffer",alicia-kieffer,https://thespeakersphere.com/speakers/alicia-kieffer,"Practice Management","Dental Practice Strategist",akieffer@devrightspeakers.com
+138,"Dr. Timothy McVaney",timothy-mcvaney,https://thespeakersphere.com/speakers/timothy-mcvaney,"Practice Management","Practice Management Expert",tmcvaney@devrightspeakers.com
+139,"Dr. Peter Rivoli",peter-rivoli,https://thespeakersphere.com/speakers/peter-rivoli,"Practice Management","Dental Practice Consultant",privoli@devrightspeakers.com
+140,"Dr. James W. Willis",james-w-willis,https://thespeakersphere.com/speakers/james-w-willis,"Practice Management","Patient Care Specialist",jwillis@devrightspeakers.com
+141,"Dr. Kathryn Alderman",kathryn-alderman,https://thespeakersphere.com/speakers/kathryn-alderman,"Practice Management","DSO Strategy Expert",kalderman@devrightspeakers.com
+142,"Michelle Brumfield",michelle-brumfield,https://thespeakersphere.com/speakers/michelle-brumfield,"Practice Management","DSO Growth Strategist",mbrumfield@devrightspeakers.com
+143,"Dr. Sami Webb",sami-webb,https://thespeakersphere.com/speakers/sami-webb,"Practice Management","Market Strategy Consultant",swebb@devrightspeakers.com
+144,"Trevor Maurer",trevor-maurer,https://thespeakersphere.com/speakers/trevor-maurer,"Practice Management","Dental Leadership Coach",tmaurer@devrightspeakers.com
+145,"Dr. Bijal Mehta",bijal-mehta,https://thespeakersphere.com/speakers/bijal-mehta,"Practice Management","Leadership Development Specialist",bmehta@devrightspeakers.com
+146,"Daniel Tataje",daniel-tataje,https://thespeakersphere.com/speakers/daniel-tataje,"Practice Management","Practice Excellence Coach",dtataje@devrightspeakers.com
+147,"Jackson Tralongo",jackson-tralongo,https://thespeakersphere.com/speakers/jackson-tralongo,"Practice Management","Dental Leadership Advisor",jtralongo@devrightspeakers.com
+148,"Christie Fink",christie-fink,https://thespeakersphere.com/speakers/christie-fink,"Sleep Medicine","Dental Sleep Medicine Expert",cfink@devrightspeakers.com
+149,"Mark T. Murphy",mark-t-murphy,https://thespeakersphere.com/speakers/mark-t-murphy,"Sleep Medicine","Sleep Medicine Consultant",mmurphy@devrightspeakers.com
+150,"Dr. Carter Reeves",carter-reeves,https://thespeakersphere.com/speakers/carter-reeves,"Sleep Medicine","Dental Sleep Specialist",creeves@devrightspeakers.com
+151,"Avi Weisfogel",avi-weisfogel,https://thespeakersphere.com/speakers/avi-weisfogel,"Sleep Medicine","Dental Sleep Medicine Pioneer",aweisfogel@devrightspeakers.com
+152,"Dr. Jeffrey B. Carter",jeffrey-b-carter,https://thespeakersphere.com/speakers/jeffrey-b-carter,"Digital Dentistry","AI Technology Specialist",jcarter@devrightspeakers.com
+153,"Dr. Jaideep R. Deshpande",jaideep-r-deshpande,https://thespeakersphere.com/speakers/jaideep-r-deshpande,"Digital Dentistry","Dental Technology Innovator",jdeshpande@devrightspeakers.com
+154,"Nick Murray",nick-murray,https://thespeakersphere.com/speakers/nick-murray,"Digital Dentistry","Technology Integration Specialist",nmurray@devrightspeakers.com
+155,"Dr. Mariz Tanious",mariz-tanious,https://thespeakersphere.com/speakers/mariz-tanious,"Digital Dentistry","Smart Dentistry Expert",mtanious@devrightspeakers.com
+156,"Dr. Matt Carlston",matt-carlston,https://thespeakersphere.com/speakers/matt-carlston,"Practice Management","Team Building Expert",mcarlston@devrightspeakers.com
+157,"Francesca Pregano",francesca-pregano,https://thespeakersphere.com/speakers/francesca-pregano,"Practice Management","HR Specialist",fpregano@devrightspeakers.com
+158,"Lynda Ricketson",lynda-ricketson,https://thespeakersphere.com/speakers/lynda-ricketson,"Practice Management","Retention Strategist",lricketson@devrightspeakers.com
+159,"Dr. Mahtab Sadrameli",mahtab-sadrameli,https://thespeakersphere.com/speakers/mahtab-sadrameli,"Practice Management","Team Development Consultant",msadrameli@devrightspeakers.com
+160,"Rashed Din",rashed-din,https://thespeakersphere.com/speakers/rashed-din,"Practice Management","Specialty Area Manager",rdin@devrightspeakers.com
+161,"Jason Huml",jason-huml,https://thespeakersphere.com/speakers/jason-huml,"Practice Management","DSO Growth Specialist",jhuml@devrightspeakers.com
+162,"Paul Kim",paul-kim,https://thespeakersphere.com/speakers/paul-kim,"Practice Management","Specialty Integration Expert",pkim@devrightspeakers.com
+163,"Dr. Ronald Saffar",ronald-saffar,https://thespeakersphere.com/speakers/ronald-saffar,"Practice Management","DSO Operations Expert",rsaffar@devrightspeakers.com
+164,"Jason Mann",jason-mann,https://thespeakersphere.com/speakers/jason-mann,"Practice Management","Leadership Development Coach",jmann@devrightspeakers.com
+165,"Erin A. O'Neil",erin-a-oneil,https://thespeakersphere.com/speakers/erin-a-oneil,"Practice Management","Strategic Planning Expert",eoneil@devrightspeakers.com
+166,"Kate Wilson",kate-wilson,https://thespeakersphere.com/speakers/kate-wilson,"Practice Management","Practice Sustainability Consultant",kwilson@devrightspeakers.com
+167,"Ray Caruso",ray-caruso,https://thespeakersphere.com/speakers/ray-caruso,"Practice Management","DSO Partnership Expert",rcaruso@devrightspeakers.com
+168,"Alexander Einbinder",alexander-einbinder,https://thespeakersphere.com/speakers/alexander-einbinder,"Practice Management","Partnership Development Specialist",aeinbinder@devrightspeakers.com
+169,"Stephen Floe",stephen-floe,https://thespeakersphere.com/speakers/stephen-floe,"Practice Management","Practice Evaluation Expert",sfloe@devrightspeakers.com
+170,"Dr. DeVonte Johnson",devonte-johnson,https://thespeakersphere.com/speakers/devonte-johnson,"Community Health","Community Dental Care Advocate",djohnson@devrightspeakers.com
+171,"Dr. Sibera Brannon",sibera-brannon,https://thespeakersphere.com/speakers/sibera-brannon,"Practice Management","Leadership Resilience Coach",sbrannon@devrightspeakers.com
+172,"Dr. Manu Chaudhry",manu-chaudhry,https://thespeakersphere.com/speakers/manu-chaudhry,"Practice Management","Success Strategy Expert",mchaudhry@devrightspeakers.com
+173,"Sabrina Sennett",sabrina-sennett,https://thespeakersphere.com/speakers/sabrina-sennett,"Practice Management","Leadership Development Specialist",ssennett@devrightspeakers.com
+174,"Mark Censoprano",mark-censoprano,https://thespeakersphere.com/speakers/mark-censoprano,"Practice Management","DSO Future Strategist",mcensoprano@devrightspeakers.com
+175,"Louis Chmura",louis-chmura,https://thespeakersphere.com/speakers/louis-chmura,"Practice Management","DSO Innovation Expert",lchmura@devrightspeakers.com
+176,"Suzie Ramos",suzie-ramos,https://thespeakersphere.com/speakers/suzie-ramos,"Practice Management","DSO Development Consultant",sramos@devrightspeakers.com
+177,"Stef Simich",stef-simich,https://thespeakersphere.com/speakers/stef-simich,"Practice Management","DSO Transformation Expert",ssimich@devrightspeakers.com
+178,"Dr. Mostafa Altalibi",dr-mostafa-altalibi,https://thespeakersphere.com/speakers/dr-mostafa-altalibi,"Digital Dentistry","Complex Esthetic Cases Expert",info@speakersphere.com
+179,"Terri Bradley, CPC",terri-bradley-cpc,https://thespeakersphere.com/speakers/terri-bradley-cpc,"Practice Management","Medical Coding Expert",info@speakersphere.com
+180,"Dr. John F. Caccamese Jr.",dr-john-f-caccamese-jr,https://thespeakersphere.com/speakers/dr-john-f-caccamese-jr,"Oral Surgery","Craniomaxillofacial Surgery Expert",info@speakersphere.com
+181,"Dr. Natasha Furchtgott",dr-natasha-furchtgott,https://thespeakersphere.com/speakers/dr-natasha-furchtgott,"Oral Surgery","Craniomaxillofacial Surgery Specialist",info@speakersphere.com
+182,"Dr. Paul S. Tiwana",dr-paul-s-tiwana,https://thespeakersphere.com/speakers/dr-paul-s-tiwana,"Oral Surgery","Oral and Maxillofacial Surgery Expert",info@speakersphere.com
+183,"Dr. Issa Hanna",dr-issa-hanna,https://thespeakersphere.com/speakers/dr-issa-hanna,"Oral Surgery","Cleft and Craniofacial Surgery Specialist",info@speakersphere.com
+184,"Dr. Faisal A. Quereshy",dr-faisal-a-quereshy,https://thespeakersphere.com/speakers/dr-faisal-a-quereshy,"Oral Surgery","Oral Surgery Education Expert",info@speakersphere.com
+185,"Michael Beschloss",michael-beschloss,https://thespeakersphere.com/speakers/michael-beschloss,"Practice Management","Presidential Historian & Leadership Expert",info@speakersphere.com
+186,"Allen Robinson",allen-robinson,https://thespeakersphere.com/speakers/allen-robinson,"Digital Dentistry","Robotics Technology Expert",info@speakersphere.com
+187,"Dr. Robert W. Emery III",dr-robert-w-emery-iii,https://thespeakersphere.com/speakers/dr-robert-w-emery-iii,"Digital Dentistry","Navigated Surgery Expert",info@speakersphere.com
+188,"Dr. Jay M. Neugarten",dr-jay-m-neugarten,https://thespeakersphere.com/speakers/dr-jay-m-neugarten,"Digital Dentistry","Virtual Surgical Planning Expert",info@speakersphere.com
+189,"Dr. Sean P. Edwards",dr-sean-p-edwards,https://thespeakersphere.com/speakers/dr-sean-p-edwards,"Implant Dentistry","Complete-Arch Implant Rehabilitation Expert",info@speakersphere.com
+190,"Dr. Stephanie W. Yeung",dr-stephanie-w-yeung,https://thespeakersphere.com/speakers/dr-stephanie-w-yeung,"Implant Dentistry","Digital Implant Rehabilitation Specialist",info@speakersphere.com
+191,"Dr. Tuan G. Bui",dr-tuan-g-bui,https://thespeakersphere.com/speakers/dr-tuan-g-bui,"Anesthesia","Ambulatory Anesthesia Expert",info@speakersphere.com
+192,"Dr. Likith V. Reddy",dr-likith-v-reddy,https://thespeakersphere.com/speakers/dr-likith-v-reddy,"Sleep Medicine","Sleep Apnea Surgery Expert",info@speakersphere.com
+193,"Dr. Matthew Fay",dr-matthew-fay,https://thespeakersphere.com/speakers/dr-matthew-fay,"Sleep Medicine","Sleep Medicine Specialist",info@speakersphere.com
+194,"Judy Kay Mausolf",judy-kay-mausolf,https://thespeakersphere.com/speakers/judy-kay-mausolf,"Practice Management","Team Management & Leadership Expert",info@speakersphere.com
+195,"Shannon B. Williams",shannon-b-williams,https://thespeakersphere.com/speakers/shannon-b-williams,"Practice Management","Workforce Development Expert",info@speakersphere.com
+196,"Arthur W. Curley, JD",arthur-w-curley-jd,https://thespeakersphere.com/speakers/arthur-w-curley-jd,"Practice Management","Healthcare Legal Expert",info@speakersphere.com
+197,"Dr. Kamal F. Busaidy",dr-kamal-f-busaidy,https://thespeakersphere.com/speakers/dr-kamal-f-busaidy,"Anesthesia","Emergency Airway Management Expert",info@speakersphere.com
+198,"Dr. Paul J. Schwartz",dr-paul-j-schwartz,https://thespeakersphere.com/speakers/dr-paul-j-schwartz,"Anesthesia","Emergency Medicine Specialist",info@speakersphere.com
+199,"Dr. Larry E. Stigall",dr-larry-e-stigall,https://thespeakersphere.com/speakers/dr-larry-e-stigall,"Anesthesia","Emergency Airway Simulation Expert",info@speakersphere.com
+410,"Dr. Jeffrey A. Rossmann",dr-jeffrey-a-rossmann,https://thespeakersphere.com/speakers/dr-jeffrey-a-rossmann,"Periodontology","Periodontology",contact@speaker.com
+411,"Dr. Angela A. Palaiologou-Gallis",dr-angela-a-palaiologou-gallis,https://thespeakersphere.com/speakers/dr-angela-a-palaiologou-gallis,"Periodontology","Periodontology",contact@speaker.com
+412,"Dr. Doug Dixon",dr-doug-dixon,https://thespeakersphere.com/speakers/dr-doug-dixon,"Periodontology","Periodontology",contact@speaker.com
+413,"Dr. Charles A. Powell",dr-charles-a-powell,https://thespeakersphere.com/speakers/dr-charles-a-powell,"Periodontology","Periodontology",contact@speaker.com
+414,"Dr. Yusuke Hamada",dr-yusuke-hamada,https://thespeakersphere.com/speakers/dr-yusuke-hamada,"Periodontology","Sedation Dentistry",contact@speaker.com
+415,"Dr. Steve D. Shufflebarger",dr-steve-d-shufflebarger,https://thespeakersphere.com/speakers/dr-steve-d-shufflebarger,"Periodontology","Sedation Dentistry",contact@speaker.com
+416,"Dr. Christopher R. Richardson",dr-christopher-r-richardson,https://thespeakersphere.com/speakers/dr-christopher-r-richardson,"Periodontology","Periodontal Regeneration",contact@speaker.com
+417,"Dr. Purnima Kumar",dr-purnima-kumar,https://thespeakersphere.com/speakers/dr-purnima-kumar,"Periodontology","Periodontal Microbiology",contact@speaker.com
+418,"Dr. Sejal Thacker",dr-sejal-thacker,https://thespeakersphere.com/speakers/dr-sejal-thacker,"Periodontology","Periodontal Regeneration",contact@speaker.com
+419,"Dr. Anton Sculean",dr-anton-sculean,https://thespeakersphere.com/speakers/dr-anton-sculean,"Periodontology","Periodontal Regeneration",contact@speaker.com
+420,"Dr. Muhammad H. Saleh",dr-muhammad-h-saleh,https://thespeakersphere.com/speakers/dr-muhammad-h-saleh,"Periodontology","Periodontal Regeneration",contact@speaker.com
+421,"Dr. Devorah Schwartz-Arad",dr-devorah-schwartz-arad,https://thespeakersphere.com/speakers/dr-devorah-schwartz-arad,"Periodontology","Periodontal Regeneration",contact@speaker.com
+422,"Dr. Shayan Barootchi",dr-shayan-barootchi,https://thespeakersphere.com/speakers/dr-shayan-barootchi,"Periodontology","Periodontal Regeneration",contact@speaker.com
+423,"Dr. Gustavo Avila Ortiz",dr-gustavo-avila-ortiz,https://thespeakersphere.com/speakers/dr-gustavo-avila-ortiz,"Periodontology","Periodontal Regeneration",contact@speaker.com
+424,"Dr. Massimo Costalonga",dr-massimo-costalonga,https://thespeakersphere.com/speakers/dr-massimo-costalonga,"Periodontology","Periodontal Research",contact@speaker.com
+425,"Dr. Georgios A. Kotsakis",dr-georgios-a-kotsakis,https://thespeakersphere.com/speakers/dr-georgios-a-kotsakis,"Periodontology","Periodontal Research",contact@speaker.com
+426,"Dr. Luciana M. Shaddox",dr-luciana-m-shaddox,https://thespeakersphere.com/speakers/dr-luciana-m-shaddox,"Periodontology","Periodontal Research",contact@speaker.com
+427,"Dr. Flavia Q. Pirih",dr-flavia-q-pirih,https://thespeakersphere.com/speakers/dr-flavia-q-pirih,"Periodontology","Periodontal Research",contact@speaker.com
+428,"Dr. Diego Velasquez-Plata",dr-diego-velasquez-plata,https://thespeakersphere.com/speakers/dr-diego-velasquez-plata,"Periodontology","Periodontal Research",contact@speaker.com
+429,"Dr. Henry A. Foerster",dr-henry-a-foerster,https://thespeakersphere.com/speakers/dr-henry-a-foerster,"Periodontology","Clinical Periodontics",contact@speaker.com
+430,"CPT Justin Galliani",cpt-justin-galliani,https://thespeakersphere.com/speakers/cpt-justin-galliani,"Periodontology","Military Periodontics",contact@speaker.com
+431,"CPT Denise Cacho",cpt-denise-cacho,https://thespeakersphere.com/speakers/cpt-denise-cacho,"Periodontology","Military Periodontics",contact@speaker.com
+432,"MAJ Toria Koutras",maj-toria-koutras,https://thespeakersphere.com/speakers/maj-toria-koutras,"Periodontology","Military Periodontics",contact@speaker.com
+433,"CPT Andrew Egger",cpt-andrew-egger,https://thespeakersphere.com/speakers/cpt-andrew-egger,"Periodontology","Military Periodontics",contact@speaker.com
+434,"Dr. Owais A. Farooqi",dr-owais-a-farooqi,https://thespeakersphere.com/speakers/dr-owais-a-farooqi,"Periodontology","Clinical Periodontics",contact@speaker.com
+435,"Dr. Gilbert A. Fru",dr-gilbert-a-fru,https://thespeakersphere.com/speakers/dr-gilbert-a-fru,"Periodontology","Clinical Periodontics",contact@speaker.com
+436,"Dr. Jonathan Tai",dr-jonathan-tai,https://thespeakersphere.com/speakers/dr-jonathan-tai,"Periodontology","Clinical Periodontics",contact@speaker.com
+437,"Capt Jess Cayetano",capt-jess-cayetano,https://thespeakersphere.com/speakers/capt-jess-cayetano,"Periodontology","Military Periodontics",contact@speaker.com
+438,"Capt Luke Seiler",capt-luke-seiler,https://thespeakersphere.com/speakers/capt-luke-seiler,"Periodontology","Military Periodontics",contact@speaker.com
+439,"Capt Victoria Wei",capt-victoria-wei,https://thespeakersphere.com/speakers/capt-victoria-wei,"Periodontology","Military Periodontics",contact@speaker.com
+440,"LT Nathan Kobold",lt-nathan-kobold,https://thespeakersphere.com/speakers/lt-nathan-kobold,"Periodontology","Military Periodontics",contact@speaker.com
+441,"LT Sofia Thompson",lt-sofia-thompson,https://thespeakersphere.com/speakers/lt-sofia-thompson,"Periodontology","Military Periodontics",contact@speaker.com
+442,"LT Jin Hwang",lt-jin-hwang,https://thespeakersphere.com/speakers/lt-jin-hwang,"Periodontology","Military Periodontics",contact@speaker.com
+443,"Dr. Jennifer Bain",dr-jennifer-bain,https://thespeakersphere.com/speakers/dr-jennifer-bain,"Periodontology","Periodontology",contact@speaker.com
+444,"Dr. Carlos Parra Carrasquer",dr-carlos-parra-carrasquer,https://thespeakersphere.com/speakers/dr-carlos-parra-carrasquer,"Periodontology","Periodontology",contact@speaker.com
+445,"Dr. Arian B. Deutsch",arianbdeutsch,https://thespeakersphere.com/speakers/arianbdeutsch,"Prosthodontics","Conical & Telescopic Prosthodontics",contact@speaker.com
+446,"Dr. Ruben Arebalo",rubenarebalo,https://thespeakersphere.com/speakers/rubenarebalo,"Prosthodontics","Prosthodontics",contact@speaker.com
+447,"Dr. Timothy A. Hess",timothyahess,https://thespeakersphere.com/speakers/timothyahess,"Prosthodontics","Neurotoxins in Prosthodontics",contact@speaker.com
+448,"Dr. Martin Mendelson",martinmendelson,https://thespeakersphere.com/speakers/martinmendelson,"Prosthodontics","Professional Development",contact@speaker.com
+449,"Dr. Douglas Benting",douglasbenting,https://thespeakersphere.com/speakers/douglasbenting,"Prosthodontics","Prosthodontics",contact@speaker.com
+450,"Dr. Van Ramos Jr.",vanramosjr,https://thespeakersphere.com/speakers/vanramosjr,"Prosthodontics","Prosthodontics",contact@speaker.com
+451,"Dr. Ed McLaren",edmclaren,https://thespeakersphere.com/speakers/edmclaren,"Prosthodontics","Ceramic Technology",contact@speaker.com
+452,"Dr. Rooz Khosravi",roozkhosravi,https://thespeakersphere.com/speakers/roozkhosravi,"Prosthodontics","Airway Dentistry",contact@speaker.com
+453,"Dr. Benjamin Pliska",benjaminpliska,https://thespeakersphere.com/speakers/benjaminpliska,"Prosthodontics","Sleep Medicine",contact@speaker.com
+454,"Dr. Avinash Bidra",avinashbia,https://thespeakersphere.com/speakers/avinashbia,"Prosthodontics","Implant Prosthodontics",contact@speaker.com
+455,"Dr. Taiseer Sulaiman",taiseersulaiman,https://thespeakersphere.com/speakers/taiseersulaiman,"Prosthodontics","Monolithic Zirconia",contact@speaker.com
+456,"Dr. Wei-Shao Lin",wei-shaolin,https://thespeakersphere.com/speakers/wei-shaolin,"Prosthodontics","Full-Arch Implant Rehabilitation",contact@speaker.com
+457,"Dr. James L. Rutkowski",jameslrutkowski,https://thespeakersphere.com/speakers/jameslrutkowski,"Implant Dentistry","Sedation",contact@speaker.com
+458,"Dr. Scott D. Ganz",scottdganz,https://thespeakersphere.com/speakers/scottdganz,"Implant Dentistry","3D AI Segmentation",contact@speaker.com
+459,"Dr. Aman S. Bhullar",amansbhullar,https://thespeakersphere.com/speakers/amansbhullar,"Implant Dentistry","Full-Time Implantology",contact@speaker.com
+460,"Dr. Samantha A. Siranli",samanthaasiranli,https://thespeakersphere.com/speakers/samanthaasiranli,"Implant Dentistry","Immediate Loading",contact@speaker.com
+461,"Dr. Shankar Iyer",shankariyer,https://thespeakersphere.com/speakers/shankariyer,"Implant Dentistry","Implant Dentistry",contact@speaker.com
+462,"Dr. Paul Goodman",paulgoodman,https://thespeakersphere.com/speakers/paulgoodman,"Implant Dentistry","Patient Impact",contact@speaker.com
+463,"Dr. Andrea Ravida",anearavida,https://thespeakersphere.com/speakers/anearavida,"Implant Dentistry","Peri-implantitis Management",contact@speaker.com
+464,"Dr. Tarek Assi",tarekassi,https://thespeakersphere.com/speakers/tarekassi,"Implant Dentistry","Digital Dentistry",contact@speaker.com
+465,"Dr. Michael A. Pikos",michaelapikos,https://thespeakersphere.com/speakers/michaelapikos,"Implant Dentistry","Full-Arch Therapy",contact@speaker.com
+466,"Dr. Ramsey Amin",ramseyamin,https://thespeakersphere.com/speakers/ramseyamin,"Implant Dentistry","Subperiosteal Implants",contact@speaker.com
+467,"Dr. Dan Holtzclaw",danholtzclaw,https://thespeakersphere.com/speakers/danholtzclaw,"Implant Dentistry","Extramaxillary Implants",contact@speaker.com
+468,"Dr. Suheil M. Boutros",suheilmboutros,https://thespeakersphere.com/speakers/suheilmboutros,"Implant Dentistry","Esthetic Zone Implants",contact@speaker.com
+469,"Dr. Rachana Hegde",rachanahegde,https://thespeakersphere.com/speakers/rachanahegde,"Implant Dentistry","Implant Maintenance",contact@speaker.com
+470,"Dr. Nathan Doyel",nathandoyel,https://thespeakersphere.com/speakers/nathandoyel,"Implant Dentistry","Digital All-on-X",contact@speaker.com
+471,"Jessica Woods",jessicawoods,https://thespeakersphere.com/speakers/jessicawoods,"Implant Dentistry","Case Acceptance",contact@speaker.com
+472,"Dr. Ahmad Kutkut",ahmadkutkut,https://thespeakersphere.com/speakers/ahmadkutkut,"Implant Dentistry","Tooth Condition Changes",contact@speaker.com
+473,"Dr. Michael D. Scherer",michaeldscherer,https://thespeakersphere.com/speakers/michaeldscherer,"Implant Dentistry","Full-Arch Implantology",contact@speaker.com
+474,"Dr. Sompop Bencharit",sompopbencharit,https://thespeakersphere.com/speakers/sompopbencharit,"Implant Dentistry","Full-Arch Implant Prosthodontics",contact@speaker.com
+475,"Dr. Jin Y. Kim",jinykim,https://thespeakersphere.com/speakers/jinykim,"Implant Dentistry","Saving Teeth",contact@speaker.com
+476,"Dr. Sebastiano Andreana",sebastianoaneana,https://thespeakersphere.com/speakers/sebastianoaneana,"Implant Dentistry","Peri-implantitis Treatment",contact@speaker.com
+477,"Dr. Bart Silverman",bartsilverman,https://thespeakersphere.com/speakers/bartsilverman,"Implant Dentistry","Implant Complications",contact@speaker.com
+478,"Charles Banh",charlesbanh,https://thespeakersphere.com/speakers/charlesbanh,"Digital Dentistry","Digital Full-Arch Workflows",contact@speaker.com
+479,"Jack Marrano",jackmarrano,https://thespeakersphere.com/speakers/jackmarrano,"Digital Dentistry","Digital Full-Arch Workflows",contact@speaker.com
+480,"Aleksandra Polcynsky",aleksanapolcynsky,https://thespeakersphere.com/speakers/aleksanapolcynsky,"Digital Dentistry","Dental Implant Market Analysis",contact@speaker.com
+481,"Alexander Wuensche",alexanderwuensche,https://thespeakersphere.com/speakers/alexanderwuensche,"Digital Dentistry","New Materials",contact@speaker.com
+482,"Brandon Dickerman",brandondickerman,https://thespeakersphere.com/speakers/brandondickerman,"Digital Dentistry","Lab Equipment",contact@speaker.com
+483,"Dr. Minh Tran",minhtran,https://thespeakersphere.com/speakers/minhtran,"Digital Dentistry","Digital Software",contact@speaker.com
+484,"Dr. Eric C. Baker",ericcbaker,https://thespeakersphere.com/speakers/ericcbaker,"Oral Surgery","Practice Growth",contact@speaker.com
+485,"Dr. Jay C. Platt",jaycplatt,https://thespeakersphere.com/speakers/jaycplatt,"Oral Surgery","Practice Growth",contact@speaker.com
+486,"Dr. Panos Papaspyridakos",panospapaspyridakos,https://thespeakersphere.com/speakers/panospapaspyridakos,"Oral Surgery","Digital Workflow",contact@speaker.com
+487,"Dr. Baldwin W. Marchack",baldwinwmarchack,https://thespeakersphere.com/speakers/baldwinwmarchack,"Oral Surgery","Implant Restoration Management",contact@speaker.com
+488,"Dr. Robert A. Levine",robertalevine,https://thespeakersphere.com/speakers/robertalevine,"Oral Surgery","Soft-Tissue Alternatives",contact@speaker.com
+489,"Dr. Carlos Aparicio",carlosaparicio,https://thespeakersphere.com/speakers/carlosaparicio,"Oral Surgery","Zygomatic Implants",contact@speaker.com
+490,"Dr. Guillermo Chacon",guillermochacon,https://thespeakersphere.com/speakers/guillermochacon,"Oral Surgery","Digital Treatment",contact@speaker.com
+491,"Dr. Waldemar D. Polido",waldemardpolido,https://thespeakersphere.com/speakers/waldemardpolido,"Oral Surgery","Full-Arch Implants",contact@speaker.com
+492,"Dr. Bach T. Le",bachtle,https://thespeakersphere.com/speakers/bachtle,"Oral Surgery","Clinical Practice",contact@speaker.com
+493,"Dr. Craig M. Misch",craigmmisch,https://thespeakersphere.com/speakers/craigmmisch,"Oral Surgery","Complication Prevention",contact@speaker.com
+494,"Dr. Donald P. Lewis Jr.",donaldplewisjr,https://thespeakersphere.com/speakers/donaldplewisjr,"Oral Surgery","Anesthesia",contact@speaker.com
+495,"Dr. Jimmie L. Harper Jr.",jimmielharperjr,https://thespeakersphere.com/speakers/jimmielharperjr,"Oral Surgery","Anesthesia Training",contact@speaker.com
+496,"Dr. Peter A. Vellis",peteravellis,https://thespeakersphere.com/speakers/peteravellis,"Oral Surgery","Emergency Airway Management",contact@speaker.com
+497,"Jennifer Brady",jenniferbrady,https://thespeakersphere.com/speakers/jenniferbrady,"Oral Surgery","Anesthesia Assistance",contact@speaker.com
+498,"Dr. David A. Fenton",davidafenton,https://thespeakersphere.com/speakers/davidafenton,"Oral Surgery","Emergency Management",contact@speaker.com
+499,"Dr. Louis K. Rafetto",louiskrafetto,https://thespeakersphere.com/speakers/louiskrafetto,"Oral Surgery","Office-Based Anesthesia",contact@speaker.com
+500,"Dr. Lane T. Knight",lanetknight,https://thespeakersphere.com/speakers/lanetknight,"Oral Surgery","Anesthesia Education",contact@speaker.com
+2,"Dr. Will Martin",willmartin,https://thespeakersphere.com/speakers/willmartin,"Prosthodontics","Prosthodontist",wmartin@devrightspeakers.com
+501,"Dr. Berfin K. Jacobs",dr-berfin-k-jacobs,https://thespeakersphere.com/speakers/dr-berfin-k-jacobs,"Oral Surgery","Clinical Associate Professor, Temple University",bjacobs@temple.edu
+502,"Dr. Daniel R. Cullum",dr-daniel-r-cullum,https://thespeakersphere.com/speakers/dr-daniel-r-cullum,"Oral Surgery","President, Implants Northwest Live Learning Center",dcullum@implantsnw.com
+503,"Dr. German O. Gallucci",dr-german-o-gallucci,https://thespeakersphere.com/speakers/dr-german-o-gallucci,"General Dentistry","Professor and Chair, Harvard School of Dental Medicine",ggallucci@hsdm.harvard.edu
+504,"Dr. Joan Pi-Anfruns",dr-joan-pi-anfruns,https://thespeakersphere.com/speakers/dr-joan-pi-anfruns,"Oral Surgery","Private Practice, Los Angeles",jpianfruns@ahdpartnership.com
+505,"Dr. Katja Nelson",dr-katja-nelson,https://thespeakersphere.com/speakers/dr-katja-nelson,"Oral Surgery","Dean of Dental Medicine, Universitätsklinikum Freiburg",knelson@uniklinik-freiburg.de
+506,"Dr. Lawrence E. Brecht",dr-lawrence-e-brecht,https://thespeakersphere.com/speakers/dr-lawrence-e-brecht,"Oral Surgery","Director of Maxillofacial Prosthetics, Northwell Health",lbrecht@northwell.edu
+507,"Dr. Lorenzo Mordini",dr-lorenzo-mordini,https://thespeakersphere.com/speakers/dr-lorenzo-mordini,"Periodontology","Director Post Graduate Periodontology, Tufts University",lmordini@tufts.edu
+508,"Dr. Paulo Carvalho",dr-paulo-carvalho,https://thespeakersphere.com/speakers/dr-paulo-carvalho,"Oral Surgery","Oral and Maxillofacial Surgeon",pcarvalho@example.com
+599,"Dr. Karl Jepsen",dr-karl-jepsen,https://thespeakersphere.com/speakers/dr-karl-jepsen,"Periodontology","PhD",kjepsen@example.edu
+509,"Dr. Ricardo Mitrani",dr-ricardo-mitrani,https://thespeakersphere.com/speakers/dr-ricardo-mitrani,"Oral Surgery","Grupo Dental Bosques Oral Health & Smile Design",rmitrani@grupodental.com
+510,"Dr. Rolf Ewers",dr-rolf-ewers,https://thespeakersphere.com/speakers/dr-rolf-ewers,"Oral Surgery","Chairman Emeritus, Hospital of Cranio Maxillofacial & Oral Surgery",rewers@meduniwien.ac.at
+511,"Dr. Shuaib Malik",dr-shuaib-malik,https://thespeakersphere.com/speakers/dr-shuaib-malik,"Oral Surgery","Owner, Oral and Maxillofacial Surgery of Chicago",smalik@omsofchicago.com
+512,"Dr. Andy Burton",dr-andy-burton,https://thespeakersphere.com/speakers/dr-andy-burton,"General Dentistry","Dental Specialist",andy.burton@dental.com
+513,"Dr. Azadeh Amy Khajavi",dr-azadeh-amy-khajavi,https://thespeakersphere.com/speakers/dr-azadeh-amy-khajavi,"Oral Surgery","DDS, Biological Dentist",info@dramykhajavi.com
+514,"Dr. Ben Kellum",dr-ben-kellum,https://thespeakersphere.com/speakers/dr-ben-kellum,"Oral Surgery","DDS, Full Arch Specialist",info@wehrleimplantimmersion.com
+515,"Dr. Brian J. Jackson",dr-brian-j-jackson,https://thespeakersphere.com/speakers/dr-brian-j-jackson,"Oral Surgery","DDS, DABOI/ID, Honored Fellow AAID",info@brianjacksondds.com
+516,"Dr. Bruce G. Freund",dr-bruce-g-freund,https://thespeakersphere.com/speakers/dr-bruce-g-freund,"Cosmetic Dentistry","DDS",info@facialcosmetics.com
+517,"Dr. Cara Minichetti",dr-cara-minichetti,https://thespeakersphere.com/speakers/dr-cara-minichetti,"Oral Surgery","DDS",cara@dentalimplantlearning.com
+518,"Dr. Christian Hart",dr-christian-hart,https://thespeakersphere.com/speakers/dr-christian-hart,"Oral Surgery","DDS, Full Arch Specialist",info@transcenddental.com
+519,"Dr. Christopher Petrush",dr-christopher-petrush,https://thespeakersphere.com/speakers/dr-christopher-petrush,"Oral Surgery","DDS, FAAID, DABOI/ID",info@chicagomaxicourse.com
+520,"Dr. Craig I. Aronson",dr-craig-i-aronson,https://thespeakersphere.com/speakers/dr-craig-i-aronson,"Oral Surgery","DDS, FAGD, FAAID, DABOI/ID",info@premierdentalny.com
+521,"Dr. Daniel Domingue",dr-daniel-domingue,https://thespeakersphere.com/speakers/dr-daniel-domingue,"Digital Dentistry","DDS, DABOI/ID, DICOI",info@acadianadentistry.com
+522,"Dr. David Resnick",dr-david-resnick,https://thespeakersphere.com/speakers/dr-david-resnick,"General Dentistry","DDS, FAAID, DABOI/ID",info@timaxinstitute.com
+523,"Dr. Doaa Adel Khattab",dr-doaa-adel-khattab,https://thespeakersphere.com/speakers/dr-doaa-adel-khattab,"Oral Surgery","DDS, MS",info@socketshield.com
+524,"Dr. Donald J. Provenzale",dr-donald-j-provenzale,https://thespeakersphere.com/speakers/dr-donald-j-provenzale,"Oral Surgery","DDS, DABOI/ID, AFAAID",info@chewswisely.com
+525,"Dr. Duke Heller",dr-duke-heller,https://thespeakersphere.com/speakers/dr-duke-heller,"Oral Surgery","DDS, MS, Honored Fellow AAID",info@midwestimplantinstitute.com
+526,"Dr. Ed R. Kusek",dr-ed-r-kusek,https://thespeakersphere.com/speakers/dr-ed-r-kusek,"Oral Surgery","DDS, FAAID, DABOI/ID, Past President AAID",info@drkusek.com
+527,"Dr. Frank Caputo",dr-frank-caputo,https://thespeakersphere.com/speakers/dr-frank-caputo,"General Dentistry","DDS, AAID Diplomate",info@britelydentures.com
+528,"Dr. George Arvanitis",dr-george-arvanitis,https://thespeakersphere.com/speakers/dr-george-arvanitis,"Oral Surgery","DDS, DABOI, Honored Fellow AAID",info@arvanitis.com
+529,"Dr. Hamilton M. Sporborg",dr-hamilton-m-sporborg,https://thespeakersphere.com/speakers/dr-hamilton-m-sporborg,"General Dentistry","DDS, FAAID, DABOI/ID",info@sporborg.com
+530,"Dr. Hesham Nouh",dr-hesham-nouh,https://thespeakersphere.com/speakers/dr-hesham-nouh,"Digital Dentistry","DSc, Clinical Professor",hesham.nouh@bu.edu
+531,"Dr. Hussam Batal",dr-hussam-batal,https://thespeakersphere.com/speakers/dr-hussam-batal,"Oral Surgery","DMD, Clinical Professor",hussam.batal@bmc.org
+532,"Dr. Ihab Hanna",dr-ihab-hanna,https://thespeakersphere.com/speakers/dr-ihab-hanna,"Oral Surgery","DDS, FAAID-DABOI, DICOI",rwcimplantclub@gmail.com
+533,"Dr. JB White",dr-jb-white,https://thespeakersphere.com/speakers/dr-jb-white,"Oral Surgery","DDS, AAID Member",info@jbwhitedds.com
+534,"Dr. James Nager",dr-james-nager,https://thespeakersphere.com/speakers/dr-james-nager,"Oral Surgery","DMD, Associate Fellow AAID",info@belmontdental.com
+535,"Dr. Janice Wang",dr-janice-wang,https://thespeakersphere.com/speakers/dr-janice-wang,"Oral Surgery","DDS, ABOI/ID Diplomate, AAID Fellow",info@wcimplant.com
+536,"Dr. Jason Kim",dr-jason-kim,https://thespeakersphere.com/speakers/dr-jason-kim,"Oral Surgery","DDS, AAID Fellow, ABOI/ID Diplomate",info@jjkda.com
+566,"Dr. Bindu Dukka",dr-bindu-dukka,https://thespeakersphere.com/speakers/dr-bindu-dukka,"Periodontology","BDS, MSD, MPH",bdukka@example.edu
+537,"Dr. John C. Minichetti",dr-john-c-minichetti,https://thespeakersphere.com/speakers/dr-john-c-minichetti,"Oral Surgery","DMD, FAAID, DABOI/ID",info@dentalimplantlearning.com
+538,"Dr. John Minichetti",dr-john-minichetti,https://thespeakersphere.com/speakers/dr-john-minichetti,"Oral Surgery","DMD, DABOI/ID, Fellow AAID",info@dentalimplantlearningcenter.com
+539,"Dr. Jonathan Tsang",dr-jonathan-tsang,https://thespeakersphere.com/speakers/dr-jonathan-tsang,"Oral Surgery","DMD, DABOI/ID",info@abbotsfordsmiles.com
+540,"Dr. Joseph Leonetti",dr-joseph-leonetti,https://thespeakersphere.com/speakers/dr-joseph-leonetti,"Oral Surgery","DMD, DABOI/ID, FAAID",info@osaml.com
+541,"Dr. Keith Long",dr-keith-long,https://thespeakersphere.com/speakers/dr-keith-long,"Oral Surgery","Implant Specialist",keith.long@dental.com
+542,"Dr. Kwan M. Lee",dr-kwan-m-lee,https://thespeakersphere.com/speakers/dr-kwan-m-lee,"Oral Surgery","DDS, DABOI, DICOI",info@federalwayimplantlaser.com
+543,"Dr. Lawrence Nalitt",dr-lawrence-nalitt,https://thespeakersphere.com/speakers/dr-lawrence-nalitt,"Oral Surgery","DDS, DABOI/ID, FAGD",info@broadwaydentalcenterny.com
+544,"Dr. Lily Hu",dr-lily-hu,https://thespeakersphere.com/speakers/dr-lily-hu,"Oral Surgery","DMD, Board-Certified Anesthesiologist",lily.hu@tufts.edu
+545,"Dr. Michael Shulman",dr-michael-shulman,https://thespeakersphere.com/speakers/dr-michael-shulman,"Oral Surgery","DDS, AAID Course Instructor",info@shulmandds.com
+546,"Dr. Mohamed Wagdy Bissar",dr-mohamed-wagdy-bissar,https://thespeakersphere.com/speakers/dr-mohamed-wagdy-bissar,"Oral Surgery","BChD, MSC, PhD, AFAAID",info@aaiduae.com
+547,"Dr. Nakul Rathi",dr-nakul-rathi,https://thespeakersphere.com/speakers/dr-nakul-rathi,"Oral Surgery","DDS, MS Prosthodontics, NYU Implant Fellowship",info@getimplant.com
+548,"Dr. Rami Salloum",dr-rami-salloum,https://thespeakersphere.com/speakers/dr-rami-salloum,"Digital Dentistry","DDS, DABOI/ID, FAAID",info@brightdentalpa.com
+549,"Dr. Robert J. Stanley",dr-robert-j-stanley,https://thespeakersphere.com/speakers/dr-robert-j-stanley,"Oral Surgery","DDS, PhD, MS, DABOI/ID",info@stanleyinstitute.com
+550,"Dr. Roderick Stewart",dr-roderick-stewart,https://thespeakersphere.com/speakers/dr-roderick-stewart,"General Dentistry","DDS, DABOI, Honored Fellow AAID",dr.rod.stewart@gmail.com
+551,"Dr. Ron Zokol",dr-ron-zokol,https://thespeakersphere.com/speakers/dr-ron-zokol,"Digital Dentistry","DDS, DABOI/ID, DICOI",info@ddidental.com
+552,"Dr. Sangiv I. Patel",dr-sangiv-i-patel,https://thespeakersphere.com/speakers/dr-sangiv-i-patel,"Oral Surgery","Implant Specialist",sangiv.patel@dental.com
+553,"Dr. Sarah Jockin",dr-sarah-jockin,https://thespeakersphere.com/speakers/dr-sarah-jockin,"Digital Dentistry","DDS, DABOI/ID, Associate Fellow AAID",info@fullarchsuccess.com
+554,"Dr. Shahram Ghanaati",dr-shahram-ghanaati,https://thespeakersphere.com/speakers/dr-shahram-ghanaati,"Oral Surgery","MD, DMD, PhD, Associate Professor",shahram.ghanaati@kgu.de
+555,"Dr. Swati Agnihotri",dr-swati-agnihotri,https://thespeakersphere.com/speakers/dr-swati-agnihotri,"Oral Surgery","DMD, AFAAID, FAGD",info@drtubo.com
+556,"Dr. Thaisa Bordin",dr-thaisa-bordin,https://thespeakersphere.com/speakers/dr-thaisa-bordin,"Oral Surgery","DDS, MSc, PhD, DMD",thaisa.bordin@tufts.edu
+557,"Dr. Walter C. Chitwood Jr.",dr-walter-c-chitwood-jr,https://thespeakersphere.com/speakers/dr-walter-c-chitwood-jr,"General Dentistry","DDS, FAAID, DABOI/ID",info@chitwooodental.com
+558,"Dr. William Liang",dr-william-liang,https://thespeakersphere.com/speakers/dr-william-liang,"Oral Surgery","DMD, DABOI/ID, Honored Fellow AAID",info@implant.ca
+559,"Katie Worth",katie-worth,https://thespeakersphere.com/speakers/katie-worth,"Practice Management","Practice Management Consultant",katie@dentalnachos.com
+560,"Amanda Cole Hill",amanda-cole-hill,https://thespeakersphere.com/speakers/amanda-cole-hill,"Dental Hygiene","BSDH, RDH, CDIPC",acolehill@example.edu
+561,"Craig Misch",craig-misch,https://thespeakersphere.com/speakers/craig-misch,"Oral Surgery","DDS, MDS",cmisch@example.edu
+562,"Dr. Adam Saltz",dr-adam-saltz,https://thespeakersphere.com/speakers/dr-adam-saltz,"Periodontology","DMD, MS, MPH",asaltz@example.edu
+563,"Dr. Amanda Finger Stadler",dr-amanda-finger-stadler,https://thespeakersphere.com/speakers/dr-amanda-finger-stadler,"Periodontology","DDS, MSD, MS, PhD",afingerstadler@example.edu
+564,"Dr. Arndt Guentsch",dr-arndt-guentsch,https://thespeakersphere.com/speakers/dr-arndt-guentsch,"Periodontology","DMD, PhD, MHBA, MS",aguentsch@example.edu
+565,"Dr. Beatriz Bezerra",dr-beatriz-bezerra,https://thespeakersphere.com/speakers/dr-beatriz-bezerra,"Periodontology","DDS, PhD",bbezerra@example.edu
+567,"Dr. Bradley Ross",dr-bradley-ross,https://thespeakersphere.com/speakers/dr-bradley-ross,"Periodontology","DMD",bross@example.edu
+568,"Dr. Brett Kessler",dr-brett-kessler,https://thespeakersphere.com/speakers/dr-brett-kessler,"Periodontology","DDS",bkessler@example.edu
+569,"Dr. Bryan J. Frantz",dr-bryan-j-frantz,https://thespeakersphere.com/speakers/dr-bryan-j-frantz,"Periodontology","DMD, MS",bfrantz@example.edu
+570,"Dr. Caitlin Darcey",dr-caitlin-darcey,https://thespeakersphere.com/speakers/dr-caitlin-darcey,"Periodontology","DMD, MS, MHPE",cdarcey@example.edu
+571,"Dr. Chun-Teh Lee",dr-chun-teh-lee,https://thespeakersphere.com/speakers/dr-chun-teh-lee,"Periodontology","DDS, MS, DMSc",clee@example.edu
+572,"Dr. David A. Scott",dr-david-a-scott,https://thespeakersphere.com/speakers/dr-david-a-scott,"Periodontology","PhD",dscott@example.edu
+573,"Dr. David L. Cochran",dr-david-l-cochran,https://thespeakersphere.com/speakers/dr-david-l-cochran,"Oral Surgery","DDS, PhD",cochran@uthscsa.edu
+574,"Dr. David M. Kim",dr-david-m-kim,https://thespeakersphere.com/speakers/dr-david-m-kim,"Periodontology","DDS, DMSc",dkim@example.edu
+575,"Dr. David P. Mathews",dr-david-p-mathews,https://thespeakersphere.com/speakers/dr-david-p-mathews,"Prosthodontics","DDS",dmathews@example.edu
+576,"Dr. David T. Wu",dr-david-t-wu,https://thespeakersphere.com/speakers/dr-david-t-wu,"Periodontology","DMD, DMSc, FRCDC",dwu@example.edu
+577,"Dr. Dennis Tarnow",dr-dennis-tarnow,https://thespeakersphere.com/speakers/dr-dennis-tarnow,"Oral Surgery","DDS",dtarnow@example.edu
+578,"Dr. Diana V. Messadi",dr-diana-v-messadi,https://thespeakersphere.com/speakers/dr-diana-v-messadi,"General Dentistry","DDS, MMSc, DMSc",dmessadi@example.edu
+579,"Dr. Dimitris N. Tatakis",dr-dimitris-n-tatakis,https://thespeakersphere.com/speakers/dr-dimitris-n-tatakis,"Periodontology","DDS, PhD",tatakis.1@osu.edu
+580,"Dr. Fadi Hasan",dr-fadi-hasan,https://thespeakersphere.com/speakers/dr-fadi-hasan,"Periodontology","DDS, MSD",fhasan@example.edu
+581,"Dr. Frank A. Scannapieco",dr-frank-a-scannapieco,https://thespeakersphere.com/speakers/dr-frank-a-scannapieco,"Periodontology","DMD, PhD",fas1@buffalo.edu
+582,"Dr. Frank Schwarz",dr-frank-schwarz,https://thespeakersphere.com/speakers/dr-frank-schwarz,"General Dentistry","DDS, MSD, PhD",fschwarz@example.edu
+583,"Dr. Georgios E. Romanos",dr-georgios-e-romanos,https://thespeakersphere.com/speakers/dr-georgios-e-romanos,"Periodontology","DDS, PhD, Prof Dr med dent",georgios.romanos@stonybrook.edu
+584,"Dr. Gian Pietro Schincaglia",dr-gian-pietro-schincaglia,https://thespeakersphere.com/speakers/dr-gian-pietro-schincaglia,"Oral Surgery","DDS, PhD",gschincaglia@example.edu
+585,"Dr. Giorgio Tabanella",dr-giorgio-tabanella,https://thespeakersphere.com/speakers/dr-giorgio-tabanella,"Periodontology","DDS, MS",gtabanella@example.edu
+586,"Dr. Giovanni Zucchelli",dr-giovanni-zucchelli,https://thespeakersphere.com/speakers/dr-giovanni-zucchelli,"Periodontology","DDS, PhD",gzucchelli@example.edu
+587,"Dr. Hatice Hasturk",dr-hatice-hasturk,https://thespeakersphere.com/speakers/dr-hatice-hasturk,"Periodontology","DDS, PhD",hhasturk@forsyth.org
+588,"Dr. Hiroshi Hirata",dr-hiroshi-hirata,https://thespeakersphere.com/speakers/dr-hiroshi-hirata,"Anesthesiology","Anesthesiologist & Sedation Specialist",h.hirata@aap.org
+589,"Dr. Hom-Lay Wang",dr-hom-lay-wang,https://thespeakersphere.com/speakers/dr-hom-lay-wang,"Oral Surgery","DDS, MSD, PhD",hwang@example.edu
+590,"Dr. Homa H. Zadeh",dr-homa-h-zadeh,https://thespeakersphere.com/speakers/dr-homa-h-zadeh,"Periodontology","DDS, PhD",hzadeh@example.edu
+591,"Dr. Hsun-Liang Chan",dr-hsun-liang-chan,https://thespeakersphere.com/speakers/dr-hsun-liang-chan,"Periodontology","DDS, MS",hchan@example.edu
+592,"Dr. Irina F. F. Dragan",dr-irina-f-f-dragan,https://thespeakersphere.com/speakers/dr-irina-f-f-dragan,"Periodontology","DDS, DMD, MS, eMBA",idragan@example.edu
+593,"Dr. Istvan Urban",dr-istvan-urban,https://thespeakersphere.com/speakers/dr-istvan-urban,"Periodontology","DMD, MD, PhD",iurban@example.edu
+594,"Dr. Jack G. Caton",dr-jack-g-caton,https://thespeakersphere.com/speakers/dr-jack-g-caton,"Periodontology","DDS, MS",jcaton@example.edu
+595,"Dr. James Anderson",dr-james-anderson,https://thespeakersphere.com/speakers/dr-james-anderson,"Periodontology","Department Chair",janderson@aap.org
+596,"Dr. Jennifer H. Doobrow",dr-jennifer-h-doobrow,https://thespeakersphere.com/speakers/dr-jennifer-h-doobrow,"Periodontology","DMD",jdoobrow@example.edu
+597,"Dr. Joan Otomo Corgel",dr-joan-otomo-corgel,https://thespeakersphere.com/speakers/dr-joan-otomo-corgel,"Periodontology","DDS, MPH",jotomo@example.edu
+598,"Dr. John A. Svirsky",dr-john-a-svirsky,https://thespeakersphere.com/speakers/dr-john-a-svirsky,"General Dentistry","DDS, MEd",jsvirsky@example.edu
+600,"Dr. Kayleigh E. Temple",dr-kayleigh-e-temple,https://thespeakersphere.com/speakers/dr-kayleigh-e-temple,"Periodontology","DDS, MA, MS",ktemple@example.edu
+601,"Dr. Kevin Brown",dr-kevin-brown,https://thespeakersphere.com/speakers/dr-kevin-brown,"Periodontology","Clinical Professor",kbrown@aap.org
+602,"Dr. Kumar Subramanian",dr-kumar-subramanian,https://thespeakersphere.com/speakers/dr-kumar-subramanian,"Periodontology","DDS, MSD",ksubramanian@example.edu
+603,"Dr. Laura Williams",dr-laura-williams,https://thespeakersphere.com/speakers/dr-laura-williams,"Periodontology","Professor",lwilliams@aap.org
+604,"Dr. Lea Hachem",dr-lea-hachem,https://thespeakersphere.com/speakers/dr-lea-hachem,"Oral Surgery","DDS, MS, FICD",lhachem@example.edu
+605,"Dr. Liliana E. Aranguren",dr-liliana-e-aranguren,https://thespeakersphere.com/speakers/dr-liliana-e-aranguren,"Periodontology","DDS, MDSc",laranguren@example.edu
+606,"Dr. Lisa Taylor",dr-lisa-taylor,https://thespeakersphere.com/speakers/dr-lisa-taylor,"Periodontology","Professor",ltaylor@aap.org
+607,"Dr. Maria Emanuel Ryan",dr-maria-emanuel-ryan,https://thespeakersphere.com/speakers/dr-maria-emanuel-ryan,"Periodontology","DDS, PhD",mryan@example.edu
+608,"Dr. Maria Rodriguez",dr-maria-rodriguez,https://thespeakersphere.com/speakers/dr-maria-rodriguez,"Periodontology","Associate Professor",mrodriguez@aap.org
+609,"Dr. Marie C. Schweinebraten",dr-marie-c-schweinebraten,https://thespeakersphere.com/speakers/dr-marie-c-schweinebraten,"Practice Management","DMD",mschweinebraten@example.edu
+610,"Dr. Matthew Fien",dr-matthew-fien,https://thespeakersphere.com/speakers/dr-matthew-fien,"Periodontology","DDS",mfien@example.edu
+611,"Dr. Mia L. Geisinger",dr-mia-l-geisinger,https://thespeakersphere.com/speakers/dr-mia-l-geisinger,"Periodontology","DDS, MS",mgeisinger@example.edu
+612,"Dr. Michael K. McGuire",dr-michael-k-mcguire,https://thespeakersphere.com/speakers/dr-michael-k-mcguire,"Periodontology","DDS",mmcguire@example.edu
+613,"Dr. Michael Pikos",dr-michael-pikos,https://thespeakersphere.com/speakers/dr-michael-pikos,"Periodontology","DDS",mpikos@example.edu
+614,"Dr. Michael Richard Ragan",dr-michael-richard-ragan,https://thespeakersphere.com/speakers/dr-michael-richard-ragan,"Periodontology","DMD, JD, LLM",mragan@example.edu
+615,"Dr. Michael Sterling",dr-michael-sterling,https://thespeakersphere.com/speakers/dr-michael-sterling,"Periodontology","Periodontist & Sedation Specialist",m.sterling@aap.org
+616,"Dr. Miles Madison",dr-miles-madison,https://thespeakersphere.com/speakers/dr-miles-madison,"Periodontology","DDS, MS",mmadison@example.edu
+617,"Dr. Monica P. Gibson",dr-monica-p-gibson,https://thespeakersphere.com/speakers/dr-monica-p-gibson,"Periodontology","BDS, PhD, MS, FRCDC",mgibson@example.edu
+618,"Dr. Nada Souccar",dr-nada-souccar,https://thespeakersphere.com/speakers/dr-nada-souccar,"Periodontology","DDS, MS",nsouccar@example.edu
+619,"Dr. Nikolaos Soldatos",dr-nikolaos-soldatos,https://thespeakersphere.com/speakers/dr-nikolaos-soldatos,"Periodontology","DDS, MSD, PhD",nsoldatos@example.edu
+620,"Dr. Oliver Pin-Harry",dr-oliver-pin-harry,https://thespeakersphere.com/speakers/dr-oliver-pin-harry,"Prosthodontics","DDS, MS, Cert. Prostho, FRCD(C)",opinharry@example.edu
+621,"Dr. Panos N. Papapanou",dr-panos-n-papapanou,https://thespeakersphere.com/speakers/dr-panos-n-papapanou,"Periodontology","DDS",pnp1@cumc.columbia.edu
+622,"Dr. Paul Fugazzotto",dr-paul-fugazzotto,https://thespeakersphere.com/speakers/dr-paul-fugazzotto,"Oral Surgery","DDS",pfugazzotto@example.edu
+623,"Dr. Paul S. Rosen",dr-paul-s-rosen,https://thespeakersphere.com/speakers/dr-paul-s-rosen,"Oral Surgery","DMD, MS",prosen@example.edu
+624,"Dr. Peter C. Fritz",dr-peter-c-fritz,https://thespeakersphere.com/speakers/dr-peter-c-fritz,"Periodontology","DDS, PhD, MBA, B.Sc., F.R.C.D. (C)., LLM",pfritz@example.edu
+625,"Dr. Peter T. Green",dr-peter-t-green,https://thespeakersphere.com/speakers/dr-peter-t-green,"Oral Surgery","DMD, MS, Diplomate ABOMR",pgreen@example.edu
+626,"Dr. Philip Kang",dr-philip-kang,https://thespeakersphere.com/speakers/dr-philip-kang,"Periodontology","DDS",pkang@example.edu
+627,"Dr. Pierpaolo Cortellini",dr-pierpaolo-cortellini,https://thespeakersphere.com/speakers/dr-pierpaolo-cortellini,"Periodontology","DMD, DDS",pcortellini@example.edu
+628,"Dr. Rafael Siqueira",dr-rafael-siqueira,https://thespeakersphere.com/speakers/dr-rafael-siqueira,"Periodontology","DDS, MS, PhD",rsiqueira@example.edu
+629,"Dr. Ramzi V. Abou-Arraj",dr-ramzi-v-abou-arraj,https://thespeakersphere.com/speakers/dr-ramzi-v-abou-arraj,"Oral Surgery","DDS, MS",rabouarraj@example.edu
+630,"Dr. Ricardo Kern",dr-ricardo-kern,https://thespeakersphere.com/speakers/dr-ricardo-kern,"Oral Surgery","MSD Sr.",rkern@example.edu
+631,"Dr. Richard Darveau",dr-richard-darveau,https://thespeakersphere.com/speakers/dr-richard-darveau,"General Dentistry","MS, PhD",rdarveau@example.edu
+632,"Dr. Rino Burkhardt",dr-rino-burkhardt,https://thespeakersphere.com/speakers/dr-rino-burkhardt,"Periodontology","MAS",rburkhardt@example.edu
+633,"Dr. Robert S. Lewando",dr-robert-s-lewando,https://thespeakersphere.com/speakers/dr-robert-s-lewando,"Practice Management","DDS, MBA",rlewando@example.edu
+634,"Dr. Rocio Beatriz Quinonez",dr-rocio-beatriz-quinonez,https://thespeakersphere.com/speakers/dr-rocio-beatriz-quinonez,"Periodontology","DMD, MS, MPH",rquinonez@example.edu
+635,"Dr. Roger Arce",dr-roger-arce,https://thespeakersphere.com/speakers/dr-roger-arce,"Periodontology","DDS, MS, PhD",rarce@example.edu
+636,"Dr. Samuel Lynch",dr-samuel-lynch,https://thespeakersphere.com/speakers/dr-samuel-lynch,"General Dentistry","DMD, DMSc",slynch@example.edu
+637,"Dr. Sandra Stuhr",dr-sandra-stuhr,https://thespeakersphere.com/speakers/dr-sandra-stuhr,"Prosthodontics","DMD, MS",sstuhr@example.edu
+638,"Dr. Satish S. Kumar",dr-satish-s-kumar,https://thespeakersphere.com/speakers/dr-satish-s-kumar,"Periodontology","DMD, MDSc, MS",skumar@example.edu
+639,"Dr. Sharon R. Bannister",dr-sharon-r-bannister,https://thespeakersphere.com/speakers/dr-sharon-r-bannister,"Periodontology","DDS, MS",sbannister@example.edu
+640,"Dr. Stephanie Ganter",dr-stephanie-ganter,https://thespeakersphere.com/speakers/dr-stephanie-ganter,"Periodontology","DDS, MS",sganter@example.edu
+641,"Dr. Sukirth M. Ganesan",dr-sukirth-m-ganesan,https://thespeakersphere.com/speakers/dr-sukirth-m-ganesan,"Periodontology","DDS, PhD",sganesan@example.edu
+662,"Prof. Mariano Sanz",prof-mariano-sanz,https://thespeakersphere.com/speakers/prof-mariano-sanz,"Periodontology","MD, DDS, PhD",msanz@ucm.es
+642,"Dr. Susan Somerset",dr-susan-somerset,https://thespeakersphere.com/speakers/dr-susan-somerset,"Periodontology","DMD, PharmD, MS",ssomerset@example.edu
+643,"Dr. Theo Katsaros",dr-theo-katsaros,https://thespeakersphere.com/speakers/dr-theo-katsaros,"Periodontology","DDS, MSD, FRCD(C)",tkatsaros@example.edu
+644,"Dr. Todd Scheyer",dr-todd-scheyer,https://thespeakersphere.com/speakers/dr-todd-scheyer,"Periodontology","DDS, MS",tscheyer@example.edu
+645,"Dr. Vinay M. Bhide",dr-vinay-m-bhide,https://thespeakersphere.com/speakers/dr-vinay-m-bhide,"Periodontology","DDS, MSc, FRCDC",vbhide@example.edu
+646,"Dr. Vivianne Chappuis",dr-vivianne-chappuis,https://thespeakersphere.com/speakers/dr-vivianne-chappuis,"Oral Surgery","DMD",vchappuis@example.edu
+647,"Dr. Véronique Benhamou",dr-vronique-benhamou,https://thespeakersphere.com/speakers/dr-vronique-benhamou,"Periodontology","BSc, DDS, Cert.Perio",vbenhamou@example.edu
+648,"Dr. Wenche S. Borgnakke",dr-wenche-s-borgnakke,https://thespeakersphere.com/speakers/dr-wenche-s-borgnakke,"Periodontology","DDS, MPH, PhD",wsb@umich.edu
+649,"Dr. William V. Giannobile",dr-william-v-giannobile,https://thespeakersphere.com/speakers/dr-william-v-giannobile,"Periodontology","DDS, DMSc",wgiannob@harvard.edu
+650,"Dr. William Victor Giannobile",dr-william-victor-giannobile,https://thespeakersphere.com/speakers/dr-william-victor-giannobile,"Periodontology","DDS, MS, DMSc",wgiannobile@example.edu
+651,"Dr. Yota Stathopoulou",dr-yota-stathopoulou,https://thespeakersphere.com/speakers/dr-yota-stathopoulou,"Periodontology","DDS, DMD, PhD",ystathopoulou@example.edu
+652,"Dr. Zeeshan Sheikh",dr-zeeshan-sheikh,https://thespeakersphere.com/speakers/dr-zeeshan-sheikh,"Periodontology","BDS, MSc, M.Perio, PhD, FIADFE, FRCDC, Dip-ABP",zsheikh@example.edu
+653,"George Mandelaris",george-mandelaris,https://thespeakersphere.com/speakers/george-mandelaris,"Oral Surgery","DDS, MS",gmandelaris@example.edu
+654,"Katrina M. Sanders",katrina-m-sanders,https://thespeakersphere.com/speakers/katrina-m-sanders,"Dental Hygiene","RDH, BSDH, M.Ed, RF",ksanders@example.edu
+655,"Kelly Turner",kelly-turner,https://thespeakersphere.com/speakers/kelly-turner,"Periodontology","PME, BA(Kin), RDH",kturner@example.edu
+656,"Michelle Flesch",michelle-flesch,https://thespeakersphere.com/speakers/michelle-flesch,"General Dentistry","RDH",mflesch@example.edu
+657,"Michelle Strange",michelle-strange,https://thespeakersphere.com/speakers/michelle-strange,"Dental Hygiene","MSDH, RDH, CDIPC",mstrange@example.edu
+658,"Natalyn Lewis",natalyn-lewis,https://thespeakersphere.com/speakers/natalyn-lewis,"General Dentistry","Legal & Financial Consultant",nlewis@legallymine.com
+659,"Prof. Anton Sculean",prof-anton-sculean,https://thespeakersphere.com/speakers/prof-anton-sculean,"Periodontology","DMD, PhD",anton.sculean@zmk.unibe.ch
+660,"Prof. Frank Schwarz",prof-frank-schwarz,https://thespeakersphere.com/speakers/prof-frank-schwarz,"Oral Surgery","DDS",frank.schwarz@med.uni-frankfurt.de
+661,"Prof. Lior Shapira",prof-lior-shapira,https://thespeakersphere.com/speakers/prof-lior-shapira,"Periodontology","Professor",lshapira@example.edu
+663,"Prof. Nikolaos Donos",prof-nikolaos-donos,https://thespeakersphere.com/speakers/prof-nikolaos-donos,"Oral Surgery","PhD",n.donos@qmul.ac.uk
+664,"Prof. Tord Berglundh",prof-tord-berglundh,https://thespeakersphere.com/speakers/prof-tord-berglundh,"Oral Surgery","DDS, PhD",tord.berglundh@odontologi.gu.se
+665,"Prof. Wim Teughels",prof-wim-teughels,https://thespeakersphere.com/speakers/prof-wim-teughels,"Periodontology","DDS, PhD",wim.teughels@kuleuven.be
+666,"Tiffany Dufu",tiffany-dufu,https://thespeakersphere.com/speakers/tiffany-dufu,"Practice Management","Leadership Expert",tdufu@example.com
+667,"Arian B. Deutsch, CDT",arian-b-deutsch-cdt,https://thespeakersphere.com/speakers/arian-b-deutsch-cdt,"General Dentistry","Certified Dental Technician",adeutsch@example.com
+668,"Avinash Bidra, BDS, MS, FACP",avinash-bidra-bds-ms-facp,https://thespeakersphere.com/speakers/avinash-bidra-bds-ms-facp,"Prosthodontics","Professor and Chair",abidra@example.com
+669,"Benjamin Pliska, DDS, MS, FRCD(C)",benjamin-pliska-dds-ms-frcdc,https://thespeakersphere.com/speakers/benjamin-pliska-dds-ms-frcdc,"General Dentistry","Clinical Professor",bpliska@example.com
+670,"Charles Goodacre, DDS, MSD, FACP",charles-goodacre-dds-msd-facp,https://thespeakersphere.com/speakers/charles-goodacre-dds-msd-facp,"Prosthodontics","Distinguished Professor",cgoodacre@example.com
+671,"Darin Dichter, DMD",darin-dichter-dmd,https://thespeakersphere.com/speakers/darin-dichter-dmd,"Prosthodontics","Private Practice",ddichter@example.com
+672,"Douglas Benting, DDS, MS, FACP",douglas-benting-dds-ms-facp,https://thespeakersphere.com/speakers/douglas-benting-dds-ms-facp,"Prosthodontics","ACP President",dbenting@example.com
+673,"Dr. Eva Boldridge",dr-eva-boldridge,https://thespeakersphere.com/speakers/dr-eva-boldridge,"Digital Dentistry","Prosthodontist",eboldridge@dentistry.edu
+674,"Dr. Mariano Polack",dr-mariano-polack,https://thespeakersphere.com/speakers/dr-mariano-polack,"Oral Surgery","Prosthodontist",info@marianopolack.com
+675,"Dr. Michael R. Andersen",dr-michael-r-andersen,https://thespeakersphere.com/speakers/dr-michael-r-andersen,"Oral Surgery","Prosthodontist & Maxillofacial Prosthetist",mandersen@flawlessdental.com
+676,"Dr. Roozbeh Khosravi",dr-roozbeh-khosravi,https://thespeakersphere.com/speakers/dr-roozbeh-khosravi,"Orthodontics","Clinical Associate Professor, Orthodontics",roozkh@uw.edu
+677,"Dr. Roxanna Esguerra",dr-roxanna-esguerra,https://thespeakersphere.com/speakers/dr-roxanna-esguerra,"Oral Surgery","Prosthodontist",resguerra@dentistry.edu
+678,"Dr. Steve Chu",dr-steve-chu,https://thespeakersphere.com/speakers/dr-steve-chu,"Prosthodontics","Prosthodontist",info@sdnydental.com
+679,"Dr. Steven Morgano",dr-steven-morgano,https://thespeakersphere.com/speakers/dr-steven-morgano,"Prosthodontics","Professor",smm519@sdm.rutgers.edu
+680,"Dr. Taylor Jean Manalili",dr-taylor-jean-manalili,https://thespeakersphere.com/speakers/dr-taylor-jean-manalili,"Digital Dentistry","Director of Clinical Prosthodontics",tmanalili@glidewelldental.com
+681,"Ed McLaren, DDS, MDC",ed-mclaren-dds-mdc,https://thespeakersphere.com/speakers/ed-mclaren-dds-mdc,"Prosthodontics","Director",emclaren@example.com
+682,"Eva Boldridge, DMD",eva-boldridge-dmd,https://thespeakersphere.com/speakers/eva-boldridge-dmd,"Prosthodontics","Private Practice",eboldridge@example.com
+683,"Frank J. Tuminelli, DMD, FACP",frank-j-tuminelli-dmd-facp,https://thespeakersphere.com/speakers/frank-j-tuminelli-dmd-facp,"Prosthodontics","Clinical Professor",ftuminelli@example.com
+684,"John Sorensen, DMD, PhD, FACP",john-sorensen-dmd-phd-facp,https://thespeakersphere.com/speakers/john-sorensen-dmd-phd-facp,"Prosthodontics","Professor",jsorensen@example.com
+685,"Mariano Polack, DDS, MS",mariano-polack-dds-ms,https://thespeakersphere.com/speakers/mariano-polack-dds-ms,"Prosthodontics","Private Practice",mpolack@example.com
+686,"Martin Mendelson, DDS, CPC, FIADFE",martin-mendelson-dds-cpc-fiadfe,https://thespeakersphere.com/speakers/martin-mendelson-dds-cpc-fiadfe,"Practice Management","Dentist",mmendelson@example.com
+687,"Michael R. Andersen, DDS, MS, FACP",michael-r-andersen-dds-ms-facp,https://thespeakersphere.com/speakers/michael-r-andersen-dds-ms-facp,"Prosthodontics","Commander",mandersen@example.com
+688,"Philippe Hujoel, MSD, MS, PhD",philippe-hujoel-msd-ms-phd,https://thespeakersphere.com/speakers/philippe-hujoel-msd-ms-phd,"General Dentistry","Professor",phujoel@example.com
+689,"Rooz Khosravi, DMD, PhD, MSD",rooz-khosravi-dmd-phd-msd,https://thespeakersphere.com/speakers/rooz-khosravi-dmd-phd-msd,"Prosthodontics","Clinical Professor",rkhosravi@example.com
+690,"Roxanna Esguerra, DDS, MS, FACP",roxanna-esguerra-dds-ms-facp,https://thespeakersphere.com/speakers/roxanna-esguerra-dds-ms-facp,"Prosthodontics","Associate Professor",resguerra@example.com
+691,"Steve Chu, DMD, MSD, CDT",steve-chu-dmd-msd-cdt,https://thespeakersphere.com/speakers/steve-chu-dmd-msd-cdt,"Prosthodontics","Clinical Professor",schu@example.com
+692,"Steven Morgano, DMD",steven-morgano-dmd,https://thespeakersphere.com/speakers/steven-morgano-dmd,"Prosthodontics","Professor and Chair",smorgano@example.com
+693,"Taiseer Sulaiman, DDS, PhD, FICD",taiseer-sulaiman-dds-phd-ficd,https://thespeakersphere.com/speakers/taiseer-sulaiman-dds-phd-ficd,"Prosthodontics","Professor",tsulaiman@example.com
+694,"Taylor Jean Manalili, DDS",taylor-jean-manalili-dds,https://thespeakersphere.com/speakers/taylor-jean-manalili-dds,"Prosthodontics","Private Practice",tmanalili@example.com
+695,"Timothy A. Hess, DDS, MAGD",timothy-a-hess-dds-magd,https://thespeakersphere.com/speakers/timothy-a-hess-dds-magd,"Cosmetic Dentistry","Dentist",thess@example.com
+696,"Van Ramos, Jr., DDS, FACP",van-ramos-jr-dds-facp,https://thespeakersphere.com/speakers/van-ramos-jr-dds-facp,"Prosthodontics","Program Chair",vramos@example.com
+697,"Wei-Shao Lin, DDS, PhD, MBA, FACP",wei-shao-lin-dds-phd-mba-facp,https://thespeakersphere.com/speakers/wei-shao-lin-dds-phd-mba-facp,"Prosthodontics","Professor",wlin@example.com
+698,"A.J. Peak",aj-peak,https://thespeakersphere.com/speakers/aj-peak,"Practice Management","Chief Executive Officer, Peak Dental Services",apeak@peakdentalservices.com
+699,"Adrian McCovy",adrian-mccovy,https://thespeakersphere.com/speakers/adrian-mccovy,"Practice Management","Dental Professional",contact@adrian-mccovy.com
+700,"Allison Horn",allison-horn,https://thespeakersphere.com/speakers/allison-horn,"General Dentistry","Vice President, Marketing",contact@allison-horn.com
+701,"Amel Hassan",amel-hassan,https://thespeakersphere.com/speakers/amel-hassan,"Oral Surgery","DDS, Owner",amel.hassan@affordabledentures.com
+702,"Anthony Kofoworola-Kuti",anthony-kofoworola-kuti,https://thespeakersphere.com/speakers/anthony-kofoworola-kuti,"General Dentistry","President and Clinical Director, 4K Dentistry",akofoworola@4kdentistry.com
+703,"Brad Billings",brad-billings,https://thespeakersphere.com/speakers/brad-billings,"Practice Management","Co-Founder, Salt Flats Dentistry",bbillings@saltflatsdentistry.com
+704,"Burhan Syed",burhan-syed,https://thespeakersphere.com/speakers/burhan-syed,"General Dentistry","Chief Executive Officer and President, Rondah AI",bsyed@rondahai.com
+705,"Cami Luljak",cami-luljak,https://thespeakersphere.com/speakers/cami-luljak,"Practice Management","Senior Director, Operations, Imagen Dental Partners",cluljak@imagendental.com
+706,"Catrise Austin",catrise-austin,https://thespeakersphere.com/speakers/catrise-austin,"General Dentistry","Dental Professional",catrise.austin@example.com
+707,"Chick Hoff",chick-hoff,https://thespeakersphere.com/speakers/chick-hoff,"Practice Management","Vice President and Chief Financial Officer, My Orthodontist",choff@myorthodontist.com
+708,"Christopher Brendemuhl",christopher-brendemuhl,https://thespeakersphere.com/speakers/christopher-brendemuhl,"General Dentistry","DMD, Department Chair",christopher.brendemuhl@valleywisehealth.org
+709,"Colleen McFarlin",colleen-mcfarlin,https://thespeakersphere.com/speakers/colleen-mcfarlin,"Practice Management","Vice President, Specialty Division, Dental Care Alliance",cmcfarlin@dentalcarealliance.com
+710,"Cyrus Lee",cyrus-lee,https://thespeakersphere.com/speakers/cyrus-lee,"General Dentistry","DMD, Executive Dental Director",cyrus.lee@kp.org
+711,"Daniel Richards",daniel-richards,https://thespeakersphere.com/speakers/daniel-richards,"Practice Management","Chief Executive Officer, CFO Dental Partners",drichards@cfodentalpartners.com
+712,"David Sopp",david-sopp,https://thespeakersphere.com/speakers/david-sopp,"Practice Management","Chief Development Officer, Specialty Smile Partners",dsopp@specialtysmilepartners.com
+713,"Dean Tassone",dean-tassone,https://thespeakersphere.com/speakers/dean-tassone,"General Dentistry","Vice President, Payor Strategy, Dental Care Alliance",dtassone@example.com
+714,"Dr. Alan S. Law",dr-alan-s-law,https://thespeakersphere.com/speakers/dr-alan-s-law,"Endodontics","Chief Clinical Officer, Specialty Practices, Park Dental Partners",alaw@parkdentalpartners.com
+715,"Dr. Anna Singh",dr-anna-singh,https://thespeakersphere.com/speakers/dr-anna-singh,"General Dentistry","Senior Vice President, Clinical Operations, Heartland Dental",asingh@heartland.com
+716,"Dr. Brent Barta",dr-brent-barta,https://thespeakersphere.com/speakers/dr-brent-barta,"Practice Management","Owner & CEO, West 10th Dental Group",info@beckersdental.com
+717,"Dr. Bryan Basom",dr-bryan-basom,https://thespeakersphere.com/speakers/dr-bryan-basom,"General Dentistry","Founder, Magnolia Dental",bbasom@magnoliadental.com
+718,"Dr. Emily Letran",dr-emily-letran,https://thespeakersphere.com/speakers/dr-emily-letran,"Pediatric Dentistry","Chief Executive Officer, Atlantic Children and Family Dental Group; Chief Executive Officer, Sea Breeze Dental",eletran@atlanticchildren.com
+719,"Dr. Geith Kallas",dr-geith-kallas,https://thespeakersphere.com/speakers/dr-geith-kallas,"General Dentistry","Founder, Smile Makers Dental Center",gkallas@smilemakersdental.com
+720,"Dr. Hisham Barakat",dr-hisham-barakat,https://thespeakersphere.com/speakers/dr-hisham-barakat,"General Dentistry","Chief Clinical Officer, Guardian Dentistry Partners",hbarakat@guardiandentalpartners.com
+721,"Dr. Jason Genta",dr-jason-genta,https://thespeakersphere.com/speakers/dr-jason-genta,"General Dentistry","DDS, MBA, Vice President Clinical Affairs",jgenta@smilebrands.com
+722,"Dr. Loren Israelsen",dr-loren-israelsen,https://thespeakersphere.com/speakers/dr-loren-israelsen,"General Dentistry","DDS, Founder and CEO",lisraelsen@positiveimpactdental.com
+723,"Dr. Louis Kaufman",dr-louis-kaufman,https://thespeakersphere.com/speakers/dr-louis-kaufman,"General Dentistry","Managing Member, Smile Design Studio of Hyde Park LLC",lkaufman@smiledesignstudio.com
+724,"Dr. Maria Kunstadter",dr-maria-kunstadter,https://thespeakersphere.com/speakers/dr-maria-kunstadter,"General Dentistry","Co-Founder and Chief Executive Officer, The TeleDentists",mkunstadter@teledentists.com
+725,"Dr. Mike Panahi",dr-mike-panahi,https://thespeakersphere.com/speakers/dr-mike-panahi,"General Dentistry","Chief Operating Officer, Haworth Capital Dental Partners",mpanahi@haworthcapital.com
+726,"Dr. Nimesh Patel",dr-nimesh-patel,https://thespeakersphere.com/speakers/dr-nimesh-patel,"General Dentistry","Chief Operating Officer, Brite Dental Partners",npatel@britedentalpartners.com
+727,"Dr. Tammeka Nickleberry",dr-tammeka-nickleberry,https://thespeakersphere.com/speakers/dr-tammeka-nickleberry,"Cosmetic Dentistry","Chief Executive Officer, TLN Family & Cosmetic Dentistry",tnickleberry@tlnfamilydentistry.com
+728,"Dr. Yahya Mansour",dr-yahya-mansour,https://thespeakersphere.com/speakers/dr-yahya-mansour,"Orthodontics","Co-Founder and Chief Dental Officer, Rodeo Dental & Orthodontics",ymansour@rodeodental.com
+729,"Emily Letran, DDS, MS",emily-letran-dds-ms,https://thespeakersphere.com/speakers/emily-letran-dds-ms,"Practice Management","Doctor of Dental Surgery, Master of Science",emily.letran@example.com
+730,"Emily Vanney",emily-vanney,https://thespeakersphere.com/speakers/emily-vanney,"General Dentistry","Chief Operating and Clinical Officer",contact@emily-vanney.com
+731,"Eric Tobler",eric-tobler,https://thespeakersphere.com/speakers/eric-tobler,"Digital Dentistry","Dental Technology Expert",contact@eric-tobler.com
+732,"Greig Davis",greig-davis,https://thespeakersphere.com/speakers/greig-davis,"General Dentistry","CPA CVA MST, Managing Partner",greig.davis@qxequities.com
+733,"Haim Haviv",haim-haviv,https://thespeakersphere.com/speakers/haim-haviv,"Practice Management","Founder and Chief Executive Officer",haim.haviv@hudsondental.com
+734,"Heather Foster",heather-foster,https://thespeakersphere.com/speakers/heather-foster,"General Dentistry","Chief Executive Officer",hfoster@heritagedental.com
+735,"Hoss Said",hoss-said,https://thespeakersphere.com/speakers/hoss-said,"Pediatric Dentistry","MBA, Vice President",hoss.said@cpdg.com
+736,"Jaime Burks",jaime-burks,https://thespeakersphere.com/speakers/jaime-burks,"Practice Management","Senior Director, Operations, Providence Dental Partners",jburks@providencedentalpartners.com
+737,"Jason Korkus",jason-korkus,https://thespeakersphere.com/speakers/jason-korkus,"Practice Management","DDS, President, Sonrisa Family Dental, Community Dental Centers of America",jkorkus@example.com
+738,"Jeffrey Tomcsik",jeffrey-tomcsik,https://thespeakersphere.com/speakers/jeffrey-tomcsik,"Practice Management","Chief Executive Officer, Grand Dental Group",jtomcsik@granddentalgroup.com
+739,"Joe Feldsien",joe-feldsien,https://thespeakersphere.com/speakers/joe-feldsien,"General Dentistry","President, Medical, PDS Health",jfeldsien@pdshealth.com
+740,"Joseph Kolligian",joseph-kolligian,https://thespeakersphere.com/speakers/joseph-kolligian,"General Dentistry","Dental Professional",contact@joseph-kolligian.com
+741,"Joshua Edward Everts",joshua-edward-everts,https://thespeakersphere.com/speakers/joshua-edward-everts,"Oral Surgery","DDS, MD, FACS, Chief Clinical Officer, OMS360; Owner and Surgeon, Community Oral Facial Surgery",jeverts@example.com
+742,"Justin Lai",justin-lai,https://thespeakersphere.com/speakers/justin-lai,"Digital Dentistry","Dental Technology Expert",contact@justin-lai.com
+743,"Kalpesh Patel",kalpesh-patel,https://thespeakersphere.com/speakers/kalpesh-patel,"General Dentistry","Dental Professional",kalpesh.patel@example.com
+744,"Mark Lakis",mark-lakis,https://thespeakersphere.com/speakers/mark-lakis,"General Dentistry","Chief Executive Officer",mark.lakis@todaysdental.com
+745,"Marlon Brown",marlon-brown,https://thespeakersphere.com/speakers/marlon-brown,"General Dentistry","Dental Professional",marlon.brown@example.com
+746,"Matthew Simko",matthew-simko,https://thespeakersphere.com/speakers/matthew-simko,"General Dentistry","Director, Brand Marketing",contact@matthew-simko.com
+747,"Michael Acierno",michael-acierno,https://thespeakersphere.com/speakers/michael-acierno,"Practice Management","President and Chief Medical Officer, DecisionOne Dental Partners",macierno@decisiononedentalpartners.com
+748,"Nick N. Khalili",nick-n-khalili,https://thespeakersphere.com/speakers/nick-n-khalili,"General Dentistry","MST, MBA, CM&AA, Chief Financial Officer",nick.khalili@cornerstonegroup.com
+749,"Peter Swenson",peter-swenson,https://thespeakersphere.com/speakers/peter-swenson,"General Dentistry","Chief Executive Officer",contact@peter-swenson.com
+750,"Rose House",rose-house,https://thespeakersphere.com/speakers/rose-house,"Practice Management","Regional Director, Operations, Illinois, P1 Dental Partners",rhouse@p1dentalpartners.com
+751,"Sara Mahmood",sara-mahmood,https://thespeakersphere.com/speakers/sara-mahmood,"General Dentistry","DDS, MS, MAGD, Chief Executive Officer and President",sara.mahmood@brush365.com
+752,"Sarah Cottingham",sarah-cottingham,https://thespeakersphere.com/speakers/sarah-cottingham,"Dental Hygiene","Chief Operating Officer, Dental Design Studios",scottingham@dentaldesignstudios.com
+753,"Sarah Cottingham, RDH",sarah-cottingham-rdh,https://thespeakersphere.com/speakers/sarah-cottingham-rdh,"Dental Hygiene","Registered Dental Hygienist",sarah.cottingham@example.com
+754,"Sodabeh Etminan",sodabeh-etminan,https://thespeakersphere.com/speakers/sodabeh-etminan,"General Dentistry","DMD, MPH, Senior Director",sodabeh.etminan@uic.edu
+755,"Stacia Edmond",stacia-edmond,https://thespeakersphere.com/speakers/stacia-edmond,"Practice Management","Dental Professional",contact@stacia-edmond.com
+756,"Sundeep Rawal",sundeep-rawal,https://thespeakersphere.com/speakers/sundeep-rawal,"Oral Surgery","SVP, Implant Support Services",sundeep.rawal@aspendental.com
+757,"Troy Aikman",troy-aikman,https://thespeakersphere.com/speakers/troy-aikman,"General Dentistry","Pro Football Hall of Fame Quarterback, Emmy-nominated Broadcaster, and Voice of ESPN's Monday Night Football",contact@troy-aikman.com
+758,"Wayne Silverman",wayne-silverman,https://thespeakersphere.com/speakers/wayne-silverman,"General Dentistry","DDS, Chief Dental Officer, Collective Care Dental",wsilverman@example.com
+759,"Dr. Allison Rascon",dr-allison-rascon,https://thespeakersphere.com/speakers/dr-allison-rascon,"Digital Dentistry","DDS",allie@efficientdental.com
+760,"Jessica Russell",jessica-russell,https://thespeakersphere.com/speakers/jessica-russell,"General Dentistry","Product Specialist",jrussell@straumann.com
+761,"Marisa Notturno, CDT",marisa-notturno-cdt,https://thespeakersphere.com/speakers/marisa-notturno-cdt,"Digital Dentistry","RDH, MS",marissa@teamworkflows.com
+762,"Ed Khalameizer",ed-khalameizer,https://thespeakersphere.com/speakers/ed-khalameizer,"Digital Dentistry","Digital Services Specialist",ekhalameizer@straumann.com
+763,"Julie Brossoit",julie-brossoit,https://thespeakersphere.com/speakers/julie-brossoit,"Digital Dentistry","Digital Services Specialist",jbrossoit@straumann.com
+764,"Michael Wagner",michael-wagner,https://thespeakersphere.com/speakers/michael-wagner,"General Dentistry","Technical Specialist",mwagner@straumann.com
+765,"Raffi Aghvinian",raffi-aghvinian,https://thespeakersphere.com/speakers/raffi-aghvinian,"Digital Dentistry","CDT, Digital Innovation Leader",raffi@naturalike.com
+766,"Robyn Gannaway",robyn-gannaway,https://thespeakersphere.com/speakers/robyn-gannaway,"Practice Management","Sales Consultant",rgannaway@straumann.com
+767,"Dr. E. Armand Bedrossian",dr-e-armand-bedrossian,https://thespeakersphere.com/speakers/dr-e-armand-bedrossian,"Oral Surgery","Oral and Maxillofacial Surgeon",contact@example.com
