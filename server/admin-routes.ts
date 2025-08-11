@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { storage } from "./storage";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
 import { ComprehensiveSpeakerImporter } from "./comprehensive-speaker-import";
+import { GNYAPSpeakerImporter } from "./gnyap-speaker-import";
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -136,6 +137,34 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ 
         success: false,
         message: "Comprehensive bulk import failed", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
+  // GNYAP speakers import from event 6
+  app.post("/api/admin/speakers/gnyap-import", async (req, res) => {
+    try {
+      console.log("🚀 Starting GNYAP speaker import from event 6...");
+      const importer = new GNYAPSpeakerImporter();
+      const results = await importer.importAllSpeakers();
+
+      res.json({
+        success: true,
+        message: `GNYAP import completed: ${results.success} speakers imported successfully`,
+        results: {
+          successCount: results.success,
+          errorCount: results.errors.length,
+          errors: results.errors
+        }
+      });
+
+      console.log(`✅ GNYAP import completed: ${results.success} speakers imported, ${results.errors.length} errors`);
+    } catch (error) {
+      console.error("❌ GNYAP import failed:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "GNYAP import failed", 
         error: error instanceof Error ? error.message : String(error) 
       });
     }
