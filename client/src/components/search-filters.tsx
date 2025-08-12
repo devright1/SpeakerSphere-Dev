@@ -17,7 +17,7 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState("");
   const [minRating, setMinRating] = useState("");
-  const [location, setLocation] = useState("");
+
   const [showFeeRange, setShowFeeRange] = useState(false);
 
   // Check if fee range should be shown based on admin settings
@@ -75,12 +75,6 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
       filters.minRating = parseFloat(minRating);
     }
     
-    if (location) {
-      filters.location = location;
-    }
-    
-
-
     onFilterChange(filters);
   };
 
@@ -88,7 +82,6 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
     setSelectedCategories([]);
     setPriceRange("");
     setMinRating("");
-    setLocation("");
     onFilterChange({});
   };
 
@@ -202,19 +195,6 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
               </Label>
             </div>
           </RadioGroup>
-        </div>
-
-        <Separator />
-
-        {/* Location */}
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-3">Location</h4>
-          <Input 
-            type="text" 
-            placeholder="City, State or Region" 
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
         </div>
 
         <Button onClick={applyFilters} className="w-full bg-primary hover:bg-blue-700">

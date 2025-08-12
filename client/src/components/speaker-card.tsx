@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Star, MapPin, CheckCircle, Heart, UserPlus, LogIn } from "lucide-react";
+import { Star, CheckCircle, Heart, UserPlus, LogIn } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -197,12 +197,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               </div>
             </div>
 
-            <div className="mb-4">
-              <div className="text-sm text-gray-500 flex items-center">
-                <MapPin className="w-4 h-4 mr-1" />
-                {speaker.location}
-              </div>
-            </div>
+
           </div>
 
           {/* Button area - always visible at bottom */}

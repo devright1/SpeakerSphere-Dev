@@ -35,9 +35,7 @@ export default function Speakers() {
     if (urlParams.get('category')) {
       initialFilters.category = urlParams.get('category')!;
     }
-    if (urlParams.get('location')) {
-      initialFilters.location = urlParams.get('location')!;
-    }
+
     if (urlParams.get('search')) {
       initialFilters.search = urlParams.get('search')!;
     }

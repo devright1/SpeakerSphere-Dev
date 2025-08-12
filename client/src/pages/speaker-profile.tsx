@@ -24,7 +24,6 @@ import SpeakerVideoPortfolio from "@/components/speaker-video-portfolio";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Star, 
-  MapPin, 
   Globe, 
   Phone, 
   Mail, 
@@ -395,10 +394,7 @@ export default function SpeakerProfile() {
                         </div>
                       )}
                       
-                      <div className="flex items-center text-gray-600">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        {speaker.location}
-                      </div>
+
                     </div>
 
                     {!speaker.hideRatings && (

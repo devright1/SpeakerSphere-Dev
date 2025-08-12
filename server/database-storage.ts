@@ -68,9 +68,7 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(speakers.category, filters.category));
     }
 
-    if (filters?.location) {
-      conditions.push(like(speakers.location, `%${filters.location}%`));
-    }
+
 
     if (filters?.minRating) {
       conditions.push(gte(speakers.overallRating, filters.minRating.toString()));
