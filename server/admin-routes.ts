@@ -582,4 +582,136 @@ export function registerAdminRoutes(app: Express) {
       });
     }
   });
+
+  // Bulk toggle contact visibility for multiple speakers
+  app.post("/api/admin/speakers/bulk-toggle-contact", async (req, res) => {
+    try {
+      const { speakerIds, hideContact } = req.body;
+      
+      if (!Array.isArray(speakerIds) || speakerIds.length === 0) {
+        return res.status(400).json({ message: "Speaker IDs are required" });
+      }
+
+      const results = [];
+      for (const speakerId of speakerIds) {
+        try {
+          const [speaker] = await db
+            .update(speakers)
+            .set({ hideContact })
+            .where(eq(speakers.id, speakerId))
+            .returning();
+          
+          results.push({ speakerId, success: true, speaker });
+        } catch (error) {
+          results.push({ speakerId, success: false, error: error instanceof Error ? error.message : String(error) });
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Bulk contact visibility operation completed`,
+        results 
+      });
+      
+      console.log(`🔄 Bulk contact visibility operation completed for ${speakerIds.length} speakers (hideContact: ${hideContact})`);
+    } catch (error) {
+      console.error("Failed to bulk toggle contact visibility:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Bulk toggle ratings visibility for multiple speakers
+  app.post("/api/admin/speakers/bulk-toggle-ratings", async (req, res) => {
+    try {
+      const { speakerIds, hideRatings } = req.body;
+      
+      if (!Array.isArray(speakerIds) || speakerIds.length === 0) {
+        return res.status(400).json({ message: "Speaker IDs are required" });
+      }
+
+      const results = [];
+      for (const speakerId of speakerIds) {
+        try {
+          const [speaker] = await db
+            .update(speakers)
+            .set({ hideRatings })
+            .where(eq(speakers.id, speakerId))
+            .returning();
+          
+          results.push({ speakerId, success: true, speaker });
+        } catch (error) {
+          results.push({ speakerId, success: false, error: error instanceof Error ? error.message : String(error) });
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Bulk ratings visibility operation completed`,
+        results 
+      });
+      
+      console.log(`🔄 Bulk ratings visibility operation completed for ${speakerIds.length} speakers (hideRatings: ${hideRatings})`);
+    } catch (error) {
+      console.error("Failed to bulk toggle ratings visibility:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Toggle contact visibility for individual speaker
+  app.patch("/api/admin/speakers/:id/toggle-contact", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      const { hideContact } = req.body;
+
+      const [speaker] = await db
+        .update(speakers)
+        .set({ hideContact })
+        .where(eq(speakers.id, speakerId))
+        .returning();
+
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Contact visibility ${hideContact ? 'hidden' : 'shown'} for speaker`,
+        speaker 
+      });
+      
+      console.log(`🔄 Contact visibility ${hideContact ? 'hidden' : 'shown'} for speaker: ${speaker.name}`);
+    } catch (error) {
+      console.error("Failed to toggle contact visibility:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Toggle ratings visibility for individual speaker
+  app.patch("/api/admin/speakers/:id/toggle-ratings", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      const { hideRatings } = req.body;
+
+      const [speaker] = await db
+        .update(speakers)
+        .set({ hideRatings })
+        .where(eq(speakers.id, speakerId))
+        .returning();
+
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Ratings visibility ${hideRatings ? 'hidden' : 'shown'} for speaker`,
+        speaker 
+      });
+      
+      console.log(`🔄 Ratings visibility ${hideRatings ? 'hidden' : 'shown'} for speaker: ${speaker.name}`);
+    } catch (error) {
+      console.error("Failed to toggle ratings visibility:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 }

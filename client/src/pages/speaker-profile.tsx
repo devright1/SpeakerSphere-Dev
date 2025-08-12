@@ -537,6 +537,7 @@ export default function SpeakerProfile() {
                 <SpeakerVideoPortfolio speakerId={speaker.id} />
 
                 {/* Recent Reviews */}
+                {!speaker.hideRatings && (
                 <Card className="mt-6">
                   <CardHeader>
                     <CardTitle>Recent Reviews</CardTitle>
@@ -615,6 +616,7 @@ export default function SpeakerProfile() {
                     )}
                   </CardContent>
                 </Card>
+                )}
               </TabsContent>
 
               <TabsContent value="experience">

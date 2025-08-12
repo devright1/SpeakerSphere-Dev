@@ -567,6 +567,116 @@ export default function AdminDashboard() {
     toggleSpeakerVisibilityMutation.mutate(speakerId);
   };
 
+  // Toggle contact visibility mutations
+  const toggleContactVisibilityMutation = useMutation({
+    mutationFn: async ({ speakerId, hideContact }: { speakerId: number; hideContact: boolean }) => {
+      const response = await fetch(`/api/admin/speakers/${speakerId}/toggle-contact`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hideContact }),
+      });
+      if (!response.ok) throw new Error('Failed to toggle contact visibility');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: data.message,
+        description: `Contact information is now ${data.speaker.hideContact ? 'hidden' : 'visible'}`,
+        variant: data.speaker.hideContact ? "default" : "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update contact visibility", variant: "destructive" });
+    },
+  });
+
+  // Toggle ratings visibility mutations
+  const toggleRatingsVisibilityMutation = useMutation({
+    mutationFn: async ({ speakerId, hideRatings }: { speakerId: number; hideRatings: boolean }) => {
+      const response = await fetch(`/api/admin/speakers/${speakerId}/toggle-ratings`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hideRatings }),
+      });
+      if (!response.ok) throw new Error('Failed to toggle ratings visibility');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: data.message,
+        description: `Ratings are now ${data.speaker.hideRatings ? 'hidden' : 'visible'}`,
+        variant: data.speaker.hideRatings ? "default" : "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update ratings visibility", variant: "destructive" });
+    },
+  });
+
+  // Bulk toggle contact visibility
+  const bulkToggleContactMutation = useMutation({
+    mutationFn: async ({ speakerIds, hideContact }: { speakerIds: number[]; hideContact: boolean }) => {
+      const response = await fetch('/api/admin/speakers/bulk-toggle-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ speakerIds, hideContact }),
+      });
+      if (!response.ok) throw new Error('Failed to bulk toggle contact visibility');
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Bulk Contact Update Complete",
+        description: `Contact information ${variables.hideContact ? 'hidden' : 'shown'} for ${variables.speakerIds.length} speakers`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to bulk update contact visibility", variant: "destructive" });
+    },
+  });
+
+  // Bulk toggle ratings visibility
+  const bulkToggleRatingsMutation = useMutation({
+    mutationFn: async ({ speakerIds, hideRatings }: { speakerIds: number[]; hideRatings: boolean }) => {
+      const response = await fetch('/api/admin/speakers/bulk-toggle-ratings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ speakerIds, hideRatings }),
+      });
+      if (!response.ok) throw new Error('Failed to bulk toggle ratings visibility');
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Bulk Ratings Update Complete",
+        description: `Ratings ${variables.hideRatings ? 'hidden' : 'shown'} for ${variables.speakerIds.length} speakers`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to bulk update ratings visibility", variant: "destructive" });
+    },
+  });
+
+  const handleToggleContactVisibility = (speakerId: number, currentHideContact: boolean) => {
+    toggleContactVisibilityMutation.mutate({ speakerId, hideContact: !currentHideContact });
+  };
+
+  const handleToggleRatingsVisibility = (speakerId: number, currentHideRatings: boolean) => {
+    toggleRatingsVisibilityMutation.mutate({ speakerId, hideRatings: !currentHideRatings });
+  };
+
   // Handle application action for the separate speaker management section
   const handleApplicationAction = (applicationId: number, status: string) => {
     updateApplicationMutation.mutate({ applicationId, status });
@@ -792,6 +902,59 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Bulk Actions */}
+                    <div className="flex items-center space-x-2 mb-4 p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">Bulk Actions for All Speakers:</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const allSpeakerIds = filteredSpeakers.map((s: any) => s.id);
+                          bulkToggleContactMutation.mutate({ speakerIds: allSpeakerIds, hideContact: true });
+                        }}
+                        disabled={bulkToggleContactMutation.isPending}
+                      >
+                        <Phone className="h-4 w-4 mr-1" />
+                        Hide All Contact Info
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const allSpeakerIds = filteredSpeakers.map((s: any) => s.id);
+                          bulkToggleContactMutation.mutate({ speakerIds: allSpeakerIds, hideContact: false });
+                        }}
+                        disabled={bulkToggleContactMutation.isPending}
+                      >
+                        <Phone className="h-4 w-4 mr-1" />
+                        Show All Contact Info
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const allSpeakerIds = filteredSpeakers.map((s: any) => s.id);
+                          bulkToggleRatingsMutation.mutate({ speakerIds: allSpeakerIds, hideRatings: true });
+                        }}
+                        disabled={bulkToggleRatingsMutation.isPending}
+                      >
+                        <Star className="h-4 w-4 mr-1" />
+                        Hide All Ratings
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const allSpeakerIds = filteredSpeakers.map((s: any) => s.id);
+                          bulkToggleRatingsMutation.mutate({ speakerIds: allSpeakerIds, hideRatings: false });
+                        }}
+                        disabled={bulkToggleRatingsMutation.isPending}
+                      >
+                        <Star className="h-4 w-4 mr-1" />
+                        Show All Ratings
+                      </Button>
+                    </div>
                     
                     <div className="grid gap-4">
                       {filteredSpeakers.length > 0 ? (
@@ -840,10 +1003,7 @@ export default function AdminDashboard() {
                                       : 'hover:bg-yellow-50 hover:border-yellow-200'
                                   }`}
                                   title="Hide ratings and reviews"
-                                  onClick={() => updateSpeakerMutation.mutate({
-                                    ...speaker,
-                                    hideRatings: !speaker.hideRatings
-                                  })}
+                                  onClick={() => handleToggleRatingsVisibility(speaker.id, speaker.hideRatings)}
                                 >
                                   <Star className="h-4 w-4 text-yellow-600" />
                                 </button>
@@ -878,10 +1038,7 @@ export default function AdminDashboard() {
                                       : 'hover:bg-purple-50 hover:border-purple-200'
                                   }`}
                                   title="Hide contact information"
-                                  onClick={() => updateSpeakerMutation.mutate({
-                                    ...speaker,
-                                    hideContact: !speaker.hideContact
-                                  })}
+                                  onClick={() => handleToggleContactVisibility(speaker.id, speaker.hideContact)}
                                 >
                                   <Phone className="h-4 w-4 text-purple-600" />
                                 </button>
