@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import Header from "@/components/header";
@@ -8,7 +8,8 @@ import SpeakerSearch from "@/components/speaker-search";
 import SpeakerCard from "@/components/speaker-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, ChevronDown } from "lucide-react";
 import type { Speaker } from "@shared/schema";
 
 interface FilterState {
@@ -22,10 +23,13 @@ interface FilterState {
   search?: string;
 }
 
+const SPEAKERS_PER_PAGE = 20;
+
 export default function Speakers() {
   const [location] = useLocation();
   const [filters, setFilters] = useState<FilterState>({});
   const [sortBy, setSortBy] = useState("relevance");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Parse URL parameters on component mount
   useEffect(() => {
@@ -85,20 +89,34 @@ export default function Speakers() {
     setFilters({ ...filters, search: searchTerm });
   };
 
-  const sortedSpeakers = speakers ? [...speakers].sort((a, b) => {
-    switch (sortBy) {
-      case "rating":
-        return parseFloat(b.rating || "0") - parseFloat(a.rating || "0");
-      case "reviews":
-        return b.reviewCount - a.reviewCount;
-      case "price-low":
-        return parseFloat(a.fee) - parseFloat(b.fee);
-      case "price-high":
-        return parseFloat(b.fee) - parseFloat(a.fee);
-      default:
-        return 0;
-    }
-  }) : [];
+  const sortedSpeakers = useMemo(() => {
+    if (!speakers) return [];
+    return [...speakers].sort((a, b) => {
+      switch (sortBy) {
+        case "rating":
+          return parseFloat(b.rating || "0") - parseFloat(a.rating || "0");
+        case "reviews":
+          return b.reviewCount - a.reviewCount;
+        case "price-low":
+          return parseFloat(a.fee) - parseFloat(b.fee);
+        case "price-high":
+          return parseFloat(b.fee) - parseFloat(a.fee);
+        default:
+          return 0;
+      }
+    });
+  }, [speakers, sortBy]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil((sortedSpeakers?.length || 0) / SPEAKERS_PER_PAGE);
+  const startIndex = (currentPage - 1) * SPEAKERS_PER_PAGE;
+  const endIndex = startIndex + SPEAKERS_PER_PAGE;
+  const paginatedSpeakers = sortedSpeakers.slice(startIndex, endIndex);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, sortBy]);
 
   return (
     <div className="min-h-screen bg-neutral">
@@ -134,6 +152,11 @@ export default function Speakers() {
                   {filters.category && (
                     <p className="text-lg text-gray-600 mt-1">
                       Category: <span className="font-medium text-primary">{filters.category}</span>
+                    </p>
+                  )}
+                  {!isLoading && speakers && speakers.length > SPEAKERS_PER_PAGE && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Showing {startIndex + 1}-{Math.min(endIndex, speakers.length)} of {speakers.length}
                     </p>
                   )}
                 </div>
@@ -176,11 +199,60 @@ export default function Speakers() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {sortedSpeakers.map((speaker) => (
-                    <SpeakerCard key={speaker.id} speaker={speaker} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {paginatedSpeakers.map((speaker) => (
+                      <SpeakerCard key={speaker.id} speaker={speaker} />
+                    ))}
+                  </div>
+                  
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center space-x-2 mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </Button>
+                      
+                      <div className="flex space-x-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+                          
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className="w-10 h-10"
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
 
               {speakers && speakers.length === 0 && !isLoading && (

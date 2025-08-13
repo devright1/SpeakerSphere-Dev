@@ -27,11 +27,11 @@ export default function FeaturedSpeakers() {
     },
   });
 
-  // Shuffle and limit speakers to 16 each time the component mounts
+  // Shuffle and limit speakers to 24 each time the component mounts (increased from 16 for larger database)
   const shuffledSpeakers = useMemo(() => {
     if (!speakers || speakers.length === 0) return [];
     const shuffled = shuffleArray(speakers);
-    return shuffled.slice(0, 16);
+    return shuffled.slice(0, 24);
   }, [speakers]);
 
   return (
@@ -53,7 +53,7 @@ export default function FeaturedSpeakers() {
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {[...Array(16)].map((_, i) => (
+            {[...Array(24)].map((_, i) => (
               <div key={i} className="bg-white rounded-2xl shadow-lg p-6">
                 <Skeleton className="w-full h-48 mb-6" />
                 <div className="space-y-3">
