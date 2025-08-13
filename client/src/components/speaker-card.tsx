@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Star, CheckCircle, Heart, UserPlus, LogIn } from "lucide-react";
+import { FaInstagram, FaLinkedin, FaFacebook, FaTwitter } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -195,6 +197,116 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
                   </Badge>
                 )}
               </div>
+              
+              {/* Social Media Icons */}
+              {!speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
+                <div className="flex items-center gap-2 mt-2">
+                  {speaker.instagramHandle && (
+                    <a 
+                      href={`https://instagram.com/${speaker.instagramHandle}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-500 hover:text-pink-600 transition-colors"
+                      title={`Follow ${speaker.name} on Instagram`}
+                    >
+                      <FaInstagram className="w-4 h-4" />
+                    </a>
+                  )}
+                  {speaker.linkedinHandle && (
+                    <a 
+                      href={speaker.linkedinHandle.includes('linkedin.com') ? speaker.linkedinHandle : `https://linkedin.com/in/${speaker.linkedinHandle}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-500 hover:text-blue-600 transition-colors"
+                      title={`Connect with ${speaker.name} on LinkedIn`}
+                    >
+                      <FaLinkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                  {speaker.facebookHandle && (
+                    <a 
+                      href={speaker.facebookHandle.includes('facebook.com') ? speaker.facebookHandle : `https://facebook.com/${speaker.facebookHandle}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-500 hover:text-blue-700 transition-colors"
+                      title={`Follow ${speaker.name} on Facebook`}
+                    >
+                      <FaFacebook className="w-4 h-4" />
+                    </a>
+                  )}
+                  {speaker.xHandle && (
+                    <a 
+                      href={speaker.xHandle.includes('x.com') || speaker.xHandle.includes('twitter.com') ? speaker.xHandle : `https://x.com/${speaker.xHandle}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-500 hover:text-gray-900 transition-colors"
+                      title={`Follow ${speaker.name} on X`}
+                    >
+                      <FaXTwitter className="w-4 h-4" />
+                    </a>
+                  )}
+                  {/* Fallback for speakers with socialMedia array but no specific handles */}
+                  {!speaker.instagramHandle && !speaker.linkedinHandle && !speaker.facebookHandle && !speaker.xHandle && speaker.socialMedia && speaker.socialMedia.map((link, index) => {
+                    if (link.includes('instagram.com')) {
+                      return (
+                        <a 
+                          key={index}
+                          href={link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-500 hover:text-pink-600 transition-colors"
+                          title={`Follow ${speaker.name} on Instagram`}
+                        >
+                          <FaInstagram className="w-4 h-4" />
+                        </a>
+                      );
+                    }
+                    if (link.includes('linkedin.com')) {
+                      return (
+                        <a 
+                          key={index}
+                          href={link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-500 hover:text-blue-600 transition-colors"
+                          title={`Connect with ${speaker.name} on LinkedIn`}
+                        >
+                          <FaLinkedin className="w-4 h-4" />
+                        </a>
+                      );
+                    }
+                    if (link.includes('facebook.com')) {
+                      return (
+                        <a 
+                          key={index}
+                          href={link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-500 hover:text-blue-700 transition-colors"
+                          title={`Follow ${speaker.name} on Facebook`}
+                        >
+                          <FaFacebook className="w-4 h-4" />
+                        </a>
+                      );
+                    }
+                    if (link.includes('x.com') || link.includes('twitter.com')) {
+                      return (
+                        <a 
+                          key={index}
+                          href={link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-gray-500 hover:text-gray-900 transition-colors"
+                          title={`Follow ${speaker.name} on X`}
+                        >
+                          <FaXTwitter className="w-4 h-4" />
+                        </a>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              )}
             </div>
 
 
