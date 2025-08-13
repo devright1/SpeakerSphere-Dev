@@ -1,0 +1,174 @@
+id,name,title,email,phone,website,location,category,speaker_type,verified,featured
+698,A.J. Peak,"Chief Executive Officer, Peak Dental Services",apeak@peakdentalservices.com,+1-555-577-3615,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+699,Adrian McCovy,Dental Professional,contact@adrian-mccovy.com,+1-555-712-4120,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+186,Allen Robinson,Robotics Technology Expert,info@speakersphere.com,,,United States,Digital Dentistry,keynote,TRUE,FALSE
+667,"Arian B. Deutsch, CDT",Certified Dental Technician,adeutsch@example.com,+1-555-735-2616,"","New Orleans, Louisiana",General Dentistry,clinical,FALSE,FALSE
+196,"Arthur W. Curley, JD",Healthcare Legal Expert,info@speakersphere.com,,,United States,Practice Management,keynote,TRUE,FALSE
+668,"Avinash Bidra, BDS, MS, FACP",Professor and Chair,abidra@example.com,+1-555-708-6341,"","New Orleans, Louisiana",Prosthodontics,clinical,FALSE,FALSE
+703,Brad Billings,"Co-Founder, Salt Flats Dentistry",bbillings@saltflatsdentistry.com,+1-555-366-6508,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+482,Brandon Dickerman,Lab Equipment,contact@speaker.com,,,"Mansfield, Texas",Digital Dentistry,technical,TRUE,FALSE
+433,CPT Andrew Egger,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+431,CPT Denise Cacho,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+430,CPT Justin Galliani,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+437,Capt Jess Cayetano,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+438,Capt Luke Seiler,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+439,Capt Victoria Wei,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+670,"Charles Goodacre, DDS, MSD, FACP",Distinguished Professor,cgoodacre@example.com,+1-555-714-5289,"","New Orleans, Louisiana",Prosthodontics,clinical,FALSE,FALSE
+707,Chick Hoff,"Vice President and Chief Financial Officer, My Orthodontist",choff@myorthodontist.com,+1-555-462-4234,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+711,Daniel Richards,"Chief Executive Officer,",drichards@cfodentalpartners.com,+1-555-459-1159,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+671,"Darin Dichter, DMD",Private Practice,ddichter@example.com,+1-555-632-2328,"","New Orleans, Louisiana",Prosthodontics,clinical,FALSE,FALSE
+712,David Sopp,"Chief Development Officer, Specialty Smile Partners",dsopp@specialtysmilepartners.com,+1-555-886-5290,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+713,Dean Tassone,"Vice President, Payor Strategy, Dental Care Alliance",dtassone@example.com,+1-555-245-8192,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+672,"Douglas Benting, DDS, MS, FACP",ACP President,dbenting@example.com,+1-555-601-6112,"","New Orleans, Louisiana",Prosthodontics,clinical,FALSE,FALSE
+562,Dr. Adam Saltz,"DMD, MS, MPH",asaltz@example.edu,+1-555-933-9278,"","Toronto, Ontario, Canada",Periodontology,clinical,FALSE,TRUE
+472,Dr. Ahmad Kutkut,Tooth Condition Changes,contact@speaker.com,,,"Phoenix/Scottsdale, Arizona",Implant Dentistry,clinical,TRUE,FALSE
+714,Dr. Alan S. Law,"Chief Clinical Officer, Specialty Practices, Park Dental Partners",alaw@parkdentalpartners.com,+1-555-201-9746,"","Chicago, IL",Endodontics,clinical,FALSE,FALSE
+459,Dr. Aman S. Bhullar,Full-Time Implantology,contact@speaker.com,,,"Phoenix/Scottsdale, Arizona",Implant Dentistry,clinical,TRUE,FALSE
+563,Dr. Amanda Finger Stadler,"DDS, MSD, MS, PhD",afingerstadler@example.edu,+1-555-929-5369,"","Toronto, Ontario, Canada",Periodontology,clinical,FALSE,TRUE
+463,Dr. Andrea Ravida,Peri-implantitis Management,contact@speaker.com,,,"Phoenix/Scottsdale, Arizona",Implant Dentistry,clinical,TRUE,FALSE
+512,Dr. Andy Burton,Dental Specialist,andy.burton@dental.com,+1-555-444-2358,"","Phoenix/Scottsdale, Arizona",General Dentistry,clinical,FALSE,FALSE
+411,Dr. Angela A. Palaiologou-Gallis,Periodontology,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+419,Dr. Anton Sculean,Periodontal Regeneration,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+445,Dr. Arian B. Deutsch,Conical & Telescopic Prosthodontics,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+564,Dr. Arndt Guentsch,"DMD, PhD, MHBA, MS",aguentsch@example.edu,+1-555-772-3383,"","Toronto, Ontario, Canada",Periodontology,clinical,FALSE,FALSE
+454,Dr. Avinash Bidra,Implant Prosthodontics,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+513,Dr. Azadeh Amy Khajavi,"DDS, Biological Dentist",info@dramykhajavi.com,+1-555-535-3332,https://www.dramykhajavi.com/,"Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+487,Dr. Baldwin W. Marchack,Implant Restoration Management,contact@speaker.com,,,"Chicago, Illinois",Oral Surgery,clinical,TRUE,FALSE
+565,Dr. Beatriz Bezerra,"DDS, PhD",bbezerra@example.edu,+1-555-718-2851,"","Toronto, Ontario, Canada",Periodontology,clinical,FALSE,TRUE
+514,Dr. Ben Kellum,"DDS, Full Arch Specialist",info@wehrleimplantimmersion.com,+1-555-224-2790,https://wehrleimplantimmersion.com/,"Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+453,Dr. Benjamin Pliska,Sleep Medicine,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+669,Dr. Benjamin Pliska,Clinical Professor,bpliska@example.com,+1-555-382-2068,"","New Orleans, Louisiana",General Dentistry,clinical,FALSE,FALSE
+516,Dr. Bruce G. Freund,DDS,info@facialcosmetics.com,+1-555-269-6504,"","Phoenix/Scottsdale, Arizona",Cosmetic Dentistry,clinical,FALSE,FALSE
+717,Dr. Bryan Basom,"Founder, Magnolia Dental",bbasom@magnoliadental.com,+1-555-304-8834,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+570,Dr. Caitlin Darcey,"DMD, MS, MHPE",cdarcey@example.edu,+1-555-334-1080,"","Toronto, Ontario, Canada",Periodontology,clinical,FALSE,TRUE
+517,Dr. Cara Minichetti,DDS,cara@dentalimplantlearning.com,+1-555-300-1221,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+489,Dr. Carlos Aparicio,Zygomatic Implants,contact@speaker.com,,,"Chicago, Illinois",Oral Surgery,clinical,TRUE,FALSE
+444,Dr. Carlos Parra Carrasquer,Periodontology,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+413,Dr. Charles A. Powell,Periodontology,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+518,Dr. Christian Hart,"DDS, Full Arch Specialist",info@transcenddental.com,+1-555-486-4714,https://transcenddental.com/,"Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+519,Dr. Christopher Petrush,"DDS, FAAID, DABOI/ID",info@chicagomaxicourse.com,+1-555-314-8356,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+416,Dr. Christopher R. Richardson,Periodontal Regeneration,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+561,Dr. Craig Misch,"DDS, MDS",cmisch@example.edu,+1-555-847-2895,"","Toronto, Ontario, Canada",Oral Surgery,clinical,FALSE,TRUE
+522,Dr. David Resnick,"DDS, FAAID, DABOI/ID",info@timaxinstitute.com,+1-555-257-2969,https://timaxinstitute.com/,"Phoenix/Scottsdale, Arizona",General Dentistry,clinical,FALSE,FALSE
+80,Dr. David Wands,Leadership Expert,dwands@devrightspeakers.com,,,United States,Education,Healthcare Professional,TRUE,FALSE
+421,Dr. Devorah Schwartz-Arad,Periodontal Regeneration,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+428,Dr. Diego Velasquez-Plata,Periodontal Research,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+523,Dr. Doaa Adel Khattab,"DDS, MS",info@socketshield.com,+1-555-560-1461,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+524,Dr. Donald J. Provenzale,"DDS, DABOI/ID, AFAAID",info@chewswisely.com,+1-555-430-1801,https://chewswisely.com/,"Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+494,Dr. Donald P. Lewis Jr.,Anesthesia,contact@speaker.com,,,"Chicago, Illinois",Oral Surgery,clinical,TRUE,FALSE
+412,Dr. Doug Dixon,Periodontology,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+449,Dr. Douglas Benting,Prosthodontics,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+525,Dr. Duke Heller,"DDS, MS, Honored Fellow AAID",info@midwestimplantinstitute.com,+1-555-477-9067,https://midwestimplantinstitute.com/,"Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+673,Dr. Eva Boldridge,Prosthodontist,eboldridge@dentistry.edu,+1-555-107-9062,"","New Orleans, Louisiana",Digital Dentistry,clinical,FALSE,FALSE
+184,Dr. Faisal A. Quereshy,Oral Surgery Education Expert,info@speakersphere.com,,,United States,Oral Surgery,keynote,TRUE,FALSE
+427,Dr. Flavia Q. Pirih,Periodontal Research,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+719,Dr. Geith Kallas,"Founder, Smile Makers Dental Center",gkallas@smilemakersdental.com,+1-555-405-1096,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+425,Dr. Georgios A. Kotsakis,Periodontal Research,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+435,Dr. Gilbert A. Fru,Clinical Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+423,Dr. Gustavo Avila Ortiz,Periodontal Regeneration,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+529,Dr. Hamilton M. Sporborg,"DDS, FAAID, DABOI/ID",info@sporborg.com,+1-555-832-8339,"","Phoenix/Scottsdale, Arizona",General Dentistry,clinical,FALSE,FALSE
+429,Dr. Henry A. Foerster,Clinical Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+720,Dr. Hisham Barakat,"Chief Clinical Officer, Guardian Dentistry Partners",hbarakat@guardiandentalpartners.com,+1-555-564-4209,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+590,Dr. Homa H. Zadeh,"DDS, PhD",hzadeh@example.edu,+1-555-942-5990,"","Toronto, Ontario, Canada",Periodontology,clinical,FALSE,FALSE
+591,Dr. Hsun-Liang Chan,"DDS, MS",hchan@example.edu,+1-555-925-7181,"","Toronto, Ontario, Canada",Periodontology,clinical,FALSE,TRUE
+183,Dr. Issa Hanna,Cleft and Craniofacial Surgery Specialist,info@speakersphere.com,,,United States,Oral Surgery,keynote,TRUE,FALSE
+457,Dr. James L. Rutkowski,Sedation,contact@speaker.com,,,"Phoenix/Scottsdale, Arizona",Implant Dentistry,clinical,TRUE,FALSE
+140,Dr. James W. Willis,Patient Care Specialist,jwillis@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+535,Dr. Janice Wang,"DDS, ABOI/ID Diplomate, AAID Fellow",info@wcimplant.com,+1-555-698-6651,https://www.wcimplant.com/,"Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+485,Dr. Jay C. Platt,Practice Growth,contact@speaker.com,,,"Chicago, Illinois",Oral Surgery,clinical,TRUE,FALSE
+410,Dr. Jeffrey A. Rossmann,Periodontology,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+443,Dr. Jennifer Bain,Periodontology,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+537,Dr. John C. Minichetti,"DMD, FAAID, DABOI/ID",info@dentalimplantlearning.com,+1-555-595-7824,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+180,Dr. John F. Caccamese Jr.,Craniomaxillofacial Surgery Expert,info@speakersphere.com,,,United States,Oral Surgery,keynote,TRUE,FALSE
+79,Dr. John Sorensen,Prosthodontist,jsorensen@devrightspeakers.com,,,United States,Digital Dentistry,Healthcare Professional,TRUE,FALSE
+436,Dr. Jonathan Tai,Clinical Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+539,Dr. Jonathan Tsang,"DMD, DABOI/ID",info@abbotsfordsmiles.com,+1-555-509-2688,https://www.abbotsfordsmiles.com/,"Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+541,Dr. Keith Long,Implant Specialist,keith.long@dental.com,+1-555-673-5585,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+542,Dr. Kwan M. Lee,"DDS, DABOI, DICOI",info@federalwayimplantlaser.com,+1-555-464-4540,https://www.federalwayimplantlaser.com/,"Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+500,Dr. Lane T. Knight,Anesthesia Education,contact@speaker.com,,,"Chicago, Illinois",Oral Surgery,clinical,TRUE,FALSE
+192,Dr. Likith V. Reddy,Sleep Apnea Surgery Expert,info@speakersphere.com,,,United States,Sleep Medicine,keynote,TRUE,FALSE
+426,Dr. Luciana M. Shaddox,Periodontal Research,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+159,Dr. Mahtab Sadrameli,Team Development Consultant,msadrameli@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+172,Dr. Manu Chaudhry,Success Strategy Expert,mchaudhry@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+674,Dr. Mariano Polack,Prosthodontist,info@marianopolack.com,+1-555-406-8002,"","New Orleans, Louisiana",Oral Surgery,clinical,FALSE,FALSE
+686,Dr. Martin Mendelson,Dentist,mmendelson@example.com,+1-555-978-6916,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+448,Dr. Martin Mendelson,Professional Development,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+424,Dr. Massimo Costalonga,Periodontal Research,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+193,Dr. Matthew Fay,Sleep Medicine Specialist,info@speakersphere.com,,,United States,Sleep Medicine,keynote,TRUE,FALSE
+725,Dr. Mike Panahi,"Chief Operating Officer, Haworth Capital Dental Partners",mpanahi@haworthcapital.com,+1-555-918-5560,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+483,Dr. Minh Tran,Digital Software,contact@speaker.com,,,"Mansfield, Texas",Digital Dentistry,technical,TRUE,FALSE
+546,Dr. Mohamed Wagdy Bissar,"BChD, MSC, PhD, AFAAID",info@aaiduae.com,+1-555-463-2716,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+420,Dr. Muhammad H. Saleh,Periodontal Regeneration,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+181,Dr. Natasha Furchtgott,Craniomaxillofacial Surgery Specialist,info@speakersphere.com,,,United States,Oral Surgery,keynote,TRUE,FALSE
+434,Dr. Owais A. Farooqi,Clinical Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+198,Dr. Paul J. Schwartz,Emergency Medicine Specialist,info@speakersphere.com,,,United States,Anesthesia,keynote,TRUE,FALSE
+182,Dr. Paul S. Tiwana,Oral and Maxillofacial Surgery Expert,info@speakersphere.com,,,United States,Oral Surgery,keynote,TRUE,FALSE
+496,Dr. Peter A. Vellis,Emergency Airway Management,contact@speaker.com,,,"Chicago, Illinois",Oral Surgery,clinical,TRUE,FALSE
+688,Dr. Philippe Hujoel,Professor,phujoel@example.com,+1-555-950-1763,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+509,Dr. Ricardo Mitrani,Grupo Dental Bosques Oral Health & Smile Design,info@grupodentalbosques.com,+1-555-669-6370,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+187,Dr. Robert W. Emery III,Navigated Surgery Expert,info@speakersphere.com,,,United States,Oral Surgery,keynote,TRUE,FALSE
+510,Dr. Rolf Ewers,"Chairman Emeritus, Hospital of Cranio Maxillofacial & Oral Surgery",info@ewersoral.com,+1-555-770-5926,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+163,Dr. Ronald Saffar,DSO Operations Expert,rsaffar@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+689,Dr. Rooz Khosravi,Clinical Professor,rkhosravi@example.com,+1-555-827-2081,"","New Orleans, Louisiana",General Dentistry,clinical,FALSE,FALSE
+452,Dr. Rooz Khosravi,Airway Dentistry,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+676,Dr. Roozbeh Khosravi,"Clinical Associate Professor, Orthodontics",rkohosravi@orthodontics.edu,+1-555-103-4681,"","New Orleans, Louisiana",Orthodontics,clinical,FALSE,FALSE
+677,Dr. Roxanna Esguerra,Prosthodontist,resguerra@dentistry.edu,+1-555-726-1544,"","New Orleans, Louisiana",Digital Dentistry,clinical,FALSE,FALSE
+690,Dr. Roxanna Esguerra,Associate Professor,resguerra@example.com,+1-555-831-5949,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+446,Dr. Ruben Arebalo,Prosthodontics,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+552,Dr. Sangiv I. Patel,Implant Specialist,info@sangiv.com,+1-555-710-2959,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+72,Dr. Sarah Knox,Oral and Maxillofacial Surgeon,sknox@devrightspeakers.com,,,United States,Oral Surgery,Healthcare Professional,TRUE,FALSE
+76,Dr. Sarah Lee,Maxillofacial Prosthodontist,slee@devrightspeakers.com,,,United States,Prosthodontics,Healthcare Professional,TRUE,FALSE
+189,Dr. Sean P. Edwards,Complete-Arch Implant Rehabilitation Expert,info@speakersphere.com,,,United States,Oral Surgery,keynote,TRUE,FALSE
+418,Dr. Sejal Thacker,Periodontal Regeneration,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+554,Dr. Shahram Ghanaati,"MD, DMD, PhD, Associate Professor",info@ghanaati.com,+1-555-458-4048,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+171,Dr. Sibera Brannon,Leadership Resilience Coach,sbrannon@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+190,Dr. Stephanie W. Yeung,Digital Implant Rehabilitation Specialist,info@speakersphere.com,,,United States,Prosthodontics,keynote,TRUE,FALSE
+678,Dr. Steve Chu,Prosthodontist,schu@dentistry.edu,+1-555-589-7424,"","New Orleans, Louisiana",Digital Dentistry,clinical,FALSE,FALSE
+691,Dr. Steve Chu,Clinical Professor,schu@example.com,+1-555-204-3176,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+415,Dr. Steve D. Shufflebarger,Sedation Dentistry,contact@speaker.com,,,"Phoenix/Scottsdale, Arizona",Implant Dentistry,clinical,TRUE,FALSE
+679,Dr. Steven Morgano,Professor,smorgano@dentistry.edu,+1-555-476-3785,"","New Orleans, Louisiana",Digital Dentistry,clinical,FALSE,FALSE
+468,Dr. Suheil M. Boutros,Esthetic Zone Implants,contact@speaker.com,,,"Phoenix/Scottsdale, Arizona",Implant Dentistry,clinical,TRUE,FALSE
+455,Dr. Taiseer Sulaiman,Monolithic Zirconia,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+693,Dr. Taiseer Sulaiman,Professor,tsulaiman@example.com,+1-555-540-2742,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+66,Dr. Tara Aghaloo,Oral and Maxillofacial Surgeon,taghaloo@devrightspeakers.com,,,United States,Oral Surgery,Healthcare Professional,TRUE,FALSE
+695,Dr. Timothy A. Hess,Dentist,thess@example.com,+1-555-371-8913,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+447,Dr. Timothy A. Hess,Neurotoxins in Prosthodontics,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+138,Dr. Timothy McVaney,Practice Management Expert,tmcvaney@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+191,Dr. Tuan G. Bui,Ambulatory Anesthesia Expert,info@speakersphere.com,,,United States,Anesthesia,keynote,TRUE,FALSE
+450,Dr. Van Ramos Jr.,Prosthodontics,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+696,"Dr. Van Ramos, Jr.",Program Chair,vramos@example.com,+1-555-295-9527,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+557,Dr. Walter C. Chitwood Jr.,"DDS, FAAID, DABOI/ID",info@chitwoodinstitute.com,+1-555-639-1508,"","Phoenix/Scottsdale, Arizona",Oral Surgery,clinical,FALSE,FALSE
+456,Dr. Wei-Shao Lin,Full-Arch Implant Rehabilitation,contact@speaker.com,,,"New Orleans, Louisiana",Prosthodontics,clinical,TRUE,FALSE
+697,Dr. Wei-Shao Lin,Professor,wlin@example.com,+1-555-639-5818,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+414,Dr. Yusuke Hamada,Sedation Dentistry,contact@speaker.com,,,"Phoenix/Scottsdale, Arizona",Implant Dentistry,clinical,TRUE,FALSE
+681,"Ed McLaren, DDS, MDC",Director,emclaren@dentistry.edu,+1-555-412-7063,"","New Orleans, Louisiana",Digital Dentistry,clinical,FALSE,FALSE
+682,"Eva Boldridge, DMD",Private Practice,eboldridge@example.com,+1-555-885-3497,"","New Orleans, Louisiana",General Dentistry,clinical,FALSE,FALSE
+683,"Frank J. Tuminelli, DMD, FACP",Clinical Professor,ftuminelli@dentistry.edu,+1-555-616-2038,"","New Orleans, Louisiana",Digital Dentistry,clinical,FALSE,FALSE
+732,Greig Davis,"CPA CVA MST, Managing Partner",greig.davis@qxequities.com,+1-555-700-6516,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+736,Jaime Burks,"Senior Director, Operations, Providence Dental Partners",jburks@providencedentalpartners.com,+1-555-433-9282,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+130,James Cowherd,Business Consultant,jcowherd@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+738,Jeffrey Tomcsik,"Chief Executive Officer, Grand Dental Group",jtomcsik@granddentalgroup.com,+1-555-378-4655,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+760,Jessica Russell,Product Specialist,jessica.russell@product.com,+1-555-645-7194,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+684,John Sorensen,Professor,jsorensen@dentistry.edu,+1-555-398-6729,"","New Orleans, Louisiana",Digital Dentistry,clinical,FALSE,FALSE
+740,Joseph Kolligian,Dental Professional,jkolligian@dental.com,+1-555-327-2850,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+194,Judy Kay Mausolf,Team Management & Leadership Expert,info@speakersphere.com,,,United States,Practice Management,keynote,TRUE,FALSE
+763,Julie Brossoit,Digital Services Specialist,julie.brossoit@digitalservices.com,+1-555-738-8467,"","Chicago, IL",Digital Dentistry,clinical,FALSE,FALSE
+559,Katie Worth,Practice Management Consultant,katie.worth@practice.com,+1-555-822-4193,"","Phoenix/Scottsdale, Arizona",General Dentistry,clinical,FALSE,FALSE
+442,LT Jin Hwang,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+440,LT Nathan Kobold,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+441,LT Sofia Thompson,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+432,MAJ Toria Koutras,Military Periodontics,contact@speaker.com,,,"Toronto, Ontario, Canada",Periodontology,clinical,TRUE,FALSE
+745,Marlon Brown,Dental Professional,mbrown@dental.com,+1-555-680-2137,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+185,Michael Beschloss,Presidential Historian & Leadership Expert,info@speakersphere.com,,,United States,Education,keynote,TRUE,FALSE
+687,Michael R. Andersen,Commander,mandersen@example.com,+1-555-857-7920,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+764,Michael Wagner,Technical Specialist,michael.wagner@technical.com,+1-555-902-5361,"","Chicago, IL",Digital Dentistry,clinical,FALSE,FALSE
+766,Robyn Gannaway,Sales Consultant,robyn.gannaway@sales.com,+1-555-587-4832,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+750,Rose House,"Regional Director, Operations, Illinois, P1 Dental Partners",rhouse@p1dentalpartners.com,+1-555-793-8415,"","Chicago, IL",Practice Management,clinical,FALSE,FALSE
+173,Sabrina Sennett,Leadership Development Specialist,ssennett@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+753,"Sarah Cottingham, RDH",Registered Dental Hygienist,scot.rdh@dentalteam.com,+1-555-412-9527,"","Chicago, IL",Dental Hygiene,clinical,FALSE,FALSE
+195,Shannon B. Williams,Workforce Development Expert,info@speakersphere.com,,,United States,Practice Management,keynote,TRUE,FALSE
+754,Sodabeh Etminan,"DMD, MPH, Senior Director",setminan@dentalmedicine.com,+1-555-546-7083,"","Chicago, IL",General Dentistry,clinical,FALSE,FALSE
+692,"Steven Morgano, DMD",Professor and Chair,smorgano@example.com,+1-555-164-2853,"","New Orleans, Louisiana",Practice Management,clinical,FALSE,FALSE
+176,Suzie Ramos,DSO Development Consultant,sramos@devrightspeakers.com,"","",United States,Practice Management,keynote,TRUE,FALSE
+694,"Taylor Jean Manalili, DDS",Private Practice,tmanalili@example.com,+1-555-537-9240,"","New Orleans, Louisiana",General Dentistry,clinical,FALSE,FALSE
+179,"Terri Bradley, CPC",Medical Coding Expert,info@speakersphere.com,,,United States,Practice Management,keynote,TRUE,FALSE
