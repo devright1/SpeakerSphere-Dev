@@ -1,5 +1,8 @@
 import type { Express } from "express";
 import { storage } from "./storage";
+import { db } from "./db";
+import { speakers } from "../shared/schema";
+import { eq } from "drizzle-orm";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
 
 import { GNYAPSpeakerImporter } from "./gnyap-speaker-import";
