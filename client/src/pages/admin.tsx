@@ -923,8 +923,38 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {speaker.verified && <Badge variant="secondary">Verified</Badge>}
-                          {speaker.featured && <Badge>Featured</Badge>}
+                          {/* Verified Badge - Always Visible and Clickable */}
+                          <button
+                            onClick={() => updateSpeakerMutation.mutate({
+                              ...speaker,
+                              verified: !speaker.verified
+                            })}
+                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                              speaker.verified 
+                                ? 'bg-green-600 text-white hover:bg-green-700' 
+                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                            }`}
+                            title={speaker.verified ? "Click to unverify" : "Click to verify"}
+                          >
+                            Verified
+                          </button>
+                          
+                          {/* Featured Badge - Always Visible and Clickable */}
+                          <button
+                            onClick={() => updateSpeakerMutation.mutate({
+                              ...speaker,
+                              featured: !speaker.featured
+                            })}
+                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                              speaker.featured 
+                                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                            }`}
+                            title={speaker.featured ? "Click to unfeature" : "Click to feature"}
+                          >
+                            Featured
+                          </button>
+                          
                           <Button variant="outline" size="sm">Edit</Button>
                         </div>
                       </div>
@@ -1171,8 +1201,38 @@ export default function AdminDashboard() {
 
                               {/* Status Badges and Edit */}
                               <div className="flex items-center space-x-2">
-                                {speaker.verified && <Badge variant="secondary">Verified</Badge>}
-                                {speaker.featured && <Badge>Featured</Badge>}
+                                {/* Verified Badge - Always Visible and Clickable */}
+                                <button
+                                  onClick={() => updateSpeakerMutation.mutate({
+                                    ...speaker,
+                                    verified: !speaker.verified
+                                  })}
+                                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                                    speaker.verified 
+                                      ? 'bg-green-600 text-white hover:bg-green-700' 
+                                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                  }`}
+                                  title={speaker.verified ? "Click to unverify" : "Click to verify"}
+                                >
+                                  Verified
+                                </button>
+                                
+                                {/* Featured Badge - Always Visible and Clickable */}
+                                <button
+                                  onClick={() => updateSpeakerMutation.mutate({
+                                    ...speaker,
+                                    featured: !speaker.featured
+                                  })}
+                                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                                    speaker.featured 
+                                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                  }`}
+                                  title={speaker.featured ? "Click to unfeature" : "Click to feature"}
+                                >
+                                  Featured
+                                </button>
+                                
                                 <Button 
                                   variant="outline" 
                                   size="sm"
