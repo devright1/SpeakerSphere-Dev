@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload } from "lucide-react";
@@ -36,6 +37,10 @@ export default function AdminDashboard() {
   const [categoryAssignments, setCategoryAssignments] = useState<{[key: string]: boolean}>({});
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
   const [feeRangeVisible, setFeeRangeVisible] = useState(false);
+  
+  // Admin speakers filter states
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set());
   
   // User management states
   const [userSearchQuery, setUserSearchQuery] = useState("");
@@ -743,17 +748,59 @@ export default function AdminDashboard() {
     });
   };
 
+  // Handle category filter changes
+  const handleCategoryFilterChange = (category: string, checked: boolean) => {
+    const newCategories = new Set(selectedCategories);
+    if (checked) {
+      newCategories.add(category);
+    } else {
+      newCategories.delete(category);
+    }
+    setSelectedCategories(newCategories);
+  };
+
+  // Handle status filter changes
+  const handleStatusFilterChange = (status: string, checked: boolean) => {
+    const newStatuses = new Set(selectedStatuses);
+    if (checked) {
+      newStatuses.add(status);
+    } else {
+      newStatuses.delete(status);
+    }
+    setSelectedStatuses(newStatuses);
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedCategories(new Set());
+    setSelectedStatuses(new Set());
+  };
+
 
 
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
   
-  // Filter speakers based on search query
-  const filteredSpeakers = speakersArray.filter((speaker: any) => 
-    speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    speaker.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    speaker.category?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter speakers based on search query, categories, and statuses
+  const filteredSpeakers = speakersArray.filter((speaker: any) => {
+    // Search query filter
+    const matchesSearch = searchQuery === "" || 
+      speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      speaker.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      speaker.category?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Category filter
+    const matchesCategory = selectedCategories.size === 0 || 
+      selectedCategories.has(speaker.category || '');
+    
+    // Status filter (verified/featured)
+    const matchesStatus = selectedStatuses.size === 0 || 
+      (selectedStatuses.has('verified') && speaker.verified) ||
+      (selectedStatuses.has('featured') && speaker.featured);
+    
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
 
   // Filter speakers for category assignment dialog
   const filteredCategorySpeakers = speakersArray.filter((speaker: any) => 
@@ -900,6 +947,79 @@ export default function AdminDashboard() {
                         <div className="text-sm text-gray-600">
                           Manage visibility settings for each speaker
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Filter Dropdowns */}
+                    <div className="flex items-center space-x-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">Filters:</span>
+                      
+                      {/* Category Filter */}
+                      <div className="flex flex-col">
+                        <label className="text-xs text-gray-600 mb-1">Categories</label>
+                        <Select>
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder={selectedCategories.size > 0 ? `${selectedCategories.size} selected` : "All Categories"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categoriesArray.map((category: any) => (
+                              <div key={category.name} className="flex items-center space-x-2 px-2 py-1">
+                                <Checkbox
+                                  id={`category-${category.name}`}
+                                  checked={selectedCategories.has(category.name)}
+                                  onCheckedChange={(checked) => handleCategoryFilterChange(category.name, !!checked)}
+                                />
+                                <label htmlFor={`category-${category.name}`} className="text-sm cursor-pointer">
+                                  {category.name}
+                                </label>
+                              </div>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Status Filter */}
+                      <div className="flex flex-col">
+                        <label className="text-xs text-gray-600 mb-1">Status</label>
+                        <Select>
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder={selectedStatuses.size > 0 ? `${selectedStatuses.size} selected` : "All Statuses"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <div className="flex items-center space-x-2 px-2 py-1">
+                              <Checkbox
+                                id="status-verified"
+                                checked={selectedStatuses.has('verified')}
+                                onCheckedChange={(checked) => handleStatusFilterChange('verified', !!checked)}
+                              />
+                              <label htmlFor="status-verified" className="text-sm cursor-pointer">
+                                Verified
+                              </label>
+                            </div>
+                            <div className="flex items-center space-x-2 px-2 py-1">
+                              <Checkbox
+                                id="status-featured"
+                                checked={selectedStatuses.has('featured')}
+                                onCheckedChange={(checked) => handleStatusFilterChange('featured', !!checked)}
+                              />
+                              <label htmlFor="status-featured" className="text-sm cursor-pointer">
+                                Featured
+                              </label>
+                            </div>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Clear Filters Button */}
+                      {(selectedCategories.size > 0 || selectedStatuses.size > 0 || searchQuery) && (
+                        <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                          Clear All Filters
+                        </Button>
+                      )}
+
+                      {/* Results Count */}
+                      <div className="text-sm text-gray-600">
+                        Showing {filteredSpeakers.length} of {speakersArray.length} speakers
                       </div>
                     </div>
 
