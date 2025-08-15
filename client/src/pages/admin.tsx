@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
 import { SpeakerInteractionAnalytics } from "@/components/speaker-interaction-analytics";
 import { DetailedSpeakerAnalytics } from "@/components/detailed-speaker-analytics";
+import type { User, Speaker, Category } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -1293,17 +1294,17 @@ export default function AdminDashboard() {
                         <Button
                           variant="outline"
                           onClick={() => {
-                            const csvContent = users?.map(user => ({
+                            const csvContent = users?.map((user: User) => ({
                               name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
                               email: user.email,
-                              role: user.role || 'User',
+                              role: 'User', // Default role since User table doesn't have role field
                               status: user.isActive ? 'Active' : 'Inactive',
                               verified: user.emailVerified ? 'Yes' : 'No',
-                              joinDate: new Date(user.createdAt).toLocaleDateString()
+                              joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'
                             }));
                             const csv = [
                               'Name,Email,Role,Status,Verified,Join Date',
-                              ...csvContent?.map(row => Object.values(row).join(',')) || []
+                              ...csvContent?.map((row: any) => Object.values(row).join(',')) || []
                             ].join('\n');
                             const blob = new Blob([csv], { type: 'text/csv' });
                             const url = URL.createObjectURL(blob);
@@ -1395,7 +1396,7 @@ export default function AdminDashboard() {
                           checked={selectedUsers.size === filteredUsers?.length && filteredUsers?.length > 0}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSelectedUsers(new Set(filteredUsers?.map(u => u.id) || []));
+                              setSelectedUsers(new Set(filteredUsers?.map((u: User) => u.id) || []));
                             } else {
                               setSelectedUsers(new Set());
                             }
@@ -2280,7 +2281,7 @@ export default function AdminDashboard() {
                             if (e.target.checked) {
                               newCategories = [...currentCategories, category.name];
                             } else {
-                              newCategories = currentCategories.filter(cat => cat !== category.name);
+                              newCategories = currentCategories.filter((cat: string) => cat !== category.name);
                             }
                             setEditingSpeaker({
                               ...editingSpeaker,
@@ -2312,7 +2313,7 @@ export default function AdminDashboard() {
                             if (e.target.checked) {
                               newTypes = [...currentTypes, type];
                             } else {
-                              newTypes = currentTypes.filter(t => t !== type);
+                              newTypes = currentTypes.filter((t: string) => t !== type);
                             }
                             setEditingSpeaker({
                               ...editingSpeaker,
@@ -2898,11 +2899,11 @@ export default function AdminDashboard() {
                     <SelectValue placeholder="Select category..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories?.map((category: any) => (
+                    {Array.isArray(categories) ? categories.map((category: Category) => (
                       <SelectItem key={category.id} value={category.name}>
                         {category.name}
                       </SelectItem>
-                    ))}
+                    )) : null}
                   </SelectContent>
                 </Select>
               </div>
