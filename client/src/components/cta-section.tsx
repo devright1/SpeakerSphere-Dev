@@ -19,8 +19,7 @@ export default function CTASection() {
               </Link>
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-4 text-lg"
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg"
               >
                 Schedule Demo
               </Button>
