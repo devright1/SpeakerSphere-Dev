@@ -885,12 +885,37 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="speakers">Speakers</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 bg-gray-100 p-1 rounded-lg">
+            <TabsTrigger 
+              value="analytics"
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+            >
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger 
+              value="speakers"
+              className="data-[state=active]:bg-green-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+            >
+              Speakers
+            </TabsTrigger>
+            <TabsTrigger 
+              value="users"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+            >
+              Users
+            </TabsTrigger>
+            <TabsTrigger 
+              value="categories"
+              className="data-[state=active]:bg-orange-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+            >
+              Categories
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings"
+              className="data-[state=active]:bg-gray-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+            >
+              Settings
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="speakers" className="space-y-6">
