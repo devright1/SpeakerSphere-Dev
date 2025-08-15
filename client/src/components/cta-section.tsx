@@ -7,9 +7,9 @@ export default function CTASection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Find Your Perfect Speaker?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Match Your Events with Speakers?</h2>
             <p className="text-xl mb-8 opacity-90">
-              Join thousands of event planners who trust SpeakerConnect Pro to deliver exceptional speaking experiences.
+              Join thousands of event planners who trust SpeakerSphere to deliver exceptional speaking experiences.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/speakers">

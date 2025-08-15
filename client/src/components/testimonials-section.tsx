@@ -4,7 +4,7 @@ export default function TestimonialsSection() {
   const testimonials = [
     {
       id: 1,
-      quote: "SpeakerConnect Pro made finding the perfect keynote speaker effortless. The verification system gave us confidence, and the speaker exceeded all expectations.",
+      quote: "SpeakerSphere made finding the perfect keynote speaker effortless. The verification system gave us confidence, and the speaker exceeded all expectations.",
       author: "Jennifer Walsh",
       title: "Event Director",
       company: "TechCorp",
