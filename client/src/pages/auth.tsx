@@ -29,6 +29,7 @@ const registerSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   title: z.string().optional(),
   company: z.string().optional(),
+  accountType: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -139,7 +140,11 @@ export default function AuthPage() {
   };
 
   const onRegisterSubmit = (data: RegisterForm) => {
-    registerMutation.mutate(data);
+    const accountType = activeTab === "user-login" ? "user" : "speaker";
+    registerMutation.mutate({
+      ...data,
+      accountType
+    });
   };
 
   // Animated button content based on state

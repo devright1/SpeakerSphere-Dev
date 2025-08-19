@@ -74,17 +74,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userData = insertUserSchema.parse(req.body);
       
-      // Check if user already exists
+      // Check if user already exists with same account type
       const existingUser = await storage.getUserByEmail(userData.email);
+      
       if (existingUser) {
-        return res.status(400).json({ message: "User already exists with this email" });
+        // If user exists but wants to add speaker account
+        if (userData.accountType === "speaker" && existingUser.accountType === "user") {
+          // Update existing user to have both account types
+          const updatedUser = await storage.updateUserAccountType(existingUser.id, "both");
+          
+          // Create session token
+          const token = crypto.randomUUID();
+          const expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+
+          await storage.createUserSession({
+            userId: updatedUser.id,
+            token,
+            expiresAt
+          });
+
+          const { passwordHash: _, ...userResponse } = updatedUser;
+          return res.status(200).json({
+            user: userResponse,
+            token,
+            message: "Speaker account added to existing user profile"
+          });
+        }
+        
+        // If user exists but wants to add user account (speaker trying to become user too)
+        if (userData.accountType === "user" && existingUser.accountType === "speaker") {
+          const updatedUser = await storage.updateUserAccountType(existingUser.id, "both");
+          
+          const token = crypto.randomUUID();
+          const expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + 30);
+
+          await storage.createUserSession({
+            userId: updatedUser.id,
+            token,
+            expiresAt
+          });
+
+          const { passwordHash: _, ...userResponse } = updatedUser;
+          return res.status(200).json({
+            user: userResponse,
+            token,
+            message: "User account added to existing speaker profile"
+          });
+        }
+
+        // Same account type registration
+        return res.status(400).json({ 
+          message: `${userData.accountType === "speaker" ? "Speaker" : "User"} account already exists with this email` 
+        });
       }
 
       // Hash password
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(userData.password, saltRounds);
 
-      // Create user  
+      // Create new user
       const { password, ...userDataWithoutPassword } = userData;
       const user = await storage.createUser({
         ...userDataWithoutPassword,

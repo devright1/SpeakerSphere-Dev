@@ -236,6 +236,14 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async updateUserAccountType(id: string, accountType: string): Promise<User> {
+    const result = await db.update(users)
+      .set({ accountType })
+      .where(eq(users.id, id))
+      .returning();
+    return result[0];
+  }
+
   // User Sessions
   async createUserSession(session: InsertUserSession): Promise<UserSession> {
     const result = await db.insert(userSessions).values(session).returning();

@@ -192,7 +192,7 @@ export const insertVideoSchema = createInsertSchema(videos).omit({
 // User authentication and profile tables
 export const users = pgTable("users", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  email: varchar("email", { length: 255 }).notNull().unique(),
+  email: varchar("email", { length: 255 }).notNull(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   firstName: varchar("first_name", { length: 100 }).notNull(),
   lastName: varchar("last_name", { length: 100 }).notNull(),
@@ -201,6 +201,8 @@ export const users = pgTable("users", {
   profileImageUrl: text("profile_image_url"),
   emailVerified: boolean("email_verified").default(false),
   isActive: boolean("is_active").default(true),
+  accountType: varchar("account_type", { length: 20 }).notNull().default("user"), // "user", "speaker", or "both"
+  speakerId: integer("speaker_id"), // Links to speaker profile if account_type includes "speaker"
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -332,6 +334,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
   passwordHash: true, // Remove passwordHash from the input schema
   emailVerified: true,
   isActive: true,
+  speakerId: true, // This will be set by the system
   lastLoginAt: true,
   createdAt: true,
   updatedAt: true,
