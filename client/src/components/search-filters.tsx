@@ -20,10 +20,9 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
 
   const [showFeeRange, setShowFeeRange] = useState(false);
 
-  // Check if fee range should be shown based on admin settings
+  // Fee range is permanently disabled
   useEffect(() => {
-    const feeRangeVisible = localStorage.getItem("adminFeeRangeVisible");
-    setShowFeeRange(feeRangeVisible === "true");
+    setShowFeeRange(false);
   }, []);
 
   const { data: categories } = useQuery<Category[]>({

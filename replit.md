@@ -4,6 +4,8 @@
 This project is a full-stack healthcare speaker review platform, "SpeakerSphere Reviews," designed to connect healthcare professionals with medical speakers. It enables users to discover, browse, search, and review speakers across various healthcare specialties. The platform aims to be a comprehensive resource for evaluating speaker quality, facilitating bookings, and showcasing speaker expertise through detailed profiles and video portfolios. Its core capabilities include advanced speaker discovery, a multi-dimensional review system, and direct inquiry management, supporting the business vision of becoming a leading platform for healthcare speaker evaluation and booking.
 
 ## Recent Changes (January 2025)
+- **Speaker Fees Hidden Platform-Wide**: Removed all speaking fee displays from speaker profiles, listings, and sorting options to focus on inquiry-based communication (January 19, 2025)
+- **Centralized Inquiry Management**: All speaker inquiries now route through admin panel instead of directly to speakers, with comprehensive status tracking and client communication tools
 - **Speaker Login System Fixed**: Resolved authentication issues with application-based speaker accounts - added express-session middleware and corrected password hashing (January 19, 2025)
 - **Credentials Display Enhanced**: Admin panel now shows persistent passwords for application-based speakers with copy functionality for easy sharing 
 - **Session Management Implemented**: Added proper express-session configuration to enable speaker account login functionality

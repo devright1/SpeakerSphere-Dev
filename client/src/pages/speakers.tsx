@@ -97,10 +97,6 @@ export default function Speakers() {
           return parseFloat(b.rating || "0") - parseFloat(a.rating || "0");
         case "reviews":
           return b.reviewCount - a.reviewCount;
-        case "price-low":
-          return parseFloat(a.fee) - parseFloat(b.fee);
-        case "price-high":
-          return parseFloat(b.fee) - parseFloat(a.fee);
         default:
           return 0;
       }
@@ -168,8 +164,6 @@ export default function Speakers() {
                   <option value="relevance">Sort by Relevance</option>
                   <option value="rating">Highest Rated</option>
                   <option value="reviews">Most Reviews</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
                 </select>
               </div>
 

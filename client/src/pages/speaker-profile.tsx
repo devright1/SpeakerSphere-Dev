@@ -525,10 +525,7 @@ export default function SpeakerProfile() {
                         </div>
                       </div>
                       
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-3">Speaking Fee</h3>
-                        <p className="text-2xl font-bold text-primary">{speaker.fee || "Contact for pricing"}</p>
-                      </div>
+
                     </div>
                   </CardContent>
                 </Card>
@@ -796,11 +793,6 @@ export default function SpeakerProfile() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary mb-1">{speaker.fee || "Contact for pricing"}</div>
-                    <div className="text-sm text-gray-500">Speaking fee</div>
-                  </div>
-                  
                   <Button 
                     className="w-full bg-primary hover:bg-blue-700 text-white"
                     onClick={() => {
