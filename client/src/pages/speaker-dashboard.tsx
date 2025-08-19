@@ -51,17 +51,32 @@ export default function SpeakerDashboard() {
   // Fetch speaker profile data
   const { data: speakerProfile, isLoading } = useQuery({
     queryKey: ['/api/speakers/by-user', user?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/speakers/by-user/${user?.id}`);
+      if (!response.ok) throw new Error('Failed to fetch speaker profile');
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 
   // Fetch user stats and reviews
   const { data: userStats } = useQuery({
     queryKey: ['/api/users/stats', user?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/stats/${user?.id}`);
+      if (!response.ok) throw new Error('Failed to fetch user stats');
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 
   const { data: userReviews } = useQuery({
     queryKey: ['/api/users/reviews', user?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/reviews/${user?.id}`);
+      if (!response.ok) throw new Error('Failed to fetch user reviews');
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 
@@ -158,7 +173,7 @@ export default function SpeakerDashboard() {
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
-                onClick={() => window.open(`/speaker/${speakerProfile.slug}`, '_blank')}
+                onClick={() => window.open(`/speakers/${speakerProfile.slug}`, '_blank')}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View Public Profile
