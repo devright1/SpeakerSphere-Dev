@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,8 @@ import {
   BookOpen,
   Languages,
   Building,
-  ExternalLink
+  ExternalLink,
+  Home
 } from "lucide-react";
 
 export default function SpeakerDashboard() {
@@ -171,6 +173,12 @@ export default function SpeakerDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              <Link href="/">
+                <Button variant="outline">
+                  <Home className="h-4 w-4 mr-2" />
+                  Home
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 onClick={() => window.open(`/speakers/${speakerProfile.slug}`, '_blank')}
