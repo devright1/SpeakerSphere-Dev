@@ -2281,24 +2281,47 @@ export default function AdminDashboard() {
                                         </div>
                                         <div className="flex items-center justify-between">
                                           <span className="text-blue-700 font-medium">Password:</span>
-                                          <Button 
-                                            size="sm" 
-                                            variant="outline"
-                                            className="text-xs h-7 px-2"
-                                            onClick={() => {
-                                              // Generate new temporary password and show in alert
-                                              const newPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-2).toUpperCase();
-                                              const credentials = `Email: ${app.email}\nNew Password: ${newPassword}\nLogin URL: ${window.location.origin}/auth`;
-                                              navigator.clipboard?.writeText(credentials);
-                                              alert(`New temporary password generated for ${app.email}:\n\nPassword: ${newPassword}\n\nCredentials copied to clipboard. Please share with the speaker securely.`);
-                                            }}
-                                          >
-                                            Generate New Password
-                                          </Button>
+                                          <div className="flex items-center space-x-2">
+                                            <code className="bg-white px-2 py-1 rounded text-blue-800 border font-mono text-sm">
+                                              {/* Generate consistent password based on application ID and email */}
+                                              {(() => {
+                                                const seed = `${app.id}-${app.email}`;
+                                                const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+                                                let result = '';
+                                                for (let i = 0; i < 12; i++) {
+                                                  const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+                                                  result += chars[charIndex];
+                                                }
+                                                return result;
+                                              })()}
+                                            </code>
+                                            <Button 
+                                              size="sm" 
+                                              variant="ghost"
+                                              className="text-xs h-7 px-2 text-blue-600 hover:text-blue-800"
+                                              onClick={() => {
+                                                const password = (() => {
+                                                  const seed = `${app.id}-${app.email}`;
+                                                  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+                                                  let result = '';
+                                                  for (let i = 0; i < 12; i++) {
+                                                    const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+                                                    result += chars[charIndex];
+                                                  }
+                                                  return result;
+                                                })();
+                                                const credentials = `Email: ${app.email}\nPassword: ${password}\nLogin URL: ${window.location.origin}/auth`;
+                                                navigator.clipboard?.writeText(credentials);
+                                                alert(`Login credentials copied to clipboard:\n\nEmail: ${app.email}\nPassword: ${password}`);
+                                              }}
+                                            >
+                                              📋 Copy
+                                            </Button>
+                                          </div>
                                         </div>
                                         <div className="text-xs text-blue-600 mt-2 p-2 bg-blue-100 rounded">
-                                          💡 <strong>For Security:</strong> Passwords are not stored. Click "Generate New Password" to create 
-                                          fresh credentials that you can share with the speaker securely.
+                                          💡 <strong>Consistent Password:</strong> This password is generated based on the application ID and remains the same each time. 
+                                          Click "Copy" to copy credentials for sharing with the speaker.
                                         </div>
                                       </div>
                                     </div>
