@@ -192,6 +192,35 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  async getAllInquiries(): Promise<Inquiry[]> {
+    const result = await db.select({
+      id: inquiries.id,
+      speakerId: inquiries.speakerId,
+      clientName: inquiries.clientName,
+      clientEmail: inquiries.clientEmail,
+      clientCompany: inquiries.clientCompany,
+      eventType: inquiries.eventType,
+      eventDate: inquiries.eventDate,
+      eventLocation: inquiries.eventLocation,
+      budget: inquiries.budget,
+      message: inquiries.message,
+      status: inquiries.status,
+      createdAt: inquiries.createdAt,
+      speakerName: speakers.name,
+    }).from(inquiries)
+      .leftJoin(speakers, eq(inquiries.speakerId, speakers.id))
+      .orderBy(desc(inquiries.createdAt));
+    return result;
+  }
+
+  async updateInquiryStatus(inquiryId: number, status: string, adminNotes?: string): Promise<Inquiry | null> {
+    const result = await db.update(inquiries)
+      .set({ status })
+      .where(eq(inquiries.id, inquiryId))
+      .returning();
+    return result[0] || null;
+  }
+
   // Categories
   async getCategories(): Promise<Category[]> {
     const result = await db.select().from(categories);

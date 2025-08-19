@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
 import { SpeakerInteractionAnalytics } from "@/components/speaker-interaction-analytics";
 import { DetailedSpeakerAnalytics } from "@/components/detailed-speaker-analytics";
-import type { User, Speaker, Category } from "@shared/schema";
+import type { User, Speaker, Category, Inquiry } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -73,6 +73,11 @@ export default function AdminDashboard() {
   
   // Duplicate checking state
   const [duplicateCheckDialogOpen, setDuplicateCheckDialogOpen] = useState(false);
+
+  // Inquiry states
+  const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(null);
+  const [inquiryStatusFilter, setInquiryStatusFilter] = useState("all");
+  const [inquirySearchQuery, setInquirySearchQuery] = useState("");
   const [currentApplication, setCurrentApplication] = useState<any>(null);
   const [potentialDuplicates, setPotentialDuplicates] = useState<any[]>([]);
   const [selectedExistingSpeaker, setSelectedExistingSpeaker] = useState<number | null>(null);
@@ -80,6 +85,36 @@ export default function AdminDashboard() {
   const [actionType, setActionType] = useState<'create_new' | 'add_to_existing' | null>(null);
   
   const { toast } = useToast();
+
+  // Fetch all inquiries
+  const { data: inquiries = [], isLoading: inquiriesLoading } = useQuery<(Inquiry & { speakerName?: string })[]>({
+    queryKey: ["/api/admin/inquiries"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/inquiries");
+      if (!response.ok) throw new Error("Failed to fetch inquiries");
+      return response.json();
+    },
+  });
+
+  // Update inquiry status mutation
+  const updateInquiryStatusMutation = useMutation({
+    mutationFn: async ({ inquiryId, status, adminNotes }: { inquiryId: number; status: string; adminNotes?: string }) => {
+      const response = await fetch(`/api/admin/inquiries/${inquiryId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, adminNotes }),
+      });
+      if (!response.ok) throw new Error('Failed to update inquiry status');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Inquiry status updated successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/inquiries"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update inquiry status", variant: "destructive" });
+    },
+  });
 
   // Check authentication on component mount
   useEffect(() => {
@@ -1027,7 +1062,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-gray-100 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-6 bg-gray-100 p-1 rounded-lg">
             <TabsTrigger 
               value="analytics"
               className="data-[state=active]:bg-blue-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
@@ -1039,6 +1074,12 @@ export default function AdminDashboard() {
               className="data-[state=active]:bg-green-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
             >
               Speakers
+            </TabsTrigger>
+            <TabsTrigger 
+              value="inquiries"
+              className="data-[state=active]:bg-red-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+            >
+              Inquiries
             </TabsTrigger>
             <TabsTrigger 
               value="users"
@@ -1820,6 +1861,11 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Inquiries Management */}
+          <TabsContent value="inquiries" className="space-y-6">
+            <InquiriesManagement />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
@@ -3531,5 +3577,279 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// InquiriesManagement Component
+function InquiriesManagement() {
+  const { toast } = useToast();
+  const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(null);
+  const [inquiryStatusFilter, setInquiryStatusFilter] = useState("all");
+  const [inquirySearchQuery, setInquirySearchQuery] = useState("");
+
+  // Fetch all inquiries
+  const { data: inquiries = [], isLoading: inquiriesLoading } = useQuery<(Inquiry & { speakerName?: string })[]>({
+    queryKey: ["/api/admin/inquiries"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/inquiries");
+      if (!response.ok) throw new Error("Failed to fetch inquiries");
+      return response.json();
+    },
+  });
+
+  // Update inquiry status mutation
+  const updateInquiryStatusMutation = useMutation({
+    mutationFn: async ({ inquiryId, status, adminNotes }: { inquiryId: number; status: string; adminNotes?: string }) => {
+      const response = await fetch(`/api/admin/inquiries/${inquiryId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, adminNotes }),
+      });
+      if (!response.ok) throw new Error('Failed to update inquiry status');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Inquiry status updated successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/inquiries"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update inquiry status", variant: "destructive" });
+    },
+  });
+
+  // Filter inquiries based on search and status
+  const filteredInquiries = inquiries.filter((inquiry) => {
+    const matchesSearch = inquirySearchQuery === "" || 
+      inquiry.clientName.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
+      inquiry.clientEmail.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
+      inquiry.clientCompany.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
+      inquiry.speakerName?.toLowerCase().includes(inquirySearchQuery.toLowerCase());
+    
+    const matchesStatus = inquiryStatusFilter === "all" || inquiry.status === inquiryStatusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleStatusUpdate = (inquiryId: number, newStatus: string) => {
+    updateInquiryStatusMutation.mutate({ inquiryId, status: newStatus });
+  };
+
+  // Status color mapping
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "responded": return "bg-blue-100 text-blue-800";
+      case "booked": return "bg-green-100 text-green-800";
+      case "declined": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MessageSquare className="h-6 w-6" />
+          Speaker Inquiries Management
+        </CardTitle>
+        <CardDescription>
+          View and manage all speaker inquiries from potential clients. All inquiries are routed through the admin panel for review and processing.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {/* Search and Filter Controls */}
+        <div className="space-y-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search inquiries (client name, email, company, speaker)..."
+                value={inquirySearchQuery}
+                onChange={(e) => setInquirySearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <Select value={inquiryStatusFilter} onValueChange={setInquiryStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="responded">Responded</SelectItem>
+                <SelectItem value="booked">Booked</SelectItem>
+                <SelectItem value="declined">Declined</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Summary Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+              <div className="text-2xl font-bold text-yellow-700">
+                {inquiries.filter(i => i.status === 'pending').length}
+              </div>
+              <div className="text-sm text-yellow-600">Pending</div>
+            </div>
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <div className="text-2xl font-bold text-blue-700">
+                {inquiries.filter(i => i.status === 'responded').length}
+              </div>
+              <div className="text-sm text-blue-600">Responded</div>
+            </div>
+            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+              <div className="text-2xl font-bold text-green-700">
+                {inquiries.filter(i => i.status === 'booked').length}
+              </div>
+              <div className="text-sm text-green-600">Booked</div>
+            </div>
+            <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+              <div className="text-2xl font-bold text-red-700">
+                {inquiries.filter(i => i.status === 'declined').length}
+              </div>
+              <div className="text-sm text-red-600">Declined</div>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div className="text-2xl font-bold text-gray-700">{inquiries.length}</div>
+              <div className="text-sm text-gray-600">Total</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Inquiries List */}
+        {inquiriesLoading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : filteredInquiries.length === 0 ? (
+          <div className="text-center py-12">
+            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No inquiries found</h3>
+            <p className="text-gray-500">
+              {inquirySearchQuery || inquiryStatusFilter !== "all" 
+                ? "Try adjusting your search or filter criteria"
+                : "No speaker inquiries have been submitted yet"
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredInquiries.map((inquiry) => (
+              <Card key={inquiry.id} className="border border-gray-200">
+                <CardContent className="p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold text-lg">{inquiry.clientName}</h3>
+                          <p className="text-gray-600">{inquiry.clientCompany}</p>
+                          <p className="text-sm text-gray-500">{inquiry.clientEmail}</p>
+                        </div>
+                        <Badge className={getStatusBadgeColor(inquiry.status)}>
+                          {inquiry.status}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">Speaker:</span>
+                          <span className="ml-2">{inquiry.speakerName || `Speaker ID ${inquiry.speakerId}`}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Event Type:</span>
+                          <span className="ml-2">{inquiry.eventType}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Event Date:</span>
+                          <span className="ml-2">{inquiry.eventDate}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Event Location:</span>
+                          <span className="ml-2">{inquiry.eventLocation}</span>
+                        </div>
+                        {inquiry.budget && (
+                          <div>
+                            <span className="font-medium text-gray-700">Budget:</span>
+                            <span className="ml-2">${inquiry.budget}</span>
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-medium text-gray-700">Submitted:</span>
+                          <span className="ml-2">{new Date(inquiry.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <span className="font-medium text-gray-700">Message:</span>
+                        <p className="mt-1 text-gray-600 whitespace-pre-wrap">{inquiry.message}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-2 lg:w-48">
+                      <div className="text-sm font-medium text-gray-700 mb-2">Update Status:</div>
+                      <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
+                        <Button
+                          size="sm"
+                          variant={inquiry.status === 'responded' ? 'default' : 'outline'}
+                          onClick={() => handleStatusUpdate(inquiry.id, 'responded')}
+                          disabled={updateInquiryStatusMutation.isPending}
+                          className="text-xs"
+                        >
+                          Mark Responded
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={inquiry.status === 'booked' ? 'default' : 'outline'}
+                          onClick={() => handleStatusUpdate(inquiry.id, 'booked')}
+                          disabled={updateInquiryStatusMutation.isPending}
+                          className="text-xs bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          Mark Booked
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={inquiry.status === 'declined' ? 'default' : 'outline'}
+                          onClick={() => handleStatusUpdate(inquiry.id, 'declined')}
+                          disabled={updateInquiryStatusMutation.isPending}
+                          className="text-xs bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Mark Declined
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={inquiry.status === 'pending' ? 'default' : 'outline'}
+                          onClick={() => handleStatusUpdate(inquiry.id, 'pending')}
+                          disabled={updateInquiryStatusMutation.isPending}
+                          className="text-xs"
+                        >
+                          Reset to Pending
+                        </Button>
+                      </div>
+                      
+                      {/* Contact Actions */}
+                      <div className="border-t border-gray-200 pt-3 mt-3">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Contact Client:</div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(`mailto:${inquiry.clientEmail}?subject=Re: Speaking Inquiry for ${inquiry.speakerName}&body=Dear ${inquiry.clientName},%0D%0A%0D%0AThank you for your inquiry regarding ${inquiry.speakerName} for your ${inquiry.eventType}.%0D%0A%0D%0ABest regards,%0D%0AThe Speaker Sphere Team`)}
+                            className="text-xs"
+                          >
+                            <Mail className="h-3 w-3 mr-1" />
+                            Send Email
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

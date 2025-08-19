@@ -363,6 +363,42 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Get all speaker inquiries for admin review
+  app.get("/api/admin/inquiries", async (req, res) => {
+    try {
+      const inquiries = await storage.getAllInquiries();
+      res.json(inquiries);
+    } catch (error) {
+      console.error("Failed to get inquiries:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Update inquiry status
+  app.patch("/api/admin/inquiries/:id/status", async (req, res) => {
+    try {
+      const inquiryId = parseInt(req.params.id);
+      const { status, adminNotes } = req.body;
+      
+      const updatedInquiry = await storage.updateInquiryStatus(inquiryId, status, adminNotes);
+      
+      if (!updatedInquiry) {
+        return res.status(404).json({ message: "Inquiry not found" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Inquiry status updated successfully",
+        inquiry: updatedInquiry 
+      });
+      
+      console.log(`📝 Inquiry ${inquiryId} status updated to: ${status}`);
+    } catch (error) {
+      console.error("Failed to update inquiry status:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Toggle speaker visibility (this is the key feature for domain sync)
   app.post("/api/admin/speakers/:id/toggle-visibility", async (req, res) => {
     try {

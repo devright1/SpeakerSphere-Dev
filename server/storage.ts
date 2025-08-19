@@ -61,6 +61,8 @@ export interface IStorage {
   // Inquiries
   createInquiry(inquiry: InsertInquiry): Promise<Inquiry>;
   getInquiriesBySpeakerId(speakerId: number): Promise<Inquiry[]>;
+  getAllInquiries(): Promise<Inquiry[]>;
+  updateInquiryStatus(inquiryId: number, status: string, adminNotes?: string): Promise<Inquiry | null>;
   
   // Categories
   getCategories(): Promise<Category[]>;
@@ -460,6 +462,20 @@ export class MemStorage implements IStorage {
     return Array.from(this.inquiries.values())
       .filter(inquiry => inquiry.speakerId === speakerId)
       .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+  }
+
+  async getAllInquiries(): Promise<Inquiry[]> {
+    return Array.from(this.inquiries.values())
+      .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+  }
+
+  async updateInquiryStatus(inquiryId: number, status: string, adminNotes?: string): Promise<Inquiry | null> {
+    const inquiry = this.inquiries.get(inquiryId);
+    if (!inquiry) return null;
+    
+    const updatedInquiry = { ...inquiry, status };
+    this.inquiries.set(inquiryId, updatedInquiry);
+    return updatedInquiry;
   }
 
   async getCategories(): Promise<Category[]> {

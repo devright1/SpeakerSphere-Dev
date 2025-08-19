@@ -218,7 +218,7 @@ export default function SpeakerProfile() {
       
       toast({
         title: "Inquiry Sent",
-        description: "Your inquiry has been sent to the speaker. They will respond within 24 hours.",
+        description: "Your inquiry has been sent to our admin team for review and forwarding to the speaker.",
       });
       setIsInquiryOpen(false);
       inquiryForm.reset();
