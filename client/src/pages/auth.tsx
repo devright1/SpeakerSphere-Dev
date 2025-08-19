@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, ArrowLeft, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, CheckCircle2, Loader2, Sparkles, User, UserCheck } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,67 +39,12 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState("login");
+  const [activeTab, setActiveTab] = useState("user-login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitStep, setSubmitStep] = useState<"idle" | "loading" | "success" | "error">("idle");
   const { toast } = useToast();
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut" }
-    }
-  };
-
-  const formVariants = {
-    enter: {
-      x: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-        ease: "easeInOut"
-      }
-    },
-    exit: {
-      x: activeTab === "login" ? -100 : 100,
-      opacity: 0,
-      transition: {
-        duration: 0.2,
-        ease: "easeInOut"
-      }
-    }
-  };
-
-  const successVariants = {
-    hidden: { scale: 0, opacity: 0 },
-    visible: { 
-      scale: 1, 
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 500,
-        damping: 25
-      }
-    }
-  };
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -133,11 +78,9 @@ export default function AuthPage() {
       setSubmitStep("success");
       setIsSuccess(true);
       
-      // Store session token
       localStorage.setItem('userToken', data.token);
       localStorage.setItem('userData', JSON.stringify(data.user));
       
-      // Show success animation, then redirect
       setTimeout(() => {
         toast({
           title: "Welcome back!",
@@ -153,7 +96,6 @@ export default function AuthPage() {
         description: error.message || "Invalid email or password.",
         variant: "destructive",
       });
-      // Reset to idle after error animation
       setTimeout(() => setSubmitStep("idle"), 2000);
     },
   });
@@ -170,11 +112,9 @@ export default function AuthPage() {
       setSubmitStep("success");
       setIsSuccess(true);
       
-      // Store session token
       localStorage.setItem('userToken', data.token);
       localStorage.setItem('userData', JSON.stringify(data.user));
       
-      // Show success animation, then redirect
       setTimeout(() => {
         toast({
           title: "Account Created!",
@@ -190,7 +130,6 @@ export default function AuthPage() {
         description: error.message || "Unable to create account. Please try again.",
         variant: "destructive",
       });
-      // Reset to idle after error animation
       setTimeout(() => setSubmitStep("idle"), 2000);
     },
   });
@@ -237,35 +176,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-70"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-70"
-          animate={{
-            x: [0, -100, 0],
-            y: [0, -50, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
       {/* Success overlay */}
       <AnimatePresence>
         {isSuccess && (
@@ -274,13 +185,11 @@ export default function AuthPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
           >
             <motion.div
               className="text-center"
-              variants={successVariants}
-              initial="hidden"
-              animate="visible"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
             >
               <motion.div
                 className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -289,460 +198,455 @@ export default function AuthPage() {
               >
                 <CheckCircle2 className="h-10 w-10 text-white" />
               </motion.div>
-              <motion.h2
-                className="text-2xl font-bold text-green-700 mb-2"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                Welcome!
-              </motion.h2>
-              <motion.p
-                className="text-green-600"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                Redirecting you to the platform...
-              </motion.p>
+              <h2 className="text-2xl font-bold text-green-700 mb-2">Welcome!</h2>
+              <p className="text-green-600">Redirecting you to the platform...</p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <motion.div
-        className="w-full max-w-md space-y-6 relative z-10"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        className="w-full max-w-lg space-y-6"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
       >
         {/* Header */}
-        <motion.div className="text-center" variants={itemVariants}>
+        <div className="text-center">
           <Link href="/">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button variant="ghost" className="mb-4">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Button>
-            </motion.div>
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Button>
           </Link>
-          <motion.h1 
-            className="text-3xl font-bold text-primary"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-          >
-            The Speaker Sphere
-          </motion.h1>
-          <motion.div className="flex items-center justify-center mt-2 space-x-2">
+          <h1 className="text-3xl font-bold text-primary">The Speaker Sphere</h1>
+          <div className="flex items-center justify-center mt-2 space-x-2">
             <Sparkles className="h-4 w-4 text-yellow-500 animate-pulse" />
             <p className="text-gray-600">Join our community of healthcare speakers</p>
             <Sparkles className="h-4 w-4 text-yellow-500 animate-pulse" />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        <motion.div variants={itemVariants}>
-          <Card className="shadow-xl backdrop-blur-sm bg-white/90 border-0">
-            <CardHeader className="space-y-1">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-              >
-                <CardTitle className="text-2xl text-center">Get Started</CardTitle>
-                <CardDescription className="text-center">
-                  Sign in to your account or create a new one
-                </CardDescription>
-              </motion.div>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                >
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="login">Sign In</TabsTrigger>
-                    <TabsTrigger value="register">Create Account</TabsTrigger>
+        <Card className="shadow-xl bg-white border-0">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-center">Get Started</CardTitle>
+            <CardDescription className="text-center">
+              Choose your account type and sign in or create a new account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="user-login" className="flex items-center space-x-2">
+                  <User className="h-4 w-4" />
+                  <span>Users</span>
+                </TabsTrigger>
+                <TabsTrigger value="speaker-login" className="flex items-center space-x-2">
+                  <UserCheck className="h-4 w-4" />
+                  <span>Speakers</span>
+                </TabsTrigger>
+              </TabsList>
+
+              {/* User Login Tab */}
+              <TabsContent value="user-login" className="space-y-4">
+                <div className="text-center mb-4 p-4 bg-blue-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-blue-800">User Account</h3>
+                  <p className="text-sm text-blue-600">Sign in or create an account to browse and connect with speakers</p>
+                </div>
+                
+                <Tabs defaultValue="user-signin" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsTrigger value="user-signin">Sign In</TabsTrigger>
+                    <TabsTrigger value="user-register">Register</TabsTrigger>
                   </TabsList>
-                </motion.div>
+                  
+                  {/* User Sign In */}
+                  <TabsContent value="user-signin" className="space-y-4">
+                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="user-login-email">Email</Label>
+                        <Input
+                          id="user-login-email"
+                          type="email"
+                          placeholder="your.email@example.com"
+                          {...loginForm.register("email")}
+                        />
+                        {loginForm.formState.errors.email && (
+                          <p className="text-sm text-red-600">{loginForm.formState.errors.email.message}</p>
+                        )}
+                      </div>
 
-                {/* Login Tab */}
-                <AnimatePresence mode="wait">
-                  <TabsContent value="login" className="space-y-4">
-                    <motion.form
-                      key="login-form"
-                      onSubmit={loginForm.handleSubmit(onLoginSubmit)}
-                      className="space-y-4"
-                      variants={formVariants}
-                      initial="exit"
-                      animate="enter"
-                      exit="exit"
-                    >
-                      <motion.div
-                        className="space-y-2"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                      >
-                        <Label htmlFor="login-email">Email</Label>
-                        <motion.div
-                          whileFocus={{ scale: 1.02 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                        >
+                      <div className="space-y-2">
+                        <Label htmlFor="user-login-password">Password</Label>
+                        <div className="relative">
                           <Input
-                            id="login-email"
-                            type="email"
-                            placeholder="your.email@example.com"
-                            {...loginForm.register("email")}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                          />
-                        </motion.div>
-                        <AnimatePresence>
-                          {loginForm.formState.errors.email && (
-                            <motion.p
-                              className="text-sm text-red-600"
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                            >
-                              {loginForm.formState.errors.email.message}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-
-                      <motion.div
-                        className="space-y-2"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        <Label htmlFor="login-password">Password</Label>
-                        <motion.div
-                          className="relative"
-                          whileFocus={{ scale: 1.02 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                        >
-                          <Input
-                            id="login-password"
+                            id="user-login-password"
                             type={showPassword ? "text" : "password"}
                             placeholder="Enter your password"
                             {...loginForm.register("password")}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-primary/20 pr-10"
+                            className="pr-10"
                           />
-                          <motion.button
+                          <button
                             type="button"
                             className="absolute right-3 top-1/2 transform -translate-y-1/2"
                             onClick={() => setShowPassword(!showPassword)}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
                           >
                             {showPassword ? (
                               <EyeOff className="h-4 w-4 text-gray-500" />
                             ) : (
                               <Eye className="h-4 w-4 text-gray-500" />
                             )}
-                          </motion.button>
-                        </motion.div>
-                        <AnimatePresence>
-                          {loginForm.formState.errors.password && (
-                            <motion.p
-                              className="text-sm text-red-600"
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                            >
-                              {loginForm.formState.errors.password.message}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
+                          </button>
+                        </div>
+                        {loginForm.formState.errors.password && (
+                          <p className="text-sm text-red-600">{loginForm.formState.errors.password.message}</p>
+                        )}
+                      </div>
 
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
+                      <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={loginMutation.isPending}
                       >
-                        <motion.div
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <Button 
-                            type="submit" 
-                            className={`w-full transition-all duration-300 ${
-                              submitStep === "success" ? "bg-green-500 hover:bg-green-600" :
-                              submitStep === "error" ? "bg-red-500 hover:bg-red-600" :
-                              "bg-primary hover:bg-blue-700"
-                            }`}
-                            disabled={loginMutation.isPending || submitStep === "loading"}
-                          >
-                            {getButtonContent(true)}
-                          </Button>
-                        </motion.div>
-                      </motion.div>
-                    </motion.form>
+                        {getButtonContent(true)}
+                      </Button>
+                    </form>
                   </TabsContent>
-                </AnimatePresence>
 
-                {/* Register Tab */}
-                <TabsContent value="register" className="space-y-4">
-                  <motion.form
-                    key="register-form"
-                    onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
-                    className="space-y-4"
-                    variants={formVariants}
-                    initial="exit"
-                    animate="enter"
-                    exit="exit"
-                  >
-                    <div className="grid grid-cols-2 gap-4">
-                      <motion.div
-                        className="space-y-2"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                      >
-                        <Label htmlFor="register-firstName">First Name *</Label>
-                        <Input
-                          id="register-firstName"
-                          placeholder="John"
-                          {...registerForm.register("firstName")}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                        />
-                        <AnimatePresence>
+                  {/* User Register */}
+                  <TabsContent value="user-register" className="space-y-4">
+                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="user-register-firstName">First Name *</Label>
+                          <Input
+                            id="user-register-firstName"
+                            placeholder="John"
+                            {...registerForm.register("firstName")}
+                          />
                           {registerForm.formState.errors.firstName && (
-                            <motion.p
-                              className="text-sm text-red-600"
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                            >
-                              {registerForm.formState.errors.firstName.message}
-                            </motion.p>
+                            <p className="text-sm text-red-600">{registerForm.formState.errors.firstName.message}</p>
                           )}
-                        </AnimatePresence>
-                      </motion.div>
-                      
-                      <motion.div
-                        className="space-y-2"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                      >
-                        <Label htmlFor="register-lastName">Last Name *</Label>
-                        <Input
-                          id="register-lastName"
-                          placeholder="Doe"
-                          {...registerForm.register("lastName")}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                        />
-                        <AnimatePresence>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="user-register-lastName">Last Name *</Label>
+                          <Input
+                            id="user-register-lastName"
+                            placeholder="Doe"
+                            {...registerForm.register("lastName")}
+                          />
                           {registerForm.formState.errors.lastName && (
-                            <motion.p
-                              className="text-sm text-red-600"
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                            >
-                              {registerForm.formState.errors.lastName.message}
-                            </motion.p>
+                            <p className="text-sm text-red-600">{registerForm.formState.errors.lastName.message}</p>
                           )}
-                        </AnimatePresence>
-                      </motion.div>
-                    </div>
+                        </div>
+                      </div>
 
-                    <motion.div
-                      className="space-y-2"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      <Label htmlFor="register-email">Email *</Label>
-                      <Input
-                        id="register-email"
-                        type="email"
-                        placeholder="your.email@example.com"
-                        {...registerForm.register("email")}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                      />
-                      <AnimatePresence>
+                      <div className="space-y-2">
+                        <Label htmlFor="user-register-email">Email *</Label>
+                        <Input
+                          id="user-register-email"
+                          type="email"
+                          placeholder="your.email@example.com"
+                          {...registerForm.register("email")}
+                        />
                         {registerForm.formState.errors.email && (
-                          <motion.p
-                            className="text-sm text-red-600"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            {registerForm.formState.errors.email.message}
-                          </motion.p>
+                          <p className="text-sm text-red-600">{registerForm.formState.errors.email.message}</p>
                         )}
-                      </AnimatePresence>
-                    </motion.div>
+                      </div>
 
-                    <motion.div
-                      className="space-y-2"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      <Label htmlFor="register-password">Password *</Label>
-                      <motion.div
-                        className="relative"
-                        whileFocus={{ scale: 1.02 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                      >
-                        <Input
-                          id="register-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Create a strong password"
-                          {...registerForm.register("password")}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-primary/20 pr-10"
-                        />
-                        <motion.button
-                          type="button"
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                          onClick={() => setShowPassword(!showPassword)}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-gray-500" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-gray-500" />
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="user-register-password">Password *</Label>
+                          <div className="relative">
+                            <Input
+                              id="user-register-password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Create password"
+                              {...registerForm.register("password")}
+                              className="pr-10"
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-gray-500" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-gray-500" />
+                              )}
+                            </button>
+                          </div>
+                          {registerForm.formState.errors.password && (
+                            <p className="text-sm text-red-600">{registerForm.formState.errors.password.message}</p>
                           )}
-                        </motion.button>
-                      </motion.div>
-                      <AnimatePresence>
-                        {registerForm.formState.errors.password && (
-                          <motion.p
-                            className="text-sm text-red-600"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            {registerForm.formState.errors.password.message}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-
-                    <motion.div
-                      className="space-y-2"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      <Label htmlFor="register-confirmPassword">Confirm Password *</Label>
-                      <motion.div
-                        className="relative"
-                        whileFocus={{ scale: 1.02 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                      >
-                        <Input
-                          id="register-confirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Confirm your password"
-                          {...registerForm.register("confirmPassword")}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-primary/20 pr-10"
-                        />
-                        <motion.button
-                          type="button"
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4 text-gray-500" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-gray-500" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="user-register-confirmPassword">Confirm Password *</Label>
+                          <div className="relative">
+                            <Input
+                              id="user-register-confirmPassword"
+                              type={showConfirmPassword ? "text" : "password"}
+                              placeholder="Confirm password"
+                              {...registerForm.register("confirmPassword")}
+                              className="pr-10"
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="h-4 w-4 text-gray-500" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-gray-500" />
+                              )}
+                            </button>
+                          </div>
+                          {registerForm.formState.errors.confirmPassword && (
+                            <p className="text-sm text-red-600">{registerForm.formState.errors.confirmPassword.message}</p>
                           )}
-                        </motion.button>
-                      </motion.div>
-                      <AnimatePresence>
-                        {registerForm.formState.errors.confirmPassword && (
-                          <motion.p
-                            className="text-sm text-red-600"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            {registerForm.formState.errors.confirmPassword.message}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
+                        </div>
+                      </div>
 
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="user-register-title">Title (Optional)</Label>
+                          <Input
+                            id="user-register-title"
+                            placeholder="Event Coordinator"
+                            {...registerForm.register("title")}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="user-register-company">Company (Optional)</Label>
+                          <Input
+                            id="user-register-company"
+                            placeholder="Healthcare Inc."
+                            {...registerForm.register("company")}
+                          />
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={registerMutation.isPending}
                       >
-                        <Button 
-                          type="submit" 
-                          className={`w-full transition-all duration-300 ${
-                            submitStep === "success" ? "bg-green-500 hover:bg-green-600" :
-                            submitStep === "error" ? "bg-red-500 hover:bg-red-600" :
-                            "bg-primary hover:bg-blue-700"
-                          }`}
-                          disabled={registerMutation.isPending || submitStep === "loading"}
-                        >
-                          {getButtonContent(false)}
-                        </Button>
-                      </motion.div>
-                    </motion.div>
-                  </motion.form>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </motion.div>
+                        {getButtonContent(false)}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+              </TabsContent>
 
-        {/* Benefits */}
-        <motion.div 
-          className="text-center space-y-4"
-          variants={itemVariants}
-        >
-          <h3 className="text-lg font-semibold text-gray-900">Why create an account?</h3>
-          <div className="grid gap-3 text-sm text-gray-600">
-            <motion.div 
-              className="flex items-center justify-center space-x-2"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <span>Save and organize your favorite speakers</span>
-            </motion.div>
-            <motion.div 
-              className="flex items-center justify-center space-x-2"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7 }}
-            >
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <span>Leave reviews and track your event history</span>
-            </motion.div>
-            <motion.div 
-              className="flex items-center justify-center space-x-2"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8 }}
-            >
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <span>Get personalized speaker recommendations</span>
-            </motion.div>
-          </div>
-        </motion.div>
+              {/* Speaker Login Tab */}
+              <TabsContent value="speaker-login" className="space-y-4">
+                <div className="text-center mb-4 p-4 bg-green-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-green-800">Speaker Account</h3>
+                  <p className="text-sm text-green-600">Join our platform as a healthcare speaker to showcase your expertise</p>
+                </div>
+                
+                <Tabs defaultValue="speaker-signin" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsTrigger value="speaker-signin">Sign In</TabsTrigger>
+                    <TabsTrigger value="speaker-register">Register</TabsTrigger>
+                  </TabsList>
+                  
+                  {/* Speaker Sign In */}
+                  <TabsContent value="speaker-signin" className="space-y-4">
+                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="speaker-login-email">Email</Label>
+                        <Input
+                          id="speaker-login-email"
+                          type="email"
+                          placeholder="speaker.email@example.com"
+                          {...loginForm.register("email")}
+                        />
+                        {loginForm.formState.errors.email && (
+                          <p className="text-sm text-red-600">{loginForm.formState.errors.email.message}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="speaker-login-password">Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="speaker-login-password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            {...loginForm.register("password")}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-gray-500" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-gray-500" />
+                            )}
+                          </button>
+                        </div>
+                        {loginForm.formState.errors.password && (
+                          <p className="text-sm text-red-600">{loginForm.formState.errors.password.message}</p>
+                        )}
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        disabled={loginMutation.isPending}
+                      >
+                        {getButtonContent(true)}
+                      </Button>
+                    </form>
+                  </TabsContent>
+
+                  {/* Speaker Register */}
+                  <TabsContent value="speaker-register" className="space-y-4">
+                    <Alert>
+                      <UserCheck className="h-4 w-4" />
+                      <AlertDescription>
+                        Speaker accounts require manual verification. You'll be contacted within 24-48 hours after registration.
+                      </AlertDescription>
+                    </Alert>
+                    
+                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="speaker-register-firstName">First Name *</Label>
+                          <Input
+                            id="speaker-register-firstName"
+                            placeholder="Dr. John"
+                            {...registerForm.register("firstName")}
+                          />
+                          {registerForm.formState.errors.firstName && (
+                            <p className="text-sm text-red-600">{registerForm.formState.errors.firstName.message}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="speaker-register-lastName">Last Name *</Label>
+                          <Input
+                            id="speaker-register-lastName"
+                            placeholder="Doe"
+                            {...registerForm.register("lastName")}
+                          />
+                          {registerForm.formState.errors.lastName && (
+                            <p className="text-sm text-red-600">{registerForm.formState.errors.lastName.message}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="speaker-register-email">Professional Email *</Label>
+                        <Input
+                          id="speaker-register-email"
+                          type="email"
+                          placeholder="dr.doe@hospital.com"
+                          {...registerForm.register("email")}
+                        />
+                        {registerForm.formState.errors.email && (
+                          <p className="text-sm text-red-600">{registerForm.formState.errors.email.message}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="speaker-register-title">Professional Title *</Label>
+                        <Input
+                          id="speaker-register-title"
+                          placeholder="Cardiothoracic Surgeon, Chief of Surgery"
+                          {...registerForm.register("title")}
+                        />
+                        {registerForm.formState.errors.title && (
+                          <p className="text-sm text-red-600">{registerForm.formState.errors.title.message}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="speaker-register-company">Institution/Practice *</Label>
+                        <Input
+                          id="speaker-register-company"
+                          placeholder="Mayo Clinic, Johns Hopkins Hospital"
+                          {...registerForm.register("company")}
+                        />
+                        {registerForm.formState.errors.company && (
+                          <p className="text-sm text-red-600">{registerForm.formState.errors.company.message}</p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="speaker-register-password">Password *</Label>
+                          <div className="relative">
+                            <Input
+                              id="speaker-register-password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Create password"
+                              {...registerForm.register("password")}
+                              className="pr-10"
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-gray-500" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-gray-500" />
+                              )}
+                            </button>
+                          </div>
+                          {registerForm.formState.errors.password && (
+                            <p className="text-sm text-red-600">{registerForm.formState.errors.password.message}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="speaker-register-confirmPassword">Confirm Password *</Label>
+                          <div className="relative">
+                            <Input
+                              id="speaker-register-confirmPassword"
+                              type={showConfirmPassword ? "text" : "password"}
+                              placeholder="Confirm password"
+                              {...registerForm.register("confirmPassword")}
+                              className="pr-10"
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="h-4 w-4 text-gray-500" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-gray-500" />
+                              )}
+                            </button>
+                          </div>
+                          {registerForm.formState.errors.confirmPassword && (
+                            <p className="text-sm text-red-600">{registerForm.formState.errors.confirmPassword.message}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        disabled={registerMutation.isPending}
+                      >
+                        {getButtonContent(false)}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
   );
