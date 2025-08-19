@@ -37,6 +37,55 @@ export function registerAdminRoutes(app: Express) {
     res.json({ success: true, message: "Admin authenticated" });
   });
 
+  // Speaker Applications Management
+  app.get("/api/admin/speaker-applications", async (req, res) => {
+    try {
+      const applications = await storage.getAllSpeakerApplications();
+      res.json(applications);
+    } catch (error) {
+      console.error("Failed to get speaker applications:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/admin/speaker-applications/:id/status", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const { status, adminNotes, reviewedBy } = req.body;
+      
+      const updatedApplication = await storage.updateSpeakerApplicationStatus(
+        applicationId, 
+        status, 
+        adminNotes, 
+        reviewedBy
+      );
+      
+      res.json(updatedApplication);
+    } catch (error) {
+      console.error("Failed to update application status:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/speaker-applications/:id/approve", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const { reviewedBy } = req.body;
+      
+      const result = await storage.approveSpeakerApplication(applicationId, reviewedBy);
+      
+      res.json({ 
+        success: true, 
+        message: "Speaker application approved and profile created",
+        speakerId: result.speaker.id,
+        userId: result.user.id
+      });
+    } catch (error) {
+      console.error("Failed to approve speaker application:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Delete speaker (soft delete by hiding profile)
   app.delete("/api/admin/speakers/:id", async (req, res) => {
     try {

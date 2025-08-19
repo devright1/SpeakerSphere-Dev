@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, ArrowLeft, CheckCircle2, Loader2, Sparkles, User, UserCheck } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, CheckCircle2, Loader2, Sparkles, User, UserCheck, Info } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -141,6 +141,13 @@ export default function AuthPage() {
 
   const onRegisterSubmit = (data: RegisterForm) => {
     const accountType = activeTab === "user-login" ? "user" : "speaker";
+    
+    // If speaker registration, redirect to application process
+    if (accountType === "speaker") {
+      window.location.href = "/speaker-application";
+      return;
+    }
+    
     registerMutation.mutate({
       ...data,
       accountType

@@ -78,6 +78,14 @@ export interface IStorage {
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
   updateUserAccountType(id: string, accountType: string): Promise<User>;
   
+  // Speaker Application Methods
+  createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;
+  getSpeakerApplicationByEmail(email: string): Promise<SpeakerApplication | undefined>;
+  getSpeakerApplicationById(id: number): Promise<SpeakerApplication | undefined>;
+  getAllSpeakerApplications(): Promise<SpeakerApplication[]>;
+  updateSpeakerApplicationStatus(id: number, status: string, adminNotes?: string, reviewedBy?: string): Promise<SpeakerApplication>;
+  approveSpeakerApplication(applicationId: number, reviewedBy: string): Promise<{ speaker: Speaker; user: User }>;
+  
   // User Sessions
   createUserSession(session: InsertUserSession): Promise<UserSession>;
   getUserByToken(token: string): Promise<User | undefined>;
@@ -126,6 +134,7 @@ export class MemStorage implements IStorage {
   private userSessions: Map<string, UserSession>;
   private userLikes: Map<number, UserLike>;
   private userBookmarks: Map<number, UserBookmark>;
+  private speakerApplications: Map<number, SpeakerApplication>;
   private currentSpeakerId: number;
   private currentReviewId: number;
   private currentInquiryId: number;
@@ -133,6 +142,7 @@ export class MemStorage implements IStorage {
   private currentVideoId: number;
   private currentLikeId: number;
   private currentBookmarkId: number;
+  private currentApplicationId: number;
 
   constructor() {
     this.speakers = new Map();
@@ -144,6 +154,7 @@ export class MemStorage implements IStorage {
     this.userSessions = new Map();
     this.userLikes = new Map();
     this.userBookmarks = new Map();
+    this.speakerApplications = new Map();
     this.currentSpeakerId = 1;
     this.currentReviewId = 1;
     this.currentInquiryId = 1;
@@ -151,6 +162,7 @@ export class MemStorage implements IStorage {
     this.currentVideoId = 1;
     this.currentLikeId = 1;
     this.currentBookmarkId = 1;
+    this.currentApplicationId = 1;
     
     this.seedData();
     this.seedVideoData();
@@ -647,7 +659,7 @@ export class MemStorage implements IStorage {
   // Speaker Applications
   async createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication> {
     const newApplication: SpeakerApplication = {
-      id: Date.now(), // Simple ID generation for memory storage
+      id: this.currentApplicationId++,
       ...application,
       status: 'pending',
       adminNotes: null,
@@ -657,8 +669,106 @@ export class MemStorage implements IStorage {
       createdSpeakerId: null
     };
     
-    // Store in a temporary way (in memory, applications would be lost on restart)
+    this.speakerApplications.set(newApplication.id, newApplication);
     return newApplication;
+  }
+
+  async getSpeakerApplicationByEmail(email: string): Promise<SpeakerApplication | undefined> {
+    return Array.from(this.speakerApplications.values()).find(app => app.email === email);
+  }
+
+  async getSpeakerApplicationById(id: number): Promise<SpeakerApplication | undefined> {
+    return this.speakerApplications.get(id);
+  }
+
+  async getAllSpeakerApplications(): Promise<SpeakerApplication[]> {
+    return Array.from(this.speakerApplications.values());
+  }
+
+  async updateSpeakerApplicationStatus(id: number, status: string, adminNotes?: string, reviewedBy?: string): Promise<SpeakerApplication> {
+    const application = this.speakerApplications.get(id);
+    if (!application) throw new Error("Application not found");
+
+    const updatedApplication: SpeakerApplication = {
+      ...application,
+      status,
+      adminNotes: adminNotes || application.adminNotes,
+      reviewedBy: reviewedBy || application.reviewedBy,
+      reviewedAt: new Date()
+    };
+
+    this.speakerApplications.set(id, updatedApplication);
+    return updatedApplication;
+  }
+
+  async approveSpeakerApplication(applicationId: number, reviewedBy: string): Promise<{ speaker: Speaker; user: User }> {
+    const application = this.speakerApplications.get(applicationId);
+    if (!application) throw new Error("Application not found");
+
+    // Create speaker profile
+    const speaker: Speaker = {
+      id: this.currentSpeakerId++,
+      name: `${application.firstName} ${application.lastName}`,
+      slug: `${application.firstName.toLowerCase()}-${application.lastName.toLowerCase()}`.replace(/\s+/g, '-'),
+      title: application.title,
+      bio: application.biography,
+      expertise: application.speakingTopics.split(',').map(s => s.trim()),
+      location: "Location TBD",
+      overallRating: "0.00",
+      reviewCount: 0,
+      imageUrl: "/api/placeholder/300/300",
+      verified: false,
+      featured: false,
+      category: application.specialty,
+      achievements: [],
+      lectures: [],
+      eventPhotos: [],
+      speakingVideos: [],
+      email: application.email,
+      phone: application.phone,
+      website: application.website,
+      socialMedia: [],
+      languages: ["English"],
+      medicalSpecialties: [application.specialty],
+      speakerType: "clinical",
+      fee: "Contact for pricing",
+      experience: parseInt(application.yearsExperience) || 0,
+      education: application.credentials,
+      hideProfile: false,
+      hideRatings: false,
+      hideSocial: false,
+      hideContact: false
+    };
+
+    this.speakers.set(speaker.id, speaker);
+
+    // Create user account
+    const user: User = {
+      id: crypto.randomUUID(),
+      email: application.email,
+      passwordHash: "temp_hash", // Will be set properly in database
+      firstName: application.firstName,
+      lastName: application.lastName,
+      title: application.title,
+      accountType: "speaker",
+      speakerId: speaker.id,
+      emailVerified: true,
+      isActive: true,
+      lastLoginAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.users.set(user.id, user);
+
+    // Update application status
+    await this.updateSpeakerApplicationStatus(applicationId, "approved", "Application approved and speaker profile created", reviewedBy);
+    
+    const updatedApplication = this.speakerApplications.get(applicationId)!;
+    updatedApplication.createdSpeakerId = speaker.id;
+    this.speakerApplications.set(applicationId, updatedApplication);
+
+    return { speaker, user };
   }
 
   async getSpeakerApplications(): Promise<SpeakerApplication[]> {

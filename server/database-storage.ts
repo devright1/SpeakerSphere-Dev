@@ -244,6 +244,110 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Speaker Application Methods
+  async createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication> {
+    const result = await db.insert(speakerApplications).values(application).returning();
+    return result[0];
+  }
+
+  async getSpeakerApplicationByEmail(email: string): Promise<SpeakerApplication | undefined> {
+    const result = await db.select().from(speakerApplications).where(eq(speakerApplications.email, email));
+    return result[0];
+  }
+
+  async getSpeakerApplicationById(id: number): Promise<SpeakerApplication | undefined> {
+    const result = await db.select().from(speakerApplications).where(eq(speakerApplications.id, id));
+    return result[0];
+  }
+
+  async getAllSpeakerApplications(): Promise<SpeakerApplication[]> {
+    return db.select().from(speakerApplications).orderBy(speakerApplications.createdAt);
+  }
+
+  async updateSpeakerApplicationStatus(id: number, status: string, adminNotes?: string, reviewedBy?: string): Promise<SpeakerApplication> {
+    const result = await db.update(speakerApplications)
+      .set({ 
+        status, 
+        adminNotes, 
+        reviewedBy, 
+        reviewedAt: new Date() 
+      })
+      .where(eq(speakerApplications.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async approveSpeakerApplication(applicationId: number, reviewedBy: string): Promise<{ speaker: Speaker; user: User }> {
+    const application = await this.getSpeakerApplicationById(applicationId);
+    if (!application) throw new Error("Application not found");
+
+    // Create speaker profile
+    const speakerData: InsertSpeaker = {
+      name: `${application.firstName} ${application.lastName}`,
+      slug: `${application.firstName.toLowerCase()}-${application.lastName.toLowerCase()}`.replace(/\s+/g, '-'),
+      title: application.title,
+      bio: application.biography,
+      expertise: application.speakingTopics.split(',').map(s => s.trim()),
+      location: "Location TBD",
+      imageUrl: "/api/placeholder/300/300",
+      verified: false,
+      featured: false,
+      category: application.specialty,
+      achievements: [],
+      lectures: [],
+      eventPhotos: [],
+      speakingVideos: [],
+      email: application.email,
+      phone: application.phone,
+      website: application.website,
+      socialMedia: [],
+      languages: ["English"],
+      medicalSpecialties: [application.specialty],
+      speakerType: "clinical",
+      fee: "Contact for pricing",
+      experience: parseInt(application.yearsExperience) || 0,
+      education: application.credentials,
+      hideProfile: false,
+      hideRatings: false,
+      hideSocial: false,
+      hideContact: false
+    };
+
+    const speakerResult = await db.insert(speakers).values(speakerData).returning();
+    const speaker = speakerResult[0];
+
+    // Create user account with temporary password hash
+    const userData: InsertUser = {
+      email: application.email,
+      passwordHash: "temp_hash", // Admin will need to set up password
+      firstName: application.firstName,
+      lastName: application.lastName,
+      title: application.title,
+      accountType: "speaker",
+      speakerId: speaker.id,
+      emailVerified: true,
+      isActive: true
+    };
+
+    const userResult = await db.insert(users).values(userData).returning();
+    const user = userResult[0];
+
+    // Update application status
+    await this.updateSpeakerApplicationStatus(
+      applicationId, 
+      "approved", 
+      "Application approved and speaker profile created", 
+      reviewedBy
+    );
+
+    // Link the created speaker to the application
+    await db.update(speakerApplications)
+      .set({ createdSpeakerId: speaker.id })
+      .where(eq(speakerApplications.id, applicationId));
+
+    return { speaker, user };
+  }
+
   // User Sessions
   async createUserSession(session: InsertUserSession): Promise<UserSession> {
     const result = await db.insert(userSessions).values(session).returning();

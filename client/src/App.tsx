@@ -13,6 +13,7 @@ import Profile from "@/pages/profile";
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin";
 import ForSpeakers from "@/pages/for-speakers";
+import SpeakerApplication from "@/pages/speaker-application";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/for-speakers" component={ForSpeakers} />
+      <Route path="/speaker-application" component={SpeakerApplication} />
       <Route component={NotFound} />
     </Switch>
   );

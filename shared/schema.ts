@@ -328,6 +328,30 @@ export const demandMetrics = pgTable("demand_metrics", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Type exports for all tables
+export type Speaker = typeof speakers.$inferSelect;
+export type InsertSpeaker = typeof speakers.$inferInsert;
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;
+export type Inquiry = typeof inquiries.$inferSelect;
+export type InsertInquiry = typeof inquiries.$inferInsert;
+export type Category = typeof categories.$inferSelect;
+export type InsertCategory = typeof categories.$inferInsert;
+export type Video = typeof videos.$inferSelect;
+export type InsertVideo = typeof videos.$inferInsert;
+export type SpeakerApplication = typeof speakerApplications.$inferSelect;
+export type InsertSpeakerApplication = typeof speakerApplications.$inferInsert;
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+export type UserSession = typeof userSessions.$inferSelect;
+export type InsertUserSession = typeof userSessions.$inferInsert;
+export type UserLike = typeof userLikes.$inferSelect;
+export type InsertUserLike = typeof userLikes.$inferInsert;
+export type UserBookmark = typeof userBookmarks.$inferSelect;
+export type InsertUserBookmark = typeof userBookmarks.$inferInsert;
+export type SpeakerInteraction = typeof speakerInteractions.$inferSelect;
+export type InsertSpeakerInteraction = typeof speakerInteractions.$inferInsert;
+
 // Enhanced reviews - add userId field for registered user reviews
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -382,24 +406,7 @@ export const insertSpeakerInteractionSchema = createInsertSchema(speakerInteract
   createdAt: true,
 });
 
-export type Speaker = typeof speakers.$inferSelect;
-export type InsertSpeaker = z.infer<typeof insertSpeakerSchema>;
-export type Review = typeof reviews.$inferSelect;
-export type InsertReview = z.infer<typeof insertReviewSchema>;
-export type Inquiry = typeof inquiries.$inferSelect;
-export type InsertInquiry = z.infer<typeof insertInquirySchema>;
-export type Category = typeof categories.$inferSelect;
-export type InsertCategory = z.infer<typeof insertCategorySchema>;
-export type Video = typeof videos.$inferSelect;
-export type InsertVideo = z.infer<typeof insertVideoSchema>;
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type UserSession = typeof userSessions.$inferSelect;
-export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
-export type UserLike = typeof userLikes.$inferSelect;
-export type InsertUserLike = z.infer<typeof insertUserLikeSchema>;
-export type UserBookmark = typeof userBookmarks.$inferSelect;
-export type InsertUserBookmark = z.infer<typeof insertUserBookmarkSchema>;
+// Additional type exports that are not covered by the infer types above
 export type SpeakerAnalytics = typeof speakerAnalytics.$inferSelect;
 export type InsertSpeakerAnalytics = z.infer<typeof insertSpeakerAnalyticsSchema>;
 export type DailyAnalytics = typeof dailyAnalytics.$inferSelect;
@@ -408,7 +415,3 @@ export type ClickEvent = typeof clickEvents.$inferSelect;
 export type InsertClickEvent = z.infer<typeof insertClickEventSchema>;
 export type DemandMetrics = typeof demandMetrics.$inferSelect;
 export type InsertDemandMetrics = z.infer<typeof insertDemandMetricsSchema>;
-export type SpeakerInteraction = typeof speakerInteractions.$inferSelect;
-export type InsertSpeakerInteraction = z.infer<typeof insertSpeakerInteractionSchema>;
-export type SpeakerApplication = typeof speakerApplications.$inferSelect;
-export type InsertSpeakerApplication = z.infer<typeof insertSpeakerApplicationSchema>;
