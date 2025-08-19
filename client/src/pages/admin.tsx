@@ -77,6 +77,7 @@ export default function AdminDashboard() {
   const [potentialDuplicates, setPotentialDuplicates] = useState<any[]>([]);
   const [selectedExistingSpeaker, setSelectedExistingSpeaker] = useState<number | null>(null);
   const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
+  const [actionType, setActionType] = useState<'create_new' | 'add_to_existing' | null>(null);
   
   const { toast } = useToast();
 
@@ -540,6 +541,7 @@ export default function AdminDashboard() {
       setCurrentApplication(null);
       setPotentialDuplicates([]);
       setSelectedExistingSpeaker(null);
+      setActionType(null);
       
       toast({
         title: "Application Linked!",
@@ -580,6 +582,7 @@ export default function AdminDashboard() {
       setDuplicateCheckDialogOpen(false);
       setCurrentApplication(null);
       setPotentialDuplicates([]);
+      setActionType(null);
       
       // Show login credentials in toast with copy functionality
       const credentials = `Email: ${data.loginInstructions?.email}\nPassword: ${data.loginInstructions?.password}`;
@@ -2174,9 +2177,28 @@ export default function AdminDashboard() {
                               <>
                                 <Button 
                                   className="bg-green-600 hover:bg-green-700 text-white"
-                                  onClick={() => handleApplicationAction(application.id, 'approved')}
+                                  onClick={() => {
+                                    setCurrentApplication(application);
+                                    setActionType('create_new');
+                                    setIsCheckingDuplicates(true);
+                                    checkDuplicatesMutation.mutate(application.id);
+                                  }}
                                 >
-                                  ✅ Approve Application
+                                  <UserPlus className="h-4 w-4 mr-2" />
+                                  Create New Speaker Profile
+                                </Button>
+                                <Button 
+                                  variant="outline"
+                                  className="border-orange-600 text-orange-700 hover:bg-orange-50"
+                                  onClick={() => {
+                                    setCurrentApplication(application);
+                                    setActionType('add_to_existing');
+                                    setIsCheckingDuplicates(true);
+                                    checkDuplicatesMutation.mutate(application.id);
+                                  }}
+                                >
+                                  <LinkIcon className="h-4 w-4 mr-2" />
+                                  Add to Existing Speaker
                                 </Button>
                                 <Button 
                                   variant="outline" 
@@ -3308,12 +3330,23 @@ export default function AdminDashboard() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center">
-              <Users className="h-5 w-5 mr-2 text-orange-600" />
-              Duplicate Speaker Check
+              {actionType === 'create_new' ? (
+                <>
+                  <UserPlus className="h-5 w-5 mr-2 text-green-600" />
+                  Create New Speaker Profile
+                </>
+              ) : (
+                <>
+                  <LinkIcon className="h-5 w-5 mr-2 text-orange-600" />
+                  Add to Existing Speaker
+                </>
+              )}
             </DialogTitle>
             <DialogDescription>
-              Found potential duplicate speakers for "{currentApplication?.firstName} {currentApplication?.lastName}". 
-              Choose to create a new profile or link to an existing speaker.
+              {actionType === 'create_new' 
+                ? `Creating profile for "${currentApplication?.firstName} ${currentApplication?.lastName}". Check below for potential duplicates before proceeding.`
+                : `Adding application from "${currentApplication?.firstName} ${currentApplication?.lastName}" to an existing speaker profile. Select the speaker to link to.`
+              }
             </DialogDescription>
           </DialogHeader>
 
@@ -3401,10 +3434,17 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8 bg-green-50 rounded-lg border border-green-200">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-green-600" />
-                  <h3 className="font-semibold text-green-900">No Duplicates Found</h3>
-                  <p className="text-green-700">This appears to be a unique speaker profile.</p>
+                <div className={`text-center py-8 rounded-lg border ${actionType === 'add_to_existing' ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'}`}>
+                  <Users className={`h-12 w-12 mx-auto mb-4 ${actionType === 'add_to_existing' ? 'text-orange-600' : 'text-green-600'}`} />
+                  <h3 className={`font-semibold mb-2 ${actionType === 'add_to_existing' ? 'text-orange-900' : 'text-green-900'}`}>
+                    {actionType === 'add_to_existing' ? 'No Matching Speakers Found' : 'No Duplicates Found'}
+                  </h3>
+                  <p className={actionType === 'add_to_existing' ? 'text-orange-700' : 'text-green-700'}>
+                    {actionType === 'add_to_existing' 
+                      ? 'No existing speakers match this application. You may want to create a new profile instead.'
+                      : 'This appears to be a unique speaker profile.'
+                    }
+                  </p>
                 </div>
               )}
 
@@ -3417,49 +3457,74 @@ export default function AdminDashboard() {
                     setCurrentApplication(null);
                     setPotentialDuplicates([]);
                     setSelectedExistingSpeaker(null);
+                    setActionType(null);
                   }}
                 >
                   Cancel
                 </Button>
                 
-                {potentialDuplicates.length > 0 && selectedExistingSpeaker && (
+                {actionType === 'add_to_existing' ? (
+                  // Show only link button for "Add to Existing" action
                   <Button 
-                    variant="outline" 
-                    className="border-orange-600 text-orange-700 hover:bg-orange-50"
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
                     onClick={handleLinkToExisting}
-                    disabled={linkToExistingSpeakerMutation.isPending}
+                    disabled={linkToExistingSpeakerMutation.isPending || !selectedExistingSpeaker}
                   >
                     {linkToExistingSpeakerMutation.isPending ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Linking...
                       </>
                     ) : (
                       <>
                         <LinkIcon className="h-4 w-4 mr-2" />
-                        Link to Selected Speaker
+                        {selectedExistingSpeaker ? 'Link to Selected Speaker' : 'Select a Speaker First'}
                       </>
                     )}
                   </Button>
-                )}
-                
-                <Button 
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  onClick={handleCreateNewProfile}
-                  disabled={approveApplicationMutation.isPending}
-                >
-                  {approveApplicationMutation.isPending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Create New Profile
-                    </>
-                  )}
-                </Button>
+                ) : actionType === 'create_new' ? (
+                  // Show both buttons for "Create New" action
+                  <>
+                    {potentialDuplicates.length > 0 && selectedExistingSpeaker && (
+                      <Button 
+                        variant="outline" 
+                        className="border-orange-600 text-orange-700 hover:bg-orange-50"
+                        onClick={handleLinkToExisting}
+                        disabled={linkToExistingSpeakerMutation.isPending}
+                      >
+                        {linkToExistingSpeakerMutation.isPending ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2"></div>
+                            Linking...
+                          </>
+                        ) : (
+                          <>
+                            <LinkIcon className="h-4 w-4 mr-2" />
+                            Link to Selected Speaker Instead
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    
+                    <Button 
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      onClick={handleCreateNewProfile}
+                      disabled={approveApplicationMutation.isPending}
+                    >
+                      {approveApplicationMutation.isPending ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Create New Profile
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : null}
               </div>
             </div>
           )}
