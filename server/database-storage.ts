@@ -631,8 +631,15 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Create speaker profile from application data
+    const fullName = `${application.firstName} ${application.lastName}`;
+    const slug = fullName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    
     const speakerData: InsertSpeaker = {
-      name: `${application.firstName} ${application.lastName}`,
+      name: fullName,
+      slug: slug,
       title: application.title,
       specialty: application.specialty,
       email: application.email,
