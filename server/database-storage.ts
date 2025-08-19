@@ -181,7 +181,13 @@ export class DatabaseStorage implements IStorage {
 
   // Inquiries
   async createInquiry(inquiry: InsertInquiry): Promise<Inquiry> {
-    const result = await db.insert(inquiries).values(inquiry).returning();
+    // Clean budget field - remove commas and non-numeric characters except decimal points
+    const cleanedInquiry = {
+      ...inquiry,
+      budget: inquiry.budget ? inquiry.budget.toString().replace(/[,$]/g, '') : inquiry.budget
+    };
+    
+    const result = await db.insert(inquiries).values(cleanedInquiry).returning();
     return result[0];
   }
 
