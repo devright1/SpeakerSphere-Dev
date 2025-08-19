@@ -76,8 +76,6 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getUserById(id: string): Promise<User | undefined>;
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
-  createSpeakerAccount(user: InsertUser, speakerId: number): Promise<User>;
-  linkSpeakerToUser(userId: string, speakerId: number): Promise<User | undefined>;
   
   // User Sessions
   createUserSession(session: InsertUserSession): Promise<UserSession>;

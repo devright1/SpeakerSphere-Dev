@@ -7,7 +7,6 @@ import { storage } from "./storage";
 import { insertReviewSchema, insertInquirySchema, insertUserSchema, insertSpeakerApplicationSchema } from "@shared/schema";
 import { AnalyticsService } from "./analytics";
 import { registerAdminRoutes } from "./admin-routes";
-import { registerAuthRoutes } from "./auth-routes";
 import { z } from "zod";
 
 // Analytics tracking middleware
@@ -31,9 +30,6 @@ const trackEvent = async (req: any, res: any, next: any) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register admin routes for domain synchronization
   registerAdminRoutes(app);
-  
-  // Register authentication routes
-  const requireAuth = registerAuthRoutes(app);
   
   // Add analytics tracking middleware
   app.use(trackEvent);
@@ -628,42 +624,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Failed to get speaker analytics:", error);
       res.status(500).json({ message: "Failed to get analytics" });
-    }
-  });
-
-  // Search speakers for lookup (no pagination)
-  app.get("/api/speakers/search", async (req, res) => {
-    try {
-      const { q } = req.query;
-      
-      if (!q || typeof q !== 'string' || q.length < 2) {
-        return res.status(400).json({ message: "Search query must be at least 2 characters" });
-      }
-      
-      const speakers = await storage.getSpeakers({
-        search: q,
-        limit: 20, // Limit search results for performance
-        offset: 0
-      });
-      
-      // Return speakers with essential information for lookup
-      const speakerResults = speakers.map(speaker => ({
-        id: speaker.id,
-        name: speaker.name,
-        slug: speaker.slug,
-        title: speaker.title,
-        practice: speaker.practice,
-        location: speaker.location,
-        email: speaker.email,
-        verified: speaker.verified,
-        imageUrl: speaker.imageUrl,
-        specialties: speaker.specialties
-      }));
-      
-      res.json(speakerResults);
-    } catch (error) {
-      console.error("Error searching speakers:", error);
-      res.status(500).json({ message: "Failed to search speakers" });
     }
   });
 

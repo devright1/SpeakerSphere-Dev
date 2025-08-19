@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Lock, User, LogOut } from "lucide-react";
-import { useAuth, useLogout } from "@/hooks/useAuth";
+import { useAuthState } from "@/hooks/useAuth";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -14,25 +14,15 @@ import {
 
 export default function Header() {
   const [location, setLocation] = useLocation();
-  const { user, isAuthenticated, isReviewer, isSpeaker } = useAuth();
-  const logoutMutation = useLogout();
+  const { user, isAuthenticated, logout } = useAuthState();
 
   // Navigation handlers for deployment compatibility
-  const navigateToSignIn = () => {
+  const navigateToAuth = () => {
     try {
-      setLocation('/signin');
+      setLocation('/auth');
     } catch (error) {
       // Fallback for deployment environments
-      window.location.href = '/signin';
-    }
-  };
-
-  const navigateToSignUp = () => {
-    try {
-      setLocation('/signup');
-    } catch (error) {
-      // Fallback for deployment environments
-      window.location.href = '/signup';
+      window.location.href = '/auth';
     }
   };
 
@@ -47,8 +37,8 @@ export default function Header() {
 
   const navigationItems = [
     { href: "/speakers", label: "Find Speakers" },
-    { href: "/speaker-lookup", label: "Find Your ID" },
     { href: "/categories", label: "Categories" },
+    { href: "/how-it-works", label: "How It Works" },
     { href: "/for-speakers", label: "For Speakers" },
   ];
 
@@ -105,7 +95,7 @@ export default function Header() {
                     My Reviews
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
+                  <DropdownMenuItem onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
@@ -116,14 +106,14 @@ export default function Header() {
                 <Button 
                   variant="ghost" 
                   className="text-gray-700 hover:text-primary deployment-safe-button"
-                  onClick={navigateToSignIn}
+                  onClick={navigateToAuth}
                   data-auth-button="signin"
                 >
                   Sign In
                 </Button>
                 <Button 
                   className="bg-primary hover:bg-blue-700 text-white deployment-safe-button"
-                  onClick={navigateToSignUp}
+                  onClick={navigateToAuth}
                   data-auth-button="getstarted"
                 >
                   Get Started
@@ -218,7 +208,7 @@ export default function Header() {
                         <Button 
                           variant="ghost" 
                           className="w-full justify-start text-gray-700"
-                          onClick={() => logoutMutation.mutate()}
+                          onClick={logout}
                         >
                           <LogOut className="h-4 w-4 mr-2" />
                           Sign Out
@@ -229,14 +219,14 @@ export default function Header() {
                         <Button 
                           variant="ghost" 
                           className="w-full justify-start text-gray-700 deployment-safe-button"
-                          onClick={navigateToSignIn}
+                          onClick={navigateToAuth}
                           data-auth-button="signin-mobile"
                         >
                           Sign In
                         </Button>
                         <Button 
                           className="w-full bg-primary hover:bg-blue-700 text-white deployment-safe-button"
-                          onClick={navigateToSignUp}
+                          onClick={navigateToAuth}
                           data-auth-button="getstarted-mobile"
                         >
                           Get Started

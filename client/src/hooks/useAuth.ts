@@ -1,149 +1,90 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useState, useEffect, createContext, useContext } from "react";
+import { User } from "@shared/schema";
 
-export interface AuthUser {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  userType: 'reviewer' | 'speaker';
-  speakerId?: number;
+interface AuthContextType {
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (token: string, user: User) => void;
+  logout: () => void;
+  updateUser: (user: User) => void;
 }
 
-export interface Speaker {
-  id: number;
-  name: string;
-  slug: string;
-  title: string;
-  verified: boolean;
-  imageUrl: string;
-}
-
-export interface AuthResponse {
-  user: AuthUser;
-  speaker?: Speaker;
-  token: string;
-}
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function useAuth() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["/api/auth/me"],
-    retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
+
+export function useAuthState() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for stored user session on component mount
+    const token = localStorage.getItem('userToken');
+    const userData = localStorage.getItem('userData');
+    
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+      }
+    }
+    
+    setIsLoading(false);
+  }, []);
+
+  const login = (token: string, userData: User) => {
+    localStorage.setItem('userToken', token);
+    localStorage.setItem('userData', JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userData');
+    setUser(null);
+  };
+
+  const updateUser = (userData: User) => {
+    localStorage.setItem('userData', JSON.stringify(userData));
+    setUser(userData);
+  };
 
   return {
-    user: data?.user as AuthUser | undefined,
-    speaker: data?.speaker as Speaker | undefined,
+    user,
     isLoading,
-    isAuthenticated: !!data?.user,
-    isReviewer: data?.user?.userType === 'reviewer',
-    isSpeaker: data?.user?.userType === 'speaker',
-    error,
+    isAuthenticated: !!user,
+    login,
+    logout,
+    updateUser,
   };
 }
 
-export function useLogin() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (credentials: { email: string; password: string }) => {
-      return apiRequest("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify(credentials),
-      });
-    },
-    onSuccess: (data) => {
-      queryClient.setQueryData(["/api/auth/me"], data);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-    },
-  });
+// Helper function to get auth token for API requests
+export function getAuthToken(): string | null {
+  return localStorage.getItem('userToken');
 }
 
-export function useRegisterReviewer() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (userData: {
-      email: string;
-      password: string;
-      firstName: string;
-      lastName: string;
-      title?: string;
-      company?: string;
-    }) => {
-      return apiRequest("/api/auth/register/reviewer", {
-        method: "POST",
-        body: JSON.stringify(userData),
-      });
-    },
-    onSuccess: (data) => {
-      queryClient.setQueryData(["/api/auth/me"], data);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-    },
-  });
-}
-
-export function useRegisterSpeaker() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (userData: {
-      email: string;
-      password: string;
-      firstName: string;
-      lastName: string;
-      title?: string;
-      company?: string;
-      speakerId: number;
-    }) => {
-      return apiRequest("/api/auth/register/speaker", {
-        method: "POST",
-        body: JSON.stringify(userData),
-      });
-    },
-    onSuccess: (data) => {
-      queryClient.setQueryData(["/api/auth/me"], data);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-    },
-  });
-}
-
-export function useLogout() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      return apiRequest("/api/auth/logout", {
-        method: "POST",
-      });
-    },
-    onSuccess: () => {
-      queryClient.setQueryData(["/api/auth/me"], null);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      window.location.href = "/";
-    },
-  });
-}
-
-export function useVerifySpeaker() {
-  return useMutation({
-    mutationFn: async (data: { speakerId: number; email: string }) => {
-      return apiRequest("/api/auth/verify-speaker", {
-        method: "POST", 
-        body: JSON.stringify(data),
-      });
-    },
-  });
-}
-
-export function useCheckEmail() {
-  return useMutation({
-    mutationFn: async (email: string) => {
-      return apiRequest("/api/auth/check-email", {
-        method: "POST",
-        body: JSON.stringify({ email }),
-      });
-    },
-  });
+// Helper function to get current user
+export function getCurrentUser(): User | null {
+  const userData = localStorage.getItem('userData');
+  if (userData) {
+    try {
+      return JSON.parse(userData);
+    } catch (error) {
+      console.error('Error parsing stored user data:', error);
+      return null;
+    }
+  }
+  return null;
 }
