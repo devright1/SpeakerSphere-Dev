@@ -497,6 +497,46 @@ export default function AdminDashboard() {
     },
   });
 
+  const approveApplicationMutation = useMutation({
+    mutationFn: async ({ applicationId, reviewedBy }: { applicationId: number; reviewedBy: string }) => {
+      const response = await fetch(`/api/admin/speaker-applications/${applicationId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewedBy }),
+      });
+      if (!response.ok) throw new Error('Failed to approve application');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-applications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      
+      // Show login credentials in toast with copy functionality
+      const credentials = `Email: ${data.loginInstructions?.email}\nPassword: ${data.loginInstructions?.password}`;
+      
+      toast({
+        title: "Speaker Account Created!",
+        description: (
+          <div className="space-y-3">
+            <p>Speaker profile created successfully.</p>
+            <div className="bg-gray-100 p-3 rounded text-sm">
+              <p><strong>Login Details:</strong></p>
+              <p>Email: {data.loginInstructions?.email}</p>
+              <p>Password: {data.loginInstructions?.password}</p>
+            </div>
+            <p className="text-xs text-gray-600">Please provide these credentials to the speaker manually.</p>
+          </div>
+        ),
+        duration: 10000, // Show for 10 seconds
+      });
+      
+      console.log("Speaker login credentials:", data.loginInstructions);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to approve application", variant: "destructive" });
+    },
+  });
+
   const handleEditCategory = (category: any) => {
     setEditingCategory(category);
     
@@ -685,7 +725,16 @@ export default function AdminDashboard() {
 
   // Handle application action for the separate speaker management section
   const handleApplicationAction = (applicationId: number, status: string) => {
-    updateApplicationMutation.mutate({ applicationId, status });
+    if (status === 'approved') {
+      // Use approve endpoint for approved applications
+      approveApplicationMutation.mutate({
+        applicationId,
+        reviewedBy: 'Admin User'
+      });
+    } else {
+      // Use status update endpoint for other statuses
+      updateApplicationMutation.mutate({ applicationId, status });
+    }
   };
 
   // Filter users based on search and filters

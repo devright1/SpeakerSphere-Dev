@@ -3,6 +3,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { speakers } from "../shared/schema";
 import { eq } from "drizzle-orm";
+import { EmailService } from "./email-service";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
 
 import { GNYAPSpeakerImporter } from "./gnyap-speaker-import";
@@ -53,12 +54,31 @@ export function registerAdminRoutes(app: Express) {
       const applicationId = parseInt(req.params.id);
       const { status, adminNotes, reviewedBy } = req.body;
       
+      // Get application details before update for email
+      const application = await storage.getSpeakerApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
       const updatedApplication = await storage.updateSpeakerApplicationStatus(
         applicationId, 
         status, 
         adminNotes, 
         reviewedBy
       );
+      
+      // Send status update email (except for approved - that's handled in the approve endpoint)
+      if (status !== 'approved') {
+        const emailSent = await EmailService.sendApplicationStatusEmail(
+          application.email,
+          application.firstName,
+          application.lastName,
+          status,
+          adminNotes
+        );
+        
+        console.log(`📧 Status update email for ${application.email}: ${emailSent ? 'sent' : 'failed'}`);
+      }
       
       res.json(updatedApplication);
     } catch (error) {
@@ -72,14 +92,48 @@ export function registerAdminRoutes(app: Express) {
       const applicationId = parseInt(req.params.id);
       const { reviewedBy } = req.body;
       
+      // Get application details before approval for email
+      const application = await storage.getSpeakerApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
       const result = await storage.approveSpeakerApplication(applicationId, reviewedBy);
+      
+      // Generate temporary password and update user
+      const temporaryPassword = EmailService.generateTemporaryPassword();
+      const hashedPassword = await EmailService.hashPassword(temporaryPassword);
+      
+      // Update the created user with the hashed password
+      await storage.updateUser(result.user.id, { 
+        passwordHash: hashedPassword 
+      });
+      
+      // Send welcome email with login credentials
+      const loginUrl = `${req.protocol}://${req.get('host')}/auth`;
+      const emailSent = await EmailService.sendSpeakerWelcomeEmail({
+        firstName: application.firstName,
+        lastName: application.lastName,
+        email: application.email,
+        temporaryPassword: temporaryPassword,
+        loginUrl: loginUrl
+      });
       
       res.json({ 
         success: true, 
         message: "Speaker application approved and profile created",
         speakerId: result.speaker.id,
-        userId: result.user.id
+        userId: result.user.id,
+        emailSent: emailSent,
+        temporaryPassword: temporaryPassword, // Include password in response for manual delivery
+        loginInstructions: {
+          email: application.email,
+          password: temporaryPassword,
+          loginUrl: loginUrl
+        }
       });
+      
+      console.log(`🎉 Speaker ${application.firstName} ${application.lastName} approved. Login: ${application.email} / ${temporaryPassword}`);
     } catch (error) {
       console.error("Failed to approve speaker application:", error);
       res.status(500).json({ message: "Internal server error" });
