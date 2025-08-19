@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload } from "lucide-react";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -70,6 +70,13 @@ export default function AdminDashboard() {
 
   // Bulk import state
   const [isBulkImporting, setIsBulkImporting] = useState(false);
+  
+  // Duplicate checking state
+  const [duplicateCheckDialogOpen, setDuplicateCheckDialogOpen] = useState(false);
+  const [currentApplication, setCurrentApplication] = useState<any>(null);
+  const [potentialDuplicates, setPotentialDuplicates] = useState<any[]>([]);
+  const [selectedExistingSpeaker, setSelectedExistingSpeaker] = useState<number | null>(null);
+  const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
   
   const { toast } = useToast();
 
@@ -497,6 +504,66 @@ export default function AdminDashboard() {
     },
   });
 
+  // Check for duplicate speakers mutation
+  const checkDuplicatesMutation = useMutation({
+    mutationFn: async (applicationId: number) => {
+      const response = await fetch(`/api/admin/speaker-applications/${applicationId}/check-duplicates`);
+      if (!response.ok) throw new Error('Failed to check for duplicates');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setPotentialDuplicates(data.potentialMatches || []);
+      setDuplicateCheckDialogOpen(true);
+      setIsCheckingDuplicates(false);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to check for duplicates", variant: "destructive" });
+      setIsCheckingDuplicates(false);
+    },
+  });
+
+  // Link to existing speaker mutation
+  const linkToExistingSpeakerMutation = useMutation({
+    mutationFn: async ({ applicationId, existingSpeakerId }: { applicationId: number; existingSpeakerId: number }) => {
+      const response = await fetch(`/api/admin/speaker-applications/${applicationId}/link-existing`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ existingSpeakerId, reviewedBy: adminEmail }),
+      });
+      if (!response.ok) throw new Error('Failed to link to existing speaker');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-applications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      setDuplicateCheckDialogOpen(false);
+      setCurrentApplication(null);
+      setPotentialDuplicates([]);
+      setSelectedExistingSpeaker(null);
+      
+      toast({
+        title: "Application Linked!",
+        description: (
+          <div className="space-y-3">
+            <p>Application linked to existing speaker profile successfully.</p>
+            <div className="bg-gray-100 p-3 rounded text-sm">
+              <p><strong>Login Details:</strong></p>
+              <p>Email: {data.loginInstructions?.email}</p>
+              <p>Password: {data.loginInstructions?.password}</p>
+            </div>
+            <p className="text-xs text-gray-600">Please provide these credentials to the speaker manually.</p>
+          </div>
+        ),
+        duration: 10000,
+      });
+      
+      console.log("Speaker login credentials:", data.loginInstructions);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to link application to existing speaker", variant: "destructive" });
+    },
+  });
+
   const approveApplicationMutation = useMutation({
     mutationFn: async ({ applicationId, reviewedBy }: { applicationId: number; reviewedBy: string }) => {
       const response = await fetch(`/api/admin/speaker-applications/${applicationId}/approve`, {
@@ -510,6 +577,9 @@ export default function AdminDashboard() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-applications"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      setDuplicateCheckDialogOpen(false);
+      setCurrentApplication(null);
+      setPotentialDuplicates([]);
       
       // Show login credentials in toast with copy functionality
       const credentials = `Email: ${data.loginInstructions?.email}\nPassword: ${data.loginInstructions?.password}`;
@@ -726,14 +796,34 @@ export default function AdminDashboard() {
   // Handle application action for the separate speaker management section
   const handleApplicationAction = (applicationId: number, status: string) => {
     if (status === 'approved') {
-      // Use approve endpoint for approved applications
-      approveApplicationMutation.mutate({
-        applicationId,
-        reviewedBy: 'Admin User'
-      });
+      // Check for duplicates first before approving
+      const application = applications?.find((app: any) => app.id === applicationId);
+      if (application) {
+        setCurrentApplication(application);
+        setIsCheckingDuplicates(true);
+        checkDuplicatesMutation.mutate(applicationId);
+      }
     } else {
       // Use status update endpoint for other statuses
       updateApplicationMutation.mutate({ applicationId, status });
+    }
+  };
+
+  const handleCreateNewProfile = () => {
+    if (currentApplication) {
+      approveApplicationMutation.mutate({
+        applicationId: currentApplication.id,
+        reviewedBy: adminEmail || 'Admin User'
+      });
+    }
+  };
+
+  const handleLinkToExisting = () => {
+    if (currentApplication && selectedExistingSpeaker) {
+      linkToExistingSpeakerMutation.mutate({
+        applicationId: currentApplication.id,
+        existingSpeakerId: selectedExistingSpeaker
+      });
     }
   };
 
@@ -3210,6 +3300,169 @@ export default function AdminDashboard() {
               {addSpeakerMutation.isPending ? "Adding Speaker..." : "Add Speaker"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Duplicate Checking Dialog */}
+      <Dialog open={duplicateCheckDialogOpen} onOpenChange={setDuplicateCheckDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Users className="h-5 w-5 mr-2 text-orange-600" />
+              Duplicate Speaker Check
+            </DialogTitle>
+            <DialogDescription>
+              Found potential duplicate speakers for "{currentApplication?.firstName} {currentApplication?.lastName}". 
+              Choose to create a new profile or link to an existing speaker.
+            </DialogDescription>
+          </DialogHeader>
+
+          {isCheckingDuplicates ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Checking for potential duplicates...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Current Application Info */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 className="font-semibold text-blue-900 mb-2">New Application Details</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-blue-800">Name:</span> {currentApplication?.firstName} {currentApplication?.lastName}
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-800">Email:</span> {currentApplication?.email}
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-800">Title:</span> {currentApplication?.title}
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-800">Specialty:</span> {currentApplication?.specialty}
+                  </div>
+                </div>
+              </div>
+
+              {/* Potential Duplicates */}
+              {potentialDuplicates.length > 0 ? (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-4">
+                    Found {potentialDuplicates.length} Potential Matches
+                  </h3>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {potentialDuplicates.map((speaker: any) => (
+                      <div 
+                        key={speaker.id}
+                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                          selectedExistingSpeaker === speaker.id 
+                            ? 'border-green-500 bg-green-50' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setSelectedExistingSpeaker(speaker.id)}
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0">
+                            <input
+                              type="radio"
+                              name="existingSpeaker"
+                              value={speaker.id}
+                              checked={selectedExistingSpeaker === speaker.id}
+                              onChange={() => setSelectedExistingSpeaker(speaker.id)}
+                              className="mt-1"
+                            />
+                          </div>
+                          <img 
+                            src={speaker.imageUrl || '/api/placeholder/80/80'} 
+                            alt={speaker.name}
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900">{speaker.name}</h4>
+                            <p className="text-gray-600">{speaker.title}</p>
+                            <div className="grid grid-cols-2 gap-2 mt-2 text-sm text-gray-500">
+                              <div>Email: {speaker.email || 'Not provided'}</div>
+                              <div>Category: {speaker.category || 'Not set'}</div>
+                              <div>Location: {speaker.location || 'Not provided'}</div>
+                              <div>Rating: {speaker.rating ? `${speaker.rating}/5` : 'No ratings'}</div>
+                            </div>
+                            {speaker.matchReason && (
+                              <div className="mt-2">
+                                <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
+                                  Match: {speaker.matchReason}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-green-50 rounded-lg border border-green-200">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-green-600" />
+                  <h3 className="font-semibold text-green-900">No Duplicates Found</h3>
+                  <p className="text-green-700">This appears to be a unique speaker profile.</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setDuplicateCheckDialogOpen(false);
+                    setCurrentApplication(null);
+                    setPotentialDuplicates([]);
+                    setSelectedExistingSpeaker(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                
+                {potentialDuplicates.length > 0 && selectedExistingSpeaker && (
+                  <Button 
+                    variant="outline" 
+                    className="border-orange-600 text-orange-700 hover:bg-orange-50"
+                    onClick={handleLinkToExisting}
+                    disabled={linkToExistingSpeakerMutation.isPending}
+                  >
+                    {linkToExistingSpeakerMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2"></div>
+                        Linking...
+                      </>
+                    ) : (
+                      <>
+                        <LinkIcon className="h-4 w-4 mr-2" />
+                        Link to Selected Speaker
+                      </>
+                    )}
+                  </Button>
+                )}
+                
+                <Button 
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  onClick={handleCreateNewProfile}
+                  disabled={approveApplicationMutation.isPending}
+                >
+                  {approveApplicationMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Create New Profile
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

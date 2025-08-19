@@ -87,6 +87,200 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Check for potential duplicate speakers by name
+  app.get("/api/admin/speaker-applications/:id/check-duplicates", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      
+      // Get application details
+      const application = await storage.getSpeakerApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
+      const fullName = `${application.firstName} ${application.lastName}`.trim();
+      
+      // Search for existing speakers with similar names
+      const allSpeakers = await storage.getSpeakers({ includeHidden: true });
+      const potentialMatches = allSpeakers.filter(speaker => {
+        const speakerName = speaker.name.toLowerCase();
+        const applicationName = fullName.toLowerCase();
+        
+        // Check for exact match or very similar names
+        return speakerName === applicationName || 
+               speakerName.includes(applicationName) || 
+               applicationName.includes(speakerName) ||
+               // Check if individual names match (e.g., "Dr. John Smith" vs "John Smith")
+               speakerName.replace(/^(dr\.?|prof\.?|mr\.?|mrs\.?|ms\.?)\s+/i, '') === applicationName ||
+               applicationName.replace(/^(dr\.?|prof\.?|mr\.?|mrs\.?|ms\.?)\s+/i, '') === speakerName;
+      });
+      
+      res.json({
+        applicationName: fullName,
+        potentialMatches: potentialMatches.map(speaker => ({
+          id: speaker.id,
+          name: speaker.name,
+          title: speaker.title,
+          email: speaker.email,
+          category: speaker.category,
+          hidden: speaker.hideProfile
+        }))
+      });
+    } catch (error) {
+      console.error("Failed to check for duplicates:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Link application to existing speaker
+  app.post("/api/admin/speaker-applications/:id/link-existing", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const { existingSpeakerId, reviewedBy } = req.body;
+      
+      // Get application details
+      const application = await storage.getSpeakerApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
+      // Get existing speaker
+      const existingSpeaker = await storage.getSpeaker(existingSpeakerId);
+      if (!existingSpeaker) {
+        return res.status(404).json({ message: "Existing speaker not found" });
+      }
+      
+      // Check if there's already a user for this email
+      let user = await storage.getUserByEmail(application.email);
+      
+      if (!user) {
+        // Create a new user account for this email
+        user = await storage.createUser({
+          email: application.email,
+          name: `${application.firstName} ${application.lastName}`,
+          accountType: 'speaker',
+          passwordHash: '' // Will be set later
+        });
+      }
+      
+      // Update application status and link to existing speaker
+      await storage.updateSpeakerApplicationStatus(
+        applicationId, 
+        'approved', 
+        `Linked to existing speaker profile: ${existingSpeaker.name} (ID: ${existingSpeaker.id})`,
+        reviewedBy
+      );
+      
+      // Generate temporary password and update user
+      const temporaryPassword = EmailService.generateTemporaryPassword();
+      const hashedPassword = await EmailService.hashPassword(temporaryPassword);
+      
+      await storage.updateUser(user.id, { 
+        passwordHash: hashedPassword 
+      });
+      
+      // Send welcome email with login credentials
+      const loginUrl = `${req.protocol}://${req.get('host')}/auth`;
+      const emailSent = await EmailService.sendSpeakerWelcomeEmail({
+        firstName: application.firstName,
+        lastName: application.lastName,
+        email: application.email,
+        temporaryPassword: temporaryPassword,
+        loginUrl: loginUrl
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Application linked to existing speaker profile",
+        speakerId: existingSpeaker.id,
+        userId: user.id,
+        linkedToExisting: true,
+        emailSent: emailSent,
+        temporaryPassword: temporaryPassword,
+        loginInstructions: {
+          email: application.email,
+          password: temporaryPassword,
+          loginUrl: loginUrl
+        }
+      });
+      
+      console.log(`🔗 Application linked: ${application.firstName} ${application.lastName} -> existing speaker ${existingSpeaker.name} (${existingSpeaker.id})`);
+    } catch (error) {
+      console.error("Failed to link to existing speaker:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Check for duplicate speakers before approval
+  app.get("/api/admin/speaker-applications/:id/check-duplicates", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      
+      // Get application details
+      const application = await storage.getSpeakerApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
+      // Search for potential duplicates based on name similarity and email
+      const allSpeakers = await storage.getAllSpeakers();
+      
+      const potentialMatches = [];
+      
+      for (const speaker of allSpeakers) {
+        let matchReason = null;
+        
+        // Check for exact email match
+        if (speaker.email && application.email && speaker.email.toLowerCase() === application.email.toLowerCase()) {
+          matchReason = "Exact email match";
+        }
+        
+        // Check for similar names (simple word matching)
+        const appName = `${application.firstName} ${application.lastName}`.toLowerCase();
+        const speakerName = speaker.name.toLowerCase();
+        
+        // Check if names share significant words
+        const appWords = appName.split(' ').filter(word => word.length > 2);
+        const speakerWords = speakerName.split(' ').filter(word => word.length > 2);
+        
+        const sharedWords = appWords.filter(word => 
+          speakerWords.some(sWord => sWord.includes(word) || word.includes(sWord))
+        );
+        
+        // If more than half the words match, it's a potential duplicate
+        if (sharedWords.length >= Math.max(1, Math.min(appWords.length, speakerWords.length) / 2)) {
+          if (!matchReason) {
+            matchReason = `Similar name (${sharedWords.join(', ')})`;
+          }
+        }
+        
+        if (matchReason) {
+          potentialMatches.push({
+            ...speaker,
+            matchReason
+          });
+        }
+      }
+      
+      res.json({ 
+        potentialMatches,
+        application: {
+          id: application.id,
+          firstName: application.firstName,
+          lastName: application.lastName,
+          email: application.email,
+          title: application.title,
+          specialty: application.specialty
+        }
+      });
+      
+      console.log(`🔍 Checked duplicates for ${application.firstName} ${application.lastName}: found ${potentialMatches.length} potential matches`);
+    } catch (error) {
+      console.error("Failed to check duplicates:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.post("/api/admin/speaker-applications/:id/approve", async (req, res) => {
     try {
       const applicationId = parseInt(req.params.id);
