@@ -204,7 +204,8 @@ export default function SpeakerProfile() {
   const inquiryMutation = useMutation({
     mutationFn: async (data: z.infer<typeof inquirySchema>) => {
       if (!speaker) throw new Error("Speaker not found");
-      const response = await apiRequest("POST", `/api/speakers/${speaker.id}/inquiries`, data);
+      const inquiryData = { ...data, speakerId: speaker.id };
+      const response = await apiRequest("POST", `/api/inquiries`, inquiryData);
       return response.json();
     },
     onSuccess: (_, variables) => {
