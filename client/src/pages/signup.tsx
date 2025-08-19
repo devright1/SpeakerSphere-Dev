@@ -298,6 +298,16 @@ export default function SignUp() {
                       Link your existing speaker profile to manage your information and view analytics
                     </AlertDescription>
                   </Alert>
+                  
+                  <Alert className="border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20">
+                    <AlertDescription className="text-blue-800 dark:text-blue-200">
+                      <strong>Need your Speaker ID?</strong>{" "}
+                      <Link href="/speaker-lookup" className="underline hover:no-underline">
+                        Search for your profile here
+                      </Link>{" "}
+                      to find your ID and verify your information.
+                    </AlertDescription>
+                  </Alert>
                 </div>
 
                 <div className="space-y-4">

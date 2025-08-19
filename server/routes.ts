@@ -631,6 +631,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Search speakers for lookup (no pagination)
+  app.get("/api/speakers/search", async (req, res) => {
+    try {
+      const { q } = req.query;
+      
+      if (!q || typeof q !== 'string' || q.length < 2) {
+        return res.status(400).json({ message: "Search query must be at least 2 characters" });
+      }
+      
+      const speakers = await storage.getSpeakers({
+        search: q,
+        limit: 20, // Limit search results for performance
+        offset: 0
+      });
+      
+      // Return speakers with essential information for lookup
+      const speakerResults = speakers.map(speaker => ({
+        id: speaker.id,
+        name: speaker.name,
+        slug: speaker.slug,
+        title: speaker.title,
+        practice: speaker.practice,
+        location: speaker.location,
+        email: speaker.email,
+        verified: speaker.verified,
+        imageUrl: speaker.imageUrl,
+        specialties: speaker.specialties
+      }));
+      
+      res.json(speakerResults);
+    } catch (error) {
+      console.error("Error searching speakers:", error);
+      res.status(500).json({ message: "Failed to search speakers" });
+    }
+  });
+
   // Get all speakers with optional filters
   app.get("/api/speakers", async (req, res) => {
     try {
