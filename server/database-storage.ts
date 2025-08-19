@@ -34,7 +34,7 @@ import {
   type InsertSpeakerInteraction
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, like, gte, lte, sql } from "drizzle-orm";
+import { eq, desc, and, or, like, gte, lte, sql, isNotNull } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -121,6 +121,25 @@ export class DatabaseStorage implements IStorage {
 
   async getSpeakerBySlug(slug: string): Promise<Speaker | undefined> {
     const result = await db.select().from(speakers).where(eq(speakers.slug, slug));
+    return result[0];
+  }
+
+  async getSpeakerByName(name: string): Promise<Speaker | undefined> {
+    const result = await db.select().from(speakers).where(eq(speakers.slug, name));
+    return result[0];
+  }
+
+  async getSpeakerByUserId(userId: string): Promise<Speaker | undefined> {
+    // First find the user to get their speaker ID
+    const userResult = await db.select().from(users).where(eq(users.id, userId));
+    const user = userResult[0];
+    
+    if (!user || !user.speakerId) {
+      return undefined;
+    }
+    
+    // Then get the speaker profile
+    const result = await db.select().from(speakers).where(eq(speakers.id, user.speakerId));
     return result[0];
   }
 
@@ -217,6 +236,15 @@ export class DatabaseStorage implements IStorage {
 
   // User Authentication
   async getUserByEmail(email: string): Promise<User | undefined> {
+    // First try to get user with speaker_id
+    const speakerUser = await db.select().from(users)
+      .where(and(eq(users.email, email), isNotNull(users.speakerId)));
+    
+    if (speakerUser.length > 0) {
+      return speakerUser[0];
+    }
+    
+    // Fallback to any user with this email
     const result = await db.select().from(users).where(eq(users.email, email));
     return result[0];
   }

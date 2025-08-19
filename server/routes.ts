@@ -296,6 +296,32 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Get speaker by user ID
+  app.get("/api/speakers/by-user/:userId", async (req, res) => {
+    try {
+      const speaker = await storage.getSpeakerByUserId(req.params.userId);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker profile not found" });
+      }
+      res.json(speaker);
+    } catch (error) {
+      console.error("Error fetching speaker by user:", error);
+      res.status(500).json({ message: "Failed to fetch speaker profile" });
+    }
+  });
+
+  // Update speaker profile
+  app.put("/api/speakers/:id", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      const updatedSpeaker = await storage.updateSpeaker(speakerId, req.body);
+      res.json(updatedSpeaker);
+    } catch (error) {
+      console.error("Error updating speaker:", error);
+      res.status(500).json({ message: "Failed to update speaker" });
+    }
+  });
+
   // Get all categories
   app.get("/api/categories", async (req, res) => {
     try {

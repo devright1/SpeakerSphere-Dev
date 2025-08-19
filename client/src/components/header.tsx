@@ -86,6 +86,12 @@ export default function Header() {
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
+                  {user?.speakerId && (
+                    <DropdownMenuItem onClick={() => setLocation('/speaker-dashboard')}>
+                      <span className="mr-2">🎤</span>
+                      Speaker Dashboard
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem>
                     <span className="mr-2">❤️</span>
                     Favorites

@@ -87,7 +87,12 @@ export default function AuthPage() {
           title: "Welcome back!",
           description: "You've been successfully logged in.",
         });
-        setLocation('/');
+        // Check if user has a speaker profile to redirect to speaker dashboard
+        if (data.user.speakerId) {
+          setLocation('/speaker-dashboard');
+        } else {
+          setLocation('/');
+        }
       }, 1500);
     },
     onError: (error: any) => {

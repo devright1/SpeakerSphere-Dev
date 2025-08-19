@@ -14,6 +14,7 @@ import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin";
 import ForSpeakers from "@/pages/for-speakers";
 import SpeakerApplication from "@/pages/speaker-application";
+import SpeakerDashboard from "@/pages/speaker-dashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/for-speakers" component={ForSpeakers} />
       <Route path="/speaker-application" component={SpeakerApplication} />
+      <Route path="/speaker-dashboard" component={SpeakerDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
