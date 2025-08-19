@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { storage } from "./storage";
 import { insertUserSchema, insertSpeakerApplicationSchema } from "../shared/schema";
+import { registerAdminRoutes } from "./admin-routes";
 import multer from "multer";
 
 // Types for user authentication
@@ -31,6 +32,9 @@ const upload = multer({
 });
 
 export function registerRoutes(app: Express): Express {
+  // Register admin routes first
+  registerAdminRoutes(app);
+  
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
