@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Lock, User, LogOut } from "lucide-react";
-import { useAuthState } from "@/hooks/useAuth";
+import { useAuth, useLogout } from "@/hooks/useAuth";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -14,15 +14,25 @@ import {
 
 export default function Header() {
   const [location, setLocation] = useLocation();
-  const { user, isAuthenticated, logout } = useAuthState();
+  const { user, isAuthenticated, isReviewer, isSpeaker } = useAuth();
+  const logoutMutation = useLogout();
 
   // Navigation handlers for deployment compatibility
-  const navigateToAuth = () => {
+  const navigateToSignIn = () => {
     try {
-      setLocation('/auth');
+      setLocation('/signin');
     } catch (error) {
       // Fallback for deployment environments
-      window.location.href = '/auth';
+      window.location.href = '/signin';
+    }
+  };
+
+  const navigateToSignUp = () => {
+    try {
+      setLocation('/signup');
+    } catch (error) {
+      // Fallback for deployment environments
+      window.location.href = '/signup';
     }
   };
 
@@ -95,7 +105,7 @@ export default function Header() {
                     My Reviews
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>
+                  <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
@@ -106,14 +116,14 @@ export default function Header() {
                 <Button 
                   variant="ghost" 
                   className="text-gray-700 hover:text-primary deployment-safe-button"
-                  onClick={navigateToAuth}
+                  onClick={navigateToSignIn}
                   data-auth-button="signin"
                 >
                   Sign In
                 </Button>
                 <Button 
                   className="bg-primary hover:bg-blue-700 text-white deployment-safe-button"
-                  onClick={navigateToAuth}
+                  onClick={navigateToSignUp}
                   data-auth-button="getstarted"
                 >
                   Get Started
@@ -208,7 +218,7 @@ export default function Header() {
                         <Button 
                           variant="ghost" 
                           className="w-full justify-start text-gray-700"
-                          onClick={logout}
+                          onClick={() => logoutMutation.mutate()}
                         >
                           <LogOut className="h-4 w-4 mr-2" />
                           Sign Out
@@ -219,14 +229,14 @@ export default function Header() {
                         <Button 
                           variant="ghost" 
                           className="w-full justify-start text-gray-700 deployment-safe-button"
-                          onClick={navigateToAuth}
+                          onClick={navigateToSignIn}
                           data-auth-button="signin-mobile"
                         >
                           Sign In
                         </Button>
                         <Button 
                           className="w-full bg-primary hover:bg-blue-700 text-white deployment-safe-button"
-                          onClick={navigateToAuth}
+                          onClick={navigateToSignUp}
                           data-auth-button="getstarted-mobile"
                         >
                           Get Started

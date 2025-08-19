@@ -7,6 +7,7 @@ import { storage } from "./storage";
 import { insertReviewSchema, insertInquirySchema, insertUserSchema, insertSpeakerApplicationSchema } from "@shared/schema";
 import { AnalyticsService } from "./analytics";
 import { registerAdminRoutes } from "./admin-routes";
+import { registerAuthRoutes } from "./auth-routes";
 import { z } from "zod";
 
 // Analytics tracking middleware
@@ -30,6 +31,9 @@ const trackEvent = async (req: any, res: any, next: any) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register admin routes for domain synchronization
   registerAdminRoutes(app);
+  
+  // Register authentication routes
+  const requireAuth = registerAuthRoutes(app);
   
   // Add analytics tracking middleware
   app.use(trackEvent);

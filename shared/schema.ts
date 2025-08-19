@@ -199,6 +199,8 @@ export const users = pgTable("users", {
   title: varchar("title", { length: 200 }),
   company: varchar("company", { length: 200 }),
   profileImageUrl: text("profile_image_url"),
+  userType: text("user_type").notNull().default("reviewer"), // "reviewer" or "speaker"
+  speakerId: integer("speaker_id"), // Links to speakers table if userType is "speaker"
   emailVerified: boolean("email_verified").default(false),
   isActive: boolean("is_active").default(true),
   lastLoginAt: timestamp("last_login_at"),
@@ -330,6 +332,7 @@ export const demandMetrics = pgTable("demand_metrics", {
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   passwordHash: true, // Remove passwordHash from the input schema
+  speakerId: true, // Set automatically when speaker account is created
   emailVerified: true,
   isActive: true,
   lastLoginAt: true,
@@ -337,6 +340,15 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 }).extend({
   password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+// Separate schemas for different user types
+export const insertReviewerSchema = insertUserSchema.extend({
+  userType: z.literal("reviewer"),
+});
+
+export const insertSpeakerAccountSchema = insertUserSchema.extend({
+  userType: z.literal("speaker"),
 });
 
 export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
