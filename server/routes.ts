@@ -1,100 +1,83 @@
-import type { Express } from "express";
-import { createServer, type Server } from "http";
-import multer from "multer";
+import type { Express, Request } from "express";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
-import { storage } from "./storage";
-import { insertReviewSchema, insertInquirySchema, insertUserSchema, insertSpeakerApplicationSchema } from "@shared/schema";
-import { AnalyticsService } from "./analytics";
-import { registerAdminRoutes } from "./admin-routes";
 import { z } from "zod";
+import { zfd } from "zod-form-data";
+import { storage } from "./storage";
+import { insertUserSchema, insertSpeakerApplicationSchema } from "../shared/schema";
+import multer from "multer";
 
-// Analytics tracking middleware
-const trackEvent = async (req: any, res: any, next: any) => {
-  req.trackAnalytics = (speakerId: number, eventType: string, metadata?: any) => {
-    // Don't wait for analytics to complete
-    AnalyticsService.trackClick(
-      speakerId,
-      eventType,
-      metadata,
-      req.get('User-Agent'),
-      req.ip,
-      req.get('Referer'),
-      req.sessionID,
-      req.user?.id?.toString()
-    ).catch(error => console.error('Analytics tracking error:', error));
+// Types for user authentication
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    speakerId?: number;
   };
-  next();
-};
+  session: any;
+}
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Register admin routes for domain synchronization
-  registerAdminRoutes(app);
-  
-  // Add analytics tracking middleware
-  app.use(trackEvent);
-  // Configure multer for file uploads
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-      fileSize: 5 * 1024 * 1024 // 5MB limit
-    },
-    fileFilter: (req, file, cb) => {
-      if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only image files are allowed'));
+// Form validation schemas
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+// Multer configuration for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+export function registerRoutes(app: Express) {
+  // Health check endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
+  // Speaker application submission
+  app.post("/api/auth/speaker-application", async (req, res) => {
+    try {
+      const validatedData = insertSpeakerApplicationSchema.parse(req.body);
+      
+      // Create speaker application record
+      const application = await storage.createSpeakerApplication(validatedData);
+      
+      res.status(201).json({
+        success: true,
+        message: "Speaker application submitted successfully! We'll review your application within 5-7 business days.",
+        applicationId: application.id
+      });
+    } catch (error: any) {
+      console.error("Speaker application error:", error);
+      
+      if (error.name === "ZodError") {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid application data",
+          errors: error.errors
+        });
       }
+      
+      res.status(500).json({
+        success: false,
+        message: "Failed to submit application. Please try again."
+      });
     }
   });
 
-  // Authentication middleware
-  const authenticateToken = async (req: any, res: any, next: any) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).json({ message: "Access token required" });
-    }
-
-    try {
-      const user = await storage.getUserByToken(token);
-      if (!user) {
-        return res.status(403).json({ message: "Invalid or expired token" });
-      }
-      req.user = user;
-      next();
-    } catch (error) {
-      return res.status(403).json({ message: "Invalid token" });
-    }
-  };
-
-  // User authentication routes
+  // User registration
   app.post("/api/auth/register", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
-      
-      // If this is a speaker registration, redirect to application process
-      if (userData.accountType === "speaker") {
-        return res.status(400).json({ 
-          message: "Speaker registration has been moved to application process. Please use the 'Apply as Speaker' option.",
-          redirectTo: "/speaker-application" 
-        });
-      }
-      
-      // Only allow regular user registration through this endpoint
-      if (userData.accountType !== "user") {
-        return res.status(400).json({ 
-          message: "Only user registration is allowed through this endpoint." 
-        });
-      }
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
-      
       if (existingUser) {
-        return res.status(400).json({ 
-          message: "User account already exists with this email" 
+        return res.status(400).json({
+          success: false,
+          message: "An account with this email already exists"
         });
       }
 
@@ -110,602 +93,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
         passwordHash
       });
 
-      // Create session token
-      const token = crypto.randomUUID();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
-
-      await storage.createUserSession({
-        userId: user.id,
-        token,
-        expiresAt
-      });
-
-      // Remove password hash from response
-      const { passwordHash: _, ...userResponse } = user;
+      // Create session
+      (req as any).session.user = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      };
 
       res.status(201).json({
-        user: userResponse,
-        token
+        success: true,
+        message: "Account created successfully",
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid input data", 
-          errors: error.errors 
-        });
-      }
-      res.status(500).json({ message: "Registration failed" });
-    }
-  });
-
-  // Speaker application endpoint
-  app.post("/api/auth/speaker-application", async (req, res) => {
-    try {
-      const applicationData = insertSpeakerApplicationSchema.parse(req.body);
       
-      // Check if application already exists for this email
-      const existingApplication = await storage.getSpeakerApplicationByEmail(applicationData.email);
-      if (existingApplication) {
-        return res.status(400).json({ 
-          message: "Speaker application already exists for this email. Please check your email for status updates." 
+      if (error.name === "ZodError") {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid registration data",
+          errors: error.errors
         });
       }
-
-      // Create the speaker application
-      const application = await storage.createSpeakerApplication(applicationData);
-
-      res.status(201).json({
-        message: "Speaker application submitted successfully! Our team will review your application and contact you within 5-7 business days.",
-        applicationId: application.id
+      
+      res.status(500).json({
+        success: false,
+        message: "Registration failed. Please try again."
       });
-    } catch (error) {
-      console.error("Speaker application error:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid application data", 
-          errors: error.errors 
-        });
-      }
-      res.status(500).json({ message: "Application submission failed" });
     }
   });
 
+  // User login
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
-
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password required" });
-      }
-
-      // Find user
+      const { email, password } = loginSchema.parse(req.body);
+      
+      // Find user by email
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res.status(401).json({
+          success: false,
+          message: "Invalid email or password"
+        });
       }
 
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.passwordHash);
       if (!isValidPassword) {
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res.status(401).json({
+          success: false,
+          message: "Invalid email or password"
+        });
       }
 
       // Update last login
-      await storage.updateUser(user.id, { lastLoginAt: new Date() });
+      await storage.updateUserLastLogin(user.id);
 
-      // Create session token
-      const token = crypto.randomUUID();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
-
-      await storage.createUserSession({
-        userId: user.id,
-        token,
-        expiresAt
-      });
-
-      // Remove password hash from response
-      const { passwordHash: _, ...userResponse } = user;
-
-      res.json({
-        user: userResponse,
-        token
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(500).json({ message: "Login failed" });
-    }
-  });
-
-  app.post("/api/auth/logout", authenticateToken, async (req: any, res) => {
-    try {
-      const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
-      
-      if (token) {
-        await storage.deleteUserSession(token);
-      }
-      
-      res.json({ message: "Logged out successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Logout failed" });
-    }
-  });
-
-  app.get("/api/auth/me", authenticateToken, async (req: any, res) => {
-    try {
-      const { passwordHash: _, ...userResponse } = req.user;
-      res.json(userResponse);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to get user info" });
-    }
-  });
-
-  // User interaction routes
-  app.post("/api/users/likes/:speakerId", authenticateToken, async (req: any, res) => {
-    try {
-      const speakerId = parseInt(req.params.speakerId);
-      const like = await storage.createUserLike({
-        userId: req.user.id,
-        speakerId
-      });
-      res.status(201).json(like);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to like speaker" });
-    }
-  });
-
-  app.delete("/api/users/likes/:speakerId", authenticateToken, async (req: any, res) => {
-    try {
-      const speakerId = parseInt(req.params.speakerId);
-      const success = await storage.deleteUserLike(req.user.id, speakerId);
-      if (success) {
-        res.json({ message: "Like removed" });
-      } else {
-        res.status(404).json({ message: "Like not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ message: "Failed to remove like" });
-    }
-  });
-
-  app.get("/api/users/likes", authenticateToken, async (req: any, res) => {
-    try {
-      const likes = await storage.getUserLikes(req.user.id);
-      res.json(likes);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to get user likes" });
-    }
-  });
-
-  // Get user stats for profile page
-  app.get("/api/users/stats/:userId", authenticateToken, async (req: any, res) => {
-    try {
-      const userId = req.params.userId;
-      
-      // Ensure user can only access their own stats
-      if (req.user.id !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Get user's favorites count
-      const favorites = await storage.getUserBookmarks(userId);
-      const favoritesCount = favorites.length;
-
-      // Get user's reviews count  
-      const reviews = await storage.getUserReviews(userId);
-      const reviewsCount = reviews.length;
-
-      // Get user's inquiries count
-      const inquiries = await storage.getUserInquiries(userId);
-      const inquiriesCount = inquiries.length;
-
-      // Calculate total profile views (sum of views on speakers they've interacted with)
-      const totalProfileViews = 0; // Will implement analytics later
-
-      res.json({
-        favoritesCount,
-        reviewsCount,
-        inquiriesCount,
-        totalProfileViews
-      });
-    } catch (error) {
-      console.error("Failed to get user stats:", error);
-      res.status(500).json({ message: "Failed to get user stats" });
-    }
-  });
-
-  // Get user's favorite/bookmarked speakers
-  app.get("/api/users/favorites/:userId", authenticateToken, async (req: any, res) => {
-    try {
-      const userId = req.params.userId;
-      
-      if (req.user.id !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      const bookmarks = await storage.getUserBookmarks(userId);
-      
-      // Get full speaker details for each bookmark
-      const favorites = [];
-      for (const bookmark of bookmarks) {
-        const speaker = await storage.getSpeaker(bookmark.speakerId);
-        if (speaker) {
-          favorites.push({
-            ...speaker,
-            bookmarkId: bookmark.id,
-            notes: bookmark.notes,
-            bookmarkedAt: bookmark.createdAt
-          });
-        }
-      }
-
-      res.json(favorites);
-    } catch (error) {
-      console.error("Failed to get user favorites:", error);
-      res.status(500).json({ message: "Failed to get user favorites" });
-    }
-  });
-
-  // Get user's reviews
-  app.get("/api/users/reviews/:userId", authenticateToken, async (req: any, res) => {
-    try {
-      const userId = req.params.userId;
-      
-      if (req.user.id !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      const reviews = await storage.getUserReviews(userId);
-      res.json(reviews);
-    } catch (error) {
-      console.error("Failed to get user reviews:", error);
-      res.status(500).json({ message: "Failed to get user reviews" });
-    }
-  });
-
-  // Admin user management endpoints
-  app.get("/api/admin/users", async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      // Remove password hashes from response
-      const safeUsers = users.map(({ passwordHash, ...user }) => user);
-      res.json(safeUsers);
-    } catch (error) {
-      console.error("Failed to get users:", error);
-      res.status(500).json({ message: "Failed to get users" });
-    }
-  });
-
-  app.patch("/api/admin/users/:userId", async (req, res) => {
-    try {
-      const userId = req.params.userId;
-      const updates = req.body;
-      
-      // Don't allow updating password hash directly
-      delete updates.passwordHash;
-      delete updates.id;
-      
-      const updatedUser = await storage.updateUser(userId, updates);
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Remove password hash from response
-      const { passwordHash, ...safeUser } = updatedUser;
-      res.json(safeUser);
-    } catch (error) {
-      console.error("Failed to update user:", error);
-      res.status(500).json({ message: "Failed to update user" });
-    }
-  });
-
-  app.delete("/api/admin/users/:userId", async (req, res) => {
-    try {
-      const userId = req.params.userId;
-      const { adminPassword } = req.body;
-      
-      // Verify admin password
-      if (adminPassword !== "Doneright123!") {
-        return res.status(401).json({ message: "Invalid admin password" });
-      }
-
-      const deleted = await storage.deleteUser(userId);
-      if (!deleted) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ 
-        message: "User deleted successfully", 
-        deletedAt: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Failed to delete user:", error);
-      res.status(500).json({ message: "Failed to delete user" });
-    }
-  });
-
-  app.get("/api/admin/user-stats", async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      
-      const stats = {
-        totalUsers: users.length,
-        activeUsers: users.filter(u => u.isActive).length,
-        verifiedUsers: users.filter(u => u.emailVerified).length,
-        recentRegistrations: users.filter(u => {
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          return new Date(u.createdAt) > weekAgo;
-        }).length
+      // Create session
+      (req as any).session.user = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        speakerId: user.speakerId,
       };
-
-      res.json(stats);
-    } catch (error) {
-      console.error("Failed to get user stats:", error);
-      res.status(500).json({ message: "Failed to get user stats" });
-    }
-  });
-
-  app.patch("/api/admin/users/bulk-update", async (req, res) => {
-    try {
-      const { userIds, updates, adminPassword } = req.body;
-      
-      // Verify admin password
-      if (adminPassword !== "Doneright123!") {
-        return res.status(401).json({ message: "Invalid admin password" });
-      }
-
-      if (!Array.isArray(userIds) || userIds.length === 0) {
-        return res.status(400).json({ message: "No user IDs provided" });
-      }
-
-      let updatedCount = 0;
-      for (const userId of userIds) {
-        const updatedUser = await storage.updateUser(userId, updates);
-        if (updatedUser) {
-          updatedCount++;
-        }
-      }
-
-      res.json({ 
-        message: "Bulk update completed", 
-        updatedCount,
-        totalRequested: userIds.length
-      });
-    } catch (error) {
-      console.error("Failed to bulk update users:", error);
-      res.status(500).json({ message: "Failed to bulk update users" });
-    }
-  });
-
-  // Speaker application routes
-  app.post("/api/speaker-applications", async (req, res) => {
-    try {
-      const applicationData = req.body;
-      
-      // Basic validation
-      if (!applicationData.firstName || !applicationData.lastName || !applicationData.email) {
-        return res.status(400).json({ message: "Required fields missing" });
-      }
-
-      const application = await storage.createSpeakerApplication(applicationData);
-      res.status(201).json(application);
-    } catch (error) {
-      console.error("Failed to create speaker application:", error);
-      res.status(500).json({ message: "Failed to submit application" });
-    }
-  });
-
-  app.get("/api/admin/speaker-applications", async (req, res) => {
-    try {
-      const applications = await storage.getSpeakerApplications();
-      res.json(applications);
-    } catch (error) {
-      console.error("Failed to get speaker applications:", error);
-      res.status(500).json({ message: "Failed to fetch applications" });
-    }
-  });
-
-  app.patch("/api/admin/speaker-applications/:id", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { status, reviewedBy } = req.body;
-      
-      const application = await storage.updateSpeakerApplication(parseInt(id), {
-        status,
-        reviewedBy,
-        reviewedAt: new Date()
-      });
-
-      if (!application) {
-        return res.status(404).json({ message: "Application not found" });
-      }
-
-      // If approved, create speaker profile
-      if (status === 'approved') {
-        try {
-          const speakerData = {
-            name: `${application.firstName} ${application.lastName}`,
-            slug: `${application.firstName}-${application.lastName}`.toLowerCase().replace(/\s+/g, '-'),
-            title: application.title,
-            bio: application.biography,
-            expertise: application.speakingTopics.split(',').map(s => s.trim()),
-            location: 'Not specified',
-            imageUrl: '/api/placeholder/400/400',
-            verified: true,
-            featured: false,
-            category: application.specialty,
-            achievements: [],
-            lectures: [],
-            email: application.email,
-            phone: application.phone,
-            website: application.website || '',
-            socialMedia: [],
-            languages: ['English'],
-            medicalSpecialties: [application.specialty],
-            speakerType: 'clinical',
-            fee: 'Contact for pricing',
-            experience: parseInt(application.yearsExperience) || 0,
-            education: application.credentials,
-            certifications: application.credentials,
-            affiliations: 'Professional Associations',
-            publications: 'Available upon request'
-          };
-
-          const newSpeaker = await storage.createSpeaker(speakerData);
-          
-          // Update application with created speaker ID
-          await storage.updateSpeakerApplication(parseInt(id), {
-            createdSpeakerId: newSpeaker.id
-          });
-
-          res.json({ application, createdSpeaker: newSpeaker });
-        } catch (speakerError) {
-          console.error("Failed to create speaker from application:", speakerError);
-          res.json({ application, warning: "Application approved but speaker creation failed" });
-        }
-      } else {
-        res.json(application);
-      }
-    } catch (error) {
-      console.error("Failed to update speaker application:", error);
-      res.status(500).json({ message: "Failed to update application" });
-    }
-  });
-
-  // Speaker Application Submission
-  app.post("/api/speakers/apply", async (req, res) => {
-    try {
-      const applicationData = insertSpeakerApplicationSchema.parse(req.body);
-      
-      // Create the speaker application
-      const application = await storage.createSpeakerApplication(applicationData);
 
       res.json({
         success: true,
-        message: "Application submitted successfully",
-        applicationId: application.id
+        message: "Login successful",
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          speakerId: user.speakerId,
+        }
       });
-    } catch (error) {
-      console.error("Failed to submit speaker application:", error);
-      if (error instanceof z.ZodError) {
+    } catch (error: any) {
+      console.error("Login error:", error);
+      
+      if (error.name === "ZodError") {
         return res.status(400).json({
-          message: "Invalid application data",
-          errors: error.errors
+          success: false,
+          message: "Invalid login data"
         });
       }
-      res.status(500).json({ message: "Failed to submit application" });
-    }
-  });
-
-  // Speaker interaction tracking endpoint for analytics
-  app.post("/api/speakers/:speakerId/track", async (req, res) => {
-    try {
-      const speakerId = parseInt(req.params.speakerId);
-      const { 
-        interactionType, 
-        elementClicked, 
-        metadata, 
-        timeOnPage, 
-        scrollDepth 
-      } = req.body;
-
-      // Generate session ID if not provided (for anonymous tracking)
-      const sessionId = req.sessionID || crypto.randomUUID();
       
-      // Detect device type from user agent
-      const userAgent = req.get('User-Agent') || '';
-      let deviceType = 'desktop';
-      if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
-        deviceType = /iPad/.test(userAgent) ? 'tablet' : 'mobile';
-      }
-
-      // Get authenticated user ID if available
-      let userId = null;
-      const authHeader = req.get('Authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        try {
-          const token = authHeader.substring(7);
-          const session = await storage.getUserSession(token);
-          if (session && session.expiresAt > new Date()) {
-            userId = session.userId;
-          }
-        } catch (error) {
-          // Continue with anonymous tracking
-        }
-      }
-
-      const interactionData = {
-        speakerId,
-        userId,
-        sessionId,
-        interactionType,
-        elementClicked,
-        metadata: metadata ? JSON.stringify(metadata) : null,
-        pageUrl: req.get('Referer') || '',
-        timeOnPage: timeOnPage || null,
-        scrollDepth: scrollDepth || null,
-        deviceType,
-        referrerSource: req.get('Referer') || null
-      };
-
-      await storage.createSpeakerInteraction(interactionData);
-
-      // Also update the existing analytics counters for backward compatibility
-      await storage.updateSpeakerAnalytics(speakerId, interactionType);
-
-      res.json({ success: true, tracked: interactionType });
-    } catch (error) {
-      console.error("Failed to track speaker interaction:", error);
-      res.status(500).json({ message: "Failed to track interaction" });
+      res.status(500).json({
+        success: false,
+        message: "Login failed. Please try again."
+      });
     }
   });
 
-  // Get speaker interaction analytics for admin
-  app.get("/api/speakers/:speakerId/analytics", async (req, res) => {
-    try {
-      const speakerId = parseInt(req.params.speakerId);
-      const { timeframe = '7d' } = req.query;
-
-      const analytics = await storage.getSpeakerInteractionAnalytics(speakerId, timeframe as string);
-      res.json(analytics);
-    } catch (error) {
-      console.error("Failed to get speaker analytics:", error);
-      res.status(500).json({ message: "Failed to get analytics" });
-    }
+  // User logout
+  app.post("/api/auth/logout", (req, res) => {
+    (req as any).session.destroy((err: any) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({
+          success: false,
+          message: "Logout failed"
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: "Logged out successfully"
+      });
+    });
   });
 
-  // Get all speakers with optional filters
+  // Get current user
+  app.get("/api/auth/me", (req, res) => {
+    const user = (req as any).session?.user;
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated"
+      });
+    }
+
+    res.json({
+      success: true,
+      user
+    });
+  });
+
+  // Get all speakers with pagination
   app.get("/api/speakers", async (req, res) => {
     try {
-      const {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const search = req.query.search as string;
+      const category = req.query.category as string;
+      const location = req.query.location as string;
+      const sort = req.query.sort as string || 'name';
+      
+      const speakers = await storage.getSpeakers({
+        page,
+        limit,
+        search,
         category,
-        categories,
         location,
-        minRating,
-        expertise,
-        search
-      } = req.query;
-
-      const filters = {
-        category: category && category !== "" ? category as string : undefined,
-        categories: categories ? (Array.isArray(categories) ? categories.filter(c => c !== "") as string[] : [categories as string].filter(c => c !== "")) : undefined,
-        location: location && location !== "" ? location as string : undefined,
-        minRating: minRating ? parseFloat(minRating as string) : undefined,
-        expertise: expertise && expertise !== "" ? expertise as string : undefined,
-        search: search && search !== "" ? search as string : undefined,
-      };
-
-      const speakers = await storage.getSpeakers(filters);
-      // Disable caching for speakers endpoint to ensure fresh data
-      res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.header('Pragma', 'no-cache');
-      res.header('Expires', '0');
+        sort
+      });
+      
       res.json(speakers);
     } catch (error) {
+      console.error("Error fetching speakers:", error);
       res.status(500).json({ message: "Failed to fetch speakers" });
     }
   });
@@ -716,192 +258,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const speakers = await storage.getFeaturedSpeakers();
       res.json(speakers);
     } catch (error) {
+      console.error("Error fetching featured speakers:", error);
       res.status(500).json({ message: "Failed to fetch featured speakers" });
     }
   });
 
-  // Get single speaker by ID or slug
-  app.get("/api/speakers/:identifier", async (req, res) => {
+  // Get single speaker by name
+  app.get("/api/speakers/:name", async (req, res) => {
     try {
-      const identifier = req.params.identifier;
-      let speaker;
-
-      // Try to parse as ID first, then fall back to slug
-      const id = parseInt(identifier);
-      if (!isNaN(id)) {
-        speaker = await storage.getSpeaker(id);
-      } else {
-        speaker = await storage.getSpeakerBySlug(identifier);
-      }
-
+      const speaker = await storage.getSpeakerByName(req.params.name);
       if (!speaker) {
         return res.status(404).json({ message: "Speaker not found" });
       }
-
-      // Track profile view analytics
-      await AnalyticsService.trackClick(
-        speaker.id,
-        'profile_view',
-        { identifier },
-        req.get('User-Agent'),
-        req.ip,
-        req.get('Referer'),
-        req.sessionID,
-        req.user?.id?.toString()
-      );
-
       res.json(speaker);
     } catch (error) {
+      console.error("Error fetching speaker:", error);
       res.status(500).json({ message: "Failed to fetch speaker" });
-    }
-  });
-
-  // Get reviews for a speaker
-  app.get("/api/speakers/:identifier/reviews", async (req, res) => {
-    try {
-      const identifier = req.params.identifier;
-      let speaker;
-
-      // Try to parse as ID first, then fall back to slug
-      const id = parseInt(identifier);
-      if (!isNaN(id)) {
-        speaker = await storage.getSpeaker(id);
-      } else {
-        speaker = await storage.getSpeakerBySlug(identifier);
-      }
-
-      if (!speaker) {
-        return res.status(404).json({ message: "Speaker not found" });
-      }
-
-      const reviews = await storage.getReviewsBySpeakerId(speaker.id);
-      res.json(reviews);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch reviews" });
-    }
-  });
-
-  // Create a new review
-  app.post("/api/speakers/:id/reviews", upload.single('photo'), async (req, res) => {
-    try {
-      const speakerId = parseInt(req.params.id);
-      if (isNaN(speakerId)) {
-        return res.status(400).json({ message: "Invalid speaker ID" });
-      }
-
-      const speaker = await storage.getSpeaker(speakerId);
-      if (!speaker) {
-        return res.status(404).json({ message: "Speaker not found" });
-      }
-
-      // Check if photo was uploaded
-      if (!req.file) {
-        return res.status(400).json({ message: "Photo from audience is required" });
-      }
-
-      // Convert rating to number
-      const rating = parseInt(req.body.rating);
-      if (isNaN(rating) || rating < 1 || rating > 5) {
-        return res.status(400).json({ message: "Rating must be between 1 and 5" });
-      }
-
-      const reviewData = insertReviewSchema.parse({
-        ...req.body,
-        rating,
-        speakerId,
-        // For now, we'll store a placeholder for the photo
-        // In a real app, you'd upload to cloud storage and store the URL
-        photoUrl: `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
-      });
-
-      const review = await storage.createReview(reviewData);
-      res.status(201).json(review);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid review data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create review" });
-    }
-  });
-
-  // Create an inquiry
-  app.post("/api/speakers/:id/inquiries", async (req, res) => {
-    try {
-      const speakerId = parseInt(req.params.id);
-      if (isNaN(speakerId)) {
-        return res.status(400).json({ message: "Invalid speaker ID" });
-      }
-
-      const speaker = await storage.getSpeaker(speakerId);
-      if (!speaker) {
-        return res.status(404).json({ message: "Speaker not found" });
-      }
-
-      const inquiryData = insertInquirySchema.parse({
-        ...req.body,
-        speakerId
-      });
-
-      const inquiry = await storage.createInquiry(inquiryData);
-      res.status(201).json(inquiry);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid inquiry data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create inquiry" });
-    }
-  });
-
-  // Update speaker (admin only)
-  app.patch("/api/speakers/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const updates = req.body;
-      
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid speaker ID" });
-      }
-
-      const updatedSpeaker = await storage.updateSpeaker(id, updates);
-      if (!updatedSpeaker) {
-        return res.status(404).json({ message: "Speaker not found" });
-      }
-
-      res.json(updatedSpeaker);
-    } catch (error) {
-      console.error("Failed to update speaker:", error);
-      res.status(500).json({ message: "Failed to update speaker" });
-    }
-  });
-
-  // Delete speaker (admin only - with password verification)
-  app.delete("/api/speakers/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { adminPassword } = req.body;
-      
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid speaker ID" });
-      }
-
-      // Verify admin password (using the same credentials as login)
-      if (adminPassword !== "Doneright123!") {
-        return res.status(401).json({ message: "Invalid admin password" });
-      }
-
-      const deleted = await storage.deleteSpeaker(id);
-      if (!deleted) {
-        return res.status(404).json({ message: "Speaker not found" });
-      }
-
-      res.json({ 
-        message: "Speaker deleted successfully", 
-        deletedAt: new Date().toISOString(),
-        retentionDays: 14 
-      });
-    } catch (error) {
-      console.error("Failed to delete speaker:", error);
-      res.status(500).json({ message: "Failed to delete speaker" });
     }
   });
 
@@ -911,132 +283,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categories = await storage.getCategories();
       res.json(categories);
     } catch (error) {
+      console.error("Error fetching categories:", error);
       res.status(500).json({ message: "Failed to fetch categories" });
     }
   });
 
-  // Add new category (admin only)
-  app.post("/api/categories", async (req, res) => {
+  // Submit inquiry
+  app.post("/api/inquiries", async (req, res) => {
     try {
-      const { name, description } = req.body;
-      
-      if (!name || !description) {
-        return res.status(400).json({ message: "Name and description are required" });
-      }
-
-      const category = await storage.createCategory({ name, description });
-      res.json(category);
-    } catch (error) {
-      console.error("Failed to create category:", error);
-      res.status(500).json({ message: "Failed to create category" });
-    }
-  });
-
-  // Delete category (admin only)
-  app.delete("/api/categories/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid category ID" });
-      }
-
-      const deleted = await storage.deleteCategory(id);
-      if (!deleted) {
-        return res.status(404).json({ message: "Category not found" });
-      }
-
-      res.json({ message: "Category deleted successfully" });
-    } catch (error) {
-      console.error("Failed to delete category:", error);
-      res.status(500).json({ message: "Failed to delete category" });
-    }
-  });
-
-  // Search endpoint for autocomplete/suggestions
-  app.get("/api/search/suggestions", async (req, res) => {
-    try {
-      const { q } = req.query;
-      if (!q || typeof q !== "string") {
-        return res.json([]);
-      }
-
-      const speakers = await storage.getSpeakers();
-      const suggestions = new Set<string>();
-
-      speakers.forEach(speaker => {
-        // Add matching expertise
-        speaker.expertise.forEach(exp => {
-          if (exp.toLowerCase().includes(q.toLowerCase())) {
-            suggestions.add(exp);
-          }
-        });
-
-        // Add matching lectures
-        speaker.lectures.forEach(lecture => {
-          if (lecture.toLowerCase().includes(q.toLowerCase())) {
-            suggestions.add(lecture);
-          }
-        });
-
-        // Add speaker names if they match
-        if (speaker.name.toLowerCase().includes(q.toLowerCase())) {
-          suggestions.add(speaker.name);
-        }
+      const inquiry = await storage.createInquiry(req.body);
+      res.status(201).json({
+        success: true,
+        message: "Inquiry submitted successfully",
+        inquiry
       });
-
-      res.json(Array.from(suggestions).slice(0, 10));
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch suggestions" });
+      console.error("Error creating inquiry:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to submit inquiry" 
+      });
     }
   });
 
-  // User bookmark endpoints (require authentication)
-  app.post("/api/users/:userId/bookmarks", async (req, res) => {
+  // Submit review
+  app.post("/api/reviews", async (req, res) => {
     try {
-      const { userId } = req.params;
-      const { speakerId } = req.body;
-      
-      if (!speakerId || isNaN(parseInt(speakerId))) {
-        return res.status(400).json({ message: "Valid speaker ID is required" });
-      }
-      
-      const result = await storage.toggleUserBookmark(userId, parseInt(speakerId));
-      res.json(result);
+      const review = await storage.createReview(req.body);
+      res.status(201).json({
+        success: true,
+        message: "Review submitted successfully",
+        review
+      });
     } catch (error) {
-      console.error("Failed to toggle bookmark:", error);
-      res.status(500).json({ message: "Failed to toggle bookmark" });
+      console.error("Error creating review:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to submit review"
+      });
     }
   });
 
-  app.get("/api/users/:userId/bookmarks", async (req, res) => {
+  // Get reviews for a speaker
+  app.get("/api/speakers/:speakerId/reviews", async (req, res) => {
     try {
-      const { userId } = req.params;
-      const bookmarkIds = await storage.getUserBookmarkIds(userId);
-      res.json(bookmarkIds);
+      const speakerId = parseInt(req.params.speakerId);
+      const reviews = await storage.getReviewsBySpeaker(speakerId);
+      res.json(reviews);
     } catch (error) {
-      console.error("Failed to get user bookmarks:", error);
-      res.status(500).json({ message: "Failed to get bookmarks" });
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
     }
   });
 
-  app.get("/api/users/:userId/bookmarks/check/:speakerId", async (req, res) => {
-    try {
-      const { userId, speakerId } = req.params;
-      
-      if (isNaN(parseInt(speakerId))) {
-        return res.status(400).json({ message: "Invalid speaker ID" });
-      }
-      
-      const isBookmarked = await storage.isUserBookmarked(userId, parseInt(speakerId));
-      res.json({ bookmarked: isBookmarked });
-    } catch (error) {
-      console.error("Failed to check bookmark status:", error);
-      res.status(500).json({ message: "Failed to check bookmark status" });
-    }
-  });
-
-  // Analytics endpoints
+  // Analytics tracking endpoints
   app.post("/api/analytics/track", async (req, res) => {
     try {
       const { speakerId, eventType, metadata } = req.body;
@@ -1044,78 +344,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!speakerId || !eventType) {
         return res.status(400).json({ message: "Speaker ID and event type are required" });
       }
-
-      // Get request metadata
-      const userAgent = req.get('User-Agent');
-      const ipAddress = req.ip || req.connection.remoteAddress;
-      const referrer = req.get('Referer');
-      const sessionId = req.session?.id;
-
-      await AnalyticsService.trackClick(
-        speakerId, 
-        eventType, 
-        metadata,
-        userAgent,
-        ipAddress,
-        referrer,
-        sessionId
-      );
-
+      
+      // Track the interaction
+      await storage.trackSpeakerInteraction({
+        speakerId,
+        userId: (req as any).session?.user?.id || null,
+        sessionId: (req as any).sessionID || null,
+        interactionType: eventType,
+        metadata: JSON.stringify(metadata || {}),
+        pageUrl: req.headers.referer || null,
+        deviceType: req.headers['user-agent']?.includes('Mobile') ? 'mobile' : 'desktop',
+        referrerSource: req.headers.referer || null
+      });
+      
       res.json({ success: true });
     } catch (error) {
-      console.error("Failed to track analytics:", error);
-      res.status(500).json({ message: "Failed to track event" });
+      console.error("Analytics tracking error:", error);
+      res.status(500).json({ message: "Failed to track analytics" });
     }
   });
 
-  app.get("/api/analytics/speaker/:id", async (req, res) => {
+  // Get speaker analytics (for speaker dashboard)
+  app.get("/api/analytics/speaker/:speakerId", async (req, res) => {
     try {
-      const speakerId = parseInt(req.params.id);
-      if (isNaN(speakerId)) {
-        return res.status(400).json({ message: "Invalid speaker ID" });
+      const speakerId = parseInt(req.params.speakerId);
+      
+      // Verify speaker ownership or admin access
+      const user = (req as any).session?.user;
+      if (!user || (user.speakerId !== speakerId)) {
+        return res.status(403).json({ message: "Access denied" });
       }
-
-      const analytics = await AnalyticsService.getSpeakerAnalytics(speakerId);
-      const performanceScore = await AnalyticsService.calculatePerformanceScore(speakerId);
-      const demandForecast = await AnalyticsService.getDemandForecast(speakerId);
-      const trends = await AnalyticsService.getAnalyticsTrends(speakerId, 30);
-
-      res.json({
-        analytics,
-        performanceScore,
-        demandForecast,
-        trends,
-      });
+      
+      const analytics = await storage.getSpeakerAnalytics(speakerId);
+      res.json(analytics);
     } catch (error) {
-      console.error("Failed to get speaker analytics:", error);
+      console.error("Error fetching speaker analytics:", error);
       res.status(500).json({ message: "Failed to fetch analytics" });
     }
   });
 
-  app.get("/api/analytics/dashboard", async (req, res) => {
+  // Search speakers with advanced filters
+  app.get("/api/search", async (req, res) => {
     try {
-      const dashboardData = await AnalyticsService.getDashboardData();
-      res.json(dashboardData);
+      const {
+        q: query,
+        category,
+        location,
+        minRating,
+        maxPrice,
+        availability,
+        experience,
+        page = 1,
+        limit = 20
+      } = req.query;
+
+      const results = await storage.searchSpeakers({
+        query: query as string,
+        category: category as string,
+        location: location as string,
+        minRating: minRating ? parseFloat(minRating as string) : undefined,
+        maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
+        availability: availability as string,
+        experience: experience as string,
+        page: parseInt(page as string),
+        limit: parseInt(limit as string)
+      });
+
+      res.json(results);
     } catch (error) {
-      console.error("Failed to get dashboard analytics:", error);
-      res.status(500).json({ message: "Failed to fetch dashboard data" });
+      console.error("Search error:", error);
+      res.status(500).json({ message: "Search failed" });
     }
   });
 
-  app.get("/api/analytics/top-performers", async (req, res) => {
+  // Speaker profile management endpoints (for logged-in speakers)
+  app.get("/api/speaker/profile", async (req, res) => {
     try {
-      const { limit = 10, metric = 'profileViews' } = req.query;
-      const topPerformers = await AnalyticsService.getTopPerformers(
-        parseInt(limit as string), 
-        metric as string
-      );
-      res.json(topPerformers);
+      const user = (req as any).session?.user;
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ message: "Speaker authentication required" });
+      }
+
+      const speaker = await storage.getSpeaker(user.speakerId);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker profile not found" });
+      }
+
+      res.json(speaker);
     } catch (error) {
-      console.error("Failed to get top performers:", error);
-      res.status(500).json({ message: "Failed to fetch top performers" });
+      console.error("Error fetching speaker profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  app.put("/api/speaker/profile", async (req, res) => {
+    try {
+      const user = (req as any).session?.user;
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ message: "Speaker authentication required" });
+      }
+
+      const updatedSpeaker = await storage.updateSpeaker(user.speakerId, req.body);
+      res.json({
+        success: true,
+        message: "Profile updated successfully",
+        speaker: updatedSpeaker
+      });
+    } catch (error) {
+      console.error("Error updating speaker profile:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to update profile"
+      });
+    }
+  });
+
+  // Speaker inquiries management
+  app.get("/api/speaker/inquiries", async (req, res) => {
+    try {
+      const user = (req as any).session?.user;
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ message: "Speaker authentication required" });
+      }
+
+      const inquiries = await storage.getInquiriesBySpeaker(user.speakerId);
+      res.json(inquiries);
+    } catch (error) {
+      console.error("Error fetching speaker inquiries:", error);
+      res.status(500).json({ message: "Failed to fetch inquiries" });
+    }
+  });
+
+  // Update inquiry status
+  app.patch("/api/inquiries/:id/status", async (req, res) => {
+    try {
+      const inquiryId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      const user = (req as any).session?.user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Verify inquiry belongs to the speaker
+      const inquiry = await storage.getInquiry(inquiryId);
+      if (!inquiry || (user.speakerId && inquiry.speakerId !== user.speakerId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const updatedInquiry = await storage.updateInquiryStatus(inquiryId, status);
+      res.json({
+        success: true,
+        message: "Inquiry status updated",
+        inquiry: updatedInquiry
+      });
+    } catch (error) {
+      console.error("Error updating inquiry status:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to update inquiry status"
+      });
+    }
+  });
+
+  // File upload for speaker media
+  app.post("/api/speaker/upload", upload.single('file'), async (req, res) => {
+    try {
+      const user = (req as any).session?.user;
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ message: "Speaker authentication required" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+
+      // Here you would implement file upload to your storage service
+      // For now, we'll return a mock URL
+      const fileUrl = `/uploads/${Date.now()}_${req.file.originalname}`;
+
+      res.json({
+        success: true,
+        fileUrl,
+        message: "File uploaded successfully"
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to upload file"
+      });
+    }
+  });
 }

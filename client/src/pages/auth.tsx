@@ -518,141 +518,37 @@ export default function AuthPage() {
                     </form>
                   </TabsContent>
 
-                  {/* Speaker Register */}
+                  {/* Speaker Application */}
                   <TabsContent value="speaker-register" className="space-y-4">
-                    <Alert>
-                      <UserCheck className="h-4 w-4" />
-                      <AlertDescription>
-                        Speaker accounts require manual verification. You'll be contacted within 24-48 hours after registration.
-                      </AlertDescription>
-                    </Alert>
-                    
-                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="speaker-register-firstName">First Name *</Label>
-                          <Input
-                            id="speaker-register-firstName"
-                            placeholder="Dr. John"
-                            {...registerForm.register("firstName")}
-                          />
-                          {registerForm.formState.errors.firstName && (
-                            <p className="text-sm text-red-600">{registerForm.formState.errors.firstName.message}</p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="speaker-register-lastName">Last Name *</Label>
-                          <Input
-                            id="speaker-register-lastName"
-                            placeholder="Doe"
-                            {...registerForm.register("lastName")}
-                          />
-                          {registerForm.formState.errors.lastName && (
-                            <p className="text-sm text-red-600">{registerForm.formState.errors.lastName.message}</p>
-                          )}
-                        </div>
+                    <div className="text-center space-y-6">
+                      <div className="space-y-4">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                          Apply to Join SpeakerSphere
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Healthcare professionals must apply for approval to ensure quality speakers for our network.
+                        </p>
                       </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="speaker-register-email">Professional Email *</Label>
-                        <Input
-                          id="speaker-register-email"
-                          type="email"
-                          placeholder="dr.doe@hospital.com"
-                          {...registerForm.register("email")}
-                        />
-                        {registerForm.formState.errors.email && (
-                          <p className="text-sm text-red-600">{registerForm.formState.errors.email.message}</p>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="speaker-register-title">Professional Title *</Label>
-                        <Input
-                          id="speaker-register-title"
-                          placeholder="Cardiothoracic Surgeon, Chief of Surgery"
-                          {...registerForm.register("title")}
-                        />
-                        {registerForm.formState.errors.title && (
-                          <p className="text-sm text-red-600">{registerForm.formState.errors.title.message}</p>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="speaker-register-company">Institution/Practice *</Label>
-                        <Input
-                          id="speaker-register-company"
-                          placeholder="Mayo Clinic, Johns Hopkins Hospital"
-                          {...registerForm.register("company")}
-                        />
-                        {registerForm.formState.errors.company && (
-                          <p className="text-sm text-red-600">{registerForm.formState.errors.company.message}</p>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="speaker-register-password">Password *</Label>
-                          <div className="relative">
-                            <Input
-                              id="speaker-register-password"
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Create password"
-                              {...registerForm.register("password")}
-                              className="pr-10"
-                            />
-                            <button
-                              type="button"
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-gray-500" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-gray-500" />
-                              )}
-                            </button>
-                          </div>
-                          {registerForm.formState.errors.password && (
-                            <p className="text-sm text-red-600">{registerForm.formState.errors.password.message}</p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="speaker-register-confirmPassword">Confirm Password *</Label>
-                          <div className="relative">
-                            <Input
-                              id="speaker-register-confirmPassword"
-                              type={showConfirmPassword ? "text" : "password"}
-                              placeholder="Confirm password"
-                              {...registerForm.register("confirmPassword")}
-                              className="pr-10"
-                            />
-                            <button
-                              type="button"
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            >
-                              {showConfirmPassword ? (
-                                <EyeOff className="h-4 w-4 text-gray-500" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-gray-500" />
-                              )}
-                            </button>
-                          </div>
-                          {registerForm.formState.errors.confirmPassword && (
-                            <p className="text-sm text-red-600">{registerForm.formState.errors.confirmPassword.message}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      <Button 
-                        type="submit" 
-                        className="w-full bg-green-600 hover:bg-green-700"
-                        disabled={registerMutation.isPending}
-                      >
-                        {getButtonContent(false)}
-                      </Button>
-                    </form>
+                      
+                      <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                        <Info className="h-4 w-4" />
+                        <AlertDescription>
+                          <strong>Application Process:</strong> Submit your professional information and credentials. 
+                          Our team reviews applications within 5-7 business days.
+                        </AlertDescription>
+                      </Alert>
+                      
+                      <Link href="/speaker-application">
+                        <Button className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg">
+                          <User className="mr-2 h-5 w-5" />
+                          Submit Speaker Application
+                        </Button>
+                      </Link>
+                      
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Already approved? Use the "Sign In" tab above to access your account.
+                      </p>
+                    </div>
                   </TabsContent>
                 </Tabs>
               </TabsContent>
