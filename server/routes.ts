@@ -2,6 +2,7 @@ import type { Express, Request } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
+import session from "express-session";
 import { storage } from "./storage";
 import { insertUserSchema, insertSpeakerApplicationSchema } from "../shared/schema";
 import { registerAdminRoutes } from "./admin-routes";
@@ -32,6 +33,17 @@ const upload = multer({
 });
 
 export function registerRoutes(app: Express): Express {
+  // Configure session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key-for-development',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
   // Register admin routes first
   registerAdminRoutes(app);
   
@@ -160,6 +172,9 @@ export function registerRoutes(app: Express): Express {
       await storage.updateUserLastLogin(user.id);
 
       // Create session
+      if (!(req as any).session) {
+        (req as any).session = {};
+      }
       (req as any).session.user = {
         id: user.id,
         email: user.email,
