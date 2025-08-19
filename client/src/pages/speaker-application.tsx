@@ -107,8 +107,11 @@ export default function SpeakerApplicationPage() {
   });
 
   const applicationMutation = useMutation({
-    mutationFn: (data: SpeakerApplicationForm) => 
-      apiRequest("/api/auth/speaker-application", "POST", data),
+    mutationFn: async (data: SpeakerApplicationForm) => {
+      console.log("Submitting speaker application:", data);
+      const response = await apiRequest("POST", "/api/auth/speaker-application", data);
+      return response.json();
+    },
     onSuccess: (data: any) => {
       setSubmitStep("success");
       toast({
@@ -119,7 +122,8 @@ export default function SpeakerApplicationPage() {
       setTimeout(() => setSubmitStep("idle"), 3000);
     },
     onError: (error: any) => {
-      const errorMessage = error?.message || "Application submission failed";
+      console.error("Speaker application submission error:", error);
+      const errorMessage = error?.message || error?.toString() || "Application submission failed";
       toast({
         title: "Application Failed",
         description: errorMessage,
