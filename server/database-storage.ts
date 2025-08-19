@@ -585,4 +585,134 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userSessions.token, token));
     return result;
   }
+
+  // Speaker Applications
+  async createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication> {
+    const result = await db.insert(speakerApplications).values(application).returning();
+    return result[0];
+  }
+
+  async getAllSpeakerApplications(): Promise<SpeakerApplication[]> {
+    return await db.select().from(speakerApplications).orderBy(desc(speakerApplications.createdAt));
+  }
+
+  async getSpeakerApplication(id: number): Promise<SpeakerApplication | undefined> {
+    const result = await db.select().from(speakerApplications).where(eq(speakerApplications.id, id)).limit(1);
+    return result[0];
+  }
+
+  async updateSpeakerApplicationStatus(
+    id: number, 
+    status: string, 
+    adminNotes?: string, 
+    reviewedBy?: string
+  ): Promise<SpeakerApplication> {
+    const updateData: any = {
+      status,
+      reviewedAt: new Date()
+    };
+    
+    if (adminNotes) updateData.adminNotes = adminNotes;
+    if (reviewedBy) updateData.reviewedBy = reviewedBy;
+    
+    const result = await db
+      .update(speakerApplications)
+      .set(updateData)
+      .where(eq(speakerApplications.id, id))
+      .returning();
+    
+    return result[0];
+  }
+
+  async approveSpeakerApplication(applicationId: number, reviewedBy: string): Promise<{ speaker: Speaker; user: User }> {
+    const application = await this.getSpeakerApplication(applicationId);
+    if (!application) {
+      throw new Error("Speaker application not found");
+    }
+
+    // Create speaker profile from application data
+    const speakerData: InsertSpeaker = {
+      name: `${application.firstName} ${application.lastName}`,
+      title: application.title,
+      specialty: application.specialty,
+      email: application.email,
+      phone: application.phone,
+      website: application.website || '',
+      bio: application.biography,
+      yearsExperience: parseInt(application.yearsExperience.split('-')[0]) || 1,
+      category: application.specialty,
+      location: '', // Will need to be updated later
+      expertise: [application.specialty],
+      availableFormats: application.availableFormats,
+      speakingTopics: application.speakingTopics.split(',').map(topic => topic.trim()),
+      travelWillingness: application.travelWillingness,
+      verified: true,
+      featured: false,
+      overallRating: "0",
+      reviewCount: 0,
+      bookingFee: "Contact for pricing",
+      hideProfile: false
+    };
+
+    const speaker = await this.createSpeaker(speakerData);
+
+    // Create user account for the speaker
+    const userData = {
+      email: application.email,
+      passwordHash: '', // Will be set during first login
+      firstName: application.firstName,
+      lastName: application.lastName,
+      title: application.title,
+      company: application.specialty,
+      accountType: 'speaker',
+      speakerId: speaker.id
+    };
+
+    const user = await this.createUser(userData);
+
+    // Update application status
+    await this.updateSpeakerApplicationStatus(applicationId, 'approved', 'Application approved and accounts created', reviewedBy);
+
+    // Update application with created speaker ID
+    await db
+      .update(speakerApplications)
+      .set({ createdSpeakerId: speaker.id })
+      .where(eq(speakerApplications.id, applicationId));
+
+    return { speaker, user };
+  }
+
+  // Analytics
+  async trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void> {
+    await db.insert(speakerInteractions).values(interaction);
+  }
+
+  async getSpeakerAnalytics(speakerId: number): Promise<any> {
+    // Basic analytics implementation
+    const interactions = await db
+      .select()
+      .from(speakerInteractions)
+      .where(eq(speakerInteractions.speakerId, speakerId));
+
+    return {
+      totalInteractions: interactions.length,
+      profileViews: interactions.filter(i => i.interactionType === 'profile_view').length,
+      emailClicks: interactions.filter(i => i.interactionType === 'email_click').length,
+      phoneClicks: interactions.filter(i => i.interactionType === 'phone_click').length,
+      websiteClicks: interactions.filter(i => i.interactionType === 'website_click').length
+    };
+  }
+
+  // User management for authentication
+  async createUser(user: Omit<InsertUser, 'password'> & { passwordHash: string }): Promise<User> {
+    const result = await db.insert(users).values(user).returning();
+    return result[0];
+  }
+
+  async updateUserLastLogin(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(users.id, userId));
+  }
 }

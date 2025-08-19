@@ -30,7 +30,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-export function registerRoutes(app: Express) {
+export function registerRoutes(app: Express): Express {
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -536,4 +536,6 @@ export function registerRoutes(app: Express) {
       });
     }
   });
+  
+  return app;
 }

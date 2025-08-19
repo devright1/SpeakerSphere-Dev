@@ -73,7 +73,8 @@ export interface IStorage {
   
   // User Authentication
   getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: Omit<InsertUser, 'password'> & { passwordHash: string }): Promise<User>;
+  updateUserLastLogin(userId: string): Promise<void>;
   getUserById(id: string): Promise<User | undefined>;
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
   updateUserAccountType(id: string, accountType: string): Promise<User>;
@@ -114,13 +115,14 @@ export interface IStorage {
   
   // Speaker Applications
   createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;
-  getSpeakerApplications(): Promise<SpeakerApplication[]>;
-  updateSpeakerApplication(id: number, updates: Partial<SpeakerApplication>): Promise<SpeakerApplication | undefined>;
+  getAllSpeakerApplications(): Promise<SpeakerApplication[]>;
+  getSpeakerApplication(id: number): Promise<SpeakerApplication | undefined>;
+  updateSpeakerApplicationStatus(id: number, status: string, adminNotes?: string, reviewedBy?: string): Promise<SpeakerApplication>;
+  approveSpeakerApplication(id: number, reviewedBy: string): Promise<{ speaker: Speaker; user: User }>;
 
-  // Speaker Interaction Tracking
-  createSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<SpeakerInteraction>;
-  getSpeakerInteractionAnalytics(speakerId: number, timeframe: string): Promise<any>;
-  updateSpeakerAnalytics(speakerId: number, interactionType: string): Promise<void>;
+  // Speaker Interaction Tracking & Analytics
+  trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void>;
+  getSpeakerAnalytics(speakerId: number): Promise<any>;
   getUserSession(token: string): Promise<UserSession | undefined>;
 }
 
