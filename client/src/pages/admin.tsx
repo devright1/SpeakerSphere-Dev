@@ -2443,7 +2443,7 @@ export default function AdminDashboard() {
                                             {/* Check if user has changed password from original */}
                                             {(() => {
                                               // Find the user associated with this application
-                                              const associatedUser = users?.find(u => u.email === app.email && u.speakerId === speaker.id);
+                                              const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
                                               const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
                                                 new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
                                               
@@ -2486,7 +2486,7 @@ export default function AdminDashboard() {
                                             })()}
                                             {(() => {
                                               // Only show copy button if password hasn't been changed
-                                              const associatedUser = users?.find(u => u.email === app.email && u.speakerId === speaker.id);
+                                              const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
                                               const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
                                                 new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
                                               
@@ -2521,7 +2521,7 @@ export default function AdminDashboard() {
                                           </div>
                                         </div>
                                         {(() => {
-                                          const associatedUser = users?.find(u => u.email === app.email && u.speakerId === speaker.id);
+                                          const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
                                           const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
                                             new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
                                           
@@ -3810,8 +3810,8 @@ function InquiriesManagement() {
                           <p className="text-gray-600">{inquiry.clientCompany}</p>
                           <p className="text-sm text-gray-500">{inquiry.clientEmail}</p>
                         </div>
-                        <Badge className={getStatusBadgeColor(inquiry.status)}>
-                          {inquiry.status}
+                        <Badge className={getStatusBadgeColor(inquiry.status || 'pending')}>
+                          {inquiry.status || 'pending'}
                         </Badge>
                       </div>
                       
@@ -3840,7 +3840,7 @@ function InquiriesManagement() {
                         )}
                         <div>
                           <span className="font-medium text-gray-700">Submitted:</span>
-                          <span className="ml-2">{new Date(inquiry.createdAt).toLocaleDateString()}</span>
+                          <span className="ml-2">{inquiry.createdAt ? new Date(inquiry.createdAt).toLocaleDateString() : 'N/A'}</span>
                         </div>
                       </div>
                       
