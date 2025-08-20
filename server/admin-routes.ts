@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
-import { speakers } from "../shared/schema";
-import { eq } from "drizzle-orm";
+import { speakers, users } from "../shared/schema";
+import { eq, desc } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
 
@@ -36,6 +36,39 @@ export function registerAdminRoutes(app: Express) {
   // Admin authentication
   app.post("/api/admin/auth", authenticateAdmin, (req, res) => {
     res.json({ success: true, message: "Admin authenticated" });
+  });
+
+  // User Management
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      console.log("Getting all users for admin...");
+      // Direct database query to bypass storage issues
+      const userList = await db.select().from(users)
+        .orderBy(desc(users.createdAt));
+      console.log("Users found:", userList.length);
+      res.json(userList);
+    } catch (error) {
+      console.error("Failed to get all users:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/user-stats", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const totalUsers = users.length;
+      const speakerUsers = users.filter(u => u.speakerId).length;
+      const regularUsers = totalUsers - speakerUsers;
+      
+      res.json({
+        totalUsers,
+        speakerUsers,
+        regularUsers
+      });
+    } catch (error) {
+      console.error("Failed to get user stats:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   // Speaker Applications Management
