@@ -308,7 +308,7 @@ export function registerAdminRoutes(app: Express) {
       }
       
       // Search for potential duplicates based on name similarity and email
-      const allSpeakers = await storage.getAllSpeakers();
+      const allSpeakers = await storage.getSpeakers({ includeHidden: true });
       
       const potentialMatches = [];
       
