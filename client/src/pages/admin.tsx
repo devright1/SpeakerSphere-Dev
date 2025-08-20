@@ -2445,28 +2445,12 @@ export default function AdminDashboard() {
                                               // Find the user associated with this application
                                               const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
                                               
-                                              // Debug logging for your specific account
-                                              if (app.email === "rpinzon@devright.com") {
-                                                console.log("=== DEBUGGING RAFAEL'S ACCOUNT ===");
-                                                console.log("App email:", app.email, "Speaker ID:", speaker.id);
-                                                console.log("Users available:", users?.length || 0);
-                                                console.log("Associated user found:", !!associatedUser);
-                                                if (associatedUser) {
-                                                  console.log("User createdAt:", associatedUser.createdAt);
-                                                  console.log("User updatedAt:", associatedUser.updatedAt);
-                                                  console.log("Dates equal?", associatedUser.updatedAt === associatedUser.createdAt);
-                                                  if (associatedUser.updatedAt && associatedUser.createdAt) {
-                                                    console.log("Password changed?", new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt));
-                                                  }
-                                                }
-                                              }
+
                                               
                                               const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
                                                 new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
                                               
-                                              // Temporary solution: Show password changed for Rafael's account based on our database check
-                                              const isRafaelsAccount = app.email === "rpinzon@devright.com" && speaker.id === 777;
-                                              const showPasswordChanged = hasChangedPassword || isRafaelsAccount;
+                                              const showPasswordChanged = hasChangedPassword;
                                               
                                               if (showPasswordChanged) {
                                                 return (
@@ -2511,9 +2495,7 @@ export default function AdminDashboard() {
                                               const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
                                                 new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
                                               
-                                              // Don't show copy button for Rafael's account since we know password is changed
-                                              const isRafaelsAccount = app.email === "rpinzon@devright.com" && speaker.id === 777;
-                                              const showPasswordChanged = hasChangedPassword || isRafaelsAccount;
+                                              const showPasswordChanged = hasChangedPassword;
                                               
                                               if (!showPasswordChanged) {
                                                 return (
@@ -2550,19 +2532,15 @@ export default function AdminDashboard() {
                                           const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
                                             new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
                                           
-                                          // Show password changed for Rafael's account since we confirmed in database
-                                          const isRafaelsAccount = app.email === "rpinzon@devright.com" && speaker.id === 777;
-                                          const showPasswordChanged = hasChangedPassword || isRafaelsAccount;
+                                          const showPasswordChanged = hasChangedPassword;
                                           
                                           if (showPasswordChanged) {
                                             return (
                                               <div className="text-xs text-orange-600 mt-2 p-2 bg-orange-100 rounded border border-orange-200">
                                                 ⚠️ <strong>Password Updated:</strong> This user has changed their password. The original generated password is no longer valid.
-                                                {(associatedUser?.updatedAt || isRafaelsAccount) && (
+                                                {associatedUser?.updatedAt && (
                                                   <div className="mt-1 text-orange-500">
-                                                    Changed on: {associatedUser?.updatedAt ? 
-                                                      new Date(associatedUser.updatedAt).toLocaleString() : 
-                                                      "January 20, 2025 (verified)"}
+                                                    Changed on: {new Date(associatedUser.updatedAt).toLocaleString()}
                                                   </div>
                                                 )}
                                               </div>

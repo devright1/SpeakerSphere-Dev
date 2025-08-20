@@ -4,6 +4,10 @@
 This project is a full-stack healthcare speaker review platform, "SpeakerSphere Reviews," designed to connect healthcare professionals with medical speakers. It enables users to discover, browse, search, and review speakers across various healthcare specialties. The platform aims to be a comprehensive resource for evaluating speaker quality, facilitating bookings, and showcasing speaker expertise through detailed profiles and video portfolios. Its core capabilities include advanced speaker discovery, a multi-dimensional review system, and direct inquiry management, supporting the business vision of becoming a leading platform for healthcare speaker evaluation and booking.
 
 ## Recent Changes (January 2025)
+- **Password Change Detection Fixed**: Resolved critical admin panel bug where password changes by users weren't being displayed correctly - admin panel now properly shows "Password Changed by User" warning instead of generated password when users update their credentials (January 20, 2025)
+- **User API Endpoint Restored**: Fixed `/api/admin/users` endpoint that was failing due to storage layer conflicts - implemented direct database query to retrieve user data for password change detection
+- **TypeScript Compilation Issues Resolved**: Cleaned up duplicate function implementations and variable name conflicts in database storage layer that were causing API failures
+- **Real-time Password Status Detection**: Admin panel now accurately compares updatedAt vs createdAt timestamps to identify when application-based speakers have changed their original generated passwords
 - **Inquiry System Fully Operational**: Fixed API endpoint mismatch and budget parsing errors - inquiry submissions now work correctly with comma-formatted numbers (January 19, 2025)
 - **Budget Field Enhancement**: Added automatic cleaning of budget values to handle formats like "10,000" and "$5,000" before database storage
 - **API Endpoint Correction**: Updated frontend to use correct `/api/inquiries` endpoint instead of non-existent speaker-specific endpoint
