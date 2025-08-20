@@ -139,6 +139,10 @@ export default function ProfilePage() {
       }
       
       const token = localStorage.getItem('userToken');
+      const user = getUserData(); // Get user data to send user ID
+      console.log("Current user data:", user);
+      console.log("Token:", token);
+      
       const response = await fetch("/api/auth/change-password", {
         method: "POST",
         headers: {
@@ -148,7 +152,8 @@ export default function ProfilePage() {
         body: JSON.stringify({
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
-          confirmPassword: passwordData.confirmPassword
+          confirmPassword: passwordData.confirmPassword,
+          userId: user?.id // Include user ID for direct lookup
         }),
         credentials: "include" // Important for session cookies
       });

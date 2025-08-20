@@ -650,8 +650,26 @@ export function registerRoutes(app: Express): Express {
         if (authHeader && authHeader.startsWith('Bearer ')) {
           const token = authHeader.split(' ')[1];
           console.log("Trying token auth with token:", token ? "present" : "missing");
-          user = await storage.getUserByToken(token);
-          console.log("Token user:", user);
+          try {
+            const tokenUser = await storage.getUserByToken(token);
+            console.log("Token user found:", tokenUser);
+            if (tokenUser) {
+              user = tokenUser;
+            }
+          } catch (error) {
+            console.log("Error getting user by token:", error);
+          }
+        }
+      }
+      
+      // Also try direct user lookup by ID from localStorage
+      if (!user && req.body.userId) {
+        console.log("Trying direct user lookup by ID:", req.body.userId);
+        try {
+          user = await storage.getUserById(req.body.userId);
+          console.log("Direct user lookup result:", user);
+        } catch (error) {
+          console.log("Error in direct user lookup:", error);
         }
       }
       
