@@ -210,11 +210,10 @@ export default function SpeakerDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews ({userReviews?.length || 0})</TabsTrigger>
             <TabsTrigger value="stats">Analytics</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -518,48 +517,7 @@ export default function SpeakerDashboard() {
             </div>
           </TabsContent>
 
-          {/* Settings Tab */}
-          <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Settings</CardTitle>
-                <CardDescription>Manage your profile visibility and preferences</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <div className="font-medium">Profile Visibility</div>
-                      <div className="text-sm text-gray-600">Control who can see your profile</div>
-                    </div>
-                    <Badge variant={speakerProfile.hideProfile ? "destructive" : "default"}>
-                      {speakerProfile.hideProfile ? "Hidden" : "Visible"}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <div className="font-medium">Contact Information</div>
-                      <div className="text-sm text-gray-600">Show contact details on profile</div>
-                    </div>
-                    <Badge variant={speakerProfile.hideContact ? "destructive" : "default"}>
-                      {speakerProfile.hideContact ? "Hidden" : "Visible"}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <div className="font-medium">Ratings & Reviews</div>
-                      <div className="text-sm text-gray-600">Display ratings and reviews</div>
-                    </div>
-                    <Badge variant={speakerProfile.hideRatings ? "destructive" : "default"}>
-                      {speakerProfile.hideRatings ? "Hidden" : "Visible"}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+
         </Tabs>
       </div>
     </div>
