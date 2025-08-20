@@ -71,6 +71,58 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // User deletion endpoint
+  app.delete("/api/admin/users/:id", async (req, res) => {
+    try {
+      const userId = req.params.id;
+      console.log("Attempting to delete user:", userId);
+      
+      // First check if user exists
+      const existingUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (existingUser.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Delete the user from database
+      const result = await db.delete(users).where(eq(users.id, userId));
+      console.log("Delete result:", result);
+      
+      res.json({ 
+        success: true, 
+        message: "User deleted successfully" 
+      });
+      
+      console.log(`🗑️ User ${userId} has been deleted from database`);
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // User update endpoint  
+  app.patch("/api/admin/users/:id", async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const updateData = req.body;
+      console.log("Attempting to update user:", userId, updateData);
+      
+      // Update the user in database
+      const result = await db.update(users)
+        .set(updateData)
+        .where(eq(users.id, userId));
+      
+      res.json({ 
+        success: true, 
+        message: "User updated successfully" 
+      });
+      
+      console.log(`✏️ User ${userId} has been updated`);
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Speaker Applications Management
   app.get("/api/admin/speaker-applications", async (req, res) => {
     try {
