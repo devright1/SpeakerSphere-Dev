@@ -82,6 +82,7 @@ export interface IStorage {
   getUserById(id: string): Promise<User | undefined>;
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
   updateUserAccountType(id: string, accountType: string): Promise<User>;
+  updateUserPassword(userId: string, passwordHash: string): Promise<void>;
   
   // Speaker Application Methods
   createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;
@@ -858,6 +859,54 @@ export class MemStorage implements IStorage {
 
   async getUserSession(token: string): Promise<UserSession | undefined> {
     return Array.from(this.userSessions.values()).find(session => session.token === token);
+  }
+
+  async updateUserLastLogin(userId: string): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.lastLoginAt = new Date();
+      this.users.set(userId, user);
+    }
+  }
+
+  async updateUserPassword(userId: string, passwordHash: string): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.passwordHash = passwordHash;
+      user.updatedAt = new Date();
+      this.users.set(userId, user);
+    }
+  }
+
+  async toggleUserBookmark(userId: string, speakerId: number): Promise<{ bookmarked: boolean }> {
+    const existingBookmark = Array.from(this.userBookmarks.values())
+      .find(b => b.userId === userId && b.speakerId === speakerId);
+
+    if (existingBookmark) {
+      this.userBookmarks.delete(existingBookmark.id);
+      return { bookmarked: false };
+    } else {
+      const newBookmark = {
+        id: ++this.currentBookmarkId,
+        userId,
+        speakerId,
+        createdAt: new Date(),
+        notes: null
+      };
+      this.userBookmarks.set(newBookmark.id, newBookmark);
+      return { bookmarked: true };
+    }
+  }
+
+  async isUserBookmarked(userId: string, speakerId: number): Promise<boolean> {
+    return Array.from(this.userBookmarks.values())
+      .some(b => b.userId === userId && b.speakerId === speakerId);
+  }
+
+  async getUserBookmarkIds(userId: string): Promise<number[]> {
+    return Array.from(this.userBookmarks.values())
+      .filter(b => b.userId === userId)
+      .map(b => b.speakerId);
   }
 }
 

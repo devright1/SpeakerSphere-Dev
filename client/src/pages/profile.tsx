@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { 
   User, 
   Heart, 
@@ -18,9 +21,12 @@ import {
   Edit3,
   ArrowLeft,
   Home,
-  UserPlus
+  UserPlus,
+  Lock,
+  Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface UserProfile {
   id: string;
@@ -43,7 +49,13 @@ interface UserStats {
 
 export default function ProfilePage() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
 
   // Get user data from localStorage (this would typically come from a global auth context)
   const getUserData = (): UserProfile | null => {
@@ -113,6 +125,45 @@ export default function ProfilePage() {
       return response.json();
     },
     enabled: !!user?.id,
+  });
+
+  // Password change mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: async () => {
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        throw new Error("New passwords don't match");
+      }
+      
+      if (passwordData.newPassword.length < 6) {
+        throw new Error("Password must be at least 6 characters long");
+      }
+      
+      const response = await apiRequest("POST", "/api/auth/change-password", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword
+      });
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Password Changed",
+        description: "Your password has been successfully updated.",
+      });
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Password Change Failed",
+        description: error.message || "Failed to change password. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   if (!user) {
@@ -432,9 +483,86 @@ export default function ProfilePage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <p className="text-gray-600">Account settings and preferences will be available here.</p>
-                      <div className="pt-4 border-t">
+                    <div className="space-y-6">
+                      {/* Password Change Section */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Lock className="h-4 w-4 text-gray-500" />
+                          <h3 className="font-medium text-gray-900">Change Password</h3>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-4 max-w-md">
+                          <div>
+                            <Label htmlFor="currentPassword">Current Password</Label>
+                            <Input
+                              id="currentPassword"
+                              type="password"
+                              value={passwordData.currentPassword}
+                              onChange={(e) => setPasswordData({
+                                ...passwordData,
+                                currentPassword: e.target.value
+                              })}
+                              placeholder="Enter your current password"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="newPassword">New Password</Label>
+                            <Input
+                              id="newPassword"
+                              type="password"
+                              value={passwordData.newPassword}
+                              onChange={(e) => setPasswordData({
+                                ...passwordData,
+                                newPassword: e.target.value
+                              })}
+                              placeholder="Enter your new password"
+                            />
+                            <p className="text-sm text-gray-500 mt-1">
+                              Password must be at least 6 characters long
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                            <Input
+                              id="confirmPassword"
+                              type="password"
+                              value={passwordData.confirmPassword}
+                              onChange={(e) => setPasswordData({
+                                ...passwordData,
+                                confirmPassword: e.target.value
+                              })}
+                              placeholder="Confirm your new password"
+                            />
+                          </div>
+                          
+                          <Button
+                            onClick={() => changePasswordMutation.mutate()}
+                            disabled={
+                              !passwordData.currentPassword || 
+                              !passwordData.newPassword || 
+                              !passwordData.confirmPassword ||
+                              changePasswordMutation.isPending
+                            }
+                            className="w-full mt-2"
+                          >
+                            {changePasswordMutation.isPending ? "Changing Password..." : "Change Password"}
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <Separator />
+                      
+                      {/* Account Deletion Section */}
+                      <div className="pt-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Shield className="h-4 w-4 text-red-500" />
+                          <h3 className="font-medium text-red-900">Danger Zone</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Once you delete your account, there is no going back. Please be certain.
+                        </p>
                         <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
                           Delete Account
                         </Button>

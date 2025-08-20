@@ -26,6 +26,15 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your new password"),
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: "New passwords don't match",
+  path: ["confirmPassword"],
+});
+
 // Multer configuration for file uploads
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -227,6 +236,66 @@ export function registerRoutes(app: Express): Express {
         message: "Logged out successfully"
       });
     });
+  });
+
+  // Change password
+  app.post("/api/auth/change-password", async (req, res) => {
+    try {
+      const user = (req as any).session?.user;
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "Not authenticated"
+        });
+      }
+
+      const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
+      
+      // Get current user data
+      const currentUser = await storage.getUserById(user.id);
+      if (!currentUser) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.passwordHash);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is incorrect"
+        });
+      }
+
+      // Hash new password
+      const saltRounds = 10;
+      const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+
+      // Update password in database
+      await storage.updateUserPassword(user.id, newPasswordHash);
+
+      res.json({
+        success: true,
+        message: "Password changed successfully"
+      });
+    } catch (error: any) {
+      console.error("Change password error:", error);
+      
+      if (error.name === "ZodError") {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid password data",
+          errors: error.errors
+        });
+      }
+      
+      res.status(500).json({
+        success: false,
+        message: "Failed to change password. Please try again."
+      });
+    }
   });
 
   // Get current user
@@ -561,6 +630,59 @@ export function registerRoutes(app: Express): Express {
       res.status(500).json({
         success: false,
         message: "Failed to upload file"
+      });
+    }
+  });
+
+  // Change password endpoint
+  app.post("/api/auth/change-password", async (req, res) => {
+    try {
+      const user = (req as any).session?.user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+
+      // Validate input
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ message: "New passwords don't match" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters long" });
+      }
+
+      // Verify current password
+      const currentUser = await storage.getUserById(user.id);
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.passwordHash);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      // Hash new password
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+      
+      // Update password in database
+      await storage.updateUserPassword(user.id, newPasswordHash);
+
+      res.json({
+        success: true,
+        message: "Password changed successfully"
+      });
+    } catch (error) {
+      console.error("Password change error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to change password"
       });
     }
   });
