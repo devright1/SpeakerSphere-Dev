@@ -53,6 +53,15 @@ export function registerRoutes(app: Express): Express {
     }
   }));
 
+  // Add debugging middleware for password change requests
+  app.use('/api/auth/change-password', (req, res, next) => {
+    console.log("MIDDLEWARE: Password change request intercepted");
+    console.log("Method:", req.method);
+    console.log("Body:", req.body);
+    console.log("Session:", req.session);
+    next();
+  });
+
   // Register admin routes first
   registerAdminRoutes(app);
   
@@ -634,83 +643,61 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
-  // Change password endpoint
-  app.post("/api/auth/change-password", async (req, res) => {
+  // Change password endpoint - simplified approach
+  app.post("/api/users/:userId/change-password", async (req, res) => {
     try {
-      console.log("Password change request - Session:", (req as any).session);
-      console.log("Password change request - Headers:", req.headers);
-      
-      // Try both session and token-based authentication
-      let user = (req as any).session?.user;
-      console.log("Session user:", user);
-      
-      // If no session user, try token-based auth like other endpoints
-      if (!user) {
-        const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-          const token = authHeader.split(' ')[1];
-          console.log("Trying token auth with token:", token ? "present" : "missing");
-          try {
-            const tokenUser = await storage.getUserByToken(token);
-            console.log("Token user found:", tokenUser);
-            if (tokenUser) {
-              user = tokenUser;
-            }
-          } catch (error) {
-            console.log("Error getting user by token:", error);
-          }
-        }
-      }
-      
-      // Also try direct user lookup by ID from localStorage
-      if (!user && req.body.userId) {
-        console.log("Trying direct user lookup by ID:", req.body.userId);
-        try {
-          user = await storage.getUserById(req.body.userId);
-          console.log("Direct user lookup result:", user);
-        } catch (error) {
-          console.log("Error in direct user lookup:", error);
-        }
-      }
-      
-      if (!user) {
-        return res.status(401).json({ 
-          success: false,
-          message: "Authentication required" 
-        });
-      }
-
+      const userId = req.params.userId;
       const { currentPassword, newPassword, confirmPassword } = req.body;
+      
+      console.log("Password change request for user:", userId);
 
       // Validate input
       if (!currentPassword || !newPassword || !confirmPassword) {
-        return res.status(400).json({ message: "All fields are required" });
+        return res.status(400).json({ 
+          success: false,
+          message: "All fields are required" 
+        });
       }
 
       if (newPassword !== confirmPassword) {
-        return res.status(400).json({ message: "New passwords don't match" });
+        return res.status(400).json({ 
+          success: false,
+          message: "New passwords don't match" 
+        });
       }
 
       if (newPassword.length < 6) {
-        return res.status(400).json({ message: "Password must be at least 6 characters long" });
+        return res.status(400).json({ 
+          success: false,
+          message: "Password must be at least 6 characters long" 
+        });
+      }
+
+      // Get user from database
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ 
+          success: false,
+          message: "User not found" 
+        });
       }
 
       // Verify current password
-      const currentUser = await storage.getUserById(user.id);
-      if (!currentUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.passwordHash);
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
       if (!isCurrentPasswordValid) {
-        return res.status(400).json({ message: "Current password is incorrect" });
+        return res.status(400).json({ 
+          success: false,
+          message: "Current password is incorrect" 
+        });
       }
 
       // Hash new password
       const newPasswordHash = await bcrypt.hash(newPassword, 10);
       
       // Update password in database
-      await storage.updateUserPassword(user.id, newPasswordHash);
+      await storage.updateUserPassword(userId, newPasswordHash);
+
+      console.log("Password changed successfully for user:", userId);
 
       res.json({
         success: true,

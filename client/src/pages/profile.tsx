@@ -143,19 +143,17 @@ export default function ProfilePage() {
       console.log("Current user data:", user);
       console.log("Token:", token);
       
-      const response = await fetch("/api/auth/change-password", {
+      const response = await fetch(`/api/users/${user?.id}/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token && { "Authorization": `Bearer ${token}` })
         },
         body: JSON.stringify({
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
-          confirmPassword: passwordData.confirmPassword,
-          userId: user?.id // Include user ID for direct lookup
+          confirmPassword: passwordData.confirmPassword
         }),
-        credentials: "include" // Important for session cookies
+        credentials: "include"
       });
 
       if (!response.ok) {
