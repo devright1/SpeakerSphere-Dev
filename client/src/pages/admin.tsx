@@ -2440,25 +2440,33 @@ export default function AdminDashboard() {
                                         <div className="flex items-center justify-between">
                                           <span className="text-blue-700 font-medium">Password:</span>
                                           <div className="flex items-center space-x-2">
-                                            <code className="bg-white px-2 py-1 rounded text-blue-800 border font-mono text-sm">
-                                              {/* Generate consistent password based on application ID and email */}
-                                              {(() => {
-                                                const seed = `${app.id}-${app.email}`;
-                                                const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-                                                let result = '';
-                                                for (let i = 0; i < 12; i++) {
-                                                  const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
-                                                  result += chars[charIndex];
-                                                }
-                                                return result;
-                                              })()}
-                                            </code>
-                                            <Button 
-                                              size="sm" 
-                                              variant="ghost"
-                                              className="text-xs h-7 px-2 text-blue-600 hover:text-blue-800"
-                                              onClick={() => {
-                                                const password = (() => {
+                                            {/* Check if user has changed password from original */}
+                                            {(() => {
+                                              // Find the user associated with this application
+                                              const associatedUser = users?.find(u => u.email === app.email && u.speakerId === speaker.id);
+                                              const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
+                                                new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
+                                              
+                                              if (hasChangedPassword) {
+                                                return (
+                                                  <div className="flex items-center space-x-2">
+                                                    <span className="bg-orange-100 px-2 py-1 rounded text-orange-800 border border-orange-200 font-mono text-sm">
+                                                      ⚠️ Password Changed by User
+                                                    </span>
+                                                    <Button 
+                                                      size="sm" 
+                                                      variant="ghost"
+                                                      className="text-xs h-7 px-2 text-orange-600 hover:text-orange-800"
+                                                      onClick={() => {
+                                                        alert(`This user has changed their password from the original generated one.\n\nOriginal generated password is no longer valid.\nUser must use their new password to log in.`);
+                                                      }}
+                                                    >
+                                                      ℹ️ Info
+                                                    </Button>
+                                                  </div>
+                                                );
+                                              } else {
+                                                const originalPassword = (() => {
                                                   const seed = `${app.id}-${app.email}`;
                                                   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
                                                   let result = '';
@@ -2468,19 +2476,75 @@ export default function AdminDashboard() {
                                                   }
                                                   return result;
                                                 })();
-                                                const credentials = `Email: ${app.email}\nPassword: ${password}\nLogin URL: ${window.location.origin}/auth`;
-                                                navigator.clipboard?.writeText(credentials);
-                                                alert(`Login credentials copied to clipboard:\n\nEmail: ${app.email}\nPassword: ${password}`);
-                                              }}
-                                            >
-                                              📋 Copy
-                                            </Button>
+                                                
+                                                return (
+                                                  <code className="bg-white px-2 py-1 rounded text-blue-800 border font-mono text-sm">
+                                                    {originalPassword}
+                                                  </code>
+                                                );
+                                              }
+                                            })()}
+                                            {(() => {
+                                              // Only show copy button if password hasn't been changed
+                                              const associatedUser = users?.find(u => u.email === app.email && u.speakerId === speaker.id);
+                                              const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
+                                                new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
+                                              
+                                              if (!hasChangedPassword) {
+                                                return (
+                                                  <Button 
+                                                    size="sm" 
+                                                    variant="ghost"
+                                                    className="text-xs h-7 px-2 text-blue-600 hover:text-blue-800"
+                                                    onClick={() => {
+                                                      const password = (() => {
+                                                        const seed = `${app.id}-${app.email}`;
+                                                        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+                                                        let result = '';
+                                                        for (let i = 0; i < 12; i++) {
+                                                          const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+                                                          result += chars[charIndex];
+                                                        }
+                                                        return result;
+                                                      })();
+                                                      const credentials = `Email: ${app.email}\nPassword: ${password}\nLogin URL: ${window.location.origin}/auth`;
+                                                      navigator.clipboard?.writeText(credentials);
+                                                      alert(`Login credentials copied to clipboard:\n\nEmail: ${app.email}\nPassword: ${password}`);
+                                                    }}
+                                                  >
+                                                    📋 Copy
+                                                  </Button>
+                                                );
+                                              }
+                                              return null;
+                                            })()}
                                           </div>
                                         </div>
-                                        <div className="text-xs text-blue-600 mt-2 p-2 bg-blue-100 rounded">
-                                          💡 <strong>Consistent Password:</strong> This password is generated based on the application ID and remains the same each time. 
-                                          Click "Copy" to copy credentials for sharing with the speaker.
-                                        </div>
+                                        {(() => {
+                                          const associatedUser = users?.find(u => u.email === app.email && u.speakerId === speaker.id);
+                                          const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
+                                            new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
+                                          
+                                          if (hasChangedPassword) {
+                                            return (
+                                              <div className="text-xs text-orange-600 mt-2 p-2 bg-orange-100 rounded border border-orange-200">
+                                                ⚠️ <strong>Password Updated:</strong> This user has changed their password. The original generated password is no longer valid.
+                                                {associatedUser.updatedAt && (
+                                                  <div className="mt-1 text-orange-500">
+                                                    Changed on: {new Date(associatedUser.updatedAt).toLocaleString()}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            );
+                                          } else {
+                                            return (
+                                              <div className="text-xs text-blue-600 mt-2 p-2 bg-blue-100 rounded">
+                                                💡 <strong>Generated Password:</strong> This password is generated based on the application ID and remains consistent. 
+                                                Click "Copy" to copy credentials for sharing with the speaker.
+                                              </div>
+                                            );
+                                          }
+                                        })()}
                                       </div>
                                     </div>
                                   </div>
