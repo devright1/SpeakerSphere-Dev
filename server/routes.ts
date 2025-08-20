@@ -637,9 +637,29 @@ export function registerRoutes(app: Express): Express {
   // Change password endpoint
   app.post("/api/auth/change-password", async (req, res) => {
     try {
-      const user = (req as any).session?.user;
+      console.log("Password change request - Session:", (req as any).session);
+      console.log("Password change request - Headers:", req.headers);
+      
+      // Try both session and token-based authentication
+      let user = (req as any).session?.user;
+      console.log("Session user:", user);
+      
+      // If no session user, try token-based auth like other endpoints
       if (!user) {
-        return res.status(401).json({ message: "Authentication required" });
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.split(' ')[1];
+          console.log("Trying token auth with token:", token ? "present" : "missing");
+          user = await storage.getUserByToken(token);
+          console.log("Token user:", user);
+        }
+      }
+      
+      if (!user) {
+        return res.status(401).json({ 
+          success: false,
+          message: "Authentication required" 
+        });
       }
 
       const { currentPassword, newPassword, confirmPassword } = req.body;

@@ -138,11 +138,25 @@ export default function ProfilePage() {
         throw new Error("Password must be at least 6 characters long");
       }
       
-      const response = await apiRequest("POST", "/api/auth/change-password", {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-        confirmPassword: passwordData.confirmPassword
+      const token = localStorage.getItem('userToken');
+      const response = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { "Authorization": `Bearer ${token}` })
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+          confirmPassword: passwordData.confirmPassword
+        }),
+        credentials: "include" // Important for session cookies
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to change password");
+      }
       
       return response.json();
     },
