@@ -41,7 +41,8 @@ import {
   Music,
   Download,
   Trash2,
-  Plus
+  Plus,
+  EyeOff
 } from "lucide-react";
 
 export default function SpeakerDashboard() {
@@ -185,6 +186,40 @@ export default function SpeakerDashboard() {
       });
     },
   });
+
+  // Update content mutation
+  const updateContentMutation = useMutation({
+    mutationFn: async ({ contentId, isPublic }: { contentId: number; isPublic: boolean }) => {
+      const response = await fetch(`/api/content/${contentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isPublic }),
+      });
+      if (!response.ok) throw new Error('Failed to update content visibility');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchContent();
+      toast({
+        title: "Visibility Updated",
+        description: "Content visibility has been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update content visibility. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Toggle content visibility
+  const toggleContentVisibility = (contentId: number, isPublic: boolean) => {
+    updateContentMutation.mutate({ contentId, isPublic });
+  };
 
   useEffect(() => {
     if (speakerProfile && !editForm.name) {
@@ -663,19 +698,119 @@ export default function SpeakerDashboard() {
                 </div>
               </div>
 
-              {/* File Upload Area */}
-              <Card className="border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
-                <CardContent className="p-8 text-center">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Content</h3>
-                  <p className="text-gray-600 mb-4">
-                    Drag and drop files here or click the upload button above
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Supported formats: PDF, DOC, PPT, Images (JPG, PNG), Videos (MP4), Audio (MP3, WAV)
-                  </p>
-                </CardContent>
-              </Card>
+              {/* File Upload Buttons */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('pdfUpload')?.click()}>
+                  <CardContent className="p-6 text-center">
+                    <FileText className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload PDF</h3>
+                    <p className="text-sm text-gray-600">Documents, presentations, guides</p>
+                    <input
+                      type="file"
+                      id="pdfUpload"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      accept=".pdf"
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('imageUpload')?.click()}>
+                  <CardContent className="p-6 text-center">
+                    <Image className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Images</h3>
+                    <p className="text-sm text-gray-600">Photos, diagrams, charts</p>
+                    <input
+                      type="file"
+                      id="imageUpload"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      accept=".jpg,.jpeg,.png,.gif"
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('videoUpload')?.click()}>
+                  <CardContent className="p-6 text-center">
+                    <Video className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Videos</h3>
+                    <p className="text-sm text-gray-600">Presentations, demos, tutorials</p>
+                    <input
+                      type="file"
+                      id="videoUpload"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      accept=".mp4,.mov,.avi"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('documentUpload')?.click()}>
+                  <CardContent className="p-6 text-center">
+                    <FileText className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Documents</h3>
+                    <p className="text-sm text-gray-600">Word docs, PowerPoint presentations</p>
+                    <input
+                      type="file"
+                      id="documentUpload"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      accept=".doc,.docx,.ppt,.pptx"
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('audioUpload')?.click()}>
+                  <CardContent className="p-6 text-center">
+                    <Music className="h-12 w-12 text-purple-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Audio</h3>
+                    <p className="text-sm text-gray-600">Recordings, podcasts, lectures</p>
+                    <input
+                      type="file"
+                      id="audioUpload"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      accept=".mp3,.wav,.m4a"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Content Management Section */}
+              {speakerContent && speakerContent.length > 0 && (
+                <div className="bg-blue-50 rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">Content Management</h3>
+                      <p className="text-gray-600 mt-1">
+                        Control the visibility of your uploaded content. Public content appears on your speaker profile for potential clients to view and download.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Eye className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">Public Content</p>
+                        <p className="text-gray-600">Visible on your speaker profile for everyone to see and download</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-gray-100 rounded-lg">
+                        <EyeOff className="h-4 w-4 text-gray-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">Private Content</p>
+                        <p className="text-gray-600">Only visible to you in this dashboard</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Content List */}
               <div className="space-y-4">
@@ -711,6 +846,19 @@ export default function SpeakerDashboard() {
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
+                                disabled={updateContentMutation.isPending}
+                                className={content.isPublic ? 
+                                  "text-orange-600 border-orange-600 hover:bg-orange-50" : 
+                                  "text-green-600 border-green-600 hover:bg-green-50"
+                                }
+                                title={content.isPublic ? "Make Private" : "Make Public"}
+                              >
+                                {content.isPublic ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
