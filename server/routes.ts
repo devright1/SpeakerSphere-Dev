@@ -756,7 +756,10 @@ export function registerRoutes(app: Express): Express {
     try {
       const speakerId = parseInt(req.params.speakerId);
       const content = await storage.getSpeakerContent(speakerId);
-      res.json(content);
+      
+      // Filter for public content only when viewed on speaker profile
+      const publicContent = content.filter(item => item.isPublic);
+      res.json(publicContent);
     } catch (error) {
       console.error("Get content error:", error);
       res.status(500).json({ error: "Failed to get content" });

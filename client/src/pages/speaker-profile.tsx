@@ -40,7 +40,14 @@ import {
   Linkedin,
   Facebook,
   UserPlus,
-  LogIn
+  LogIn,
+  FileText,
+  Image,
+  Video,
+  Music,
+  BookOpen,
+  Download,
+  Folder
 } from "lucide-react";
 import type { Speaker, Review } from "@shared/schema";
 
@@ -100,6 +107,18 @@ export default function SpeakerProfile() {
       return response.json();
     },
     enabled: !!speaker,
+  });
+
+  // Fetch speaker content (only for approved speakers)
+  const { data: speakerContent } = useQuery({
+    queryKey: ["/api/speakers/content", speaker?.id],
+    queryFn: async () => {
+      if (!speaker?.id) return [];
+      const response = await fetch(`/api/speakers/${speaker.id}/content`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: Boolean(speaker?.id && speaker?.verified),
   });
 
   // Initialize speaker tracking
@@ -320,6 +339,44 @@ export default function SpeakerProfile() {
     );
   }
 
+  // Helper functions for file management
+  const getFileIcon = (category: string) => {
+    switch (category) {
+      case 'image': return <Image className="h-5 w-5 text-blue-600" />;
+      case 'video': return <Video className="h-5 w-5 text-purple-600" />;
+      case 'audio': return <Music className="h-5 w-5 text-green-600" />;
+      case 'presentation': return <BookOpen className="h-5 w-5 text-orange-600" />;
+      default: return <FileText className="h-5 w-5 text-gray-600" />;
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getCategoryDisplayName = (category: string) => {
+    switch (category) {
+      case 'image': return 'Images';
+      case 'video': return 'Videos';
+      case 'audio': return 'Audio';
+      case 'presentation': return 'Presentations';
+      case 'document': return 'Documents';
+      default: return 'Files';
+    }
+  };
+
+  // Group content by category
+  const groupedContent = speakerContent?.reduce((acc: any, content: any) => {
+    const category = content.category || 'document';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(content);
+    return acc;
+  }, {}) || {};
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -494,10 +551,17 @@ export default function SpeakerProfile() {
 
             {/* Tabs */}
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className={`grid w-full ${speaker.hideRatings ? 'grid-cols-3' : 'grid-cols-4'}`}>
+              <TabsList className={`grid w-full ${
+                speaker.hideRatings 
+                  ? (speaker.verified && speakerContent?.length > 0 ? 'grid-cols-4' : 'grid-cols-3')
+                  : (speaker.verified && speakerContent?.length > 0 ? 'grid-cols-5' : 'grid-cols-4')
+              }`}>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="experience">Experience</TabsTrigger>
                 <TabsTrigger value="topics">Topics</TabsTrigger>
+                {speaker.verified && speakerContent?.length > 0 && (
+                  <TabsTrigger value="resources">Speaker Resources</TabsTrigger>
+                )}
                 {!speaker.hideRatings && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
               </TabsList>
 
@@ -663,6 +727,81 @@ export default function SpeakerProfile() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="resources">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Speaker Resources</h2>
+                      <p className="text-gray-600 mt-2">
+                        Downloadable content and materials shared by {speaker.name}
+                      </p>
+                    </div>
+                  </div>
+
+                  {speakerContent && speakerContent.length > 0 ? (
+                    <div className="space-y-6">
+                      {Object.entries(groupedContent).map(([category, contents]: [string, any]) => (
+                        <Card key={category}>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Folder className="h-5 w-5 text-blue-600" />
+                              {getCategoryDisplayName(category)}
+                              <Badge variant="outline">{contents.length} files</Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid gap-4">
+                              {contents.map((content: any) => (
+                                <div key={content.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                  <div className="flex items-center space-x-4">
+                                    <div className="p-2 bg-gray-100 rounded-lg">
+                                      {getFileIcon(content.category)}
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className="font-semibold text-gray-900">{content.originalName}</h4>
+                                      <p className="text-sm text-gray-600">{content.description}</p>
+                                      <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                                        <span>{formatFileSize(content.fileSize)}</span>
+                                        <span>{content.downloadCount} downloads</span>
+                                        <span>
+                                          Updated {new Date(content.updatedAt).toLocaleDateString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      tracking.trackInteraction('resource_download', content.originalName);
+                                      window.open(`/api/content/${content.id}/download`, '_blank');
+                                    }}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                    Download
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="p-12 text-center">
+                        <Folder className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Resources Available</h3>
+                        <p className="text-gray-600">
+                          {speaker.name} hasn't shared any downloadable resources yet.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               </TabsContent>
 
               <TabsContent value="reviews">
