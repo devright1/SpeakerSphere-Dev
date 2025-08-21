@@ -10,6 +10,7 @@ import {
   userBookmarks,
   speakerApplications,
   speakerInteractions,
+  speakerContent,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -31,7 +32,9 @@ import {
   type SpeakerApplication,
   type InsertSpeakerApplication,
   type SpeakerInteraction,
-  type InsertSpeakerInteraction
+  type InsertSpeakerInteraction,
+  type SpeakerContent,
+  type InsertSpeakerContent
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql, isNotNull } from "drizzle-orm";
@@ -792,5 +795,53 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ passwordHash, updatedAt: new Date() })
       .where(eq(users.id, userId));
+  }
+
+  // Speaker Content Management Methods
+  async createSpeakerContent(content: InsertSpeakerContent): Promise<SpeakerContent> {
+    const result = await db.insert(speakerContent).values(content).returning();
+    return result[0];
+  }
+
+  async getSpeakerContent(speakerId: number): Promise<SpeakerContent[]> {
+    return await db
+      .select()
+      .from(speakerContent)
+      .where(eq(speakerContent.speakerId, speakerId))
+      .orderBy(desc(speakerContent.createdAt));
+  }
+
+  async getSpeakerContentById(contentId: number): Promise<SpeakerContent | undefined> {
+    const result = await db
+      .select()
+      .from(speakerContent)
+      .where(eq(speakerContent.id, contentId));
+    return result[0];
+  }
+
+  async updateSpeakerContent(contentId: number, updates: Partial<SpeakerContent>): Promise<SpeakerContent | undefined> {
+    const result = await db
+      .update(speakerContent)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(speakerContent.id, contentId))
+      .returning();
+    return result[0];
+  }
+
+  async deleteSpeakerContent(contentId: number): Promise<boolean> {
+    const result = await db
+      .delete(speakerContent)
+      .where(eq(speakerContent.id, contentId));
+    return result.rowCount > 0;
+  }
+
+  async incrementContentDownloadCount(contentId: number): Promise<void> {
+    await db
+      .update(speakerContent)
+      .set({ 
+        downloadCount: sql`${speakerContent.downloadCount} + 1`,
+        updatedAt: new Date() 
+      })
+      .where(eq(speakerContent.id, contentId));
   }
 }

@@ -10,6 +10,7 @@ import {
   userBookmarks,
   speakerApplications,
   speakerInteractions,
+  speakerContent,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -31,7 +32,9 @@ import {
   type SpeakerApplication,
   type InsertSpeakerApplication,
   type SpeakerInteraction,
-  type InsertSpeakerInteraction
+  type InsertSpeakerInteraction,
+  type SpeakerContent,
+  type InsertSpeakerContent
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -129,6 +132,14 @@ export interface IStorage {
   trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void>;
   getSpeakerAnalytics(speakerId: number): Promise<any>;
   getUserSession(token: string): Promise<UserSession | undefined>;
+
+  // Speaker Content Management
+  createSpeakerContent(content: InsertSpeakerContent): Promise<SpeakerContent>;
+  getSpeakerContent(speakerId: number): Promise<SpeakerContent[]>;
+  getSpeakerContentById(contentId: number): Promise<SpeakerContent | undefined>;
+  updateSpeakerContent(contentId: number, updates: Partial<SpeakerContent>): Promise<SpeakerContent | undefined>;
+  deleteSpeakerContent(contentId: number): Promise<boolean>;
+  incrementContentDownloadCount(contentId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -142,6 +153,7 @@ export class MemStorage implements IStorage {
   private userLikes: Map<number, UserLike>;
   private userBookmarks: Map<number, UserBookmark>;
   private speakerApplications: Map<number, SpeakerApplication>;
+  private speakerContentMap: Map<number, SpeakerContent>;
   private currentSpeakerId: number;
   private currentReviewId: number;
   private currentInquiryId: number;
@@ -150,6 +162,7 @@ export class MemStorage implements IStorage {
   private currentLikeId: number;
   private currentBookmarkId: number;
   private currentApplicationId: number;
+  private currentContentId: number;
 
   constructor() {
     this.speakers = new Map();
@@ -162,6 +175,7 @@ export class MemStorage implements IStorage {
     this.userLikes = new Map();
     this.userBookmarks = new Map();
     this.speakerApplications = new Map();
+    this.speakerContentMap = new Map();
     this.currentSpeakerId = 1;
     this.currentReviewId = 1;
     this.currentInquiryId = 1;
@@ -170,6 +184,7 @@ export class MemStorage implements IStorage {
     this.currentLikeId = 1;
     this.currentBookmarkId = 1;
     this.currentApplicationId = 1;
+    this.currentContentId = 1;
     
     this.seedData();
     this.seedVideoData();
@@ -907,6 +922,55 @@ export class MemStorage implements IStorage {
     return Array.from(this.userBookmarks.values())
       .filter(b => b.userId === userId)
       .map(b => b.speakerId);
+  }
+
+  // Speaker Content Management Methods
+  async createSpeakerContent(content: InsertSpeakerContent): Promise<SpeakerContent> {
+    const newContent: SpeakerContent = {
+      ...content,
+      id: this.currentContentId++,
+      downloadCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.speakerContentMap.set(newContent.id, newContent);
+    return newContent;
+  }
+
+  async getSpeakerContent(speakerId: number): Promise<SpeakerContent[]> {
+    return Array.from(this.speakerContentMap.values())
+      .filter(content => content.speakerId === speakerId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getSpeakerContentById(contentId: number): Promise<SpeakerContent | undefined> {
+    return this.speakerContentMap.get(contentId);
+  }
+
+  async updateSpeakerContent(contentId: number, updates: Partial<SpeakerContent>): Promise<SpeakerContent | undefined> {
+    const content = this.speakerContentMap.get(contentId);
+    if (!content) return undefined;
+
+    const updatedContent = { 
+      ...content, 
+      ...updates, 
+      updatedAt: new Date() 
+    };
+    this.speakerContentMap.set(contentId, updatedContent);
+    return updatedContent;
+  }
+
+  async deleteSpeakerContent(contentId: number): Promise<boolean> {
+    return this.speakerContentMap.delete(contentId);
+  }
+
+  async incrementContentDownloadCount(contentId: number): Promise<void> {
+    const content = this.speakerContentMap.get(contentId);
+    if (content) {
+      content.downloadCount = (content.downloadCount || 0) + 1;
+      content.updatedAt = new Date();
+      this.speakerContentMap.set(contentId, content);
+    }
   }
 }
 

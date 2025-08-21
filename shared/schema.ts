@@ -351,6 +351,26 @@ export type UserBookmark = typeof userBookmarks.$inferSelect;
 export type InsertUserBookmark = typeof userBookmarks.$inferInsert;
 export type SpeakerInteraction = typeof speakerInteractions.$inferSelect;
 export type InsertSpeakerInteraction = typeof speakerInteractions.$inferInsert;
+export type SpeakerContent = typeof speakerContent.$inferSelect;
+export type InsertSpeakerContent = typeof speakerContent.$inferInsert;
+
+// Speaker content management for file uploads
+export const speakerContent = pgTable("speaker_content", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  fileName: text("file_name").notNull(),
+  originalName: text("original_name").notNull(),
+  fileSize: integer("file_size").notNull(), // in bytes
+  fileType: text("file_type").notNull(), // MIME type
+  category: text("category").notNull(), // "document", "image", "video", "audio", "presentation"
+  description: text("description"),
+  isPublic: boolean("is_public").default(false), // Whether file is public or private
+  downloadCount: integer("download_count").default(0),
+  uploadPath: text("upload_path").notNull(), // Path to file in storage
+  thumbnailPath: text("thumbnail_path"), // Path to thumbnail for images/videos
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 // Enhanced reviews - add userId field for registered user reviews
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -364,6 +384,13 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 }).extend({
   password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const insertSpeakerContentSchema = createInsertSchema(speakerContent).omit({
+  id: true,
+  downloadCount: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertUserSessionSchema = createInsertSchema(userSessions).omit({

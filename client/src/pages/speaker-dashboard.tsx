@@ -33,7 +33,15 @@ import {
   Crown,
   Check,
   Zap,
-  TrendingUp
+  TrendingUp,
+  Upload,
+  FileText,
+  Image,
+  Video,
+  Music,
+  Download,
+  Trash2,
+  Plus
 } from "lucide-react";
 
 export default function SpeakerDashboard() {
@@ -86,6 +94,17 @@ export default function SpeakerDashboard() {
     enabled: !!user?.id,
   });
 
+  // Fetch speaker content
+  const { data: speakerContent, refetch: refetchContent } = useQuery({
+    queryKey: ['/api/speakers/content', speakerProfile?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/content`);
+      if (!response.ok) throw new Error('Failed to fetch speaker content');
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id,
+  });
+
   // Update speaker profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -116,6 +135,57 @@ export default function SpeakerDashboard() {
     },
   });
 
+  // File upload mutation
+  const uploadContentMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/content`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) throw new Error('Failed to upload content');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchContent();
+      toast({
+        title: "Content Uploaded",
+        description: "Your file has been uploaded successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload file. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete content mutation
+  const deleteContentMutation = useMutation({
+    mutationFn: async (contentId: number) => {
+      const response = await fetch(`/api/content/${contentId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete content');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchContent();
+      toast({
+        title: "Content Deleted",
+        description: "Your file has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete file. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     if (speakerProfile && !editForm.name) {
       setEditForm(speakerProfile);
@@ -129,6 +199,47 @@ export default function SpeakerDashboard() {
   const handleCancel = () => {
     setEditForm(speakerProfile);
     setIsEditing(false);
+  };
+
+  // File upload handling
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('description', `${file.name}`);
+    formData.append('category', getFileCategory(file.type));
+    formData.append('isPublic', 'false');
+
+    uploadContentMutation.mutate(formData);
+  };
+
+  const getFileCategory = (mimeType: string) => {
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.startsWith('video/')) return 'video';
+    if (mimeType.startsWith('audio/')) return 'audio';
+    if (mimeType.includes('pdf')) return 'document';
+    if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return 'presentation';
+    return 'document';
+  };
+
+  const getFileIcon = (category: string) => {
+    switch (category) {
+      case 'image': return <Image className="h-5 w-5" />;
+      case 'video': return <Video className="h-5 w-5" />;
+      case 'audio': return <Music className="h-5 w-5" />;
+      case 'presentation': return <BookOpen className="h-5 w-5" />;
+      default: return <FileText className="h-5 w-5" />;
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (isLoading) {
@@ -214,10 +325,11 @@ export default function SpeakerDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews ({userReviews?.length || 0})</TabsTrigger>
             <TabsTrigger value="stats">Analytics</TabsTrigger>
+            <TabsTrigger value="content">My Content</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
@@ -519,6 +631,127 @@ export default function SpeakerDashboard() {
                   <div className="text-sm text-gray-600">Website Clicks</div>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          {/* My Content Tab */}
+          <TabsContent value="content">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">My Content</h2>
+                  <p className="text-gray-600 mt-2">
+                    Manage your documents, presentations, media files, and other content
+                  </p>
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    id="fileUpload"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.mov,.mp3,.wav"
+                  />
+                  <Button
+                    onClick={() => document.getElementById('fileUpload')?.click()}
+                    disabled={uploadContentMutation.isPending}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {uploadContentMutation.isPending ? 'Uploading...' : 'Upload File'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* File Upload Area */}
+              <Card className="border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
+                <CardContent className="p-8 text-center">
+                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Content</h3>
+                  <p className="text-gray-600 mb-4">
+                    Drag and drop files here or click the upload button above
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Supported formats: PDF, DOC, PPT, Images (JPG, PNG), Videos (MP4), Audio (MP3, WAV)
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Content List */}
+              <div className="space-y-4">
+                {speakerContent && speakerContent.length > 0 ? (
+                  <div className="grid gap-4">
+                    {speakerContent.map((content: any) => (
+                      <Card key={content.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              <div className="p-2 bg-gray-100 rounded-lg">
+                                {getFileIcon(content.category)}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900">{content.originalName}</h4>
+                                <p className="text-sm text-gray-600">{content.description}</p>
+                                <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                                  <span>{formatFileSize(content.fileSize)}</span>
+                                  <span>{content.category}</span>
+                                  <span>{content.downloadCount} downloads</span>
+                                  <span>
+                                    {content.isPublic ? (
+                                      <Badge variant="outline" className="text-green-600 border-green-600">
+                                        Public
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="outline" className="text-gray-600 border-gray-600">
+                                        Private
+                                      </Badge>
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.open(`/api/content/${content.id}/download`, '_blank')}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteContentMutation.mutate(content.id)}
+                                disabled={deleteContentMutation.isPending}
+                                className="text-red-600 border-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Content Yet</h3>
+                      <p className="text-gray-600 mb-6">
+                        Start by uploading your first document, presentation, or media file
+                      </p>
+                      <Button
+                        onClick={() => document.getElementById('fileUpload')?.click()}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Upload Your First File
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
           </TabsContent>
 

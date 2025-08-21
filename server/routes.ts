@@ -711,6 +711,139 @@ export function registerRoutes(app: Express): Express {
       });
     }
   });
+
+  // Content Management API Routes
+  
+  // Upload content file
+  app.post("/api/speakers/:speakerId/content", upload.single('file'), async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const { description, category, isPublic } = req.body;
+      
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      // Check if user owns this speaker profile
+      const user = req.user;
+      if (!user || user.speakerId !== speakerId) {
+        return res.status(403).json({ error: "Not authorized to upload content for this speaker" });
+      }
+
+      // Create content record
+      const contentData = {
+        speakerId,
+        fileName: `${Date.now()}_${req.file.originalname}`,
+        originalName: req.file.originalname,
+        fileSize: req.file.size,
+        fileType: req.file.mimetype,
+        category: category || 'document',
+        description: description || '',
+        isPublic: isPublic === 'true',
+        uploadPath: `/uploads/${speakerId}/${Date.now()}_${req.file.originalname}` // Placeholder path
+      };
+
+      const content = await storage.createSpeakerContent(contentData);
+      res.json(content);
+    } catch (error) {
+      console.error("Content upload error:", error);
+      res.status(500).json({ error: "Failed to upload content" });
+    }
+  });
+
+  // Get speaker content
+  app.get("/api/speakers/:speakerId/content", async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const content = await storage.getSpeakerContent(speakerId);
+      res.json(content);
+    } catch (error) {
+      console.error("Get content error:", error);
+      res.status(500).json({ error: "Failed to get content" });
+    }
+  });
+
+  // Update content
+  app.patch("/api/content/:contentId", async (req: AuthenticatedRequest, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const { description, category, isPublic } = req.body;
+      
+      // Get content to check ownership
+      const content = await storage.getSpeakerContentById(contentId);
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+
+      // Check if user owns this content
+      const user = req.user;
+      if (!user || user.speakerId !== content.speakerId) {
+        return res.status(403).json({ error: "Not authorized to update this content" });
+      }
+
+      const updates = { description, category, isPublic };
+      const updatedContent = await storage.updateSpeakerContent(contentId, updates);
+      res.json(updatedContent);
+    } catch (error) {
+      console.error("Update content error:", error);
+      res.status(500).json({ error: "Failed to update content" });
+    }
+  });
+
+  // Delete content
+  app.delete("/api/content/:contentId", async (req: AuthenticatedRequest, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      
+      // Get content to check ownership
+      const content = await storage.getSpeakerContentById(contentId);
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+
+      // Check if user owns this content
+      const user = req.user;
+      if (!user || user.speakerId !== content.speakerId) {
+        return res.status(403).json({ error: "Not authorized to delete this content" });
+      }
+
+      const deleted = await storage.deleteSpeakerContent(contentId);
+      if (deleted) {
+        res.json({ success: true });
+      } else {
+        res.status(500).json({ error: "Failed to delete content" });
+      }
+    } catch (error) {
+      console.error("Delete content error:", error);
+      res.status(500).json({ error: "Failed to delete content" });
+    }
+  });
+
+  // Download content
+  app.get("/api/content/:contentId/download", async (req, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const content = await storage.getSpeakerContentById(contentId);
+      
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+
+      // Increment download count
+      await storage.incrementContentDownloadCount(contentId);
+
+      // For now, just return the content info
+      // In a real implementation, you would serve the actual file
+      res.json({ 
+        message: "Download would start here",
+        fileName: content.originalName,
+        downloadPath: content.uploadPath
+      });
+    } catch (error) {
+      console.error("Download content error:", error);
+      res.status(500).json({ error: "Failed to download content" });
+    }
+  });
   
   return app;
 }
