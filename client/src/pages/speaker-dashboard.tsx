@@ -29,7 +29,11 @@ import {
   Languages,
   Building,
   ExternalLink,
-  Home
+  Home,
+  Crown,
+  Check,
+  Zap,
+  TrendingUp
 } from "lucide-react";
 
 export default function SpeakerDashboard() {
@@ -210,10 +214,11 @@ export default function SpeakerDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews ({userReviews?.length || 0})</TabsTrigger>
             <TabsTrigger value="stats">Analytics</TabsTrigger>
+            <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -517,6 +522,206 @@ export default function SpeakerDashboard() {
             </div>
           </TabsContent>
 
+          {/* Subscription Tab */}
+          <TabsContent value="subscription">
+            <div className="space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Speaker Plan</h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Unlock premium features and boost your visibility with our professional speaker subscription plans
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Silver Plan */}
+                <Card className="border-gray-200 hover:border-gray-300 transition-colors">
+                  <CardHeader className="text-center pb-4">
+                    <div className="flex justify-center mb-4">
+                      <div className="p-3 bg-gray-100 rounded-full">
+                        <Award className="h-8 w-8 text-gray-600" />
+                      </div>
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">Silver</CardTitle>
+                    <CardDescription className="text-lg">Essential speaker features</CardDescription>
+                    <div className="mt-4">
+                      <span className="text-4xl font-bold text-gray-900">$29</span>
+                      <span className="text-gray-600">/month</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Enhanced profile visibility</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Basic analytics dashboard</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Email support</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Professional badge on profile</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Up to 5 videos in portfolio</span>
+                      </div>
+                    </div>
+                    <Button className="w-full bg-gray-600 hover:bg-gray-700">
+                      Get Started
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Gold Plan - Most Popular */}
+                <Card className="border-yellow-300 border-2 relative hover:border-yellow-400 transition-colors">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-yellow-500 text-white px-4 py-1 text-sm font-medium">
+                      Most Popular
+                    </Badge>
+                  </div>
+                  <CardHeader className="text-center pb-4">
+                    <div className="flex justify-center mb-4">
+                      <div className="p-3 bg-yellow-100 rounded-full">
+                        <Star className="h-8 w-8 text-yellow-600" />
+                      </div>
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">Gold</CardTitle>
+                    <CardDescription className="text-lg">Professional speaker toolkit</CardDescription>
+                    <div className="mt-4">
+                      <span className="text-4xl font-bold text-gray-900">$59</span>
+                      <span className="text-gray-600">/month</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="text-sm font-medium text-yellow-700 mb-2">Everything in Silver, plus:</div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Priority placement in search results</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Advanced analytics & insights</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Direct inquiry management</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Featured speaker badge</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Up to 15 videos in portfolio</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Priority phone & email support</span>
+                      </div>
+                    </div>
+                    <Button className="w-full bg-yellow-600 hover:bg-yellow-700">
+                      Upgrade to Gold
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Premium Plan */}
+                <Card className="border-purple-300 hover:border-purple-400 transition-colors">
+                  <CardHeader className="text-center pb-4">
+                    <div className="flex justify-center mb-4">
+                      <div className="p-3 bg-purple-100 rounded-full">
+                        <Crown className="h-8 w-8 text-purple-600" />
+                      </div>
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">Premium</CardTitle>
+                    <CardDescription className="text-lg">Elite speaker experience</CardDescription>
+                    <div className="mt-4">
+                      <span className="text-4xl font-bold text-gray-900">$99</span>
+                      <span className="text-gray-600">/month</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="text-sm font-medium text-purple-700 mb-2">Everything in Gold, plus:</div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Top-tier placement & homepage featuring</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Comprehensive analytics suite</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Personal account manager</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Premium speaker badge</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Unlimited videos in portfolio</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">White-glove onboarding</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">24/7 priority support</span>
+                      </div>
+                    </div>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      Go Premium
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Additional Info Section */}
+              <div className="mt-12 bg-gray-50 rounded-lg p-8">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">Why Subscribe?</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="text-center">
+                    <div className="flex justify-center mb-4">
+                      <TrendingUp className="h-12 w-12 text-blue-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Increased Visibility</h4>
+                    <p className="text-gray-600">Get more exposure and reach the right clients with priority placement in search results.</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex justify-center mb-4">
+                      <Zap className="h-12 w-12 text-green-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Advanced Tools</h4>
+                    <p className="text-gray-600">Access powerful analytics, portfolio management, and direct client communication tools.</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex justify-center mb-4">
+                      <Award className="h-12 w-12 text-purple-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Professional Status</h4>
+                    <p className="text-gray-600">Build credibility with professional badges and premium branding on your profile.</p>
+                  </div>
+                </div>
+                <div className="text-center mt-8">
+                  <p className="text-sm text-gray-600">
+                    All plans include a 14-day free trial. Cancel anytime. Need a custom enterprise plan? 
+                    <Link href="/contact" className="text-blue-600 hover:text-blue-800 ml-1">Contact us</Link>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
 
         </Tabs>
       </div>
