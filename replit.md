@@ -4,6 +4,8 @@
 This project is a full-stack healthcare speaker review platform, "SpeakerSphere Reviews," designed to connect healthcare professionals with medical speakers. It enables users to discover, browse, search, and review speakers across various healthcare specialties. The platform aims to be a comprehensive resource for evaluating speaker quality, facilitating bookings, and showcasing speaker expertise through detailed profiles and video portfolios. Its core capabilities include advanced speaker discovery, a multi-dimensional review system, and direct inquiry management, supporting the business vision of becoming a leading platform for healthcare speaker evaluation and booking.
 
 ## Recent Changes (January 2025)
+- **Real-time Database Synchronization Configured**: Implemented shared PostgreSQL database approach for instant synchronization between Replit development environment and production domain - changes made in either environment are immediately reflected in both (January 21, 2025)
+- **Production Database Integration**: Configured deployment to use same Neon PostgreSQL database (ep-dry-sunset-a6dfrrsb.us-west-2.aws.neon.tech) with 559 speakers for seamless real-time updates across environments
 - **Content Management Enhancement**: Replaced drag-and-drop with intuitive upload buttons for different file types (PDF, images, videos, documents, audio) and added comprehensive content visibility controls allowing speakers to toggle between public/private for each uploaded file (January 21, 2025)
 - **Speaker Resources Integration**: Successfully implemented "Speaker Resources" tab on speaker profiles that displays only public content from approved speakers, with organized file categories and download tracking
 - **Upload Interface Redesign**: Removed problematic drag-and-drop functionality that was opening PDFs in new tabs, replaced with dedicated upload cards for each file type with visual icons and clear descriptions
@@ -55,7 +57,8 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
 - **Database ORM**: Drizzle ORM (PostgreSQL dialect)
-- **Database Provider**: Neon serverless PostgreSQL
+- **Database Provider**: Neon serverless PostgreSQL (shared between dev and production)
+- **Database Synchronization**: Real-time sync using shared database approach - single PostgreSQL instance serves both Replit development environment and production domain
 - **File Handling**: Multer for image uploads
 - **Session Management**: Configured for PostgreSQL session storage
 - **Monorepo Structure**: Shared TypeScript schemas between client and server for end-to-end type safety.

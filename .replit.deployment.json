@@ -1,0 +1,24 @@
+{
+  "build": {
+    "commands": [
+      "npm install",
+      "npm run build"
+    ]
+  },
+  "run": {
+    "command": "npm start"
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "DATABASE_URL": "$DATABASE_URL",
+    "PGHOST": "$PGHOST",
+    "PGUSER": "$PGUSER", 
+    "PGPASSWORD": "$PGPASSWORD",
+    "PGDATABASE": "$PGDATABASE",
+    "PGPORT": "$PGPORT",
+    "SESSION_SECRET": "$SESSION_SECRET"
+  },
+  "domains": {
+    "production": "thespeakersphere.com"
+  }
+}
