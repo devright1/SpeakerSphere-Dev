@@ -4,6 +4,7 @@ import { db } from "./db";
 import { speakers, users } from "../shared/schema";
 import { eq, desc } from "drizzle-orm";
 import { EmailService } from "./email-service";
+import bcrypt from "bcryptjs";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
 
 import { GNYAPSpeakerImporter } from "./gnyap-speaker-import";
@@ -18,6 +19,20 @@ import { importEvent9Speakers } from "./event9-speaker-import";
 import { importEvent23Speakers } from "./event23-speaker-import";
 import { importEvent14Speakers } from "./event14-speaker-import";
 import { importSpeakersFromCSV } from "./comprehensive-speaker-import";
+
+// Utility functions
+const generateTemporaryPassword = (): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let password = '';
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
+const hashPassword = async (password: string): Promise<string> => {
+  return await bcrypt.hash(password, 10);
+};
 
 // Admin authentication middleware
 const authenticateAdmin = (req: any, res: any, next: any) => {
@@ -153,16 +168,15 @@ export function registerAdminRoutes(app: Express) {
       );
       
       // Send status update email (except for approved - that's handled in the approve endpoint)
-      if (status !== 'approved') {
-        const emailSent = await EmailService.sendApplicationStatusEmail(
+      if (status === 'rejected') {
+        const emailService = EmailService.getInstance();
+        const emailSent = await emailService.sendSpeakerRejection(
           application.email,
           application.firstName,
-          application.lastName,
-          status,
           adminNotes
         );
         
-        console.log(`📧 Status update email for ${application.email}: ${emailSent ? 'sent' : 'failed'}`);
+        console.log(`📧 Rejection email for ${application.email}: ${emailSent ? 'sent' : 'failed'}`);
       }
       
       res.json(updatedApplication);
@@ -242,8 +256,8 @@ export function registerAdminRoutes(app: Express) {
         // Create a new user account for this email
         user = await storage.createUser({
           email: application.email,
-          name: `${application.firstName} ${application.lastName}`,
-          accountType: 'speaker',
+          firstName: application.firstName,
+          lastName: application.lastName,
           passwordHash: '' // Will be set later
         });
       }
@@ -257,22 +271,20 @@ export function registerAdminRoutes(app: Express) {
       );
       
       // Generate temporary password and update user
-      const temporaryPassword = EmailService.generateTemporaryPassword();
-      const hashedPassword = await EmailService.hashPassword(temporaryPassword);
+      const temporaryPassword = generateTemporaryPassword();
+      const hashedPassword = await hashPassword(temporaryPassword);
       
       await storage.updateUser(user.id, { 
         passwordHash: hashedPassword 
       });
       
       // Send welcome email with login credentials
-      const loginUrl = `${req.protocol}://${req.get('host')}/auth`;
-      const emailSent = await EmailService.sendSpeakerWelcomeEmail({
-        firstName: application.firstName,
-        lastName: application.lastName,
-        email: application.email,
-        temporaryPassword: temporaryPassword,
-        loginUrl: loginUrl
-      });
+      const emailService = EmailService.getInstance();
+      const emailSent = await emailService.sendSpeakerApproval(
+        application.email,
+        application.firstName,
+        { email: application.email, password: temporaryPassword }
+      );
       
       res.json({ 
         success: true, 
@@ -380,8 +392,8 @@ export function registerAdminRoutes(app: Express) {
       const result = await storage.approveSpeakerApplication(applicationId, reviewedBy);
       
       // Generate temporary password and update user
-      const temporaryPassword = EmailService.generateTemporaryPassword();
-      const hashedPassword = await EmailService.hashPassword(temporaryPassword);
+      const temporaryPassword = generateTemporaryPassword();
+      const hashedPassword = await hashPassword(temporaryPassword);
       
       // Update the created user with the hashed password
       await storage.updateUser(result.user.id, { 
@@ -389,14 +401,12 @@ export function registerAdminRoutes(app: Express) {
       });
       
       // Send welcome email with login credentials
-      const loginUrl = `${req.protocol}://${req.get('host')}/auth`;
-      const emailSent = await EmailService.sendSpeakerWelcomeEmail({
-        firstName: application.firstName,
-        lastName: application.lastName,
-        email: application.email,
-        temporaryPassword: temporaryPassword,
-        loginUrl: loginUrl
-      });
+      const emailService = EmailService.getInstance();
+      const emailSent = await emailService.sendSpeakerApproval(
+        application.email,
+        application.firstName,
+        { email: application.email, password: temporaryPassword }
+      );
       
       res.json({ 
         success: true, 
@@ -578,9 +588,8 @@ export function registerAdminRoutes(app: Express) {
   // Comprehensive bulk import speakers from dentalsymposiumhub.com
   app.post("/api/admin/speakers/bulk-import", async (req, res) => {
     try {
-      console.log("🚀 Starting comprehensive bulk speaker import from dentalsymposiumhub.com...");
-      const importer = new ComprehensiveSpeakerImporter();
-      const results = await importer.importAllSpeakers();
+      console.log("🚀 Starting comprehensive bulk speaker import from CSV...");
+      const results = await importSpeakersFromCSV('speakers_data.json');
 
       res.json({
         success: true,

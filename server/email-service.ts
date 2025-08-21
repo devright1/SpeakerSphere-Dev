@@ -1,218 +1,389 @@
 import sgMail from '@sendgrid/mail';
-import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+if (!process.env.SENDGRID_API_KEY) {
+  throw new Error("SENDGRID_API_KEY environment variable must be set");
 }
 
-interface SpeakerWelcomeEmailData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  temporaryPassword: string;
-  loginUrl: string;
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+// Email templates and service configuration
+const FROM_EMAIL = 'noreply@thespeakersphere.com';
+const ADMIN_EMAIL = 'admin@thespeakersphere.com';
+
+export interface EmailTemplate {
+  to: string;
+  from: string;
+  subject: string;
+  html: string;
+  text?: string;
 }
 
 export class EmailService {
-  private static isConfigured(): boolean {
-    return !!process.env.SENDGRID_API_KEY;
-  }
+  private static instance: EmailService;
 
-  static generateTemporaryPassword(): string {
-    // Generate a secure 12-character temporary password
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
-    let password = '';
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
+  private constructor() {}
+
+  public static getInstance(): EmailService {
+    if (!EmailService.instance) {
+      EmailService.instance = new EmailService();
     }
-    return password;
+    return EmailService.instance;
   }
 
-  static async hashPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, 12);
-  }
-
-  static async sendSpeakerWelcomeEmail(data: SpeakerWelcomeEmailData): Promise<boolean> {
-    if (!this.isConfigured()) {
-      console.log('📧 SendGrid not configured - would send welcome email to:', {
-        to: data.email,
-        subject: 'Welcome to SpeakerSphere - Your Account is Approved!',
-        temporaryPassword: data.temporaryPassword,
-        loginUrl: data.loginUrl
-      });
-      return true; // Return true to indicate the process completed successfully
-    }
-
-    const msg = {
-      to: data.email,
-      from: 'speakers@devright.com', // Use verified sender
-      subject: 'Welcome to SpeakerSphere - Your Account is Approved!',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px; }
-            .credentials-box { background: white; border: 2px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0; }
-            .cta-button { display: inline-block; background: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
-            .important { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🎉 Welcome to SpeakerSphere!</h1>
-              <p>Your speaker application has been approved</p>
-            </div>
-            <div class="content">
-              <p>Dear Dr. ${data.firstName} ${data.lastName},</p>
-              
-              <p>Congratulations! We're excited to inform you that your speaker application has been <strong>approved</strong> and your SpeakerSphere account is now active.</p>
-              
-              <div class="credentials-box">
-                <h3>Your Login Credentials:</h3>
-                <p><strong>Email:</strong> ${data.email}</p>
-                <p><strong>Temporary Password:</strong> <code style="background: #e5e7eb; padding: 4px 8px; border-radius: 4px; font-weight: bold;">${data.temporaryPassword}</code></p>
-              </div>
-              
-              <div class="important">
-                <strong>Important:</strong> Please log in and change your password immediately for security purposes.
-              </div>
-              
-              <a href="${data.loginUrl}" class="cta-button">Login to Your Account</a>
-              
-              <h3>What's Next?</h3>
-              <ul>
-                <li>Complete your speaker profile with additional details</li>
-                <li>Upload professional headshots and speaking videos</li>
-                <li>Set your speaking topics and availability</li>
-                <li>Start receiving inquiries from event organizers</li>
-              </ul>
-              
-              <p>As an approved speaker, you now have access to:</p>
-              <ul>
-                <li>📊 Analytics dashboard to track profile views and inquiries</li>
-                <li>📅 Booking management system</li>
-                <li>🎥 Video portfolio showcase</li>
-                <li>📈 Performance insights and ratings</li>
-              </ul>
-              
-              <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-              
-              <p>Welcome to the SpeakerSphere community!</p>
-              
-              <p>Best regards,<br>
-              The SpeakerSphere Team<br>
-              <a href="mailto:speakers@devright.com">speakers@devright.com</a></p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
-      text: `
-        Welcome to SpeakerSphere!
-        
-        Dear Dr. ${data.firstName} ${data.lastName},
-        
-        Congratulations! Your speaker application has been approved and your account is now active.
-        
-        Login Credentials:
-        Email: ${data.email}
-        Temporary Password: ${data.temporaryPassword}
-        
-        Please log in at ${data.loginUrl} and change your password immediately.
-        
-        As an approved speaker, you now have access to analytics, booking management, video portfolio showcase, and performance insights.
-        
-        Welcome to the SpeakerSphere community!
-        
-        Best regards,
-        The SpeakerSphere Team
-      `
-    };
-
+  async sendEmail(template: EmailTemplate): Promise<boolean> {
     try {
-      await sgMail.send(msg);
-      console.log(`✅ Welcome email sent successfully to ${data.email}`);
+      await sgMail.send({
+        to: template.to,
+        from: template.from,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      });
+      console.log(`✅ Email sent successfully to ${template.to}`);
       return true;
     } catch (error) {
-      console.error('Failed to send welcome email:', error);
+      console.error('❌ SendGrid email error:', error);
       return false;
     }
   }
 
-  static async sendApplicationStatusEmail(
-    email: string, 
-    firstName: string, 
-    lastName: string, 
-    status: string, 
-    adminNotes?: string
-  ): Promise<boolean> {
-    if (!this.isConfigured()) {
-      console.log('📧 SendGrid not configured - would send status email to:', {
-        to: email,
-        name: `${firstName} ${lastName}`,
-        status: status,
-        adminNotes: adminNotes || 'No additional notes'
-      });
-      return true; // Return true to indicate the process completed successfully
-    }
-
-    const isApproved = status === 'approved';
-    const isRejected = status === 'rejected';
-    
-    let subject = 'SpeakerSphere Application Update';
-    let statusMessage = 'Your application status has been updated';
-    
-    if (isApproved) {
-      subject = 'Welcome to SpeakerSphere - Application Approved!';
-      statusMessage = '🎉 Congratulations! Your application has been approved.';
-    } else if (isRejected) {
-      subject = 'SpeakerSphere Application Status';
-      statusMessage = 'We appreciate your interest in joining SpeakerSphere.';
-    }
-
-    const msg = {
-      to: email,
-      from: 'speakers@devright.com',
-      subject,
+  // Inquiry confirmation to client
+  async sendInquiryConfirmation(clientEmail: string, clientName: string, speakerName: string, inquiryId: number): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: clientEmail,
+      from: FROM_EMAIL,
+      subject: `Inquiry Confirmation - ${speakerName}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>SpeakerSphere Application Status</h2>
-          <p>Dear ${firstName} ${lastName},</p>
-          <p>${statusMessage}</p>
-          <p><strong>Status:</strong> ${status.toUpperCase()}</p>
-          ${adminNotes ? `<p><strong>Notes:</strong> ${adminNotes}</p>` : ''}
-          ${isRejected ? '<p>Please feel free to reapply in the future when you meet our criteria.</p>' : ''}
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Thank you for your speaker inquiry!</h2>
+          
+          <p>Dear ${clientName},</p>
+          
+          <p>We've received your inquiry for <strong>${speakerName}</strong> and our team will review it shortly.</p>
+          
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #475569; margin-top: 0;">What happens next?</h3>
+            <ul style="color: #64748b;">
+              <li>Our team will review your inquiry within 24 hours</li>
+              <li>We'll contact the speaker on your behalf</li>
+              <li>You'll receive an update via email with their response</li>
+            </ul>
+          </div>
+          
+          <p style="color: #64748b;">
+            <strong>Inquiry Reference:</strong> #${inquiryId}<br>
+            <strong>Speaker:</strong> ${speakerName}
+          </p>
+          
+          <p>If you have any questions, feel free to reply to this email.</p>
+          
+          <p>Best regards,<br>The SpeakerSphere Team</p>
+          
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+          <p style="font-size: 12px; color: #94a3b8;">
+            This is an automated message from SpeakerSphere Reviews. Please do not reply directly to this email.
+          </p>
+        </div>
+      `,
+      text: `Thank you for your speaker inquiry!
+
+Dear ${clientName},
+
+We've received your inquiry for ${speakerName} and our team will review it shortly.
+
+What happens next?
+- Our team will review your inquiry within 24 hours
+- We'll contact the speaker on your behalf  
+- You'll receive an update via email with their response
+
+Inquiry Reference: #${inquiryId}
+Speaker: ${speakerName}
+
+If you have any questions, feel free to reply to this email.
+
+Best regards,
+The SpeakerSphere Team`
+    };
+
+    return await this.sendEmail(template);
+  }
+
+  // Admin notification for new inquiry
+  async sendInquiryAdminNotification(inquiry: any, speakerName: string): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: ADMIN_EMAIL,
+      from: FROM_EMAIL,
+      subject: `New Speaker Inquiry - ${speakerName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #dc2626;">New Speaker Inquiry Received</h2>
+          
+          <div style="background-color: #fef2f2; padding: 20px; border-left: 4px solid #dc2626; margin: 20px 0;">
+            <h3 style="color: #dc2626; margin-top: 0;">Inquiry Details</h3>
+            <p><strong>Speaker:</strong> ${speakerName}</p>
+            <p><strong>Client:</strong> ${inquiry.clientName}</p>
+            <p><strong>Company:</strong> ${inquiry.clientCompany}</p>
+            <p><strong>Email:</strong> ${inquiry.clientEmail}</p>
+            <p><strong>Event Type:</strong> ${inquiry.eventType}</p>
+            <p><strong>Event Date:</strong> ${inquiry.eventDate}</p>
+            <p><strong>Location:</strong> ${inquiry.eventLocation}</p>
+            <p><strong>Budget:</strong> $${inquiry.budget?.toLocaleString() || 'Not specified'}</p>
+          </div>
+          
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h4 style="color: #475569; margin-top: 0;">Message:</h4>
+            <p style="color: #64748b; font-style: italic;">"${inquiry.message}"</p>
+          </div>
+          
+          <p style="color: #64748b;">
+            <strong>Inquiry ID:</strong> #${inquiry.id}<br>
+            <strong>Received:</strong> ${new Date(inquiry.createdAt).toLocaleDateString()}
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://thespeakersphere.com/admin" 
+               style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              View in Admin Panel
+            </a>
+          </div>
+        </div>
+      `,
+      text: `New Speaker Inquiry Received
+
+Speaker: ${speakerName}
+Client: ${inquiry.clientName}
+Company: ${inquiry.clientCompany}
+Email: ${inquiry.clientEmail}
+Event Type: ${inquiry.eventType}
+Event Date: ${inquiry.eventDate}
+Location: ${inquiry.eventLocation}
+Budget: $${inquiry.budget?.toLocaleString() || 'Not specified'}
+
+Message: "${inquiry.message}"
+
+Inquiry ID: #${inquiry.id}
+Received: ${new Date(inquiry.createdAt).toLocaleDateString()}
+
+View in Admin Panel: https://thespeakersphere.com/admin`
+    };
+
+    return await this.sendEmail(template);
+  }
+
+  // Speaker application approval
+  async sendSpeakerApproval(email: string, firstName: string, credentials: { email: string; password: string }): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: email,
+      from: FROM_EMAIL,
+      subject: 'Welcome to SpeakerSphere - Application Approved!',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #059669;">Congratulations! Your application has been approved</h2>
+          
+          <p>Dear ${firstName},</p>
+          
+          <p>We're excited to welcome you to the SpeakerSphere platform! Your speaker application has been approved and your profile is now live.</p>
+          
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #059669; margin-top: 0;">Your Login Credentials</h3>
+            <p><strong>Email:</strong> ${credentials.email}</p>
+            <p><strong>Password:</strong> ${credentials.password}</p>
+            <p style="color: #dc2626; font-size: 14px;">Please change your password after your first login for security.</p>
+          </div>
+          
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #475569; margin-top: 0;">Getting Started</h3>
+            <ul style="color: #64748b;">
+              <li>Log in to your speaker dashboard</li>
+              <li>Complete your profile with additional details</li>
+              <li>Upload professional photos and videos</li>
+              <li>Manage your content visibility settings</li>
+              <li>Respond to booking inquiries</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://thespeakersphere.com/speaker-dashboard" 
+               style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Access Your Dashboard
+            </a>
+          </div>
+          
+          <p>If you have any questions or need assistance, please don't hesitate to contact us.</p>
+          
+          <p>Welcome to the SpeakerSphere community!</p>
+          
           <p>Best regards,<br>The SpeakerSphere Team</p>
         </div>
       `,
-      text: `
-        SpeakerSphere Application Status
-        
-        Dear ${firstName} ${lastName},
-        
-        ${statusMessage}
-        
-        Status: ${status.toUpperCase()}
-        ${adminNotes ? `Notes: ${adminNotes}` : ''}
-        
-        Best regards,
-        The SpeakerSphere Team
+      text: `Congratulations! Your application has been approved
+
+Dear ${firstName},
+
+We're excited to welcome you to the SpeakerSphere platform! Your speaker application has been approved and your profile is now live.
+
+Your Login Credentials:
+Email: ${credentials.email}
+Password: ${credentials.password}
+
+Please change your password after your first login for security.
+
+Getting Started:
+- Log in to your speaker dashboard
+- Complete your profile with additional details
+- Upload professional photos and videos
+- Manage your content visibility settings
+- Respond to booking inquiries
+
+Access Your Dashboard: https://thespeakersphere.com/speaker-dashboard
+
+If you have any questions or need assistance, please don't hesitate to contact us.
+
+Welcome to the SpeakerSphere community!
+
+Best regards,
+The SpeakerSphere Team`
+    };
+
+    return await this.sendEmail(template);
+  }
+
+  // Speaker application rejection
+  async sendSpeakerRejection(email: string, firstName: string, reason?: string): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: email,
+      from: FROM_EMAIL,
+      subject: 'SpeakerSphere Application Update',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #475569;">Thank you for your interest in SpeakerSphere</h2>
+          
+          <p>Dear ${firstName},</p>
+          
+          <p>Thank you for taking the time to apply to become a speaker on our platform. After careful review, we have decided not to move forward with your application at this time.</p>
+          
+          ${reason ? `
+          <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #dc2626; margin-top: 0;">Feedback</h3>
+            <p style="color: #64748b;">${reason}</p>
+          </div>
+          ` : ''}
+          
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #475569; margin-top: 0;">Next Steps</h3>
+            <ul style="color: #64748b;">
+              <li>You're welcome to reapply in the future</li>
+              <li>Consider gaining additional speaking experience</li>
+              <li>Build your professional portfolio</li>
+              <li>Connect with us on social media for updates</li>
+            </ul>
+          </div>
+          
+          <p>We appreciate your interest in our platform and wish you the best in your speaking career.</p>
+          
+          <p>Best regards,<br>The SpeakerSphere Team</p>
+        </div>
+      `,
+      text: `Thank you for your interest in SpeakerSphere
+
+Dear ${firstName},
+
+Thank you for taking the time to apply to become a speaker on our platform. After careful review, we have decided not to move forward with your application at this time.
+
+${reason ? `Feedback: ${reason}` : ''}
+
+Next Steps:
+- You're welcome to reapply in the future
+- Consider gaining additional speaking experience  
+- Build your professional portfolio
+- Connect with us on social media for updates
+
+We appreciate your interest in our platform and wish you the best in your speaking career.
+
+Best regards,
+The SpeakerSphere Team`
+    };
+
+    return await this.sendEmail(template);
+  }
+
+  // Review submission notification
+  async sendReviewNotification(speakerEmail: string, speakerName: string, reviewerName: string, rating: number): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: speakerEmail,
+      from: FROM_EMAIL,
+      subject: `New Review Received - ${rating}/5 Stars`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">You've received a new review!</h2>
+          
+          <p>Hello ${speakerName},</p>
+          
+          <p>Great news! You've received a new review on your SpeakerSphere profile.</p>
+          
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #2563eb; margin-top: 0;">Review Summary</h3>
+            <p><strong>Reviewer:</strong> ${reviewerName}</p>
+            <p><strong>Overall Rating:</strong> ${rating}/5 ⭐</p>
+            <p style="color: #64748b; font-size: 14px;">The review is currently pending approval and will appear on your profile once verified.</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://thespeakersphere.com/speaker-dashboard" 
+               style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              View Your Dashboard
+            </a>
+          </div>
+          
+          <p>Keep up the excellent work!</p>
+          
+          <p>Best regards,<br>The SpeakerSphere Team</p>
+        </div>
       `
     };
 
-    try {
-      await sgMail.send(msg);
-      console.log(`📧 Status email sent to ${email} for status: ${status}`);
-      return true;
-    } catch (error) {
-      console.error('Failed to send status email:', error);
-      return false;
-    }
+    return await this.sendEmail(template);
+  }
+
+  // Inquiry status update to client
+  async sendInquiryUpdate(clientEmail: string, clientName: string, speakerName: string, status: string, message?: string): Promise<boolean> {
+    const statusColors: { [key: string]: string } = {
+      'responded': '#059669',
+      'booked': '#059669',
+      'declined': '#dc2626'
+    };
+
+    const statusMessages: { [key: string]: string } = {
+      'responded': 'The speaker has responded to your inquiry',
+      'booked': 'Your booking has been confirmed!',
+      'declined': 'The speaker is not available for your event'
+    };
+
+    const template: EmailTemplate = {
+      to: clientEmail,
+      from: FROM_EMAIL,
+      subject: `Inquiry Update - ${speakerName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: ${statusColors[status] || '#475569'};">Inquiry Status Update</h2>
+          
+          <p>Dear ${clientName},</p>
+          
+          <p>We have an update regarding your speaker inquiry for <strong>${speakerName}</strong>.</p>
+          
+          <div style="background-color: ${status === 'booked' ? '#ecfdf5' : status === 'declined' ? '#fef2f2' : '#f8fafc'}; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: ${statusColors[status] || '#475569'}; margin-top: 0;">Status: ${status.charAt(0).toUpperCase() + status.slice(1)}</h3>
+            <p>${statusMessages[status] || 'Your inquiry status has been updated.'}</p>
+            ${message ? `<p style="color: #64748b; font-style: italic;">"${message}"</p>` : ''}
+          </div>
+          
+          <p>If you have any questions or need further assistance, please don't hesitate to contact us.</p>
+          
+          <p>Best regards,<br>The SpeakerSphere Team</p>
+        </div>
+      `
+    };
+
+    return await this.sendEmail(template);
   }
 }

@@ -6,6 +6,7 @@ import session from "express-session";
 import { storage } from "./storage";
 import { insertUserSchema, insertSpeakerApplicationSchema } from "../shared/schema";
 import { registerAdminRoutes } from "./admin-routes";
+import { EmailService } from "./email-service";
 import multer from "multer";
 
 // Types for user authentication
@@ -412,6 +413,26 @@ export function registerRoutes(app: Express): Express {
   app.post("/api/inquiries", async (req, res) => {
     try {
       const inquiry = await storage.createInquiry(req.body);
+      
+      // Get speaker information for email notifications
+      const speaker = await storage.getSpeaker(inquiry.speakerId);
+      if (speaker) {
+        const emailService = EmailService.getInstance();
+        
+        // Send confirmation email to client
+        await emailService.sendInquiryConfirmation(
+          inquiry.clientEmail,
+          inquiry.clientName,
+          speaker.name,
+          inquiry.id
+        );
+        
+        // Send notification email to admin
+        await emailService.sendInquiryAdminNotification(inquiry, speaker.name);
+        
+        console.log(`✅ Email notifications sent for inquiry #${inquiry.id}`);
+      }
+      
       res.status(201).json({
         success: true,
         message: "Inquiry submitted successfully",
