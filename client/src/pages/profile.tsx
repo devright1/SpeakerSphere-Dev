@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,6 +68,23 @@ interface UserInquiry {
 }
 
 export default function ProfilePage() {
+  // Handle tab navigation from URL hash
+  const [activeTab, setActiveTab] = useState(() => {
+    const hash = window.location.hash.slice(1); // Remove the # symbol
+    return hash || "favorites";
+  });
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        setActiveTab(hash);
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -520,7 +537,10 @@ export default function ProfilePage() {
 
           {/* Profile Tabs */}
           <motion.div variants={itemVariants}>
-            <Tabs defaultValue="favorites" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={(value) => {
+              setActiveTab(value);
+              window.location.hash = value;
+            }} className="space-y-6">
               <TabsList className={`grid w-full ${isRegularUser ? 'grid-cols-5' : 'grid-cols-4'}`}>
                 <TabsTrigger value="favorites">My Favorites</TabsTrigger>
                 <TabsTrigger value="inquiries">My Inquiries</TabsTrigger>

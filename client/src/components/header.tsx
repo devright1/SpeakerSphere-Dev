@@ -92,11 +92,11 @@ export default function Header() {
                       Speaker Dashboard
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLocation('/profile#favorites')}>
                     <span className="mr-2">❤️</span>
                     Favorites
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLocation('/profile#reviews')}>
                     <span className="mr-2">⭐</span>
                     My Reviews
                   </DropdownMenuItem>
@@ -203,13 +203,17 @@ export default function Header() {
                           <p className="font-medium">{user?.firstName} {user?.lastName}</p>
                           <p className="text-sm text-gray-600">{user?.email}</p>
                         </div>
-                        <Button variant="ghost" className="w-full justify-start text-gray-700">
+                        <Button variant="ghost" className="w-full justify-start text-gray-700" onClick={() => setLocation('/profile')}>
                           <User className="h-4 w-4 mr-2" />
                           Profile
                         </Button>
-                        <Button variant="ghost" className="w-full justify-start text-gray-700">
+                        <Button variant="ghost" className="w-full justify-start text-gray-700" onClick={() => setLocation('/profile#favorites')}>
                           <span className="mr-2">❤️</span>
                           Favorites
+                        </Button>
+                        <Button variant="ghost" className="w-full justify-start text-gray-700" onClick={() => setLocation('/profile#reviews')}>
+                          <span className="mr-2">⭐</span>
+                          My Reviews
                         </Button>
                         <Button 
                           variant="ghost" 
