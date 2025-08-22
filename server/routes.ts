@@ -330,13 +330,21 @@ export function registerRoutes(app: Express): Express {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
       const search = req.query.search as string;
-      const category = req.query.category as string;
       const location = req.query.location as string;
       const sort = req.query.sort as string || 'name';
+      
+      // Handle multiple categories from query params
+      const categories = req.query.categories ? 
+        (Array.isArray(req.query.categories) ? req.query.categories : [req.query.categories]) : 
+        undefined;
+      
+      // Handle single category (for backward compatibility)
+      const category = req.query.category as string;
       
       const speakers = await storage.getSpeakers({
         search,
         category,
+        categories: categories as string[],
         location
       });
       

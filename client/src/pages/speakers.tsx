@@ -43,9 +43,6 @@ export default function Speakers() {
     if (urlParams.get('search')) {
       initialFilters.search = urlParams.get('search')!;
     }
-    if (urlParams.get('minRating')) {
-      initialFilters.minRating = parseFloat(urlParams.get('minRating')!);
-    }
     if (urlParams.get('expertise')) {
       initialFilters.expertise = urlParams.get('expertise')!;
     }

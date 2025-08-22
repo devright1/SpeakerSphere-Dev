@@ -332,27 +332,27 @@ export class MemStorage implements IStorage {
 
   async getSpeakers(filters?: {
     category?: string;
+    categories?: string[];
     location?: string;
-    minRating?: number;
     expertise?: string;
     search?: string;
     includeHidden?: boolean;
   }): Promise<Speaker[]> {
     let speakers = Array.from(this.speakers.values());
 
-    if (filters?.category) {
+    // Filter by categories (multiple selection support)
+    if (filters?.categories && filters.categories.length > 0) {
+      speakers = speakers.filter(speaker => 
+        filters.categories!.includes(speaker.category)
+      );
+    } else if (filters?.category) {
+      // Single category filter for backward compatibility
       speakers = speakers.filter(speaker => speaker.category === filters.category);
     }
 
     if (filters?.location) {
       speakers = speakers.filter(speaker => 
         speaker.location.toLowerCase().includes(filters.location!.toLowerCase())
-      );
-    }
-
-    if (filters?.minRating) {
-      speakers = speakers.filter(speaker => 
-        parseFloat(speaker.overallRating) >= filters.minRating!
       );
     }
 
@@ -495,8 +495,16 @@ export class MemStorage implements IStorage {
   }
 
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values())
-      .sort((a, b) => a.name.localeCompare(b.name));
+    const categories = Array.from(this.categories.values());
+    
+    // Calculate actual speaker counts for each category
+    categories.forEach(category => {
+      const speakersInCategory = Array.from(this.speakers.values())
+        .filter(speaker => speaker.category === category.name);
+      category.speakerCount = speakersInCategory.length;
+    });
+    
+    return categories.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async createCategory(insertCategory: InsertCategory): Promise<Category> {

@@ -16,7 +16,6 @@ interface SearchFiltersProps {
 export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState("");
-  const [minRating, setMinRating] = useState("");
 
   const [showFeeRange, setShowFeeRange] = useState(false);
 
@@ -70,17 +69,12 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
       }
     }
     
-    if (minRating) {
-      filters.minRating = parseFloat(minRating);
-    }
-    
     onFilterChange(filters);
   };
 
   const clearFilters = () => {
     setSelectedCategories([]);
     setPriceRange("");
-    setMinRating("");
     onFilterChange({});
   };
 
@@ -150,51 +144,7 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
           </>
         )}
 
-        <Separator />
 
-        {/* Rating */}
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-3">Minimum Rating</h4>
-          <RadioGroup value={minRating} onValueChange={setMinRating}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="5" id="rating-5" />
-              <Label htmlFor="rating-5" className="flex items-center">
-                <div className="flex text-yellow-400 mr-2">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-xs">★</span>
-                  ))}
-                </div>
-                5 Stars
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="4" id="rating-4" />
-              <Label htmlFor="rating-4" className="flex items-center">
-                <div className="flex text-yellow-400 mr-2">
-                  {[...Array(4)].map((_, i) => (
-                    <span key={i} className="text-xs">★</span>
-                  ))}
-                  <span className="text-xs text-gray-300">★</span>
-                </div>
-                4+ Stars
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="3" id="rating-3" />
-              <Label htmlFor="rating-3" className="flex items-center">
-                <div className="flex text-yellow-400 mr-2">
-                  {[...Array(3)].map((_, i) => (
-                    <span key={i} className="text-xs">★</span>
-                  ))}
-                  {[...Array(2)].map((_, i) => (
-                    <span key={i} className="text-xs text-gray-300">★</span>
-                  ))}
-                </div>
-                3+ Stars
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
 
         <Button onClick={applyFilters} className="w-full bg-primary hover:bg-blue-700">
           Apply Filters
