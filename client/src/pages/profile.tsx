@@ -44,6 +44,8 @@ interface UserProfile {
   profileImageUrl?: string;
   createdAt: string;
   lastLoginAt?: string;
+  speakerId?: number;
+  accountType?: string;
 }
 
 interface UserStats {
@@ -299,7 +301,14 @@ export default function ProfilePage() {
   });
 
   // Check if user is a speaker (speakers don't see subscription tab)
-  const isRegularUser = true; // For now, assume all users are regular users since speaker check logic is not implemented
+  const isRegularUser = !user?.speakerId && user?.accountType !== 'speaker' && user?.accountType !== 'both';
+  
+  // Debug logging to check user account type
+  console.log('User account check:', {
+    speakerId: user?.speakerId,
+    accountType: user?.accountType,
+    isRegularUser
+  });
 
   if (!user) {
     return (
