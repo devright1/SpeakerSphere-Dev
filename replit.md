@@ -5,7 +5,7 @@ This project is a full-stack healthcare speaker review platform, "SpeakerSphere 
 
 ## Recent Changes (January 2025)  
 - **Profile Picture Upload System**: Implemented complete profile picture upload functionality using object storage - users can now click camera button on profile page to upload headshots with 5MB limit and image format validation (January 22, 2025)
-- **Social Media Integration for Applications**: Added Instagram, X/Twitter, Facebook, and LinkedIn URL fields to speaker application form with proper validation and database schema updates
+- **Complete Social Media Integration**: Successfully added Instagram, X/Twitter, Facebook, and LinkedIn URL fields to ALL speaker application forms across the website - both main application form and "For Speakers" tab now include optional social media fields with proper validation and database schema updates (January 22, 2025)
 - **Object Storage Integration**: Configured ObjectUploader component with direct-to-cloud upload, ACL policy management, and secure file serving for profile pictures
 - **Speaker Filtering System Enhancement**: Fixed critical category filtering bug where category counts showed incorrect numbers (e.g., Digital Dentistry displayed (11) but actual filtering returned 48 speakers) - implemented accurate real-time speaker count calculation from database and enhanced multi-category selection support with minimum rating filter removal (January 22, 2025)
 - **Multi-Category Filter Support**: Updated backend API to properly handle multiple category selections through categories array parameter, allowing users to filter by multiple specialties simultaneously
