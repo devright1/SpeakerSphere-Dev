@@ -46,6 +46,12 @@ const speakerApplicationSchema = z.object({
   phone: z.string().min(10, "Please enter a valid phone number"),
   website: z.string().url("Please enter a valid website URL").optional().or(z.literal("")),
   
+  // Social Media Links
+  instagramUrl: z.string().url("Please enter a valid Instagram URL").optional().or(z.literal("")),
+  twitterUrl: z.string().url("Please enter a valid X/Twitter URL").optional().or(z.literal("")),
+  facebookUrl: z.string().url("Please enter a valid Facebook URL").optional().or(z.literal("")),
+  linkedinUrl: z.string().url("Please enter a valid LinkedIn URL").optional().or(z.literal("")),
+  
   // Professional Information
   title: z.string().min(2, "Professional title is required"),
   specialty: z.string().min(2, "Specialty is required"),
@@ -89,6 +95,10 @@ export default function ForSpeakers() {
       email: "",
       phone: "",
       website: "",
+      instagramUrl: "",
+      twitterUrl: "",
+      facebookUrl: "",
+      linkedinUrl: "",
       title: "",
       specialty: "",
       yearsExperience: "",
@@ -390,6 +400,68 @@ export default function ForSpeakers() {
                             </FormItem>
                           )}
                         />
+
+                        {/* Social Media Links Section */}
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Social Media Links (Optional)</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={applicationForm.control}
+                              name="instagramUrl"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Instagram</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://instagram.com/yourusername" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={applicationForm.control}
+                              name="twitterUrl"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>X (Twitter)</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://x.com/yourusername" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={applicationForm.control}
+                              name="facebookUrl"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Facebook</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://facebook.com/yourusername" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={applicationForm.control}
+                              name="linkedinUrl"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>LinkedIn</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://linkedin.com/in/yourusername" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
                       </div>
 
                       {/* Professional Information Section */}
