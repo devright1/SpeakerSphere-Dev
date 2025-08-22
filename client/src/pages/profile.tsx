@@ -419,9 +419,9 @@ export default function ProfilePage() {
                           }
                         }
                       }}
-                      buttonClassName="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 bg-white shadow-md border-2 border-blue-500 hover:shadow-lg transition-shadow"
+                      buttonClassName="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 bg-blue-500 text-white shadow-md hover:bg-blue-600 hover:shadow-lg transition-all opacity-100"
                     >
-                      <Camera className="h-4 w-4" />
+                      <Camera className="h-4 w-4 text-white" />
                     </ObjectUploader>
                   </div>
 
