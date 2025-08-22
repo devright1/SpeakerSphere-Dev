@@ -8,6 +8,7 @@ import { insertUserSchema, insertSpeakerApplicationSchema } from "../shared/sche
 import { registerAdminRoutes } from "./admin-routes";
 import { EmailService } from "./email-service";
 import multer from "multer";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 // Types for user authentication
 interface AuthenticatedRequest extends Request {
@@ -887,6 +888,72 @@ export function registerRoutes(app: Express): Express {
       console.error("Download content error:", error);
       res.status(500).json({ error: "Failed to download content" });
     }
+  });
+
+  // Object storage endpoints for profile pictures
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        req.path,
+      );
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error checking object access:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  app.post("/api/objects/upload", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+    res.json({ uploadURL });
+  });
+
+  // Profile picture update endpoint
+  app.put("/api/users/:userId/profile-picture", async (req, res) => {
+    if (!req.body.profilePictureURL) {
+      return res.status(400).json({ error: "profilePictureURL is required" });
+    }
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = objectStorageService.normalizeObjectEntityPath(
+        req.body.profilePictureURL,
+      );
+
+      // Update user profile with new profile picture
+      const updatedUser = await storage.updateUser(req.params.userId, {
+        profileImageUrl: objectPath,
+      });
+
+      res.status(200).json({
+        success: true,
+        user: updatedUser,
+        objectPath: objectPath,
+      });
+    } catch (error) {
+      console.error("Error setting profile picture:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Placeholder image endpoint
+  app.get("/api/placeholder/:width/:height", (req, res) => {
+    const { width, height } = req.params;
+    const svg = `
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#e5e7eb"/>
+        <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-family="Arial, sans-serif" font-size="14" fill="#9ca3af">
+          ${width} × ${height}
+        </text>
+      </svg>
+    `;
+    res.setHeader("Content-Type", "image/svg+xml");
+    res.send(svg);
   });
   
   return app;

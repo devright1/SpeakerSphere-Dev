@@ -3,7 +3,10 @@
 ## Overview
 This project is a full-stack healthcare speaker review platform, "SpeakerSphere Reviews," designed to connect healthcare professionals with medical speakers. It enables users to discover, browse, search, and review speakers across various healthcare specialties. The platform aims to be a comprehensive resource for evaluating speaker quality, facilitating bookings, and showcasing speaker expertise through detailed profiles and video portfolios. Its core capabilities include advanced speaker discovery, a multi-dimensional review system, and direct inquiry management, supporting the business vision of becoming a leading platform for healthcare speaker evaluation and booking.
 
-## Recent Changes (January 2025)
+## Recent Changes (January 2025)  
+- **Profile Picture Upload System**: Implemented complete profile picture upload functionality using object storage - users can now click camera button on profile page to upload headshots with 5MB limit and image format validation (January 22, 2025)
+- **Social Media Integration for Applications**: Added Instagram, X/Twitter, Facebook, and LinkedIn URL fields to speaker application form with proper validation and database schema updates
+- **Object Storage Integration**: Configured ObjectUploader component with direct-to-cloud upload, ACL policy management, and secure file serving for profile pictures
 - **Speaker Filtering System Enhancement**: Fixed critical category filtering bug where category counts showed incorrect numbers (e.g., Digital Dentistry displayed (11) but actual filtering returned 48 speakers) - implemented accurate real-time speaker count calculation from database and enhanced multi-category selection support with minimum rating filter removal (January 22, 2025)
 - **Multi-Category Filter Support**: Updated backend API to properly handle multiple category selections through categories array parameter, allowing users to filter by multiple specialties simultaneously
 - **Real-time Database Synchronization Configured**: Implemented shared PostgreSQL database approach for instant synchronization between Replit development environment and production domain - changes made in either environment are immediately reflected in both (January 21, 2025)

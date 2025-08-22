@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from "@uppy/core";
 
 interface UserProfile {
   id: string;
@@ -290,14 +292,51 @@ export default function ProfilePage() {
                         {getInitials(user.firstName, user.lastName)}
                       </AvatarFallback>
                     </Avatar>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 bg-white shadow-sm"
-                      onClick={() => toast({ title: "Photo upload coming soon!" })}
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={5 * 1024 * 1024} // 5MB limit
+                      onGetUploadParameters={async () => {
+                        const response = await apiRequest("POST", "/api/objects/upload", {});
+                        const data = await response.json();
+                        return {
+                          method: "PUT" as const,
+                          url: data.uploadURL,
+                        };
+                      }}
+                      onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                        if (result.successful.length > 0) {
+                          const uploadedFile = result.successful[0];
+                          try {
+                            const response = await apiRequest("PUT", `/api/users/${user?.id}/profile-picture`, {
+                              profilePictureURL: uploadedFile.uploadURL,
+                            });
+                            const data = await response.json();
+                            
+                            if (data.success && data.user) {
+                              // Update localStorage with new user data
+                              localStorage.setItem('userData', JSON.stringify(data.user));
+                              
+                              toast({
+                                title: "Profile Picture Updated",
+                                description: "Your profile picture has been successfully updated!",
+                              });
+                              
+                              // Refresh the page to show new image
+                              window.location.reload();
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Upload Failed",
+                              description: "Failed to update profile picture. Please try again.",
+                              variant: "destructive",
+                            });
+                          }
+                        }
+                      }}
+                      buttonClassName="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 bg-white shadow-sm"
                     >
                       <Camera className="h-4 w-4" />
-                    </Button>
+                    </ObjectUploader>
                   </div>
 
                   {/* User Info */}
