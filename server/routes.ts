@@ -980,12 +980,24 @@ export function registerRoutes(app: Express): Express {
         return res.status(404).json({ message: "User not found" });
       }
 
-      res.json({
-        subscriptionTier: user.subscriptionTier,
-        subscriptionStatus: user.subscriptionStatus,
-        subscriptionExpiresAt: user.subscriptionExpiresAt,
-        subscriptionStartedAt: user.subscriptionStartedAt
-      });
+      // If user has subscription tier, get plan details and return formatted data
+      if (user.subscriptionTier && user.subscriptionStatus === 'active') {
+        // Find the plan details
+        const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.slug, user.subscriptionTier));
+        
+        return res.json({
+          planName: plan?.name || user.subscriptionTier,
+          planSlug: user.subscriptionTier,
+          price: plan?.monthlyPrice || 0,
+          billingCycle: 'monthly', // Default to monthly for now
+          status: user.subscriptionStatus,
+          expiresAt: user.subscriptionExpiresAt,
+          startedAt: user.subscriptionStartedAt
+        });
+      }
+      
+      // If user has no active subscription, return null
+      res.json(null);
     } catch (error) {
       console.error("Error fetching user subscription:", error);
       res.status(500).json({ message: "Failed to fetch subscription" });

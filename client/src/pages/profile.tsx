@@ -172,10 +172,16 @@ export default function ProfilePage() {
   const { data: userSubscription } = useQuery({
     queryKey: ['/api/users/subscription', user?.id],
     queryFn: async () => {
-      const response = await apiRequest(`/api/users/${user?.id}/subscription`);
-      return response;
+      try {
+        const response = await apiRequest(`/api/users/${user?.id}/subscription`);
+        return response;
+      } catch (error) {
+        // If user has no subscription, return null instead of throwing error
+        return null;
+      }
     },
     enabled: !!user?.id,
+    retry: false, // Don't retry failed requests
   });
 
   // Password change mutation
