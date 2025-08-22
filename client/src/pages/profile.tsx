@@ -23,12 +23,16 @@ import {
   Home,
   UserPlus,
   Lock,
-  Shield
+  Shield,
+  CreditCard,
+  Check,
+  X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import type { UploadResult } from "@uppy/core";
+import type { SubscriptionPlan } from "@shared/schema";
 
 interface UserProfile {
   id: string;
@@ -159,6 +163,21 @@ export default function ProfilePage() {
     enabled: !!user?.email,
   });
 
+  // Fetch subscription plans
+  const { data: subscriptionPlans = [] } = useQuery<SubscriptionPlan[]>({
+    queryKey: ['/api/subscription-plans'],
+  });
+
+  // Fetch user's subscription
+  const { data: userSubscription } = useQuery({
+    queryKey: ['/api/users/subscription', user?.id],
+    queryFn: async () => {
+      const response = await apiRequest(`/api/users/${user?.id}/subscription`);
+      return response;
+    },
+    enabled: !!user?.id,
+  });
+
   // Password change mutation
   const changePasswordMutation = useMutation({
     mutationFn: async () => {
@@ -214,6 +233,55 @@ export default function ProfilePage() {
       });
     },
   });
+
+  // Subscription management mutations
+  const subscriptionMutation = useMutation({
+    mutationFn: async ({ planSlug, billingCycle }: { planSlug: string; billingCycle: string }) => {
+      return apiRequest(`/api/users/${user?.id}/subscription`, {
+        method: 'POST',
+        body: JSON.stringify({ planSlug, billingCycle }),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Subscription Updated",
+        description: "Your subscription has been successfully updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/subscription', user?.id] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Subscription Update Failed",
+        description: error.message || "Failed to update subscription.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const cancelSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest(`/api/users/${user?.id}/subscription/cancel`, {
+        method: 'POST',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Subscription Canceled",
+        description: "Your subscription has been canceled successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/subscription', user?.id] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Cancellation Failed",
+        description: error.message || "Failed to cancel subscription.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Check if user is a speaker (speakers don't see subscription tab)
+  const isRegularUser = !user?.speakerId;
 
   if (!user) {
     return (
@@ -452,10 +520,16 @@ export default function ProfilePage() {
           {/* Profile Tabs */}
           <motion.div variants={itemVariants}>
             <Tabs defaultValue="favorites" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className={`grid w-full ${isRegularUser ? 'grid-cols-5' : 'grid-cols-4'}`}>
                 <TabsTrigger value="favorites">My Favorites</TabsTrigger>
                 <TabsTrigger value="inquiries">My Inquiries</TabsTrigger>
                 <TabsTrigger value="reviews">My Reviews</TabsTrigger>
+                {isRegularUser && (
+                  <TabsTrigger value="subscription">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Subscription
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
@@ -643,6 +717,112 @@ export default function ProfilePage() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {isRegularUser && (
+                <TabsContent value="subscription">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5 text-blue-500" />
+                        Subscription Management
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {/* Current Subscription */}
+                        {userSubscription ? (
+                          <div className="border rounded-lg p-4 bg-green-50">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="font-medium text-green-900">Current Plan</h3>
+                                <p className="text-green-700">{userSubscription.planName}</p>
+                                <p className="text-sm text-green-600">
+                                  ${userSubscription.price}/{userSubscription.billingCycle}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Check className="h-5 w-5 text-green-500" />
+                                <span className="text-sm text-green-600">Active</span>
+                              </div>
+                            </div>
+                            <div className="mt-4 flex gap-2">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => cancelSubscriptionMutation.mutate()}
+                                disabled={cancelSubscriptionMutation.isPending}
+                              >
+                                {cancelSubscriptionMutation.isPending ? "Canceling..." : "Cancel Subscription"}
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="border rounded-lg p-4 bg-gray-50">
+                            <div className="flex items-center gap-2">
+                              <X className="h-5 w-5 text-gray-400" />
+                              <span className="text-gray-600">No active subscription</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Available Plans */}
+                        <div>
+                          <h3 className="font-medium text-gray-900 mb-4">Available Plans</h3>
+                          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {subscriptionPlans.map((plan) => (
+                              <div key={plan.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div className="space-y-3">
+                                  <div>
+                                    <h4 className="font-medium text-gray-900">{plan.name}</h4>
+                                    <p className="text-sm text-gray-600">{plan.description}</p>
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm">Monthly</span>
+                                      <span className="font-medium">${plan.monthlyPrice}/month</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm">Yearly</span>
+                                      <span className="font-medium">${plan.yearlyPrice}/year</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2 pt-2">
+                                    <Button
+                                      className="w-full"
+                                      size="sm"
+                                      onClick={() => subscriptionMutation.mutate({
+                                        planSlug: plan.slug,
+                                        billingCycle: 'monthly'
+                                      })}
+                                      disabled={subscriptionMutation.isPending}
+                                    >
+                                      Subscribe Monthly
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      className="w-full"
+                                      size="sm"
+                                      onClick={() => subscriptionMutation.mutate({
+                                        planSlug: plan.slug,
+                                        billingCycle: 'yearly'
+                                      })}
+                                      disabled={subscriptionMutation.isPending}
+                                    >
+                                      Subscribe Yearly
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
 
               <TabsContent value="settings">
                 <Card>

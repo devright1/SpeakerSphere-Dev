@@ -209,6 +209,10 @@ export const users = pgTable("users", {
   isActive: boolean("is_active").default(true),
   accountType: varchar("account_type", { length: 20 }).notNull().default("user"), // "user", "speaker", or "both"
   speakerId: integer("speaker_id"), // Links to speaker profile if account_type includes "speaker"
+  subscriptionTier: varchar("subscription_tier", { length: 20 }).notNull().default("free"), // "free", "premium", "pro"
+  subscriptionStatus: varchar("subscription_status", { length: 20 }).notNull().default("active"), // "active", "canceled", "expired", "trial"
+  subscriptionExpiresAt: timestamp("subscription_expires_at"),
+  subscriptionStartedAt: timestamp("subscription_started_at"),
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -237,6 +241,41 @@ export const userBookmarks = pgTable("user_bookmarks", {
   userId: text("user_id").notNull(),
   speakerId: integer("speaker_id").notNull(),
   notes: text("notes"), // User's private notes about the speaker
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Subscription plans
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(), // "Free", "Premium", "Pro"
+  slug: varchar("slug", { length: 50 }).notNull().unique(), // "free", "premium", "pro"
+  description: text("description").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Monthly price
+  yearlyPrice: decimal("yearly_price", { precision: 10, scale: 2 }), // Yearly price (optional)
+  features: text("features").array().notNull(), // Array of feature descriptions
+  maxBookmarks: integer("max_bookmarks").default(-1), // -1 for unlimited
+  maxInquiries: integer("max_inquiries").default(-1), // -1 for unlimited
+  maxReviews: integer("max_reviews").default(-1), // -1 for unlimited
+  advancedFilters: boolean("advanced_filters").default(false),
+  prioritySupport: boolean("priority_support").default(false),
+  customReports: boolean("custom_reports").default(false),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Subscription history for tracking changes
+export const subscriptionHistory = pgTable("subscription_history", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  planId: integer("plan_id").notNull(),
+  action: varchar("action", { length: 50 }).notNull(), // "subscribe", "upgrade", "downgrade", "cancel", "expire"
+  previousPlan: varchar("previous_plan", { length: 20 }),
+  newPlan: varchar("new_plan", { length: 20 }),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  billingCycle: varchar("billing_cycle", { length: 20 }), // "monthly", "yearly"
+  notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -359,6 +398,10 @@ export type SpeakerInteraction = typeof speakerInteractions.$inferSelect;
 export type InsertSpeakerInteraction = typeof speakerInteractions.$inferInsert;
 export type SpeakerContent = typeof speakerContent.$inferSelect;
 export type InsertSpeakerContent = typeof speakerContent.$inferInsert;
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
+export type SubscriptionHistory = typeof subscriptionHistory.$inferSelect;
+export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 
 // Speaker content management for file uploads
 export const speakerContent = pgTable("speaker_content", {

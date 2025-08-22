@@ -4,11 +4,13 @@ import { z } from "zod";
 // Removed zfd import as it's not needed for current functionality
 import session from "express-session";
 import { storage } from "./storage";
-import { insertUserSchema, insertSpeakerApplicationSchema } from "../shared/schema";
+import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory } from "../shared/schema";
 import { registerAdminRoutes } from "./admin-routes";
 import { EmailService } from "./email-service";
 import multer from "multer";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Types for user authentication
 interface AuthenticatedRequest extends Request {
@@ -956,5 +958,113 @@ export function registerRoutes(app: Express): Express {
     res.send(svg);
   });
   
+  // Subscription routes
+  
+  // Get all subscription plans
+  app.get("/api/subscription-plans", async (req, res) => {
+    try {
+      const plans = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.isActive, true));
+      res.json(plans);
+    } catch (error) {
+      console.error("Error fetching subscription plans:", error);
+      res.status(500).json({ message: "Failed to fetch subscription plans" });
+    }
+  });
+
+  // Get user's current subscription
+  app.get("/api/users/:userId/subscription", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionExpiresAt: user.subscriptionExpiresAt,
+        subscriptionStartedAt: user.subscriptionStartedAt
+      });
+    } catch (error) {
+      console.error("Error fetching user subscription:", error);
+      res.status(500).json({ message: "Failed to fetch subscription" });
+    }
+  });
+
+  // Update user subscription
+  app.post("/api/users/:userId/subscription", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const { planSlug, billingCycle } = req.body;
+
+      // Get the selected plan
+      const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.slug, planSlug));
+      if (!plan) {
+        return res.status(400).json({ message: "Invalid subscription plan" });
+      }
+
+      // Calculate expiration date (for demo purposes, just add 30 days for monthly or 365 days for yearly)
+      const expirationDate = new Date();
+      if (billingCycle === "yearly") {
+        expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+      } else {
+        expirationDate.setMonth(expirationDate.getMonth() + 1);
+      }
+
+      // Update user subscription
+      await storage.updateUserSubscription(userId, {
+        subscriptionTier: planSlug,
+        subscriptionStatus: "active",
+        subscriptionExpiresAt: expirationDate,
+        subscriptionStartedAt: new Date()
+      });
+
+      // Record subscription history
+      await db.insert(subscriptionHistory).values({
+        userId: userId,
+        planId: plan.id,
+        action: "subscribe",
+        newPlan: planSlug,
+        amount: billingCycle === "yearly" ? plan.yearlyPrice : plan.price,
+        currency: "USD",
+        billingCycle: billingCycle,
+        notes: `Subscribed to ${plan.name} plan`
+      });
+
+      res.json({
+        success: true,
+        message: "Subscription updated successfully",
+        subscription: {
+          tier: planSlug,
+          status: "active",
+          expiresAt: expirationDate
+        }
+      });
+    } catch (error) {
+      console.error("Error updating subscription:", error);
+      res.status(500).json({ message: "Failed to update subscription" });
+    }
+  });
+
+  // Cancel subscription
+  app.post("/api/users/:userId/subscription/cancel", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      await storage.updateUserSubscription(userId, {
+        subscriptionStatus: "canceled"
+      });
+
+      res.json({
+        success: true,
+        message: "Subscription canceled successfully"
+      });
+    } catch (error) {
+      console.error("Error canceling subscription:", error);
+      res.status(500).json({ message: "Failed to cancel subscription" });
+    }
+  });
+
   return app;
 }

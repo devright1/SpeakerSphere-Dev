@@ -86,6 +86,7 @@ export interface IStorage {
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
   updateUserAccountType(id: string, accountType: string): Promise<User>;
   updateUserPassword(userId: string, passwordHash: string): Promise<void>;
+  updateUserSubscription(userId: string, subscriptionData: Partial<User>): Promise<User>;
   
   // Speaker Application Methods
   createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;

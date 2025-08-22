@@ -42,6 +42,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Seed subscription plans
+  const { seedSubscriptionPlans } = await import("./seed-subscriptions");
+  await seedSubscriptionPlans();
+
   await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

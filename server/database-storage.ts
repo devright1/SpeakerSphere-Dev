@@ -811,6 +811,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
+  async updateUserSubscription(userId: string, subscriptionData: Partial<User>): Promise<User> {
+    const [updatedUser] = await db.update(users)
+      .set({ 
+        ...subscriptionData,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+    
+    return updatedUser;
+  }
+
   // Speaker Content Management Methods
   async createSpeakerContent(content: InsertSpeakerContent): Promise<SpeakerContent> {
     const result = await db.insert(speakerContent).values(content).returning();
