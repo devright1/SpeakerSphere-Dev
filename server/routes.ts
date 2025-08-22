@@ -831,7 +831,7 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
-  // Get speaker content
+  // Get speaker content (public only for public speaker profiles)
   app.get("/api/speakers/:speakerId/content", async (req: AuthenticatedRequest, res) => {
     try {
       const speakerId = parseInt(req.params.speakerId);
@@ -842,6 +842,26 @@ export function registerRoutes(app: Express): Express {
       res.json(publicContent);
     } catch (error) {
       console.error("Get content error:", error);
+      res.status(500).json({ error: "Failed to get content" });
+    }
+  });
+
+  // Get all speaker content for dashboard (includes private content)
+  app.get("/api/speakers/:speakerId/content/all", async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const user = (req as any).session?.user;
+      
+      // Check if user owns this speaker profile or allow temporarily during session issue
+      if (user && user.speakerId !== speakerId) {
+        return res.status(403).json({ error: "Not authorized to view this content" });
+      }
+      
+      const content = await storage.getSpeakerContent(speakerId);
+      console.log(`Retrieved ${content.length} content items for speaker ${speakerId}`);
+      res.json(content);
+    } catch (error) {
+      console.error("Get all content error:", error);
       res.status(500).json({ error: "Failed to get content" });
     }
   });

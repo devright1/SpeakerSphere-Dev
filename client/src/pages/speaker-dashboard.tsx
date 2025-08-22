@@ -97,9 +97,9 @@ export default function SpeakerDashboard() {
 
   // Fetch speaker content
   const { data: speakerContent, refetch: refetchContent } = useQuery({
-    queryKey: ['/api/speakers/content', speakerProfile?.id],
+    queryKey: ['/api/speakers/content/all', speakerProfile?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/speakers/${speakerProfile?.id}/content`);
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/content/all`);
       if (!response.ok) throw new Error('Failed to fetch speaker content');
       return response.json();
     },
@@ -147,6 +147,7 @@ export default function SpeakerDashboard() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/speakers/content/all', speakerProfile?.id] });
       refetchContent();
       toast({
         title: "Content Uploaded",
@@ -172,6 +173,7 @@ export default function SpeakerDashboard() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/speakers/content/all', speakerProfile?.id] });
       refetchContent();
       toast({
         title: "Content Deleted",
@@ -201,6 +203,7 @@ export default function SpeakerDashboard() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/speakers/content/all', speakerProfile?.id] });
       refetchContent();
       toast({
         title: "Visibility Updated",
