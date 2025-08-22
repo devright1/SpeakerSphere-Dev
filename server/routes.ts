@@ -777,7 +777,13 @@ export function registerRoutes(app: Express): Express {
       }
 
       // Check if user owns this speaker profile
-      const user = req.user;
+      const user = (req as any).session?.user;
+      console.log('Content upload auth check:', {
+        sessionUser: user,
+        speakerId: speakerId,
+        userSpeakerId: user?.speakerId
+      });
+      
       if (!user || user.speakerId !== speakerId) {
         return res.status(403).json({ error: "Not authorized to upload content for this speaker" });
       }
