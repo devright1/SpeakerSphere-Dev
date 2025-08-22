@@ -47,6 +47,20 @@ interface UserStats {
   totalProfileViews: number;
 }
 
+interface UserInquiry {
+  id: number;
+  speakerId: number;
+  speakerName: string;
+  clientName: string;
+  clientEmail: string;
+  eventType: string;
+  eventDate?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  budget?: number;
+  message: string;
+  createdAt: string;
+}
+
 export default function ProfilePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -125,6 +139,22 @@ export default function ProfilePage() {
       return response.json();
     },
     enabled: !!user?.id,
+  });
+
+  // Fetch user inquiries
+  const { data: userInquiries = [], isLoading: inquiriesLoading } = useQuery<UserInquiry[]>({
+    queryKey: ['/api/users/inquiries', user?.email],
+    queryFn: async () => {
+      const token = localStorage.getItem('userToken');
+      const response = await fetch(`/api/users/${encodeURIComponent(user?.email || '')}/inquiries`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch inquiries');
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   // Password change mutation
@@ -383,8 +413,9 @@ export default function ProfilePage() {
           {/* Profile Tabs */}
           <motion.div variants={itemVariants}>
             <Tabs defaultValue="favorites" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="favorites">My Favorites</TabsTrigger>
+                <TabsTrigger value="inquiries">My Inquiries</TabsTrigger>
                 <TabsTrigger value="reviews">My Reviews</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
@@ -447,6 +478,89 @@ export default function ProfilePage() {
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
                         <p className="text-gray-600 mb-4">
                           Start exploring speakers and save your favorites to see them here.
+                        </p>
+                        <Button onClick={() => window.location.href = '/speakers'}>
+                          Browse Speakers
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="inquiries">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Mail className="h-5 w-5 text-green-500" />
+                      My Inquiries
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {inquiriesLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : userInquiries && userInquiries.length > 0 ? (
+                      <div className="space-y-4">
+                        {userInquiries.map((inquiry: UserInquiry) => (
+                          <div key={inquiry.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="font-semibold text-gray-900">
+                                    Inquiry #{inquiry.id}
+                                  </h4>
+                                  <Badge 
+                                    variant={
+                                      inquiry.status === 'completed' ? 'default' :
+                                      inquiry.status === 'approved' ? 'secondary' :
+                                      inquiry.status === 'rejected' ? 'destructive' :
+                                      'outline'
+                                    }
+                                  >
+                                    {inquiry.status === 'pending' && '⏳ Pending'}
+                                    {inquiry.status === 'approved' && '✅ Approved'}
+                                    {inquiry.status === 'rejected' && '❌ Rejected'}
+                                    {inquiry.status === 'completed' && '🎉 Completed'}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-blue-600 font-medium mb-1">
+                                  Speaker: {inquiry.speakerName}
+                                </p>
+                                <p className="text-sm text-gray-600 mb-2">
+                                  Event: {inquiry.eventType}
+                                  {inquiry.eventDate && (
+                                    <span className="ml-2">
+                                      • {new Date(inquiry.eventDate).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </p>
+                                {inquiry.budget && (
+                                  <p className="text-sm text-gray-600 mb-2">
+                                    Budget: ${inquiry.budget.toLocaleString()}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {new Date(inquiry.createdAt).toLocaleDateString()}
+                              </div>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-md p-3 mb-3">
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Message:</span> {inquiry.message}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Mail className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No inquiries yet</h3>
+                        <p className="text-gray-600 mb-4">
+                          Start reaching out to speakers for your events and booking requests.
                         </p>
                         <Button onClick={() => window.location.href = '/speakers'}>
                           Browse Speakers

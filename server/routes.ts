@@ -447,6 +447,18 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Get user inquiries by email
+  app.get("/api/users/:email/inquiries", async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const inquiries = await storage.getUserInquiries(email);
+      res.json(inquiries);
+    } catch (error) {
+      console.error("Error fetching user inquiries:", error);
+      res.status(500).json({ message: "Failed to fetch inquiries" });
+    }
+  });
+
   // Submit review
   app.post("/api/reviews", async (req, res) => {
     try {
