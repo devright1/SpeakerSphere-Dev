@@ -1062,18 +1062,12 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-gray-100 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-5 bg-gray-100 p-1 rounded-lg">
             <TabsTrigger 
               value="analytics"
               className="data-[state=active]:bg-blue-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
             >
               Analytics
-            </TabsTrigger>
-            <TabsTrigger 
-              value="speakers"
-              className="data-[state=active]:bg-green-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
-            >
-              Speakers
             </TabsTrigger>
             <TabsTrigger 
               value="inquiries"
@@ -1815,6 +1809,16 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Speaker Management System - Moved from separate section */}
+              <div className="mt-16 border-t-2 border-gray-300 pt-12">
+                <div className="text-center mb-12">
+                  <h2 className="text-4xl font-bold text-gray-900 mb-4">Speaker Management System</h2>
+                  <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Dedicated management system for speaker applications and accounts. This section handles the complete speaker onboarding process from application review to account management.
+                  </p>
+                </div>
+              </div>
             </TabsContent>
 
           <TabsContent value="categories" className="space-y-6">
