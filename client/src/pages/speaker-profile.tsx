@@ -978,34 +978,7 @@ export default function SpeakerProfile() {
               </CardContent>
             </Card>
 
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Speaker Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {!speaker.hideRatings && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Reviews:</span>
-                      <span className="font-semibold">{speaker.reviewCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Average Rating:</span>
-                      <span className="font-semibold">{speaker.overallRating}/5.0</span>
-                    </div>
-                  </>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Response Time:</span>
-                  <span className="font-semibold">Within 24 hours</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Category:</span>
-                  <span className="font-semibold">{speaker.category}</span>
-                </div>
-              </CardContent>
-            </Card>
+
           </div>
         </div>
       </div>
