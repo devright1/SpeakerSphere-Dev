@@ -778,6 +778,97 @@ export default function SpeakerDashboard() {
                 </Card>
               </div>
 
+              {/* Uploaded Content Section */}
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-2xl font-semibold text-gray-900">Uploaded Content</h3>
+                    <p className="text-gray-600 mt-1">
+                      Manage and organize your uploaded files. Toggle visibility to control what appears on your public profile.
+                    </p>
+                  </div>
+                </div>
+
+                {speakerContent && speakerContent.length > 0 ? (
+                  <div className="space-y-4">
+                    {speakerContent.map((content: any) => (
+                      <Card key={content.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              <div className="p-2 bg-gray-100 rounded-lg">
+                                {getFileIcon(content.category)}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900">{content.originalName}</h4>
+                                <p className="text-sm text-gray-600">{content.description}</p>
+                                <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                                  <span>{formatFileSize(content.fileSize)}</span>
+                                  <span className="capitalize">{content.category}</span>
+                                  <span>{content.downloadCount} downloads</span>
+                                  <span>
+                                    {content.isPublic ? (
+                                      <Badge variant="outline" className="text-green-600 border-green-600">
+                                        Public
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="outline" className="text-gray-600 border-gray-600">
+                                        Private
+                                      </Badge>
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
+                                disabled={updateContentMutation.isPending}
+                              >
+                                {content.isPublic ? (
+                                  <>
+                                    <EyeOff className="h-4 w-4 mr-1" />
+                                    Make Private
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Make Public
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteContentMutation.mutate(content.id)}
+                                disabled={deleteContentMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <div className="p-3 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <FileText className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">No Content Uploaded Yet</h4>
+                      <p className="text-gray-600 mb-4">
+                        Start by uploading your first file using the upload cards above.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
               {/* Content Management Section */}
               {speakerContent && speakerContent.length > 0 && (
                 <div className="bg-blue-50 rounded-lg p-6">
