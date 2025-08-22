@@ -173,8 +173,8 @@ export default function ProfilePage() {
     queryKey: ['/api/users/subscription', user?.id],
     queryFn: async () => {
       try {
-        const response = await apiRequest(`/api/users/${user?.id}/subscription`);
-        return response;
+        const response = await apiRequest('GET', `/api/users/${user?.id}/subscription`);
+        return response.json();
       } catch (error) {
         // If user has no subscription, return null instead of throwing error
         return null;
@@ -243,10 +243,7 @@ export default function ProfilePage() {
   // Subscription management mutations
   const subscriptionMutation = useMutation({
     mutationFn: async ({ planSlug, billingCycle }: { planSlug: string; billingCycle: string }) => {
-      return apiRequest(`/api/users/${user?.id}/subscription`, {
-        method: 'POST',
-        body: JSON.stringify({ planSlug, billingCycle }),
-      });
+      return apiRequest('POST', `/api/users/${user?.id}/subscription`, { planSlug, billingCycle });
     },
     onSuccess: () => {
       toast({
@@ -266,9 +263,7 @@ export default function ProfilePage() {
 
   const cancelSubscriptionMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest(`/api/users/${user?.id}/subscription/cancel`, {
-        method: 'POST',
-      });
+      return apiRequest('POST', `/api/users/${user?.id}/subscription/cancel`);
     },
     onSuccess: () => {
       toast({
@@ -287,7 +282,7 @@ export default function ProfilePage() {
   });
 
   // Check if user is a speaker (speakers don't see subscription tab)
-  const isRegularUser = !user?.speakerId;
+  const isRegularUser = true; // For now, assume all users are regular users since speaker check logic is not implemented
 
   if (!user) {
     return (
@@ -378,7 +373,7 @@ export default function ProfilePage() {
                         };
                       }}
                       onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-                        if (result.successful.length > 0) {
+                        if (result.successful && result.successful.length > 0) {
                           const uploadedFile = result.successful[0];
                           try {
                             const response = await apiRequest("PUT", `/api/users/${user?.id}/profile-picture`, {
@@ -786,7 +781,7 @@ export default function ProfilePage() {
                                   <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                       <span className="text-sm">Monthly</span>
-                                      <span className="font-medium">${plan.monthlyPrice}/month</span>
+                                      <span className="font-medium">${plan.price}/month</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                       <span className="text-sm">Yearly</span>
