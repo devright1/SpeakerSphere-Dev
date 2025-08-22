@@ -118,6 +118,12 @@ export const speakerApplications = pgTable("speaker_applications", {
   phone: text("phone").notNull(),
   website: text("website"),
   
+  // Social Media Links
+  instagramUrl: text("instagram_url"),
+  twitterUrl: text("twitter_url"),
+  facebookUrl: text("facebook_url"),
+  linkedinUrl: text("linkedin_url"),
+  
   // Professional Information
   title: text("title").notNull(),
   specialty: text("specialty").notNull(),

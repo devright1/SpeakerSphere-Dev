@@ -26,6 +26,12 @@ const speakerApplicationSchema = z.object({
   phone: z.string().min(1, "Phone number is required"),
   website: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
   
+  // Social Media Links
+  instagramUrl: z.string().url("Please enter a valid Instagram URL").optional().or(z.literal("")),
+  twitterUrl: z.string().url("Please enter a valid X/Twitter URL").optional().or(z.literal("")),
+  facebookUrl: z.string().url("Please enter a valid Facebook URL").optional().or(z.literal("")),
+  linkedinUrl: z.string().url("Please enter a valid LinkedIn URL").optional().or(z.literal("")),
+  
   // Professional Information
   title: z.string().min(1, "Professional title is required"),
   specialty: z.string().min(1, "Medical specialty is required"),
@@ -92,6 +98,10 @@ export default function SpeakerApplicationPage() {
       email: "",
       phone: "",
       website: "",
+      instagramUrl: "",
+      twitterUrl: "",
+      facebookUrl: "",
+      linkedinUrl: "",
       title: "",
       specialty: "",
       yearsExperience: "",
@@ -284,6 +294,59 @@ export default function SpeakerApplicationPage() {
                         {form.formState.errors.website && (
                           <p className="text-sm text-red-600">{form.formState.errors.website.message}</p>
                         )}
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Social Media Links (Optional)</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="instagramUrl">Instagram</Label>
+                            <Input
+                              id="instagramUrl"
+                              {...form.register("instagramUrl")}
+                              placeholder="https://instagram.com/yourusername"
+                            />
+                            {form.formState.errors.instagramUrl && (
+                              <p className="text-sm text-red-600">{form.formState.errors.instagramUrl.message}</p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="twitterUrl">X (Twitter)</Label>
+                            <Input
+                              id="twitterUrl"
+                              {...form.register("twitterUrl")}
+                              placeholder="https://x.com/yourusername"
+                            />
+                            {form.formState.errors.twitterUrl && (
+                              <p className="text-sm text-red-600">{form.formState.errors.twitterUrl.message}</p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="facebookUrl">Facebook</Label>
+                            <Input
+                              id="facebookUrl"
+                              {...form.register("facebookUrl")}
+                              placeholder="https://facebook.com/yourusername"
+                            />
+                            {form.formState.errors.facebookUrl && (
+                              <p className="text-sm text-red-600">{form.formState.errors.facebookUrl.message}</p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="linkedinUrl">LinkedIn</Label>
+                            <Input
+                              id="linkedinUrl"
+                              {...form.register("linkedinUrl")}
+                              placeholder="https://linkedin.com/in/yourusername"
+                            />
+                            {form.formState.errors.linkedinUrl && (
+                              <p className="text-sm text-red-600">{form.formState.errors.linkedinUrl.message}</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
