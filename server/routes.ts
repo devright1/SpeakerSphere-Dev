@@ -346,8 +346,7 @@ export function registerRoutes(app: Express): Express {
       
       const speakers = await storage.getSpeakers({
         search,
-        category,
-        categories: categories as string[],
+        category: categories ? categories[0] as string : category,
         location
       });
       
@@ -423,6 +422,15 @@ export function registerRoutes(app: Express): Express {
   // Submit inquiry
   app.post("/api/inquiries", async (req, res) => {
     try {
+      // Check if user is authenticated
+      const user = (req as any).session?.user;
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "Authentication required to submit inquiry"
+        });
+      }
+
       const inquiry = await storage.createInquiry(req.body);
       
       // Get speaker information for email notifications
@@ -988,7 +996,7 @@ export function registerRoutes(app: Express): Express {
         return res.json({
           planName: plan?.name || user.subscriptionTier,
           planSlug: user.subscriptionTier,
-          price: plan?.monthlyPrice || 0,
+          price: plan?.price || "0",
           billingCycle: 'monthly', // Default to monthly for now
           status: user.subscriptionStatus,
           expiresAt: user.subscriptionExpiresAt,

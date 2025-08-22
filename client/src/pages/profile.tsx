@@ -302,13 +302,6 @@ export default function ProfilePage() {
 
   // Check if user is a speaker (speakers don't see subscription tab)
   const isRegularUser = !user?.speakerId && user?.accountType !== 'speaker' && user?.accountType !== 'both';
-  
-  // Debug logging to check user account type
-  console.log('User account check:', {
-    speakerId: user?.speakerId,
-    accountType: user?.accountType,
-    isRegularUser
-  });
 
   if (!user) {
     return (

@@ -243,12 +243,24 @@ export default function SpeakerProfile() {
       setIsInquiryOpen(false);
       inquiryForm.reset();
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to send inquiry. Please try again.",
-        variant: "destructive",
-      });
+    onError: (error: any) => {
+      if (error.message?.includes('401') || error.message?.includes('Authentication required')) {
+        toast({
+          title: "Login Required",
+          description: "Please log in or create an account to send an inquiry.",
+          variant: "destructive",
+        });
+        // Redirect to login page after a short delay
+        setTimeout(() => {
+          window.location.href = '/auth';
+        }, 1500);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to send inquiry. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -936,12 +948,22 @@ export default function SpeakerProfile() {
                   <Button 
                     className="w-full bg-primary hover:bg-blue-700 text-white"
                     onClick={() => {
+                      if (!isAuthenticated) {
+                        toast({
+                          title: "Login Required",
+                          description: "Please log in or create an account to send an inquiry.",
+                          variant: "destructive",
+                        });
+                        // Redirect to login page
+                        window.location.href = '/auth';
+                        return;
+                      }
                       tracking.trackContactFormOpen();
                       setIsInquiryOpen(true);
                     }}
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    Send Inquiry
+                    {!isAuthenticated ? "Login to Send Inquiry" : "Send Inquiry"}
                   </Button>
 
                   <div className="mt-4 pt-4 border-t border-gray-200">
