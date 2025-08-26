@@ -32,13 +32,38 @@ export function AccessCodeDialog({ contentId, fileName, onDownloadSuccess }: Acc
         throw new Error("Please enter an access code");
       }
 
-      // Use direct navigation - this is what was working before
-      const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode.trim().toUpperCase()}`;
+      // Use the same blob download method that works for regular downloads
+      const response = await fetch(`/api/content/${contentId}/download?accessCode=${accessCode.trim().toUpperCase()}`, {
+        method: 'GET'
+      });
       
-      // Direct navigation to trigger download
-      window.location.href = downloadUrl;
+      if (!response.ok) {
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const error = await response.json();
+          throw new Error(error.error || 'Download failed');
+        } else {
+          throw new Error('Download failed');
+        }
+      }
+
+      // Check if response is JSON (error case) or file blob - same as regular download
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        // Handle JSON error response
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Download failed');
+      }
       
-      console.log('Access code download triggered:', downloadUrl);
+      // Get the blob and create download - exact same method as regular downloads
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
       
       return { fileName: fileName, success: true };
     },
