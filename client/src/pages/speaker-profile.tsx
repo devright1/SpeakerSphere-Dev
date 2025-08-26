@@ -327,48 +327,32 @@ export default function SpeakerProfile() {
   // Access code download mutation
   const accessCodeDownloadMutation = useMutation({
     mutationFn: async ({ contentId, accessCode }: { contentId: number; accessCode: string }) => {
-      const response = await fetch(`/api/content/${contentId}/download?accessCode=${accessCode}`, {
-        method: 'GET'
+      // First validate the access code
+      const validateResponse = await fetch(`/api/content/${contentId}/download?accessCode=${accessCode}`, {
+        method: 'HEAD' // Just check if valid, don't download yet
       });
       
-      if (!response.ok) {
-        if (response.headers.get('content-type')?.includes('application/json')) {
-          const error = await response.json();
-          throw new Error(error.error || 'Download failed');
-        } else {
-          throw new Error('Download failed');
-        }
+      if (!validateResponse.ok) {
+        throw new Error('Invalid or expired access code');
       }
 
-      // Check if response is JSON (error case) or file blob - same as regular download
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        // Handle JSON error response
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Download failed');
+      // If valid, trigger direct download via window location
+      const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode}`;
+      
+      // Use window.open for better download handling in sandboxed environments
+      const downloadWindow = window.open(downloadUrl, '_blank');
+      
+      // Fallback: if popup blocked, try direct navigation
+      if (!downloadWindow) {
+        window.location.href = downloadUrl;
       }
       
-      // Get the blob and create download - exact same method as regular downloads
-      const blob = await response.blob();
-      console.log('Access code download blob:', { size: blob.size, type: blob.type });
-      
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      
-      // Extract filename from Content-Disposition header
-      const contentDisposition = response.headers.get('content-disposition');
+      // Extract filename from headers for return value
+      const contentDisposition = validateResponse.headers.get('content-disposition');
       let filename = 'download';
       if (contentDisposition && contentDisposition.includes('filename=')) {
         filename = contentDisposition.split('filename=')[1]?.replace(/"/g, '') || 'download';
       }
-      
-      link.download = filename;
-      document.body.appendChild(link);
-      console.log('Triggering download:', { filename, href: link.href.substring(0, 50) + '...' });
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
       
       return { fileName: filename, success: true };
     },
