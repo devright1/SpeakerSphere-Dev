@@ -54,6 +54,7 @@ const upload = multer({
         sessionUser: user,
         paramsSpeakerId: req.params?.speakerId,
         userSpeakerId: user?.speakerId,
+        userIdHeader: req.headers['x-user-id'],
         finalSpeakerId: speakerId,
         uploadDir: uploadDir
       });
@@ -832,12 +833,18 @@ export function registerRoutes(app: Express): Express {
       
       // Fallback: Check if there's user data in another format
       if (!user) {
-        // Try to get user from a different auth method if session fails
-        const authHeader = req.headers.authorization;
-        if (authHeader) {
-          // This would be for token-based auth if implemented
-          // For now, we'll temporarily allow uploads for testing
-          console.log('Session auth failed, checking alternative auth...');
+        // Try to get user from X-User-ID header like downloads do
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          try {
+            const userData = await storage.getUser(userIdHeader);
+            if (userData?.speakerId) {
+              user = { speakerId: userData.speakerId };
+              console.log('Found user via X-User-ID header:', userIdHeader);
+            }
+          } catch (error) {
+            console.error('Fallback auth failed during upload:', error);
+          }
         }
       }
       
@@ -861,17 +868,42 @@ export function registerRoutes(app: Express): Express {
         return res.status(403).json({ error: "Not authorized to upload content for this speaker" });
       }
 
+      // Handle file location - move to correct directory if uploaded to 'unknown'
+      let finalFileName = req.file.filename;
+      let finalPath = req.file.path;
+      
+      if (req.file.path.includes('/unknown/')) {
+        // File was uploaded to unknown directory, move it to correct speaker directory
+        const correctDir = `uploads/${speakerId}`;
+        const correctPath = `${correctDir}/${req.file.filename}`;
+        
+        try {
+          // Create speaker directory if it doesn't exist
+          if (!fs.existsSync(correctDir)) {
+            fs.mkdirSync(correctDir, { recursive: true });
+          }
+          
+          // Move file from unknown to speaker directory
+          fs.renameSync(req.file.path, correctPath);
+          finalPath = correctPath;
+          console.log(`Moved file from ${req.file.path} to ${correctPath}`);
+        } catch (error) {
+          console.error('Failed to move file to correct directory:', error);
+          // Continue with original path if move fails
+        }
+      }
+
       // Create content record using the actual file path from Multer
       const contentData = {
         speakerId,
-        fileName: req.file.filename, // Use the actual filename created by Multer
+        fileName: finalFileName, // Use the actual filename created by Multer
         originalName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
         category: category || 'document',
         description: description || '',
         isPublic: isPublic === 'true',
-        uploadPath: `/uploads/${speakerId}/${req.file.filename}` // Use the actual file path
+        uploadPath: `/uploads/${speakerId}/${finalFileName}` // Use the actual file path
       };
 
       const content = await storage.createSpeakerContent(contentData);
