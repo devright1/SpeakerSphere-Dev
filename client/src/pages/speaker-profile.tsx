@@ -826,7 +826,7 @@ export default function SpeakerProfile() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => {
+                                    onClick={async () => {
                                       // Check if user is authenticated before allowing download
                                       if (!isAuthenticated) {
                                         toast({
@@ -848,15 +848,42 @@ export default function SpeakerProfile() {
                                       
                                       tracking.trackInteraction('resource_download', content.originalName);
                                       
-                                      // Create a form to download with proper session cookies
-                                      const form = document.createElement('form');
-                                      form.method = 'GET';
-                                      form.action = `/api/content/${content.id}/download`;
-                                      form.target = '_blank';
-                                      form.style.display = 'none';
-                                      document.body.appendChild(form);
-                                      form.submit();
-                                      document.body.removeChild(form);
+                                      // Use fetch with auth token for download
+                                      const token = localStorage.getItem('userToken');
+                                      if (!token) {
+                                        window.location.href = '/login';
+                                        return;
+                                      }
+                                      
+                                      try {
+                                        const response = await fetch(`/api/content/${content.id}/download`, {
+                                          method: 'GET',
+                                          headers: {
+                                            'Authorization': `Bearer ${token}`
+                                          }
+                                        });
+                                        
+                                        if (response.ok) {
+                                          // Get the blob and create download
+                                          const blob = await response.blob();
+                                          const url = window.URL.createObjectURL(blob);
+                                          const link = document.createElement('a');
+                                          link.href = url;
+                                          link.download = content.originalName || 'download';
+                                          document.body.appendChild(link);
+                                          link.click();
+                                          document.body.removeChild(link);
+                                          window.URL.revokeObjectURL(url);
+                                        } else {
+                                          if (response.status === 401) {
+                                            window.location.href = '/login';
+                                          } else {
+                                            console.error('Download failed:', response.statusText);
+                                          }
+                                        }
+                                      } catch (error) {
+                                        console.error('Download error:', error);
+                                      }
                                     }}
                                     className="flex items-center gap-2"
                                   >

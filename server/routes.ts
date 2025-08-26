@@ -314,6 +314,14 @@ export function registerRoutes(app: Express): Express {
   // Get current user
   app.get("/api/auth/me", (req, res) => {
     const user = (req as any).session?.user;
+    
+    // Debug logging for auth/me endpoint
+    console.log("Auth/me debug:");
+    console.log("- Session exists:", !!(req as any).session);
+    console.log("- Session keys:", Object.keys((req as any).session || {}));
+    console.log("- User exists:", !!user);
+    console.log("- User ID:", user?.id);
+    
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -964,16 +972,35 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Helper function to get user from token or session
+  const getAuthenticatedUser = async (req: any) => {
+    // First try session-based auth
+    if (req.session?.user) {
+      return req.session.user;
+    }
+    
+    // Then try token-based auth
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.slice(7);
+      const user = await storage.getUserByToken(token);
+      return user ? { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName } : null;
+    }
+    
+    return null;
+  };
+
   // Simple content download (GET endpoint - requires authentication)
   app.get("/api/content/:contentId/download", async (req: any, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
-      const user = req.session?.user;
+      const user = await getAuthenticatedUser(req);
       
       // Debug logging
       console.log("Download request debug:");
       console.log("- Session exists:", !!req.session);
       console.log("- Session keys:", Object.keys(req.session || {}));
+      console.log("- Auth header:", req.headers.authorization ? 'Present' : 'Missing');
       console.log("- User exists:", !!user);
       console.log("- User ID:", user?.id);
       
