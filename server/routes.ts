@@ -979,6 +979,13 @@ export function registerRoutes(app: Express): Express {
     try {
       const contentId = parseInt(req.params.contentId);
       
+      // Debug session information
+      console.log("Download authentication debug:");
+      console.log("- Session exists:", !!req.session);
+      console.log("- Session user:", req.session?.user ? 'exists' : 'missing');
+      console.log("- X-User-ID header:", req.headers['x-user-id']);
+      console.log("- Session keys:", req.session ? Object.keys(req.session) : 'no session');
+      
       // Try session authentication first (for speaker dashboard), then header authentication
       let user = req.session?.user;
       let userId = user?.id;
@@ -988,13 +995,17 @@ export function registerRoutes(app: Express): Express {
         userId = req.headers['x-user-id'];
         if (userId) {
           user = await storage.getUserById(userId);
+          console.log("- Fallback user lookup:", user ? 'found' : 'not found');
         }
       }
       
       // Require authentication for all downloads
       if (!user || !userId) {
+        console.log("- Authentication failed: user =", !!user, "userId =", !!userId);
         return res.status(401).json({ error: "Authentication required for content access" });
       }
+      
+      console.log("- Authentication successful for user:", userId);
 
       const content = await storage.getSpeakerContentById(contentId);
       
