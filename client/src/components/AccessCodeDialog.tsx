@@ -32,37 +32,21 @@ export function AccessCodeDialog({ contentId, fileName, onDownloadSuccess }: Acc
         throw new Error("Please enter an access code");
       }
 
-      // Download with access code directly
+      // Try direct window location method first (more reliable for some browsers)
       const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode.trim().toUpperCase()}`;
-      const response = await fetch(downloadUrl);
       
-      if (!response.ok) {
-        if (response.headers.get('content-type')?.includes('application/json')) {
-          const error = await response.json();
-          throw new Error(error.error || 'Download failed');
-        } else {
-          throw new Error('Download failed');
-        }
-      }
-
-      // Handle file download with blob
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+      // Create a hidden iframe to trigger download
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = downloadUrl;
+      document.body.appendChild(iframe);
       
-      // Extract filename from Content-Disposition header
-      const contentDisposition = response.headers.get('content-disposition');
-      let filename = fileName; // fallback to provided filename
-      if (contentDisposition && contentDisposition.includes('filename=')) {
-        filename = contentDisposition.split('filename=')[1]?.replace(/"/g, '') || fileName;
-      }
+      // Clean up iframe after download
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
       
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      console.log('Access code download triggered via iframe:', downloadUrl);
       
       return { fileName: filename, success: true };
     },
