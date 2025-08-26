@@ -1027,8 +1027,12 @@ export function registerRoutes(app: Express): Express {
 
       // Serve the actual file
       
-      // The uploadPath should be relative to the project root
-      const filePath = path.join(process.cwd(), content.uploadPath);
+      // Handle the uploadPath correctly - remove leading slash if present
+      let uploadPath = content.uploadPath;
+      if (uploadPath.startsWith('/')) {
+        uploadPath = uploadPath.substring(1);
+      }
+      const filePath = path.join(process.cwd(), uploadPath);
       
       console.log("- Full file path:", filePath);
       console.log("- File exists:", fs.existsSync(filePath));
