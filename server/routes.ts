@@ -837,7 +837,7 @@ export function registerRoutes(app: Express): Express {
         const userIdHeader = req.headers['x-user-id'] as string;
         if (userIdHeader) {
           try {
-            const userData = await storage.getUser(userIdHeader);
+            const userData = await storage.getUserById(userIdHeader);
             if (userData?.speakerId) {
               user = { speakerId: userData.speakerId };
               console.log('Found user via X-User-ID header:', userIdHeader);
@@ -1246,9 +1246,26 @@ export function registerRoutes(app: Express): Express {
     try {
       const contentId = parseInt(req.params.contentId);
       const { accessCode, description, expiresAt, maxUses } = req.body;
-      const user = req.user;
-
+      
+      // Authentication using same pattern as downloads
+      let user = (req as any).session?.user;
+      
+      // Fallback: Check if there's user data from X-User-ID header
       if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          try {
+            const userData = await storage.getUserById(userIdHeader);
+            if (userData?.speakerId) {
+              user = { speakerId: userData.speakerId };
+            }
+          } catch (error) {
+            console.error('Fallback auth failed for access code creation:', error);
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
         return res.status(401).json({ error: "Authentication required" });
       }
 
@@ -1282,9 +1299,26 @@ export function registerRoutes(app: Express): Express {
   app.get("/api/content/:contentId/access-codes", async (req: AuthenticatedRequest, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
-      const user = req.user;
-
+      
+      // Authentication using same pattern as downloads
+      let user = (req as any).session?.user;
+      
+      // Fallback: Check if there's user data from X-User-ID header
       if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          try {
+            const userData = await storage.getUserById(userIdHeader);
+            if (userData?.speakerId) {
+              user = { speakerId: userData.speakerId };
+            }
+          } catch (error) {
+            console.error('Fallback auth failed for access code retrieval:', error);
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
         return res.status(401).json({ error: "Authentication required" });
       }
 
@@ -1310,9 +1344,26 @@ export function registerRoutes(app: Express): Express {
   app.get("/api/speakers/:speakerId/downloads", async (req: AuthenticatedRequest, res) => {
     try {
       const speakerId = parseInt(req.params.speakerId);
-      const user = req.user;
-
+      
+      // Authentication using same pattern as downloads
+      let user = (req as any).session?.user;
+      
+      // Fallback: Check if there's user data from X-User-ID header
       if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          try {
+            const userData = await storage.getUserById(userIdHeader);
+            if (userData?.speakerId) {
+              user = { speakerId: userData.speakerId };
+            }
+          } catch (error) {
+            console.error('Fallback auth failed for download analytics:', error);
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
         return res.status(401).json({ error: "Authentication required" });
       }
 
