@@ -110,7 +110,7 @@ export default function SpeakerProfile() {
   });
 
   // Fetch speaker content (only for approved speakers)
-  const { data: speakerContent } = useQuery({
+  const { data: speakerContent, isLoading: contentLoading } = useQuery({
     queryKey: ["/api/speakers/content", speaker?.id],
     queryFn: async () => {
       if (!speaker?.id) return [];
@@ -565,13 +565,13 @@ export default function SpeakerProfile() {
             <Tabs defaultValue="overview" className="space-y-6">
               <TabsList className={`grid w-full ${
                 speaker.hideRatings 
-                  ? (speaker.verified && speakerContent?.length > 0 ? 'grid-cols-4' : 'grid-cols-3')
-                  : (speaker.verified && speakerContent?.length > 0 ? 'grid-cols-5' : 'grid-cols-4')
+                  ? (speaker.verified ? 'grid-cols-4' : 'grid-cols-3')
+                  : (speaker.verified ? 'grid-cols-5' : 'grid-cols-4')
               }`}>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="experience">Experience</TabsTrigger>
                 <TabsTrigger value="topics">Topics</TabsTrigger>
-                {speaker.verified && speakerContent?.length > 0 && (
+                {speaker.verified && (
                   <TabsTrigger value="resources">Speaker Resources</TabsTrigger>
                 )}
                 {!speaker.hideRatings && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
