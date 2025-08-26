@@ -25,6 +25,13 @@ export async function apiRequest(
     headers["X-User-ID"] = userToken;
   }
 
+  console.log('API Request Debug:', { 
+    url, 
+    method, 
+    userToken: userToken ? `${userToken.substring(0, 8)}...` : 'null',
+    headers: Object.keys(headers)
+  });
+
   const res = await fetch(url, {
     method,
     headers,
@@ -50,6 +57,12 @@ export const getQueryFn: <T>(options: {
     if (userToken) {
       headers["X-User-ID"] = userToken;
     }
+
+    console.log('Query Request Debug:', { 
+      url: queryKey[0], 
+      userToken: userToken ? `${userToken.substring(0, 8)}...` : 'null',
+      headers: Object.keys(headers)
+    });
 
     const res = await fetch(queryKey[0] as string, {
       headers,

@@ -926,6 +926,16 @@ export class DatabaseStorage implements IStorage {
     return accessCode;
   }
 
+  async incrementAccessCodeUsage(accessCodeId: number): Promise<void> {
+    await db
+      .update(contentAccessCodes)
+      .set({ 
+        currentUses: sql`${contentAccessCodes.currentUses} + 1`,
+        updatedAt: new Date() 
+      })
+      .where(eq(contentAccessCodes.id, accessCodeId));
+  }
+
   async updateAccessCodeUsage(accessCodeId: number): Promise<void> {
     await db
       .update(contentAccessCodes)

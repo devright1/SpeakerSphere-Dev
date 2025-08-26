@@ -1047,10 +1047,11 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
-  // Simple content download (GET endpoint - requires authentication)
+  // Simple content download (GET endpoint - supports access codes and authentication)
   app.get("/api/content/:contentId/download", async (req: any, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
+      const accessCode = req.query.accessCode as string;
       const user = req.session?.user;
       
       // Debug session information
@@ -1059,13 +1060,27 @@ export function registerRoutes(app: Express): Express {
       console.log("- Session user:", user ? 'exists' : 'missing');
       console.log("- User speakerId:", user?.speakerId);
       console.log("- X-User-ID header:", req.headers['x-user-id']);
+      console.log("- Access code provided:", !!accessCode);
       
       // For speaker dashboard downloads, allow session-based authentication
-      // For public profile downloads, require explicit authentication
+      // For public profile downloads, require explicit authentication or access code
       let authUser = user;
       let userId = user?.id;
+      let validatedAccessCode = null;
       
-      if (!authUser) {
+      // Check if access code is provided and valid
+      if (accessCode) {
+        validatedAccessCode = await storage.validateAccessCode(contentId, accessCode.toUpperCase());
+        if (validatedAccessCode) {
+          console.log("- Valid access code provided, granting access");
+          // If valid access code, we can proceed without user authentication
+          authUser = { id: 'access-code-user', email: 'access-code@guest.user', firstName: 'Access Code', lastName: 'User' };
+          userId = 'access-code-user';
+        } else {
+          console.log("- Invalid access code provided");
+          return res.status(403).json({ error: "Invalid or expired access code" });
+        }
+      } else if (!authUser) {
         // Fallback to X-User-ID header authentication for public profile downloads
         const headerUserId = req.headers['x-user-id'];
         if (headerUserId) {
@@ -1088,18 +1103,23 @@ export function registerRoutes(app: Express): Express {
       }
 
       // For speaker dashboard: allow downloads of own content (public or private)
-      // For public profiles: only allow public content downloads
+      // For public profiles: allow public content downloads or content with valid access codes
       const isOwnContent = authUser && authUser.speakerId === content.speakerId;
+      const hasValidAccessCode = !!validatedAccessCode;
       
-      if (!content.isPublic && !isOwnContent) {
-        console.log("- Access denied: not public and not own content");
+      // Allow access if:
+      // 1. Content is public, OR
+      // 2. User owns the content, OR 
+      // 3. Valid access code is provided
+      if (!content.isPublic && !isOwnContent && !hasValidAccessCode) {
+        console.log("- Access denied: not public, not own content, and no valid access code");
         return res.status(403).json({ error: "Access denied to private content" });
       }
       
       // For analytics, try to get user info but don't require it for public content
       if (!authUser && content.isPublic) {
         // Allow anonymous downloads of public content
-        authUser = { id: 'anonymous', email: null, firstName: 'Anonymous', lastName: 'User' };
+        authUser = { id: 'anonymous', email: 'anonymous@guest.user', firstName: 'Anonymous', lastName: 'User' };
         userId = 'anonymous';
       } else if (!authUser) {
         console.log("- Authentication required for private content");
@@ -1107,18 +1127,25 @@ export function registerRoutes(app: Express): Express {
       }
       
       console.log("- Download authorized for user:", userId, "own content:", isOwnContent);
+      console.log("- Auth user email:", authUser?.email);
+      console.log("- Auth user details:", authUser);
 
       // Track the download with user details
       await storage.createContentDownload({
         contentId,
-        userId: userId,
-        accessCodeId: null,
-        userEmail: authUser.email || null,
-        userName: authUser.firstName && authUser.lastName ? `${authUser.firstName} ${authUser.lastName}` : authUser.email || 'Unknown',
+        userId: userId || 'anonymous',
+        accessCodeId: validatedAccessCode?.id || null,
+        userEmail: authUser?.email || 'guest@access-code.user',
+        userName: authUser?.firstName && authUser?.lastName ? `${authUser.firstName} ${authUser.lastName}` : authUser?.email || 'Unknown',
         userCompany: null,
         ipAddress: req.ip || null,
         userAgent: req.get('User-Agent') || null
       });
+
+      // If access code was used, increment its usage count
+      if (validatedAccessCode) {
+        await storage.incrementAccessCodeUsage(validatedAccessCode.id);
+      }
 
       // Increment download count
       await storage.incrementContentDownloadCount(contentId);
@@ -1337,6 +1364,36 @@ export function registerRoutes(app: Express): Express {
     } catch (error) {
       console.error("Get access codes error:", error);
       res.status(500).json({ error: "Failed to get access codes" });
+    }
+  });
+
+  // Verify access code for content download
+  app.post("/api/content/:contentId/verify-access-code", async (req, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const { accessCode } = req.body;
+
+      if (!accessCode || accessCode.length !== 4) {
+        return res.status(400).json({ error: "Invalid access code format" });
+      }
+
+      // Validate the access code using existing storage method
+      const validatedCode = await storage.validateAccessCode(contentId, accessCode.toUpperCase());
+      
+      if (validatedCode) {
+        res.json({ 
+          valid: true, 
+          description: validatedCode.description || "Valid access code"
+        });
+      } else {
+        res.status(403).json({ 
+          valid: false, 
+          error: "Invalid or expired access code" 
+        });
+      }
+    } catch (error) {
+      console.error("Access code verification error:", error);
+      res.status(500).json({ error: "Failed to verify access code" });
     }
   });
 

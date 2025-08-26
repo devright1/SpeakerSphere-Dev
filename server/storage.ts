@@ -152,6 +152,7 @@ export interface IStorage {
   createContentAccessCode(accessCode: InsertContentAccessCode): Promise<ContentAccessCode>;
   getContentAccessCodes(contentId: number): Promise<ContentAccessCode[]>;
   validateAccessCode(contentId: number, code: string): Promise<ContentAccessCode | undefined>;
+  incrementAccessCodeUsage(accessCodeId: number): Promise<void>;
   updateAccessCodeUsage(accessCodeId: number): Promise<void>;
   deleteContentAccessCode(accessCodeId: number): Promise<boolean>;
 
@@ -1040,11 +1041,20 @@ export class MemStorage implements IStorage {
     }
     
     // Check usage limit
-    if (accessCode.maxUses && accessCode.currentUses >= accessCode.maxUses) {
+    if (accessCode.maxUses && accessCode.currentUses && accessCode.currentUses >= accessCode.maxUses) {
       return undefined;
     }
     
     return accessCode;
+  }
+
+  async incrementAccessCodeUsage(accessCodeId: number): Promise<void> {
+    const accessCode = this.contentAccessCodes.get(accessCodeId);
+    if (accessCode) {
+      accessCode.currentUses = (accessCode.currentUses || 0) + 1;
+      accessCode.updatedAt = new Date();
+      this.contentAccessCodes.set(accessCodeId, accessCode);
+    }
   }
 
   async updateAccessCodeUsage(accessCodeId: number): Promise<void> {
