@@ -1098,6 +1098,7 @@ export function registerRoutes(app: Express): Express {
       console.log("- Content upload path:", content?.uploadPath);
       console.log("- Content filename:", content?.fileName);
       console.log("- Content speakerId:", content?.speakerId);
+      console.log("- Requires access code:", content?.requiresAccessCode);
       if (!content) {
         return res.status(404).json({ error: "Content not found" });
       }
@@ -1107,10 +1108,20 @@ export function registerRoutes(app: Express): Express {
       const isOwnContent = authUser && authUser.speakerId === content.speakerId;
       const hasValidAccessCode = !!validatedAccessCode;
       
+      // Check if content requires access code
+      if (content.requiresAccessCode && !hasValidAccessCode) {
+        console.log("- Access denied: content requires access code but none provided or invalid");
+        return res.status(403).json({ 
+          error: "Access code required", 
+          details: "This content requires a 4-letter access code to download",
+          requiresAccessCode: true 
+        });
+      }
+      
       // Allow access if:
-      // 1. Content is public, OR
-      // 2. User owns the content, OR 
-      // 3. Valid access code is provided
+      // 1. Content is public AND doesn't require access code, OR
+      // 2. User owns the content AND content doesn't require access code, OR 
+      // 3. Valid access code is provided (already checked above)
       if (!content.isPublic && !isOwnContent && !hasValidAccessCode) {
         console.log("- Access denied: not public, not own content, and no valid access code");
         return res.status(403).json({ error: "Access denied to private content" });
@@ -1326,6 +1337,15 @@ export function registerRoutes(app: Express): Express {
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         maxUses: maxUses || null
       });
+
+      // Mark content as requiring access code
+      try {
+        const updatedContent = await storage.updateSpeakerContent(contentId, { requiresAccessCode: true });
+        console.log("- Content marked as requiring access code:", !!updatedContent);
+        console.log("- Updated content requiresAccessCode:", updatedContent?.requiresAccessCode);
+      } catch (error) {
+        console.error("- Failed to mark content as requiring access code:", error);
+      }
 
       res.status(201).json(newAccessCode);
     } catch (error) {
