@@ -340,24 +340,35 @@ export default function SpeakerProfile() {
         }
       }
 
-      // For successful responses, we should always get a file blob for download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+      // Check if response is JSON (error case) or file blob - same as regular download
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        // Handle JSON error response
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Download failed');
+      }
       
-      // Extract filename from Content-Disposition header or use the original name
+      // Get the blob and create download - exact same method as regular downloads
+      const blob = await response.blob();
+      console.log('Access code download blob:', { size: blob.size, type: blob.type });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extract filename from Content-Disposition header
       const contentDisposition = response.headers.get('content-disposition');
       let filename = 'download';
       if (contentDisposition && contentDisposition.includes('filename=')) {
         filename = contentDisposition.split('filename=')[1]?.replace(/"/g, '') || 'download';
       }
       
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
+      link.download = filename;
+      document.body.appendChild(link);
+      console.log('Triggering download:', { filename, href: link.href.substring(0, 50) + '...' });
+      link.click();
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
       
       return { fileName: filename, success: true };
     },
