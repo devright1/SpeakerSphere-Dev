@@ -84,6 +84,9 @@ export default function SpeakerProfile() {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageError, setImageError] = useState(false);
+  const [isAccessCodeModalOpen, setIsAccessCodeModalOpen] = useState(false);
+  const [selectedProtectedContent, setSelectedProtectedContent] = useState<any>(null);
+  const [accessCode, setAccessCode] = useState("");
 
   const { data: speaker, isLoading: speakerLoading, error: speakerError } = useQuery<Speaker>({
     queryKey: ["/api/speakers", name],
@@ -315,6 +318,43 @@ export default function SpeakerProfile() {
       toast({
         title: "Error",
         description: "Failed to submit review. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Access code download mutation
+  const accessCodeDownloadMutation = useMutation({
+    mutationFn: async ({ contentId, accessCode }: { contentId: number; accessCode: string }) => {
+      const response = await fetch(`/api/content/${contentId}/download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accessCode }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Download failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Download Started",
+        description: `${data.fileName} download has been tracked successfully.`,
+      });
+      setIsAccessCodeModalOpen(false);
+      setAccessCode("");
+      setSelectedProtectedContent(null);
+      tracking.trackInteraction('protected_content_download', data.fileName);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Download Failed",
+        description: error.message || "Failed to download content. Please check your access code.",
         variant: "destructive",
       });
     },
@@ -787,13 +827,32 @@ export default function SpeakerProfile() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
+                                      // Check if user is authenticated before allowing download
+                                      if (!isAuthenticated) {
+                                        toast({
+                                          title: "Login Required",
+                                          description: "Please sign in or create an account to download content.",
+                                          variant: "destructive",
+                                        });
+                                        // Redirect to login page
+                                        window.location.href = '/auth';
+                                        return;
+                                      }
+                                      
+                                      // Check if content requires access code
+                                      if (content.requiresAccessCode) {
+                                        setSelectedProtectedContent(content);
+                                        setIsAccessCodeModalOpen(true);
+                                        return;
+                                      }
+                                      
                                       tracking.trackInteraction('resource_download', content.originalName);
                                       window.open(`/api/content/${content.id}/download`, '_blank');
                                     }}
                                     className="flex items-center gap-2"
                                   >
                                     <Download className="h-4 w-4" />
-                                    Download
+                                    {!isAuthenticated ? "Login to Download" : content.requiresAccessCode ? "Access Code Required" : "Download"}
                                   </Button>
                                 </div>
                               ))}
@@ -1319,6 +1378,69 @@ export default function SpeakerProfile() {
               </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Access Code Modal */}
+      <Dialog open={isAccessCodeModalOpen} onOpenChange={setIsAccessCodeModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Access Code Required</DialogTitle>
+            <DialogDescription>
+              This content requires a 4-letter access code to download. Enter the code provided by the speaker.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-4">
+            <div>
+              <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700 mb-2">
+                Access Code
+              </label>
+              <Input
+                id="accessCode"
+                type="text"
+                placeholder="Enter 4-letter code"
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value.toUpperCase().slice(0, 4))}
+                maxLength={4}
+                className="text-center text-lg font-mono tracking-widest"
+              />
+            </div>
+            
+            {selectedProtectedContent && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium text-gray-900">{selectedProtectedContent.originalName}</p>
+                <p className="text-xs text-gray-500">{selectedProtectedContent.description}</p>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setIsAccessCodeModalOpen(false);
+                  setAccessCode("");
+                  setSelectedProtectedContent(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedProtectedContent && accessCode.length === 4) {
+                    accessCodeDownloadMutation.mutate({
+                      contentId: selectedProtectedContent.id,
+                      accessCode: accessCode
+                    });
+                  }
+                }}
+                disabled={accessCode.length !== 4 || accessCodeDownloadMutation.isPending}
+              >
+                {accessCodeDownloadMutation.isPending ? "Downloading..." : "Download"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

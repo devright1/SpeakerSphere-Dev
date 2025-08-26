@@ -964,7 +964,56 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
-  // Download content with access control and tracking
+  // Simple content download (GET endpoint - requires authentication)
+  app.get("/api/content/:contentId/download", async (req: AuthenticatedRequest, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const user = req.user;
+      
+      // Require authentication for all downloads
+      if (!user) {
+        return res.status(401).json({ error: "Authentication required for content access" });
+      }
+
+      const content = await storage.getSpeakerContentById(contentId);
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+
+      // Check if content is public
+      if (!content.isPublic) {
+        return res.status(403).json({ error: "Access denied to private content" });
+      }
+
+      // Track the download with user details
+      await storage.createContentDownload({
+        contentId,
+        userId: user.id,
+        accessCodeId: null,
+        userEmail: user.email,
+        userName: `${user.firstName} ${user.lastName}`,
+        userCompany: null,
+        ipAddress: req.ip || null,
+        userAgent: req.get('User-Agent') || null
+      });
+
+      // Increment download count
+      await storage.incrementContentDownloadCount(contentId);
+
+      // Return download info (in real implementation, serve the actual file)
+      res.json({ 
+        success: true,
+        fileName: content.originalName,
+        downloadPath: content.uploadPath,
+        message: "Download tracked successfully"
+      });
+    } catch (error) {
+      console.error("Download content error:", error);
+      res.status(500).json({ error: "Failed to download content" });
+    }
+  });
+
+  // Download content with access control and tracking (POST endpoint for access codes)
   app.post("/api/content/:contentId/download", async (req: AuthenticatedRequest, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
