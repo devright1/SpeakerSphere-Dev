@@ -62,11 +62,12 @@ export default function SpeakerDashboard() {
   // Download handler that properly handles errors
   const handleDownload = async (contentId: number, originalName: string) => {
     try {
+      const userData = getUserData();
       const response = await fetch(`/api/content/${contentId}/download`, {
         method: 'GET',
         credentials: 'include', // Include session cookies
         headers: {
-          'X-User-ID': localStorage.getItem('userId') || ''
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
         }
       });
 

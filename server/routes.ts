@@ -978,59 +978,70 @@ export function registerRoutes(app: Express): Express {
   app.get("/api/content/:contentId/download", async (req: any, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
+      const user = req.session?.user;
       
       // Debug session information
       console.log("Download authentication debug:");
       console.log("- Session exists:", !!req.session);
-      console.log("- Session user:", req.session?.user ? 'exists' : 'missing');
+      console.log("- Session user:", user ? 'exists' : 'missing');
+      console.log("- User speakerId:", user?.speakerId);
       console.log("- X-User-ID header:", req.headers['x-user-id']);
-      console.log("- Session keys:", req.session ? Object.keys(req.session) : 'no session');
       
-      // Try session authentication first (for speaker dashboard), then header authentication
-      let user = req.session?.user;
+      // For speaker dashboard downloads, allow session-based authentication
+      // For public profile downloads, require explicit authentication
+      let authUser = user;
       let userId = user?.id;
       
-      if (!user) {
-        // Fallback to X-User-ID header authentication
-        userId = req.headers['x-user-id'];
-        if (userId) {
-          user = await storage.getUserById(userId);
-          console.log("- Fallback user lookup:", user ? 'found' : 'not found');
+      if (!authUser) {
+        // Fallback to X-User-ID header authentication for public profile downloads
+        const headerUserId = req.headers['x-user-id'];
+        if (headerUserId) {
+          authUser = await storage.getUserById(headerUserId);
+          userId = headerUserId;
+          console.log("- Fallback user lookup:", authUser ? 'found' : 'not found');
         }
       }
       
-      // Require authentication for all downloads
-      if (!user || !userId) {
-        console.log("- Authentication failed: user =", !!user, "userId =", !!userId);
-        return res.status(401).json({ error: "Authentication required for content access" });
-      }
-      
-      console.log("- Authentication successful for user:", userId);
-
       const content = await storage.getSpeakerContentById(contentId);
       
       // Debug logging (after content is fetched)
       console.log("Download request debug:");
-      console.log("- User ID header:", userId);
       console.log("- Content found:", !!content);
       console.log("- Content upload path:", content?.uploadPath);
       console.log("- Content filename:", content?.fileName);
+      console.log("- Content speakerId:", content?.speakerId);
       if (!content) {
         return res.status(404).json({ error: "Content not found" });
       }
 
-      // Check if content is public
-      if (!content.isPublic) {
+      // For speaker dashboard: allow downloads of own content (public or private)
+      // For public profiles: only allow public content downloads
+      const isOwnContent = authUser && authUser.speakerId === content.speakerId;
+      
+      if (!content.isPublic && !isOwnContent) {
+        console.log("- Access denied: not public and not own content");
         return res.status(403).json({ error: "Access denied to private content" });
       }
+      
+      // For analytics, try to get user info but don't require it for public content
+      if (!authUser && content.isPublic) {
+        // Allow anonymous downloads of public content
+        authUser = { id: 'anonymous', email: null, firstName: 'Anonymous', lastName: 'User' };
+        userId = 'anonymous';
+      } else if (!authUser) {
+        console.log("- Authentication required for private content");
+        return res.status(401).json({ error: "Authentication required for content access" });
+      }
+      
+      console.log("- Download authorized for user:", userId, "own content:", isOwnContent);
 
       // Track the download with user details
       await storage.createContentDownload({
         contentId,
         userId: userId,
         accessCodeId: null,
-        userEmail: user.email || null,
-        userName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email || 'Unknown',
+        userEmail: authUser.email || null,
+        userName: authUser.firstName && authUser.lastName ? `${authUser.firstName} ${authUser.lastName}` : authUser.email || 'Unknown',
         userCompany: null,
         ipAddress: req.ip || null,
         userAgent: req.get('User-Agent') || null
