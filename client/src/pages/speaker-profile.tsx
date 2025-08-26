@@ -874,6 +874,15 @@ export default function SpeakerProfile() {
                                         });
                                         
                                         if (response.ok) {
+                                          // Check if response is JSON (error case) or file blob
+                                          const contentType = response.headers.get('content-type');
+                                          if (contentType && contentType.includes('application/json')) {
+                                            // Handle JSON error response
+                                            const errorData = await response.json();
+                                            console.error('Download error:', errorData.error);
+                                            return;
+                                          }
+                                          
                                           // Get the blob and create download
                                           const blob = await response.blob();
                                           const url = window.URL.createObjectURL(blob);

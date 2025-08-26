@@ -1020,12 +1020,31 @@ export function registerRoutes(app: Express): Express {
       // Increment download count
       await storage.incrementContentDownloadCount(contentId);
 
-      // Return download info (in real implementation, serve the actual file)
-      res.json({ 
-        success: true,
-        fileName: content.originalName,
-        downloadPath: content.uploadPath,
-        message: "Download tracked successfully"
+      // Serve the actual file
+      const path = require('path');
+      const fs = require('fs');
+      
+      // The uploadPath should be relative to the project root
+      const filePath = path.join(process.cwd(), content.uploadPath);
+      
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: "File not found on server" });
+      }
+
+      // Set appropriate headers for file download
+      res.setHeader('Content-Disposition', `attachment; filename="${content.originalName}"`);
+      res.setHeader('Content-Type', content.fileType || 'application/octet-stream');
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+      
+      fileStream.on('error', (error: any) => {
+        console.error('File stream error:', error);
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Error reading file" });
+        }
       });
     } catch (error) {
       console.error("Download content error:", error);
