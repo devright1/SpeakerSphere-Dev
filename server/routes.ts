@@ -43,7 +43,28 @@ const changePasswordSchema = z.object({
 
 // Multer configuration for file uploads
 const upload = multer({ 
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const user = (req as any).session?.user;
+      const speakerId = user?.speakerId || 'unknown';
+      const uploadDir = `uploads/${speakerId}`;
+      
+      // Create directory if it doesn't exist
+      if (!fs.existsSync('uploads')) {
+        fs.mkdirSync('uploads', { recursive: true });
+      }
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const timestamp = Date.now();
+      const filename = `${timestamp}_${file.originalname}`;
+      cb(null, filename);
+    }
+  }),
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
@@ -820,17 +841,17 @@ export function registerRoutes(app: Express): Express {
         return res.status(403).json({ error: "Not authorized to upload content for this speaker" });
       }
 
-      // Create content record
+      // Create content record using the actual file path from Multer
       const contentData = {
         speakerId,
-        fileName: `${Date.now()}_${req.file.originalname}`,
+        fileName: req.file.filename, // Use the actual filename created by Multer
         originalName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
         category: category || 'document',
         description: description || '',
         isPublic: isPublic === 'true',
-        uploadPath: `/uploads/${speakerId}/${Date.now()}_${req.file.originalname}` // Placeholder path
+        uploadPath: `/uploads/${speakerId}/${req.file.filename}` // Use the actual file path
       };
 
       const content = await storage.createSpeakerContent(contentData);
