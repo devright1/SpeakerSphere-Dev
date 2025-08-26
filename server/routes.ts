@@ -982,13 +982,6 @@ export function registerRoutes(app: Express): Express {
       // Get user ID from X-User-ID header (sent by frontend)
       const userId = req.headers['x-user-id'];
       
-      // Debug logging
-      console.log("Download request debug:");
-      console.log("- User ID header:", userId);
-      console.log("- Content found:", !!content);
-      console.log("- Content upload path:", content?.uploadPath);
-      console.log("- Content filename:", content?.fileName);
-      
       // Require authentication for all downloads
       if (!userId) {
         return res.status(401).json({ error: "Authentication required for content access" });
@@ -1001,6 +994,13 @@ export function registerRoutes(app: Express): Express {
       }
 
       const content = await storage.getSpeakerContentById(contentId);
+      
+      // Debug logging (after content is fetched)
+      console.log("Download request debug:");
+      console.log("- User ID header:", userId);
+      console.log("- Content found:", !!content);
+      console.log("- Content upload path:", content?.uploadPath);
+      console.log("- Content filename:", content?.fileName);
       if (!content) {
         return res.status(404).json({ error: "Content not found" });
       }
