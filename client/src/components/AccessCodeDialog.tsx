@@ -32,22 +32,39 @@ export function AccessCodeDialog({ contentId, fileName, onDownloadSuccess }: Acc
         throw new Error("Please enter an access code");
       }
 
-      // First verify the access code
-      const verifyResponse = await apiRequest(
-        "POST", 
-        `/api/content/${contentId}/verify-access-code`, 
-        { accessCode: accessCode.trim().toUpperCase() }
-      );
+      // Download with access code directly
+      const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode.trim().toUpperCase()}`;
+      const response = await fetch(downloadUrl);
       
-      if (!verifyResponse.ok) {
-        throw new Error("Invalid or expired access code");
+      if (!response.ok) {
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const error = await response.json();
+          throw new Error(error.error || 'Download failed');
+        } else {
+          throw new Error('Download failed');
+        }
       }
 
-      // If verification successful, trigger download
-      const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode.trim().toUpperCase()}`;
-      window.location.href = downloadUrl;
+      // Handle file download with blob
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
       
-      return true;
+      // Extract filename from Content-Disposition header
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = fileName; // fallback to provided filename
+      if (contentDisposition && contentDisposition.includes('filename=')) {
+        filename = contentDisposition.split('filename=')[1]?.replace(/"/g, '') || fileName;
+      }
+      
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      return { fileName: filename, success: true };
     },
     onSuccess: () => {
       toast({

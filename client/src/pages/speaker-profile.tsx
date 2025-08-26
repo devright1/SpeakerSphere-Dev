@@ -340,29 +340,26 @@ export default function SpeakerProfile() {
         }
       }
 
-      // Check if response is JSON (error case) or file blob
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        // Handle JSON response for tracking
-        return response.json();
-      } else {
-        // Handle file download
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const contentDisposition = response.headers.get('content-disposition');
-        const filename = contentDisposition 
-          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') 
-          : `download-${Date.now()}`;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
-        return { fileName: filename, success: true };
+      // For successful responses, we should always get a file blob for download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      
+      // Extract filename from Content-Disposition header or use the original name
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = 'download';
+      if (contentDisposition && contentDisposition.includes('filename=')) {
+        filename = contentDisposition.split('filename=')[1]?.replace(/"/g, '') || 'download';
       }
+      
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      return { fileName: filename, success: true };
     },
     onSuccess: (data, variables) => {
       toast({
