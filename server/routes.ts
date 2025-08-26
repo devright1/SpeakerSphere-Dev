@@ -985,6 +985,9 @@ export function registerRoutes(app: Express): Express {
       // Debug logging
       console.log("Download request debug:");
       console.log("- User ID header:", userId);
+      console.log("- Content found:", !!content);
+      console.log("- Content upload path:", content?.uploadPath);
+      console.log("- Content filename:", content?.fileName);
       
       // Require authentication for all downloads
       if (!userId) {
@@ -1026,6 +1029,10 @@ export function registerRoutes(app: Express): Express {
       
       // The uploadPath should be relative to the project root
       const filePath = path.join(process.cwd(), content.uploadPath);
+      
+      console.log("- Full file path:", filePath);
+      console.log("- File exists:", fs.existsSync(filePath));
+      console.log("- Current working directory:", process.cwd());
       
       // Check if file exists
       if (!fs.existsSync(filePath)) {
