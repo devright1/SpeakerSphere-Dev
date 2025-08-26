@@ -63,6 +63,8 @@ export default function SpeakerDashboard() {
   const handleDownload = async (contentId: number, originalName: string) => {
     try {
       const response = await fetch(`/api/content/${contentId}/download`, {
+        method: 'GET',
+        credentials: 'include', // Include session cookies
         headers: {
           'X-User-ID': localStorage.getItem('userId') || ''
         }

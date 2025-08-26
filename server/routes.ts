@@ -979,18 +979,21 @@ export function registerRoutes(app: Express): Express {
     try {
       const contentId = parseInt(req.params.contentId);
       
-      // Get user ID from X-User-ID header (sent by frontend)
-      const userId = req.headers['x-user-id'];
+      // Try session authentication first (for speaker dashboard), then header authentication
+      let user = req.session?.user;
+      let userId = user?.id;
       
-      // Require authentication for all downloads
-      if (!userId) {
-        return res.status(401).json({ error: "Authentication required for content access" });
+      if (!user) {
+        // Fallback to X-User-ID header authentication
+        userId = req.headers['x-user-id'];
+        if (userId) {
+          user = await storage.getUserById(userId);
+        }
       }
       
-      // Verify user exists
-      const user = await storage.getUserById(userId);
-      if (!user) {
-        return res.status(401).json({ error: "Invalid user" });
+      // Require authentication for all downloads
+      if (!user || !userId) {
+        return res.status(401).json({ error: "Authentication required for content access" });
       }
 
       const content = await storage.getSpeakerContentById(contentId);
@@ -1013,10 +1016,10 @@ export function registerRoutes(app: Express): Express {
       // Track the download with user details
       await storage.createContentDownload({
         contentId,
-        userId: user.id,
+        userId: userId,
         accessCodeId: null,
-        userEmail: user.email,
-        userName: `${user.firstName} ${user.lastName}`,
+        userEmail: user.email || null,
+        userName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email || 'Unknown',
         userCompany: null,
         ipAddress: req.ip || null,
         userAgent: req.get('User-Agent') || null
