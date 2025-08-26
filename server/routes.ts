@@ -970,6 +970,13 @@ export function registerRoutes(app: Express): Express {
       const contentId = parseInt(req.params.contentId);
       const user = req.session?.user;
       
+      // Debug logging
+      console.log("Download request debug:");
+      console.log("- Session exists:", !!req.session);
+      console.log("- Session keys:", Object.keys(req.session || {}));
+      console.log("- User exists:", !!user);
+      console.log("- User ID:", user?.id);
+      
       // Require authentication for all downloads
       if (!user) {
         return res.status(401).json({ error: "Authentication required for content access" });
