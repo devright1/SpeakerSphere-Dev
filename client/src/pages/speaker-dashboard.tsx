@@ -355,7 +355,7 @@ export default function SpeakerDashboard() {
     formData.append('file', file);
     formData.append('description', `${file.name}`);
     formData.append('category', getFileCategory(file.type));
-    formData.append('isPublic', 'false');
+    formData.append('isPublic', 'true'); // Default to public so files appear on speaker profile
 
     uploadContentMutation.mutate(formData);
   };
