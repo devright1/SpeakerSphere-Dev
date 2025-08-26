@@ -32,23 +32,15 @@ export function AccessCodeDialog({ contentId, fileName, onDownloadSuccess }: Acc
         throw new Error("Please enter an access code");
       }
 
-      // Try direct window location method first (more reliable for some browsers)
+      // Use direct navigation - this is what was working before
       const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode.trim().toUpperCase()}`;
       
-      // Create a hidden iframe to trigger download
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = downloadUrl;
-      document.body.appendChild(iframe);
+      // Direct navigation to trigger download
+      window.location.href = downloadUrl;
       
-      // Clean up iframe after download
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
+      console.log('Access code download triggered:', downloadUrl);
       
-      console.log('Access code download triggered via iframe:', downloadUrl);
-      
-      return { fileName: filename, success: true };
+      return { fileName: fileName, success: true };
     },
     onSuccess: () => {
       toast({
