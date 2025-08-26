@@ -32,38 +32,30 @@ export function AccessCodeDialog({ contentId, fileName, onDownloadSuccess }: Acc
         throw new Error("Please enter an access code");
       }
 
-      // Use the same blob download method that works for regular downloads
-      const response = await fetch(`/api/content/${contentId}/download?accessCode=${accessCode.trim().toUpperCase()}`, {
-        method: 'GET'
-      });
+      // Get user authentication for access code downloads
+      const userData = localStorage.getItem('userData');
+      if (!userData) {
+        throw new Error('Authentication required to download content');
+      }
       
-      if (!response.ok) {
-        if (response.headers.get('content-type')?.includes('application/json')) {
-          const error = await response.json();
-          throw new Error(error.error || 'Download failed');
-        } else {
-          throw new Error('Download failed');
-        }
+      let userId;
+      try {
+        const user = JSON.parse(userData);
+        userId = user.id;
+      } catch (error) {
+        throw new Error('Authentication required to download content');
       }
 
-      // Check if response is JSON (error case) or file blob - same as regular download
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        // Handle JSON error response
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Download failed');
-      }
+      // Trigger direct download with authentication
+      const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode.trim().toUpperCase()}&userId=${userId}`;
       
-      // Get the blob and create download - exact same method as regular downloads
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName || 'download';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Use window.open for better download handling in sandboxed environments
+      const downloadWindow = window.open(downloadUrl, '_blank');
+      
+      // Fallback: if popup blocked, try direct navigation
+      if (!downloadWindow) {
+        window.location.href = downloadUrl;
+      }
       
       return { fileName: fileName, success: true };
     },

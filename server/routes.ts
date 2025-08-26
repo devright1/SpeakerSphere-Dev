@@ -1072,17 +1072,33 @@ export function registerRoutes(app: Express): Express {
       if (accessCode) {
         validatedAccessCode = await storage.validateAccessCode(contentId, accessCode.toUpperCase());
         if (validatedAccessCode) {
-          console.log("- Valid access code provided, granting access");
-          // If valid access code, we can proceed without user authentication
-          authUser = { id: 'access-code-user', email: 'access-code@guest.user', firstName: 'Access Code', lastName: 'User' };
-          userId = 'access-code-user';
+          console.log("- Valid access code provided");
+          // Even with valid access code, user must be authenticated
+          if (!authUser) {
+            // Try fallback authentication with X-User-ID header or userId query param
+            const headerUserId = req.headers['x-user-id'] || req.query.userId;
+            if (headerUserId) {
+              authUser = await storage.getUserById(headerUserId);
+              userId = headerUserId;
+              console.log("- Fallback user lookup:", authUser ? 'found' : 'not found');
+            }
+            
+            if (!authUser) {
+              console.log("- Access denied: valid access code but user not authenticated");
+              return res.status(401).json({ 
+                error: "Authentication required", 
+                details: "Please sign in or create an account to download content, even with an access code" 
+              });
+            }
+          }
+          console.log("- Access granted: valid access code and authenticated user");
         } else {
           console.log("- Invalid access code provided");
           return res.status(403).json({ error: "Invalid or expired access code" });
         }
       } else if (!authUser) {
-        // Fallback to X-User-ID header authentication for public profile downloads
-        const headerUserId = req.headers['x-user-id'];
+        // Fallback to X-User-ID header or userId query param authentication for public profile downloads
+        const headerUserId = req.headers['x-user-id'] || req.query.userId;
         if (headerUserId) {
           authUser = await storage.getUserById(headerUserId);
           userId = headerUserId;

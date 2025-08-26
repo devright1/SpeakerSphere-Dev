@@ -327,17 +327,37 @@ export default function SpeakerProfile() {
   // Access code download mutation
   const accessCodeDownloadMutation = useMutation({
     mutationFn: async ({ contentId, accessCode }: { contentId: number; accessCode: string }) => {
-      // First validate the access code
+      // Get user authentication for access code downloads
+      const userData = localStorage.getItem('userData');
+      if (!userData) {
+        throw new Error('Authentication required to download content');
+      }
+      
+      let userId;
+      try {
+        const user = JSON.parse(userData);
+        userId = user.id;
+      } catch (error) {
+        throw new Error('Authentication required to download content');
+      }
+
+      // First validate the access code with authentication
       const validateResponse = await fetch(`/api/content/${contentId}/download?accessCode=${accessCode}`, {
-        method: 'HEAD' // Just check if valid, don't download yet
+        method: 'HEAD',
+        headers: {
+          'X-User-ID': userId
+        }
       });
       
       if (!validateResponse.ok) {
+        if (validateResponse.status === 401) {
+          throw new Error('Please sign in or create an account to download content');
+        }
         throw new Error('Invalid or expired access code');
       }
 
-      // If valid, trigger direct download via window location
-      const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode}`;
+      // If valid, trigger direct download via window location with user auth
+      const downloadUrl = `/api/content/${contentId}/download?accessCode=${accessCode}&userId=${userId}`;
       
       // Use window.open for better download handling in sandboxed environments
       const downloadWindow = window.open(downloadUrl, '_blank');
