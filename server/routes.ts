@@ -965,10 +965,10 @@ export function registerRoutes(app: Express): Express {
   });
 
   // Simple content download (GET endpoint - requires authentication)
-  app.get("/api/content/:contentId/download", async (req: AuthenticatedRequest, res) => {
+  app.get("/api/content/:contentId/download", async (req: any, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
-      const user = req.user;
+      const user = req.session?.user;
       
       // Require authentication for all downloads
       if (!user) {
@@ -1014,11 +1014,11 @@ export function registerRoutes(app: Express): Express {
   });
 
   // Download content with access control and tracking (POST endpoint for access codes)
-  app.post("/api/content/:contentId/download", async (req: AuthenticatedRequest, res) => {
+  app.post("/api/content/:contentId/download", async (req: any, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
       const { accessCode } = req.body;
-      const user = req.user;
+      const user = req.session?.user;
       
       // Require authentication for download tracking
       if (!user) {

@@ -847,7 +847,15 @@ export default function SpeakerProfile() {
                                       }
                                       
                                       tracking.trackInteraction('resource_download', content.originalName);
-                                      window.open(`/api/content/${content.id}/download`, '_blank');
+                                      
+                                      // Create a link element for download with session cookies
+                                      const downloadLink = document.createElement('a');
+                                      downloadLink.href = `/api/content/${content.id}/download`;
+                                      downloadLink.target = '_blank';
+                                      downloadLink.rel = 'noopener noreferrer';
+                                      document.body.appendChild(downloadLink);
+                                      downloadLink.click();
+                                      document.body.removeChild(downloadLink);
                                     }}
                                     className="flex items-center gap-2"
                                   >
