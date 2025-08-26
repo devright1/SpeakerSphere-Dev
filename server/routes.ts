@@ -45,9 +45,18 @@ const changePasswordSchema = z.object({
 const upload = multer({ 
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
+      // Debug authentication during upload
       const user = (req as any).session?.user;
-      const speakerId = user?.speakerId || 'unknown';
+      const speakerId = req.params?.speakerId || user?.speakerId || 'unknown';
       const uploadDir = `uploads/${speakerId}`;
+      
+      console.log('Multer upload debug:', {
+        sessionUser: user,
+        paramsSpeakerId: req.params?.speakerId,
+        userSpeakerId: user?.speakerId,
+        finalSpeakerId: speakerId,
+        uploadDir: uploadDir
+      });
       
       // Create directory if it doesn't exist
       if (!fs.existsSync('uploads')) {
@@ -809,6 +818,17 @@ export function registerRoutes(app: Express): Express {
 
       // Check if user owns this speaker profile - check both session and auth header
       let user = (req as any).session?.user;
+      
+      console.log('Content upload POST endpoint debug:', {
+        sessionUser: user,
+        sessionExists: !!(req as any).session,
+        sessionKeys: Object.keys((req as any).session || {}),
+        userIdHeader: req.headers['x-user-id'],
+        speakerId: speakerId,
+        fileUploaded: !!req.file,
+        fileName: req.file?.filename,
+        filePath: req.file?.path
+      });
       
       // Fallback: Check if there's user data in another format
       if (!user) {
