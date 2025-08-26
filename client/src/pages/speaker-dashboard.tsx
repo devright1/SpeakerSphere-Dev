@@ -165,7 +165,12 @@ export default function SpeakerDashboard() {
   const { data: accessCodes, refetch: refetchAccessCodes } = useQuery({
     queryKey: ['/api/content/access-codes', selectedContentForAccessCodes?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/content/${selectedContentForAccessCodes?.id}/access-codes`);
+      const userData = getUserData();
+      const response = await fetch(`/api/content/${selectedContentForAccessCodes?.id}/access-codes`, {
+        headers: {
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch access codes');
       return response.json();
     },
@@ -176,7 +181,12 @@ export default function SpeakerDashboard() {
   const { data: downloadAnalytics } = useQuery({
     queryKey: ['/api/speakers/downloads', speakerProfile?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/speakers/${speakerProfile?.id}/downloads`);
+      const userData = getUserData();
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/downloads`, {
+        headers: {
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch download analytics');
       return response.json();
     },
@@ -299,10 +309,12 @@ export default function SpeakerDashboard() {
   // Create access code mutation
   const createAccessCodeMutation = useMutation({
     mutationFn: async (data: any) => {
+      const userData = getUserData();
       const response = await fetch(`/api/content/${selectedContentForAccessCodes?.id}/access-codes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
         },
         body: JSON.stringify(data),
       });

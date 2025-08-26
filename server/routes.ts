@@ -1274,6 +1274,11 @@ export function registerRoutes(app: Express): Express {
       const contentId = parseInt(req.params.contentId);
       const { accessCode, description, expiresAt, maxUses } = req.body;
       
+      console.log("Access code creation authentication debug:");
+      console.log("- Session exists:", !!(req as any).session);
+      console.log("- Session user:", (req as any).session?.user ? 'exists' : 'missing');
+      console.log("- X-User-ID header:", req.headers['x-user-id']);
+      
       // Authentication using same pattern as downloads
       let user = (req as any).session?.user;
       
@@ -1281,10 +1286,13 @@ export function registerRoutes(app: Express): Express {
       if (!user) {
         const userIdHeader = req.headers['x-user-id'] as string;
         if (userIdHeader) {
+          console.log("- Fallback user lookup for:", userIdHeader);
           try {
             const userData = await storage.getUserById(userIdHeader);
+            console.log("- Fallback user found:", userData ? 'yes' : 'no');
+            console.log("- User speakerId:", userData?.speakerId);
             if (userData?.speakerId) {
-              user = { speakerId: userData.speakerId };
+              user = { speakerId: userData.speakerId, id: userData.id };
             }
           } catch (error) {
             console.error('Fallback auth failed for access code creation:', error);
@@ -1292,7 +1300,11 @@ export function registerRoutes(app: Express): Express {
         }
       }
 
+      console.log("- Final user object:", user);
+      console.log("- User has speakerId:", !!user?.speakerId);
+
       if (!user || !user.speakerId) {
+        console.log("- Access code creation rejected: no authenticated user or speakerId");
         return res.status(401).json({ error: "Authentication required" });
       }
 
