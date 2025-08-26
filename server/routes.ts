@@ -1040,7 +1040,11 @@ export function registerRoutes(app: Express): Express {
       
       // Check if file exists
       if (!fs.existsSync(filePath)) {
-        return res.status(404).json({ error: "File not found on server" });
+        console.error(`File not found: ${filePath}`);
+        return res.status(404).json({ 
+          error: "File not found on server",
+          details: "The requested file may have been moved or deleted. Please contact the speaker to re-upload the content."
+        });
       }
 
       // Set appropriate headers for file download
