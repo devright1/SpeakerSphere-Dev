@@ -848,10 +848,20 @@ export default function SpeakerProfile() {
                                       
                                       tracking.trackInteraction('resource_download', content.originalName);
                                       
-                                      // Use fetch with auth token for download
-                                      const token = localStorage.getItem('userToken');
-                                      if (!token) {
-                                        window.location.href = '/login';
+                                      // Use fetch with user ID for download
+                                      const userData = localStorage.getItem('userData');
+                                      if (!userData) {
+                                        window.location.href = '/auth';
+                                        return;
+                                      }
+                                      
+                                      let userId;
+                                      try {
+                                        const user = JSON.parse(userData);
+                                        userId = user.id;
+                                      } catch (error) {
+                                        console.error('Error parsing user data:', error);
+                                        window.location.href = '/auth';
                                         return;
                                       }
                                       
@@ -859,7 +869,7 @@ export default function SpeakerProfile() {
                                         const response = await fetch(`/api/content/${content.id}/download`, {
                                           method: 'GET',
                                           headers: {
-                                            'Authorization': `Bearer ${token}`
+                                            'X-User-ID': userId
                                           }
                                         });
                                         
@@ -876,7 +886,7 @@ export default function SpeakerProfile() {
                                           window.URL.revokeObjectURL(url);
                                         } else {
                                           if (response.status === 401) {
-                                            window.location.href = '/login';
+                                            window.location.href = '/auth';
                                           } else {
                                             console.error('Download failed:', response.statusText);
                                           }
