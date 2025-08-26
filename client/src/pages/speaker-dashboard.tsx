@@ -59,6 +59,50 @@ export default function SpeakerDashboard() {
     maxUses: ''
   });
 
+  // Download handler that properly handles errors
+  const handleDownload = async (contentId: number, originalName: string) => {
+    try {
+      const response = await fetch(`/api/content/${contentId}/download`, {
+        headers: {
+          'X-User-ID': localStorage.getItem('userId') || ''
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast({
+          title: "Download Failed",
+          description: errorData.details || errorData.error || "Failed to download file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create download blob and trigger download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = originalName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Started",
+        description: `"${originalName}" is now downloading`,
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Error",
+        description: "An unexpected error occurred while downloading the file",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Get user data from localStorage
   const getUserData = () => {
     try {
@@ -1000,7 +1044,8 @@ export default function SpeakerDashboard() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => window.open(`/api/content/${content.id}/download`, '_blank')}
+                                onClick={() => handleDownload(content.id, content.originalName)}
+                                title="Download File"
                               >
                                 <Download className="h-4 w-4" />
                               </Button>

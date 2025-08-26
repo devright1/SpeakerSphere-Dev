@@ -1041,9 +1041,17 @@ export function registerRoutes(app: Express): Express {
       // Check if file exists
       if (!fs.existsSync(filePath)) {
         console.error(`File not found: ${filePath}`);
+        console.error(`Expected file size: ${content.fileSize} bytes`);
+        console.error(`Database record exists but file is missing from server storage`);
+        
         return res.status(404).json({ 
-          error: "File not found on server",
-          details: "The requested file may have been moved or deleted. Please contact the speaker to re-upload the content."
+          error: "Content temporarily unavailable",
+          details: "This file needs to be re-uploaded. Please contact the speaker or administrator.",
+          fileInfo: {
+            originalName: content.originalName,
+            expectedSize: content.fileSize,
+            uploadDate: content.createdAt
+          }
         });
       }
 
