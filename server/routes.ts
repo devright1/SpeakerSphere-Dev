@@ -11,6 +11,8 @@ import multer from "multer";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import path from "path";
+import fs from "fs";
 
 // Types for user authentication
 interface AuthenticatedRequest extends Request {
@@ -1021,8 +1023,6 @@ export function registerRoutes(app: Express): Express {
       await storage.incrementContentDownloadCount(contentId);
 
       // Serve the actual file
-      const path = require('path');
-      const fs = require('fs');
       
       // The uploadPath should be relative to the project root
       const filePath = path.join(process.cwd(), content.uploadPath);
