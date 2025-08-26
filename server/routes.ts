@@ -964,29 +964,181 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
-  // Download content
-  app.get("/api/content/:contentId/download", async (req, res) => {
+  // Download content with access control and tracking
+  app.post("/api/content/:contentId/download", async (req: AuthenticatedRequest, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
-      const content = await storage.getSpeakerContentById(contentId);
+      const { accessCode } = req.body;
+      const user = req.user;
       
+      // Require authentication for download tracking
+      if (!user) {
+        return res.status(401).json({ error: "Authentication required for content access" });
+      }
+
+      const content = await storage.getSpeakerContentById(contentId);
       if (!content) {
         return res.status(404).json({ error: "Content not found" });
+      }
+
+      // Check if content requires access code
+      if (content.requiresAccessCode && !accessCode) {
+        return res.status(403).json({ error: "Access code required for this content" });
+      }
+
+      let validatedAccessCode = null;
+      if (content.requiresAccessCode && accessCode) {
+        validatedAccessCode = await storage.validateAccessCode(contentId, accessCode);
+        if (!validatedAccessCode) {
+          return res.status(403).json({ error: "Invalid or expired access code" });
+        }
+      }
+
+      // Check if content is public or user has access
+      if (!content.isPublic && !validatedAccessCode) {
+        return res.status(403).json({ error: "Access denied to private content" });
+      }
+
+      // Track the download with user details
+      await storage.createContentDownload({
+        contentId,
+        userId: user.id,
+        accessCodeId: validatedAccessCode?.id || null,
+        userEmail: user.email,
+        userName: `${user.firstName} ${user.lastName}`,
+        userCompany: null, // Could be added to user schema later
+        ipAddress: req.ip || null,
+        userAgent: req.get('User-Agent') || null
+      });
+
+      // Update access code usage if used
+      if (validatedAccessCode) {
+        await storage.updateAccessCodeUsage(validatedAccessCode.id);
       }
 
       // Increment download count
       await storage.incrementContentDownloadCount(contentId);
 
-      // For now, just return the content info
-      // In a real implementation, you would serve the actual file
+      // Return download info (in real implementation, serve the actual file)
       res.json({ 
-        message: "Download would start here",
+        success: true,
         fileName: content.originalName,
-        downloadPath: content.uploadPath
+        downloadPath: content.uploadPath,
+        message: "Download tracked successfully"
       });
     } catch (error) {
       console.error("Download content error:", error);
       res.status(500).json({ error: "Failed to download content" });
+    }
+  });
+
+  // Create access code for content
+  app.post("/api/content/:contentId/access-codes", async (req: AuthenticatedRequest, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const { accessCode, description, expiresAt, maxUses } = req.body;
+      const user = req.user;
+
+      if (!user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const content = await storage.getSpeakerContentById(contentId);
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+
+      // Check if user owns this content
+      if (user.speakerId !== content.speakerId) {
+        return res.status(403).json({ error: "Not authorized to manage access codes for this content" });
+      }
+
+      const newAccessCode = await storage.createContentAccessCode({
+        contentId,
+        accessCode: accessCode.toUpperCase(), // Store as uppercase for consistency
+        description,
+        isActive: true,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        maxUses: maxUses || null
+      });
+
+      res.status(201).json(newAccessCode);
+    } catch (error) {
+      console.error("Create access code error:", error);
+      res.status(500).json({ error: "Failed to create access code" });
+    }
+  });
+
+  // Get access codes for content
+  app.get("/api/content/:contentId/access-codes", async (req: AuthenticatedRequest, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const user = req.user;
+
+      if (!user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const content = await storage.getSpeakerContentById(contentId);
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+
+      // Check if user owns this content
+      if (user.speakerId !== content.speakerId) {
+        return res.status(403).json({ error: "Not authorized to view access codes for this content" });
+      }
+
+      const accessCodes = await storage.getContentAccessCodes(contentId);
+      res.json(accessCodes);
+    } catch (error) {
+      console.error("Get access codes error:", error);
+      res.status(500).json({ error: "Failed to get access codes" });
+    }
+  });
+
+  // Get download analytics for speaker content
+  app.get("/api/speakers/:speakerId/downloads", async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const user = req.user;
+
+      if (!user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Check if user owns this speaker profile
+      if (user.speakerId !== speakerId) {
+        return res.status(403).json({ error: "Not authorized to view download analytics" });
+      }
+
+      const downloads = await storage.getSpeakerContentDownloads(speakerId);
+      res.json(downloads);
+    } catch (error) {
+      console.error("Get speaker downloads error:", error);
+      res.status(500).json({ error: "Failed to get download analytics" });
+    }
+  });
+
+  // Validate access code endpoint (for frontend validation)
+  app.post("/api/content/:contentId/validate-access-code", async (req, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const { accessCode } = req.body;
+
+      if (!accessCode) {
+        return res.status(400).json({ error: "Access code is required" });
+      }
+
+      const validatedCode = await storage.validateAccessCode(contentId, accessCode);
+      if (validatedCode) {
+        res.json({ valid: true, description: validatedCode.description });
+      } else {
+        res.json({ valid: false, error: "Invalid or expired access code" });
+      }
+    } catch (error) {
+      console.error("Validate access code error:", error);
+      res.status(500).json({ error: "Failed to validate access code" });
     }
   });
 

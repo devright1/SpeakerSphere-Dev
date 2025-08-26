@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 // import { useAuth } from "@/providers/AuthProvider";
@@ -50,6 +51,13 @@ export default function SpeakerDashboard() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
+  const [selectedContentForAccessCodes, setSelectedContentForAccessCodes] = useState<any>(null);
+  const [newAccessCode, setNewAccessCode] = useState({
+    code: '',
+    description: '',
+    expiresAt: '',
+    maxUses: ''
+  });
 
   // Get user data from localStorage
   const getUserData = () => {
@@ -101,6 +109,28 @@ export default function SpeakerDashboard() {
     queryFn: async () => {
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/content/all`);
       if (!response.ok) throw new Error('Failed to fetch speaker content');
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id,
+  });
+
+  // Fetch access codes for selected content
+  const { data: accessCodes, refetch: refetchAccessCodes } = useQuery({
+    queryKey: ['/api/content/access-codes', selectedContentForAccessCodes?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/content/${selectedContentForAccessCodes?.id}/access-codes`);
+      if (!response.ok) throw new Error('Failed to fetch access codes');
+      return response.json();
+    },
+    enabled: !!selectedContentForAccessCodes?.id,
+  });
+
+  // Fetch download analytics
+  const { data: downloadAnalytics } = useQuery({
+    queryKey: ['/api/speakers/downloads', speakerProfile?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/downloads`);
+      if (!response.ok) throw new Error('Failed to fetch download analytics');
       return response.json();
     },
     enabled: !!speakerProfile?.id,
@@ -214,6 +244,36 @@ export default function SpeakerDashboard() {
       toast({
         title: "Update Failed",
         description: "Failed to update content visibility. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create access code mutation
+  const createAccessCodeMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch(`/api/content/${selectedContentForAccessCodes?.id}/access-codes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to create access code');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchAccessCodes();
+      setNewAccessCode({ code: '', description: '', expiresAt: '', maxUses: '' });
+      toast({
+        title: "Access Code Created",
+        description: "New access code has been created successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Creation Failed",
+        description: "Failed to create access code. Please try again.",
         variant: "destructive",
       });
     },
@@ -904,6 +964,13 @@ export default function SpeakerDashboard() {
                                       </Badge>
                                     )}
                                   </span>
+                                  {content.requiresAccessCode && (
+                                    <span>
+                                      <Badge variant="outline" className="text-blue-600 border-blue-600">
+                                        Access Code Required
+                                      </Badge>
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -920,6 +987,15 @@ export default function SpeakerDashboard() {
                                 title={content.isPublic ? "Make Private" : "Make Public"}
                               >
                                 {content.isPublic ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedContentForAccessCodes(content)}
+                                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                title="Manage Access Codes"
+                              >
+                                <Zap className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="outline"
@@ -1168,6 +1244,161 @@ export default function SpeakerDashboard() {
 
         </Tabs>
       </div>
+
+      {/* Access Code Management Modal */}
+      <Dialog open={!!selectedContentForAccessCodes} onOpenChange={(open) => !open && setSelectedContentForAccessCodes(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Access Codes</DialogTitle>
+            <DialogDescription>
+              Create and manage access codes for "{selectedContentForAccessCodes?.originalName}"
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Create New Access Code */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Create New Access Code</CardTitle>
+                <CardDescription>
+                  Generate a 4-letter code that users can use to access this content
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="accessCode">4-Letter Code</Label>
+                    <Input
+                      id="accessCode"
+                      placeholder="e.g., ABCD"
+                      value={newAccessCode.code}
+                      onChange={(e) => setNewAccessCode({...newAccessCode, code: e.target.value.toUpperCase().slice(0, 4)})}
+                      maxLength={4}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="description">Description (Optional)</Label>
+                    <Input
+                      id="description"
+                      placeholder="e.g., For lecture attendees"
+                      value={newAccessCode.description}
+                      onChange={(e) => setNewAccessCode({...newAccessCode, description: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="expiresAt">Expires At (Optional)</Label>
+                    <Input
+                      id="expiresAt"
+                      type="datetime-local"
+                      value={newAccessCode.expiresAt}
+                      onChange={(e) => setNewAccessCode({...newAccessCode, expiresAt: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maxUses">Max Uses (Optional)</Label>
+                    <Input
+                      id="maxUses"
+                      type="number"
+                      placeholder="Leave empty for unlimited"
+                      value={newAccessCode.maxUses}
+                      onChange={(e) => setNewAccessCode({...newAccessCode, maxUses: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => createAccessCodeMutation.mutate({
+                    accessCode: newAccessCode.code,
+                    description: newAccessCode.description,
+                    expiresAt: newAccessCode.expiresAt || null,
+                    maxUses: newAccessCode.maxUses ? parseInt(newAccessCode.maxUses) : null
+                  })}
+                  disabled={!newAccessCode.code || createAccessCodeMutation.isPending}
+                  className="w-full"
+                >
+                  {createAccessCodeMutation.isPending ? "Creating..." : "Create Access Code"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Existing Access Codes */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Existing Access Codes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {accessCodes && accessCodes.length > 0 ? (
+                  <div className="space-y-3">
+                    {accessCodes.map((code: any) => (
+                      <div key={code.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-4">
+                            <Badge variant="outline" className="text-lg font-mono">
+                              {code.accessCode}
+                            </Badge>
+                            <div>
+                              <p className="font-medium">{code.description || "No description"}</p>
+                              <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                <span>Uses: {code.currentUses || 0}{code.maxUses ? `/${code.maxUses}` : ''}</span>
+                                {code.expiresAt && (
+                                  <span>Expires: {new Date(code.expiresAt).toLocaleDateString()}</span>
+                                )}
+                                <span className={code.isActive ? "text-green-600" : "text-red-600"}>
+                                  {code.isActive ? "Active" : "Inactive"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button variant="outline" size="sm">
+                            Edit
+                          </Button>
+                          <Button variant="outline" size="sm" className="text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No access codes created yet
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Download Analytics for this Content */}
+            {downloadAnalytics && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Download Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {downloadAnalytics
+                      .filter((download: any) => download.contentId === selectedContentForAccessCodes?.id)
+                      .map((download: any) => (
+                        <div key={download.id} className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <p className="font-medium">{download.userName}</p>
+                            <p className="text-sm text-gray-500">{download.userEmail}</p>
+                          </div>
+                          <div className="text-right text-sm text-gray-500">
+                            <p>{new Date(download.downloadedAt).toLocaleDateString()}</p>
+                            {download.accessCodeId && <p>Used access code</p>}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

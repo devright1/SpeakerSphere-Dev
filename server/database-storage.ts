@@ -11,6 +11,8 @@ import {
   speakerApplications,
   speakerInteractions,
   speakerContent,
+  contentAccessCodes,
+  contentDownloads,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -34,7 +36,11 @@ import {
   type SpeakerInteraction,
   type InsertSpeakerInteraction,
   type SpeakerContent,
-  type InsertSpeakerContent
+  type InsertSpeakerContent,
+  type ContentAccessCode,
+  type InsertContentAccessCode,
+  type ContentDownload,
+  type InsertContentDownload
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql, isNotNull } from "drizzle-orm";
@@ -873,5 +879,112 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date() 
       })
       .where(eq(speakerContent.id, contentId));
+  }
+
+  // Content Access Code Management
+  async createContentAccessCode(accessCode: InsertContentAccessCode): Promise<ContentAccessCode> {
+    const result = await db
+      .insert(contentAccessCodes)
+      .values(accessCode)
+      .returning();
+    return result[0];
+  }
+
+  async getContentAccessCodes(contentId: number): Promise<ContentAccessCode[]> {
+    return await db
+      .select()
+      .from(contentAccessCodes)
+      .where(eq(contentAccessCodes.contentId, contentId))
+      .orderBy(desc(contentAccessCodes.createdAt));
+  }
+
+  async validateAccessCode(contentId: number, code: string): Promise<ContentAccessCode | undefined> {
+    const result = await db
+      .select()
+      .from(contentAccessCodes)
+      .where(
+        and(
+          eq(contentAccessCodes.contentId, contentId),
+          eq(contentAccessCodes.accessCode, code),
+          eq(contentAccessCodes.isActive, true)
+        )
+      );
+    
+    const accessCode = result[0];
+    if (!accessCode) return undefined;
+    
+    // Check expiration
+    if (accessCode.expiresAt && accessCode.expiresAt < new Date()) {
+      return undefined;
+    }
+    
+    // Check usage limit
+    if (accessCode.maxUses && accessCode.currentUses && accessCode.currentUses >= accessCode.maxUses) {
+      return undefined;
+    }
+    
+    return accessCode;
+  }
+
+  async updateAccessCodeUsage(accessCodeId: number): Promise<void> {
+    await db
+      .update(contentAccessCodes)
+      .set({ 
+        currentUses: sql`${contentAccessCodes.currentUses} + 1`,
+        updatedAt: new Date() 
+      })
+      .where(eq(contentAccessCodes.id, accessCodeId));
+  }
+
+  async deleteContentAccessCode(accessCodeId: number): Promise<boolean> {
+    const result = await db
+      .delete(contentAccessCodes)
+      .where(eq(contentAccessCodes.id, accessCodeId));
+    return result.rowCount > 0;
+  }
+
+  // Content Download Tracking
+  async createContentDownload(download: InsertContentDownload): Promise<ContentDownload> {
+    const result = await db
+      .insert(contentDownloads)
+      .values(download)
+      .returning();
+    return result[0];
+  }
+
+  async getContentDownloads(contentId: number): Promise<ContentDownload[]> {
+    return await db
+      .select()
+      .from(contentDownloads)
+      .where(eq(contentDownloads.contentId, contentId))
+      .orderBy(desc(contentDownloads.downloadedAt));
+  }
+
+  async getSpeakerContentDownloads(speakerId: number): Promise<ContentDownload[]> {
+    return await db
+      .select({
+        id: contentDownloads.id,
+        contentId: contentDownloads.contentId,
+        userId: contentDownloads.userId,
+        accessCodeId: contentDownloads.accessCodeId,
+        userEmail: contentDownloads.userEmail,
+        userName: contentDownloads.userName,
+        userCompany: contentDownloads.userCompany,
+        downloadedAt: contentDownloads.downloadedAt,
+        ipAddress: contentDownloads.ipAddress,
+        userAgent: contentDownloads.userAgent,
+      })
+      .from(contentDownloads)
+      .innerJoin(speakerContent, eq(contentDownloads.contentId, speakerContent.id))
+      .where(eq(speakerContent.speakerId, speakerId))
+      .orderBy(desc(contentDownloads.downloadedAt));
+  }
+
+  async getUserContentDownloads(userId: string): Promise<ContentDownload[]> {
+    return await db
+      .select()
+      .from(contentDownloads)
+      .where(eq(contentDownloads.userId, userId))
+      .orderBy(desc(contentDownloads.downloadedAt));
   }
 }

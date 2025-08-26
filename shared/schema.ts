@@ -396,8 +396,7 @@ export type UserBookmark = typeof userBookmarks.$inferSelect;
 export type InsertUserBookmark = typeof userBookmarks.$inferInsert;
 export type SpeakerInteraction = typeof speakerInteractions.$inferSelect;
 export type InsertSpeakerInteraction = typeof speakerInteractions.$inferInsert;
-export type SpeakerContent = typeof speakerContent.$inferSelect;
-export type InsertSpeakerContent = typeof speakerContent.$inferInsert;
+
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
 export type SubscriptionHistory = typeof subscriptionHistory.$inferSelect;
@@ -414,11 +413,40 @@ export const speakerContent = pgTable("speaker_content", {
   category: text("category").notNull(), // "document", "image", "video", "audio", "presentation"
   description: text("description"),
   isPublic: boolean("is_public").default(false), // Whether file is public or private
+  requiresAccessCode: boolean("requires_access_code").default(false), // Whether file requires 4-letter code
   downloadCount: integer("download_count").default(0),
   uploadPath: text("upload_path").notNull(), // Path to file in storage
   thumbnailPath: text("thumbnail_path"), // Path to thumbnail for images/videos
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Content access codes for protected content
+export const contentAccessCodes = pgTable("content_access_codes", {
+  id: serial("id").primaryKey(),
+  contentId: integer("content_id").notNull(),
+  accessCode: varchar("access_code", { length: 4 }).notNull(), // 4-letter code
+  description: text("description"), // Optional description for speaker reference
+  isActive: boolean("is_active").default(true), // Can be deactivated
+  expiresAt: timestamp("expires_at"), // Optional expiration date
+  maxUses: integer("max_uses"), // Optional usage limit
+  currentUses: integer("current_uses").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Track individual content downloads with user details
+export const contentDownloads = pgTable("content_downloads", {
+  id: serial("id").primaryKey(),
+  contentId: integer("content_id").notNull(),
+  userId: text("user_id").notNull(), // Required - must be signed in
+  accessCodeId: integer("access_code_id"), // Which access code was used (if any)
+  userEmail: text("user_email").notNull(), // Store email for speaker tracking
+  userName: text("user_name").notNull(), // Store name for speaker tracking
+  userCompany: text("user_company"), // Optional company info
+  downloadedAt: timestamp("downloaded_at").defaultNow(),
+  ipAddress: text("ip_address"), // For security tracking
+  userAgent: text("user_agent"), // Browser/device info
 });
 
 // Enhanced reviews - add userId field for registered user reviews
@@ -440,6 +468,18 @@ export const insertSpeakerContentSchema = createInsertSchema(speakerContent).omi
   downloadCount: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertContentAccessCodeSchema = createInsertSchema(contentAccessCodes).omit({
+  id: true,
+  currentUses: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertContentDownloadSchema = createInsertSchema(contentDownloads).omit({
+  id: true,
+  downloadedAt: true,
 });
 
 export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
@@ -491,3 +531,11 @@ export type ClickEvent = typeof clickEvents.$inferSelect;
 export type InsertClickEvent = z.infer<typeof insertClickEventSchema>;
 export type DemandMetrics = typeof demandMetrics.$inferSelect;
 export type InsertDemandMetrics = z.infer<typeof insertDemandMetricsSchema>;
+
+// Content access and download tracking types
+export type SpeakerContent = typeof speakerContent.$inferSelect;
+export type InsertSpeakerContent = z.infer<typeof insertSpeakerContentSchema>;
+export type ContentAccessCode = typeof contentAccessCodes.$inferSelect;
+export type InsertContentAccessCode = z.infer<typeof insertContentAccessCodeSchema>;
+export type ContentDownload = typeof contentDownloads.$inferSelect;
+export type InsertContentDownload = z.infer<typeof insertContentDownloadSchema>;

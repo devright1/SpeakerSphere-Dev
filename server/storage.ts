@@ -11,6 +11,8 @@ import {
   speakerApplications,
   speakerInteractions,
   speakerContent,
+  contentAccessCodes,
+  contentDownloads,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -34,7 +36,11 @@ import {
   type SpeakerInteraction,
   type InsertSpeakerInteraction,
   type SpeakerContent,
-  type InsertSpeakerContent
+  type InsertSpeakerContent,
+  type ContentAccessCode,
+  type InsertContentAccessCode,
+  type ContentDownload,
+  type InsertContentDownload
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -141,6 +147,19 @@ export interface IStorage {
   updateSpeakerContent(contentId: number, updates: Partial<SpeakerContent>): Promise<SpeakerContent | undefined>;
   deleteSpeakerContent(contentId: number): Promise<boolean>;
   incrementContentDownloadCount(contentId: number): Promise<void>;
+
+  // Content Access Code Management
+  createContentAccessCode(accessCode: InsertContentAccessCode): Promise<ContentAccessCode>;
+  getContentAccessCodes(contentId: number): Promise<ContentAccessCode[]>;
+  validateAccessCode(contentId: number, code: string): Promise<ContentAccessCode | undefined>;
+  updateAccessCodeUsage(accessCodeId: number): Promise<void>;
+  deleteContentAccessCode(accessCodeId: number): Promise<boolean>;
+
+  // Content Download Tracking
+  createContentDownload(download: InsertContentDownload): Promise<ContentDownload>;
+  getContentDownloads(contentId: number): Promise<ContentDownload[]>;
+  getSpeakerContentDownloads(speakerId: number): Promise<ContentDownload[]>;
+  getUserContentDownloads(userId: string): Promise<ContentDownload[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -155,6 +174,8 @@ export class MemStorage implements IStorage {
   private userBookmarks: Map<number, UserBookmark>;
   private speakerApplications: Map<number, SpeakerApplication>;
   private speakerContentMap: Map<number, SpeakerContent>;
+  private contentAccessCodes: Map<number, ContentAccessCode>;
+  private contentDownloads: Map<number, ContentDownload>;
   private currentSpeakerId: number;
   private currentReviewId: number;
   private currentInquiryId: number;
@@ -164,6 +185,8 @@ export class MemStorage implements IStorage {
   private currentBookmarkId: number;
   private currentApplicationId: number;
   private currentContentId: number;
+  private currentAccessCodeId: number;
+  private currentDownloadId: number;
 
   constructor() {
     this.speakers = new Map();
@@ -177,6 +200,8 @@ export class MemStorage implements IStorage {
     this.userBookmarks = new Map();
     this.speakerApplications = new Map();
     this.speakerContentMap = new Map();
+    this.contentAccessCodes = new Map();
+    this.contentDownloads = new Map();
     this.currentSpeakerId = 1;
     this.currentReviewId = 1;
     this.currentInquiryId = 1;
@@ -186,6 +211,8 @@ export class MemStorage implements IStorage {
     this.currentBookmarkId = 1;
     this.currentApplicationId = 1;
     this.currentContentId = 1;
+    this.currentAccessCodeId = 1;
+    this.currentDownloadId = 1;
     
     this.seedData();
     this.seedVideoData();
@@ -980,6 +1007,90 @@ export class MemStorage implements IStorage {
       content.updatedAt = new Date();
       this.speakerContentMap.set(contentId, content);
     }
+  }
+
+  // Content Access Code Management
+  async createContentAccessCode(accessCode: InsertContentAccessCode): Promise<ContentAccessCode> {
+    const newAccessCode = {
+      id: this.currentAccessCodeId++,
+      ...accessCode,
+      currentUses: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.contentAccessCodes.set(newAccessCode.id, newAccessCode);
+    return newAccessCode;
+  }
+
+  async getContentAccessCodes(contentId: number): Promise<ContentAccessCode[]> {
+    return Array.from(this.contentAccessCodes.values())
+      .filter(code => code.contentId === contentId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async validateAccessCode(contentId: number, code: string): Promise<ContentAccessCode | undefined> {
+    const accessCode = Array.from(this.contentAccessCodes.values())
+      .find(ac => ac.contentId === contentId && ac.accessCode === code && ac.isActive);
+    
+    if (!accessCode) return undefined;
+    
+    // Check expiration
+    if (accessCode.expiresAt && accessCode.expiresAt < new Date()) {
+      return undefined;
+    }
+    
+    // Check usage limit
+    if (accessCode.maxUses && accessCode.currentUses >= accessCode.maxUses) {
+      return undefined;
+    }
+    
+    return accessCode;
+  }
+
+  async updateAccessCodeUsage(accessCodeId: number): Promise<void> {
+    const accessCode = this.contentAccessCodes.get(accessCodeId);
+    if (accessCode) {
+      accessCode.currentUses = (accessCode.currentUses || 0) + 1;
+      accessCode.updatedAt = new Date();
+      this.contentAccessCodes.set(accessCodeId, accessCode);
+    }
+  }
+
+  async deleteContentAccessCode(accessCodeId: number): Promise<boolean> {
+    return this.contentAccessCodes.delete(accessCodeId);
+  }
+
+  // Content Download Tracking
+  async createContentDownload(download: InsertContentDownload): Promise<ContentDownload> {
+    const newDownload = {
+      id: this.currentDownloadId++,
+      ...download,
+      downloadedAt: new Date(),
+    };
+    this.contentDownloads.set(newDownload.id, newDownload);
+    return newDownload;
+  }
+
+  async getContentDownloads(contentId: number): Promise<ContentDownload[]> {
+    return Array.from(this.contentDownloads.values())
+      .filter(download => download.contentId === contentId)
+      .sort((a, b) => b.downloadedAt.getTime() - a.downloadedAt.getTime());
+  }
+
+  async getSpeakerContentDownloads(speakerId: number): Promise<ContentDownload[]> {
+    const speakerContent = Array.from(this.speakerContentMap.values())
+      .filter(content => content.speakerId === speakerId)
+      .map(content => content.id);
+    
+    return Array.from(this.contentDownloads.values())
+      .filter(download => speakerContent.includes(download.contentId))
+      .sort((a, b) => b.downloadedAt.getTime() - a.downloadedAt.getTime());
+  }
+
+  async getUserContentDownloads(userId: string): Promise<ContentDownload[]> {
+    return Array.from(this.contentDownloads.values())
+      .filter(download => download.userId === userId)
+      .sort((a, b) => b.downloadedAt.getTime() - a.downloadedAt.getTime());
   }
 }
 
