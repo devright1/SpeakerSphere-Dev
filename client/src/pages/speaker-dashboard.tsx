@@ -733,23 +733,6 @@ export default function SpeakerDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('videoUpload')?.click()}>
-                  <CardContent className="p-6 text-center">
-                    <Video className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Videos</h3>
-                    <p className="text-sm text-gray-600">Presentations, demos, tutorials</p>
-                    <input
-                      type="file"
-                      id="videoUpload"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      accept=".mp4,.mov,.avi"
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('documentUpload')?.click()}>
                   <CardContent className="p-6 text-center">
                     <FileText className="h-12 w-12 text-orange-500 mx-auto mb-4" />
@@ -761,21 +744,6 @@ export default function SpeakerDashboard() {
                       className="hidden"
                       onChange={handleFileUpload}
                       accept=".doc,.docx,.ppt,.pptx"
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('audioUpload')?.click()}>
-                  <CardContent className="p-6 text-center">
-                    <Music className="h-12 w-12 text-purple-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Audio</h3>
-                    <p className="text-sm text-gray-600">Recordings, podcasts, lectures</p>
-                    <input
-                      type="file"
-                      id="audioUpload"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      accept=".mp3,.wav,.m4a"
                     />
                   </CardContent>
                 </Card>
