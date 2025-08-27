@@ -40,6 +40,16 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
     refetchOnWindowFocus: false,
   });
 
+  // Fetch speaker topics
+  const { data: speakerTopics, isLoading: topicsLoading } = useQuery({
+    queryKey: ["/api/speakers", speaker.id, "topics"],
+    queryFn: async () => {
+      const response = await fetch(`/api/speakers/${speaker.id}/topics`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+  });
+
   // Toggle bookmark mutation
   const toggleBookmarkMutation = useMutation({
     mutationFn: async () => {
@@ -186,14 +196,27 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
 
             <div className="mb-4">
               <div className="flex flex-wrap gap-1 mb-2">
-                {speaker.expertise.slice(0, featured ? 2 : 3).map((skill, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {skill}
-                  </Badge>
-                ))}
-                {speaker.expertise.length > (featured ? 2 : 3) && (
-                  <Badge variant="secondary" className="text-xs">
-                    +{speaker.expertise.length - (featured ? 2 : 3)} more
+                {topicsLoading ? (
+                  <div className="flex items-center space-x-1">
+                    <div className="animate-pulse bg-gray-200 h-5 w-16 rounded"></div>
+                    <div className="animate-pulse bg-gray-200 h-5 w-20 rounded"></div>
+                  </div>
+                ) : speakerTopics && speakerTopics.length > 0 ? (
+                  <>
+                    {speakerTopics.slice(0, featured ? 2 : 3).map((topic: any) => (
+                      <Badge key={topic.id} variant="secondary" className="text-xs">
+                        {topic.name}
+                      </Badge>
+                    ))}
+                    {speakerTopics.length > (featured ? 2 : 3) && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{speakerTopics.length - (featured ? 2 : 3)} more
+                      </Badge>
+                    )}
+                  </>
+                ) : (
+                  <Badge variant="outline" className="text-xs text-muted-foreground">
+                    No topics available
                   </Badge>
                 )}
               </div>
