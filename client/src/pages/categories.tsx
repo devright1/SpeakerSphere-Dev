@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FolderOpen, Users, ArrowRight, Search, Filter } from "lucide-react";
+import { FolderOpen, Users, ArrowRight, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface SpeakingTopic {
   id: number;
@@ -24,6 +24,8 @@ interface SpeakingTopic {
 export default function Categories() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("speakerCount");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
   
   const { data: topics = [], isLoading: topicsLoading } = useQuery<SpeakingTopic[]>({
     queryKey: ["/api/topics"],
@@ -45,6 +47,23 @@ export default function Categories() {
           return 0;
       }
     });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAndSortedTopics.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedTopics = filteredAndSortedTopics.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search term changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    setCurrentPage(1);
+  };
 
   if (topicsLoading) {
     return (
@@ -86,11 +105,11 @@ export default function Categories() {
                 <Input
                   placeholder="Search topics..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-10"
                 />
               </div>
-              <Select value={sortBy} onValueChange={setSortBy}>
+              <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger className="w-full md:w-48">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Sort by" />
@@ -111,13 +130,13 @@ export default function Categories() {
           {/* Results Summary */}
           <div className="mb-6">
             <p className="text-muted-foreground">
-              Showing {filteredAndSortedTopics.length} of {topics.length} topics
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedTopics.length)} of {filteredAndSortedTopics.length} topics
               {searchTerm && ` matching "${searchTerm}"`}
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAndSortedTopics.map((topic) => (
+            {paginatedTopics.map((topic) => (
               <Card key={topic.id} className="group hover:shadow-lg transition-shadow duration-300">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
@@ -155,6 +174,72 @@ export default function Categories() {
               </Card>
             ))}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && filteredAndSortedTopics.length > 0 && (
+            <div className="mt-8 flex justify-center items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              
+              <div className="flex space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNumber;
+                  if (totalPages <= 5) {
+                    pageNumber = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNumber = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNumber = totalPages - 4 + i;
+                  } else {
+                    pageNumber = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNumber}
+                      variant={currentPage === pageNumber ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className="w-10"
+                    >
+                      {pageNumber}
+                    </Button>
+                  );
+                })}
+                
+                {totalPages > 5 && currentPage < totalPages - 2 && (
+                  <>
+                    <span className="px-2 py-1 text-muted-foreground">...</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="w-10"
+                    >
+                      {totalPages}
+                    </Button>
+                  </>
+                )}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
           {filteredAndSortedTopics.length === 0 && (
             <div className="text-center py-16">
