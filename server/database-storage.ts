@@ -57,6 +57,7 @@ export class DatabaseStorage implements IStorage {
   async getSpeakers(filters?: {
     category?: string;
     categories?: string[];
+    topics?: string[]; // New topic filtering
     location?: string;
     minRating?: number;
     maxFee?: number;
@@ -81,6 +82,25 @@ export class DatabaseStorage implements IStorage {
     } else if (filters?.category) {
       // Single category (backward compatibility)
       conditions.push(eq(speakers.category, filters.category));
+    }
+
+    // Handle topic filtering using speaker_topics junction table
+    if (filters?.topics && filters.topics.length > 0) {
+      // Get speaker IDs that are associated with any of the selected topics
+      const topicSpeakers = await db
+        .select({ speakerId: speakerTopics.speakerId })
+        .from(speakerTopics)
+        .innerJoin(speakingTopics, eq(speakerTopics.topicId, speakingTopics.id))
+        .where(or(...filters.topics.map(topic => eq(speakingTopics.name, topic))));
+      
+      const speakerIds = topicSpeakers.map(s => s.speakerId);
+      
+      if (speakerIds.length > 0) {
+        conditions.push(or(...speakerIds.map(id => eq(speakers.id, id))));
+      } else {
+        // No speakers found for the selected topics, return empty result
+        return [];
+      }
     }
 
 

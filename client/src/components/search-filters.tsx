@@ -7,14 +7,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import type { Category } from "@shared/schema";
+import type { SpeakingTopic } from "@shared/schema";
 
 interface SearchFiltersProps {
   onFilterChange: (filters: any) => void;
 }
 
 export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState("");
 
   const [showFeeRange, setShowFeeRange] = useState(false);
@@ -24,30 +24,33 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
     setShowFeeRange(false);
   }, []);
 
-  const { data: categories } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
+  const { data: topics } = useQuery<SpeakingTopic[]>({
+    queryKey: ["/api/topics"],
     queryFn: async () => {
-      const response = await fetch("/api/categories");
-      if (!response.ok) throw new Error("Failed to fetch categories");
+      const response = await fetch("/api/topics");
+      if (!response.ok) throw new Error("Failed to fetch topics");
       return response.json();
     },
   });
 
-  const handleCategoryChange = (category: string, checked: boolean) => {
-    let newCategories;
+  // Sort topics by speaker count (descending) to show most popular first
+  const sortedTopics = topics?.slice().sort((a, b) => (b.speakerCount || 0) - (a.speakerCount || 0)) || [];
+
+  const handleTopicChange = (topic: string, checked: boolean) => {
+    let newTopics;
     if (checked) {
-      newCategories = [...selectedCategories, category];
+      newTopics = [...selectedTopics, topic];
     } else {
-      newCategories = selectedCategories.filter(c => c !== category);
+      newTopics = selectedTopics.filter(t => t !== topic);
     }
-    setSelectedCategories(newCategories);
+    setSelectedTopics(newTopics);
   };
 
   const applyFilters = () => {
     const filters: any = {};
     
-    if (selectedCategories.length > 0) {
-      filters.categories = selectedCategories; // Send all selected categories
+    if (selectedTopics.length > 0) {
+      filters.topics = selectedTopics; // Send all selected topics
     }
     
     if (priceRange) {
@@ -73,7 +76,7 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
   };
 
   const clearFilters = () => {
-    setSelectedCategories([]);
+    setSelectedTopics([]);
     setPriceRange("");
     onFilterChange({});
   };
@@ -93,24 +96,24 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
         <div>
           <h4 className="font-semibold text-gray-900 mb-3">Topics</h4>
           <div className="space-y-2">
-            {categories?.map((category) => (
-              <div key={category.id} className="flex items-center justify-between">
+            {sortedTopics?.map((topic) => (
+              <div key={topic.id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Checkbox
-                    id={`category-${category.id}`}
-                    checked={selectedCategories.includes(category.name)}
+                    id={`topic-${topic.id}`}
+                    checked={selectedTopics.includes(topic.name)}
                     onCheckedChange={(checked) => 
-                      handleCategoryChange(category.name, checked as boolean)
+                      handleTopicChange(topic.name, checked as boolean)
                     }
                   />
                   <Label 
-                    htmlFor={`category-${category.id}`}
+                    htmlFor={`topic-${topic.id}`}
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {category.name}
+                    {topic.name}
                   </Label>
                 </div>
-                <span className="text-gray-500 text-sm">({category.speakerCount})</span>
+                <span className="text-gray-500 text-sm">({topic.speakerCount})</span>
               </div>
             ))}
           </div>
