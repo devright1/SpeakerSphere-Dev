@@ -91,9 +91,9 @@ export default function Speakers() {
     return [...speakers].sort((a, b) => {
       switch (sortBy) {
         case "rating":
-          return parseFloat(b.rating || "0") - parseFloat(a.rating || "0");
+          return parseFloat(b.overallRating || "0") - parseFloat(a.overallRating || "0");
         case "reviews":
-          return b.reviewCount - a.reviewCount;
+          return (b.reviewCount || 0) - (a.reviewCount || 0);
         default:
           return 0;
       }

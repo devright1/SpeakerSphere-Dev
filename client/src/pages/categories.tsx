@@ -1,39 +1,46 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, Users, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FolderOpen, Users, ArrowRight, Search, Filter } from "lucide-react";
 
 interface Category {
   id: number;
   name: string;
   description: string;
-  speakerCount?: number;
-}
-
-interface Speaker {
-  id: number;
-  name: string;
-  category: string;
+  speaker_count: number;
 }
 
 export default function Categories() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("speaker_count");
+  
   const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
   });
 
-  const { data: speakers = [] } = useQuery<Speaker[]>({
-    queryKey: ["/api/speakers"],
-  });
-
-  // Calculate speaker count for each category
-  const categoriesWithCount = categories.map(category => ({
-    ...category,
-    speakerCount: speakers.filter(speaker => speaker.category === category.name).length
-  }));
+  // Filter and sort categories
+  const filteredAndSortedCategories = categories
+    .filter(category => 
+      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.description.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "speaker_count":
+          return b.speaker_count - a.speaker_count;
+        case "name":
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
+    });
 
   if (categoriesLoading) {
     return (
@@ -63,10 +70,33 @@ export default function Categories() {
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Speaker Categories
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-muted-foreground mb-8">
               Discover world-class speakers organized by expertise and specialty areas. 
               Find the perfect match for your event's needs.
             </p>
+            
+            {/* Search and Filter Controls */}
+            <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search categories..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full md:w-48">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="speaker_count">Most Speakers</SelectItem>
+                  <SelectItem value="name">Alphabetical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </section>
@@ -74,8 +104,16 @@ export default function Categories() {
       {/* Categories Grid */}
       <section className="py-16">
         <div className="container mx-auto px-4">
+          {/* Results Summary */}
+          <div className="mb-6">
+            <p className="text-muted-foreground">
+              Showing {filteredAndSortedCategories.length} of {categories.length} categories
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categoriesWithCount.map((category) => (
+            {filteredAndSortedCategories.map((category) => (
               <Card key={category.id} className="group hover:shadow-lg transition-shadow duration-300">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
@@ -89,7 +127,7 @@ export default function Categories() {
                       <div className="flex items-center space-x-2 mt-1">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <Badge variant="secondary" className="text-xs">
-                          {category.speakerCount} {category.speakerCount === 1 ? 'speaker' : 'speakers'}
+                          {category.speaker_count} {category.speaker_count === 1 ? 'speaker' : 'speakers'}
                         </Badge>
                       </div>
                     </div>
@@ -114,12 +152,17 @@ export default function Categories() {
             ))}
           </div>
 
-          {categoriesWithCount.length === 0 && (
+          {filteredAndSortedCategories.length === 0 && (
             <div className="text-center py-16">
               <FolderOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No Categories Found</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                {searchTerm ? "No Categories Found" : "No Categories Available"}
+              </h3>
               <p className="text-muted-foreground">
-                Categories are currently being updated. Please check back soon.
+                {searchTerm 
+                  ? `No categories match "${searchTerm}". Try a different search term.`
+                  : "Categories are currently being updated. Please check back soon."
+                }
               </p>
             </div>
           )}
