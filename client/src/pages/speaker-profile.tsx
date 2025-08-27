@@ -125,6 +125,18 @@ export default function SpeakerProfile() {
     enabled: Boolean(speaker?.id && speaker?.verified),
   });
 
+  // Fetch speaker topics
+  const { data: speakerTopics, isLoading: topicsLoading } = useQuery({
+    queryKey: ["/api/speakers", speaker?.id, "topics"],
+    queryFn: async () => {
+      if (!speaker?.id) return [];
+      const response = await fetch(`/api/speakers/${speaker.id}/topics`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!speaker?.id,
+  });
+
   // Initialize speaker tracking
   const tracking = useSpeakerTracking(speaker?.id || 0);
 
@@ -802,16 +814,26 @@ export default function SpeakerProfile() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Speaking Topics</CardTitle>
+                    <p className="text-muted-foreground">Areas of expertise and specialized knowledge</p>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {speaker.expertise?.map((topic: string, index: number) => (
-                        <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                          <h4 className="font-semibold text-gray-900 mb-2">{topic}</h4>
-                          <p className="text-gray-600 text-sm">Expert-level presentation on {topic.toLowerCase()}</p>
-                        </div>
-                      )) || []}
-                    </div>
+                    {topicsLoading ? (
+                      <div className="flex justify-center items-center py-8">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                        <span className="ml-2 text-muted-foreground">Loading topics...</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {speakerTopics?.map((topic: any) => (
+                          <Badge key={topic.id} variant="secondary" className="text-sm px-3 py-1">
+                            {topic.name}
+                          </Badge>
+                        )) || []}
+                        {(!speakerTopics || speakerTopics.length === 0) && (
+                          <p className="text-muted-foreground">No specific topics available for this speaker.</p>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
