@@ -460,6 +460,29 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Get all speaking topics
+  app.get("/api/topics", async (req, res) => {
+    try {
+      const topics = await storage.getSpeakingTopics();
+      res.json(topics);
+    } catch (error) {
+      console.error("Error fetching topics:", error);
+      res.status(500).json({ message: "Failed to fetch topics" });
+    }
+  });
+
+  // Get topics by speaker ID
+  app.get("/api/speakers/:id/topics", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      const topics = await storage.getSpeakerTopicsBySpeakerId(speakerId);
+      res.json(topics);
+    } catch (error) {
+      console.error("Error fetching speaker topics:", error);
+      res.status(500).json({ message: "Failed to fetch speaker topics" });
+    }
+  });
+
   // Submit inquiry
   app.post("/api/inquiries", async (req, res) => {
     try {

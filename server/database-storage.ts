@@ -3,6 +3,8 @@ import {
   reviews, 
   inquiries, 
   categories,
+  speakingTopics,
+  speakerTopics,
   videos,
   users,
   userSessions,
@@ -21,6 +23,10 @@ import {
   type InsertInquiry,
   type Category,
   type InsertCategory,
+  type SpeakingTopic,
+  type InsertSpeakingTopic,
+  type SpeakerTopic,
+  type InsertSpeakerTopic,
   type Video,
   type InsertVideo,
   type User,
@@ -264,6 +270,88 @@ export class DatabaseStorage implements IStorage {
   async deleteCategory(id: number): Promise<boolean> {
     const result = await db.delete(categories).where(eq(categories.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Speaking Topics
+  async getSpeakingTopics(): Promise<SpeakingTopic[]> {
+    const result = await db.select().from(speakingTopics)
+      .where(eq(speakingTopics.isActive, true))
+      .orderBy(speakingTopics.name);
+    return result;
+  }
+
+  async createSpeakingTopic(topic: InsertSpeakingTopic): Promise<SpeakingTopic> {
+    const result = await db.insert(speakingTopics).values(topic).returning();
+    return result[0];
+  }
+
+  async getSpeakingTopicByName(name: string): Promise<SpeakingTopic | undefined> {
+    const result = await db.select().from(speakingTopics)
+      .where(eq(speakingTopics.name, name))
+      .limit(1);
+    return result[0];
+  }
+
+  async updateTopicSpeakerCount(topicId: number): Promise<void> {
+    const speakerCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(speakerTopics)
+      .where(eq(speakerTopics.topicId, topicId));
+    
+    await db.update(speakingTopics)
+      .set({ speakerCount: parseInt(speakerCount[0]?.count as any) || 0 })
+      .where(eq(speakingTopics.id, topicId));
+  }
+
+  // Speaker Topics
+  async getSpeakerTopicsBySpeakerId(speakerId: number): Promise<SpeakingTopic[]> {
+    const result = await db
+      .select({
+        id: speakingTopics.id,
+        name: speakingTopics.name,
+        slug: speakingTopics.slug,
+        description: speakingTopics.description,
+        speakerCount: speakingTopics.speakerCount,
+        category: speakingTopics.category,
+        isActive: speakingTopics.isActive,
+        createdAt: speakingTopics.createdAt,
+      })
+      .from(speakerTopics)
+      .innerJoin(speakingTopics, eq(speakerTopics.topicId, speakingTopics.id))
+      .where(and(
+        eq(speakerTopics.speakerId, speakerId),
+        eq(speakingTopics.isActive, true)
+      ))
+      .orderBy(speakingTopics.name);
+    return result;
+  }
+
+  async addSpeakerTopic(speakerId: number, topicId: number): Promise<SpeakerTopic> {
+    const result = await db.insert(speakerTopics).values({
+      speakerId,
+      topicId
+    }).returning();
+    return result[0];
+  }
+
+  async removeSpeakerTopic(speakerId: number, topicId: number): Promise<boolean> {
+    const result = await db.delete(speakerTopics)
+      .where(and(
+        eq(speakerTopics.speakerId, speakerId),
+        eq(speakerTopics.topicId, topicId)
+      ));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async bulkAddSpeakerTopics(speakerId: number, topicIds: number[]): Promise<void> {
+    if (topicIds.length === 0) return;
+    
+    const values = topicIds.map(topicId => ({
+      speakerId,
+      topicId
+    }));
+    
+    await db.insert(speakerTopics).values(values);
   }
 
   // Videos

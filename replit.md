@@ -1,7 +1,13 @@
 # replit.md
 
 ## Overview
-This project, "SpeakerSphere Reviews," is a full-stack healthcare speaker review platform connecting healthcare professionals with medical speakers. Its primary purpose is to facilitate speaker discovery, evaluation, and booking. Key capabilities include advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform aims to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
+This project, "SpeakerSphere Reviews," is a full-stack healthcare speaker review platform connecting healthcare professionals with medical speakers. Its primary purpose is to facilitate speaker discovery, evaluation, and booking. Key capabilities include advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform uses real speaking topics extracted from CSV data with 942 unique topics linked to 508 speakers, replacing generic categories with actual topic-based organization. The platform aims to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
+
+## Recent Changes
+- **December 27, 2025**: Updated Categories page to display real speaking topics from CSV data instead of generic categories
+- **December 27, 2025**: Added speaking_topics and speaker_topics database tables with 942 unique topics from speaker database
+- **December 27, 2025**: Implemented topic-based speaker organization system with API endpoints for topics and speaker-topic relationships
+- **December 27, 2025**: Populated database with real speaker topics data linking 508 speakers to their specific speaking subjects
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

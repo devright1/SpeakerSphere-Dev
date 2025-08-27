@@ -4,6 +4,8 @@ import {
   inquiries, 
   categories,
   videos,
+  speakingTopics,
+  speakerTopics,
   users,
   userSessions,
   userLikes,
@@ -23,6 +25,10 @@ import {
   type InsertCategory,
   type Video,
   type InsertVideo,
+  type SpeakingTopic,
+  type InsertSpeakingTopic,
+  type SpeakerTopic,
+  type InsertSpeakerTopic,
   type User,
   type InsertUser,
   type UserSession,
@@ -77,6 +83,18 @@ export interface IStorage {
   getCategories(): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
   deleteCategory(id: number): Promise<boolean>;
+  
+  // Speaking Topics
+  getSpeakingTopics(): Promise<SpeakingTopic[]>;
+  createSpeakingTopic(topic: InsertSpeakingTopic): Promise<SpeakingTopic>;
+  getSpeakingTopicByName(name: string): Promise<SpeakingTopic | undefined>;
+  updateTopicSpeakerCount(topicId: number): Promise<void>;
+  
+  // Speaker Topics
+  getSpeakerTopicsBySpeakerId(speakerId: number): Promise<SpeakingTopic[]>;
+  addSpeakerTopic(speakerId: number, topicId: number): Promise<SpeakerTopic>;
+  removeSpeakerTopic(speakerId: number, topicId: number): Promise<boolean>;
+  bulkAddSpeakerTopics(speakerId: number, topicIds: number[]): Promise<void>;
   
   // Videos
   getVideosBySpeakerId(speakerId: number): Promise<Video[]>;
@@ -168,6 +186,8 @@ export class MemStorage implements IStorage {
   private reviews: Map<number, Review>;
   private inquiries: Map<number, Inquiry>;
   private categories: Map<number, Category>;
+  private speakingTopics: Map<number, SpeakingTopic>;
+  private speakerTopics: Map<number, SpeakerTopic>;
   private videos: Map<number, Video>;
   private users: Map<string, User>;
   private userSessions: Map<string, UserSession>;
@@ -181,6 +201,8 @@ export class MemStorage implements IStorage {
   private currentReviewId: number;
   private currentInquiryId: number;
   private currentCategoryId: number;
+  private currentTopicId: number;
+  private currentSpeakerTopicId: number;
   private currentVideoId: number;
   private currentLikeId: number;
   private currentBookmarkId: number;
@@ -194,6 +216,8 @@ export class MemStorage implements IStorage {
     this.reviews = new Map();
     this.inquiries = new Map();
     this.categories = new Map();
+    this.speakingTopics = new Map();
+    this.speakerTopics = new Map();
     this.videos = new Map();
     this.users = new Map();
     this.userSessions = new Map();
@@ -207,6 +231,8 @@ export class MemStorage implements IStorage {
     this.currentReviewId = 1;
     this.currentInquiryId = 1;
     this.currentCategoryId = 1;
+    this.currentTopicId = 1;
+    this.currentSpeakerTopicId = 1;
     this.currentVideoId = 1;
     this.currentLikeId = 1;
     this.currentBookmarkId = 1;
@@ -552,6 +578,75 @@ export class MemStorage implements IStorage {
 
     this.categories.delete(id);
     return true;
+  }
+
+  // Speaking Topics Methods
+  async getSpeakingTopics(): Promise<SpeakingTopic[]> {
+    return Array.from(this.speakingTopics.values());
+  }
+
+  async createSpeakingTopic(insertTopic: InsertSpeakingTopic): Promise<SpeakingTopic> {
+    const topic: SpeakingTopic = {
+      ...insertTopic,
+      id: this.currentTopicId++,
+      speakerCount: 0,
+      isActive: true,
+      createdAt: new Date()
+    };
+    this.speakingTopics.set(topic.id, topic);
+    return topic;
+  }
+
+  async getSpeakingTopicByName(name: string): Promise<SpeakingTopic | undefined> {
+    return Array.from(this.speakingTopics.values()).find(topic => topic.name === name);
+  }
+
+  async updateTopicSpeakerCount(topicId: number): Promise<void> {
+    const topic = this.speakingTopics.get(topicId);
+    if (topic) {
+      const count = Array.from(this.speakerTopics.values())
+        .filter(st => st.topicId === topicId).length;
+      topic.speakerCount = count;
+      this.speakingTopics.set(topicId, topic);
+    }
+  }
+
+  // Speaker Topics Methods
+  async getSpeakerTopicsBySpeakerId(speakerId: number): Promise<SpeakingTopic[]> {
+    const speakerTopicIds = Array.from(this.speakerTopics.values())
+      .filter(st => st.speakerId === speakerId)
+      .map(st => st.topicId);
+    
+    return Array.from(this.speakingTopics.values())
+      .filter(topic => speakerTopicIds.includes(topic.id));
+  }
+
+  async addSpeakerTopic(speakerId: number, topicId: number): Promise<SpeakerTopic> {
+    const speakerTopic: SpeakerTopic = {
+      id: this.currentSpeakerTopicId++,
+      speakerId,
+      topicId,
+      createdAt: new Date()
+    };
+    this.speakerTopics.set(speakerTopic.id, speakerTopic);
+    return speakerTopic;
+  }
+
+  async removeSpeakerTopic(speakerId: number, topicId: number): Promise<boolean> {
+    const speakerTopic = Array.from(this.speakerTopics.values())
+      .find(st => st.speakerId === speakerId && st.topicId === topicId);
+    
+    if (speakerTopic) {
+      this.speakerTopics.delete(speakerTopic.id);
+      return true;
+    }
+    return false;
+  }
+
+  async bulkAddSpeakerTopics(speakerId: number, topicIds: number[]): Promise<void> {
+    for (const topicId of topicIds) {
+      await this.addSpeakerTopic(speakerId, topicId);
+    }
   }
 
   async getVideosBySpeakerId(speakerId: number): Promise<Video[]> {

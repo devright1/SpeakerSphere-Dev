@@ -109,6 +109,26 @@ export const videos = pgTable("videos", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Speaking topics table for organizing topics from CSV
+export const speakingTopics = pgTable("speaking_topics", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  speakerCount: integer("speaker_count").default(0),
+  category: text("category"), // Optional grouping for similar topics
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Junction table linking speakers to their speaking topics
+export const speakerTopics = pgTable("speaker_topics", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  topicId: integer("topic_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const speakerApplications = pgTable("speaker_applications", {
   id: serial("id").primaryKey(),
   // Personal Information
@@ -192,6 +212,17 @@ export const insertCategorySchema = createInsertSchema(categories).omit({
 export const insertVideoSchema = createInsertSchema(videos).omit({
   id: true,
   viewCount: true,
+  createdAt: true,
+});
+
+export const insertSpeakingTopicSchema = createInsertSchema(speakingTopics).omit({
+  id: true,
+  speakerCount: true,
+  createdAt: true,
+});
+
+export const insertSpeakerTopicSchema = createInsertSchema(speakerTopics).omit({
+  id: true,
   createdAt: true,
 });
 
@@ -386,6 +417,10 @@ export type Video = typeof videos.$inferSelect;
 export type InsertVideo = typeof videos.$inferInsert;
 export type SpeakerApplication = typeof speakerApplications.$inferSelect;
 export type InsertSpeakerApplication = typeof speakerApplications.$inferInsert;
+export type SpeakingTopic = typeof speakingTopics.$inferSelect;
+export type InsertSpeakingTopic = typeof speakingTopics.$inferInsert;
+export type SpeakerTopic = typeof speakerTopics.$inferSelect;
+export type InsertSpeakerTopic = typeof speakerTopics.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type UserSession = typeof userSessions.$inferSelect;
