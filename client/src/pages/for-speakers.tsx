@@ -166,7 +166,7 @@ export default function ForSpeakers() {
   // Application Submission Mutation
   const applicationMutation = useMutation({
     mutationFn: async (data: SpeakerApplicationForm) => {
-      return apiRequest("POST", "/api/speakers/apply", data);
+      return apiRequest("POST", "/api/auth/speaker-application", data);
     },
     onSuccess: () => {
       toast({
