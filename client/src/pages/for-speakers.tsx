@@ -30,6 +30,30 @@ import {
   Calendar,
   MessageCircle
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+
+// Official categories from your CSV mapping
+const officialCategories = [
+  "AI & Innovation",
+  "Anesthesia & Sedation", 
+  "Bone Grafting & Regeneration",
+  "Digital Dentistry",
+  "Education & Training",
+  "Endodontics",
+  "Esthetic Dentistry",
+  "Full Arch Rehabilitation",
+  "Implant Dentistry",
+  "Leadership",
+  "Oral Surgery",
+  "Orthodontics",
+  "Periodontics",
+  "Practice Management",
+  "Prosthodontics",
+  "Research",
+  "Sleep Medicine",
+  "Technology & Innovation"
+];
 
 // Sign In Form Schema
 const signInSchema = z.object({
@@ -59,6 +83,8 @@ const speakerApplicationSchema = z.object({
   credentials: z.string().min(10, "Please provide your credentials and qualifications"),
   
   // Speaking Information
+  selectedCategories: z.array(z.string()).min(1, "Please select at least one category"),
+  specificTopics: z.string().min(10, "Please provide specific topics (at least 10 characters)"),
   speakingTopics: z.string().min(20, "Please describe your speaking topics (minimum 20 characters)"),
   previousExperience: z.string().min(20, "Please describe your previous speaking experience"),
   availableFormats: z.array(z.string()).min(1, "Please select at least one speaking format"),
@@ -103,6 +129,8 @@ export default function ForSpeakers() {
       specialty: "",
       yearsExperience: "",
       credentials: "",
+      selectedCategories: [],
+      specificTopics: "",
       speakingTopics: "",
       previousExperience: "",
       availableFormats: [],
@@ -175,6 +203,24 @@ export default function ForSpeakers() {
     "Conference Presentations",
     "Breakout Sessions"
   ];
+
+  const handleFormatChange = (format: string, checked: boolean) => {
+    const currentFormats = applicationForm.getValues("availableFormats");
+    if (checked) {
+      applicationForm.setValue("availableFormats", [...currentFormats, format]);
+    } else {
+      applicationForm.setValue("availableFormats", currentFormats.filter(f => f !== format));
+    }
+  };
+
+  const handleCategoryChange = (category: string, checked: boolean) => {
+    const currentCategories = applicationForm.getValues("selectedCategories");
+    if (checked) {
+      applicationForm.setValue("selectedCategories", [...currentCategories, category]);
+    } else {
+      applicationForm.setValue("selectedCategories", currentCategories.filter(c => c !== category));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -551,6 +597,53 @@ export default function ForSpeakers() {
                           <MessageCircle className="w-5 h-5" />
                           Speaking Information
                         </h3>
+
+                        {/* Category Selection */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-medium">Speaking Categories * (Select all that apply)</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 border rounded-lg p-4 bg-slate-50 dark:bg-slate-800">
+                            {officialCategories.map((category) => (
+                              <div key={category} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`category-${category}`}
+                                  checked={applicationForm.getValues("selectedCategories").includes(category)}
+                                  onCheckedChange={(checked) => handleCategoryChange(category, checked as boolean)}
+                                />
+                                <Label 
+                                  htmlFor={`category-${category}`} 
+                                  className="text-sm cursor-pointer"
+                                >
+                                  {category}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                          {applicationForm.formState.errors.selectedCategories && (
+                            <p className="text-sm text-red-600">{applicationForm.formState.errors.selectedCategories.message}</p>
+                          )}
+                        </div>
+
+                        {/* Specific Topics */}
+                        <FormField
+                          control={applicationForm.control}
+                          name="specificTopics"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Specific Topics of Expertise *</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="List your specific areas of expertise and topics you can speak about in detail (e.g., 'All-on-4 implants, Digital workflow integration, Guided surgery protocols')"
+                                  rows={3}
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                                Please be specific about your expertise areas. This helps us match you with relevant speaking opportunities.
+                              </p>
+                            </FormItem>
+                          )}
+                        />
                         
                         <FormField
                           control={applicationForm.control}
