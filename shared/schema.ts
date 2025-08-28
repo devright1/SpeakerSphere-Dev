@@ -15,7 +15,7 @@ export const speakers = pgTable("speakers", {
   imageUrl: text("image_url").notNull(),
   verified: boolean("verified").default(false),
   featured: boolean("featured").default(false),
-  category: text("category").notNull(),
+  categories: text("categories").array().notNull(),
   achievements: text("achievements").array().notNull(),
   lectures: text("lectures").array().notNull(),
   eventPhotos: text("event_photos").array(),

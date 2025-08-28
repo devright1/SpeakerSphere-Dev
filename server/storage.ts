@@ -398,11 +398,11 @@ export class MemStorage implements IStorage {
     // Filter by categories (multiple selection support)
     if (filters?.categories && filters.categories.length > 0) {
       speakers = speakers.filter(speaker => 
-        filters.categories!.includes(speaker.category)
+        filters.categories!.some(cat => speaker.categories?.includes(cat))
       );
     } else if (filters?.category) {
       // Single category filter for backward compatibility
-      speakers = speakers.filter(speaker => speaker.category === filters.category);
+      speakers = speakers.filter(speaker => speaker.categories?.includes(filters.category!));
     }
 
     if (filters?.location) {
@@ -555,7 +555,7 @@ export class MemStorage implements IStorage {
     // Calculate actual speaker counts for each category
     categories.forEach(category => {
       const speakersInCategory = Array.from(this.speakers.values())
-        .filter(speaker => speaker.category === category.name);
+        .filter(speaker => speaker.categories?.includes(category.name));
       category.speakerCount = speakersInCategory.length;
     });
     
@@ -902,7 +902,7 @@ export class MemStorage implements IStorage {
       imageUrl: "/api/placeholder/300/300",
       verified: false,
       featured: false,
-      category: application.specialty,
+      categories: [application.specialty],
       achievements: [],
       lectures: [],
       eventPhotos: [],

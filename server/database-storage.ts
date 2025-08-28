@@ -77,11 +77,11 @@ export class DatabaseStorage implements IStorage {
     // Handle both single category (for backward compatibility) and multiple categories
     if (filters?.categories && filters.categories.length > 0) {
       // Multiple categories - use OR condition
-      const categoryConditions = filters.categories.map(cat => eq(speakers.category, cat));
+      const categoryConditions = filters.categories.map(cat => sql`${cat} = ANY(${speakers.categories})`);
       conditions.push(or(...categoryConditions));
     } else if (filters?.category) {
       // Single category (backward compatibility)
-      conditions.push(eq(speakers.category, filters.category));
+      conditions.push(sql`${filters.category} = ANY(${speakers.categories})`);
     }
 
     // Handle topic filtering using speaker_topics junction table
@@ -272,7 +272,7 @@ export class DatabaseStorage implements IStorage {
         .select({ count: sql<number>`count(*)` })
         .from(speakers)
         .where(and(
-          eq(speakers.category, category.name),
+          sql`${category.name} = ANY(${speakers.categories})`,
           or(eq(speakers.hideProfile, false), sql`hide_profile IS NULL`)
         ));
       
@@ -486,7 +486,7 @@ export class DatabaseStorage implements IStorage {
       imageUrl: "/api/placeholder/300/300",
       verified: false,
       featured: false,
-      category: application.specialty,
+      categories: [application.specialty],
       achievements: [],
       lectures: [],
       eventPhotos: [],
