@@ -68,29 +68,6 @@ export default function HowItWorks() {
             ))}
           </div>
 
-          {/* Humor Section */}
-          <div className="text-center mb-20">
-            <div className="bg-blue-50 rounded-2xl p-8 max-w-4xl mx-auto">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                🦷 The Fine Print (Don't Worry, It Won't Hurt!)
-              </h3>
-              <div className="space-y-4 text-lg text-gray-700">
-                <p className="italic">
-                  "Unlike root canals, finding the perfect speaker through SpeakerSphere is actually enjoyable!"
-                </p>
-                <p>
-                  📢 <strong>Warning:</strong> Side effects may include improved event attendance, enhanced audience engagement, and uncontrollable applause. 
-                </p>
-                <p>
-                  🎤 <strong>Professional Tip:</strong> Our speakers are like good dental hygiene - they make everything better and leave your audience with a lasting smile!
-                </p>
-                <p className="text-sm text-gray-600 mt-6">
-                  *No dental procedures were performed in the making of this platform. All speakers have been thoroughly screened (unlike your teeth, which you should probably get checked).
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Benefits Section */}
           <div className="bg-gray-50 rounded-2xl card-spacing mb-20">
             <div className="text-center mb-12">
