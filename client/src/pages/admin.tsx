@@ -1026,35 +1026,50 @@ export default function AdminDashboard() {
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
   
-  // Filter speakers based on search query, categories, and statuses
-  const filteredSpeakers = speakersArray.filter((speaker: any) => {
-    // Search query filter
-    const matchesSearch = searchQuery === "" || 
-      speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      speaker.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      speaker.category?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Category filter
-    const matchesCategory = selectedCategories.size === 0 || 
-      selectedCategories.has(speaker.category || '');
-    
-    // Status filter (verified/featured)
-    const matchesStatus = selectedStatuses.size === 0 || 
-      (selectedStatuses.has('verified') && speaker.verified) ||
-      (selectedStatuses.has('featured') && speaker.featured);
-    
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+  // Memoize speaker filtering to prevent performance issues with large speaker lists
+  const filteredSpeakers = useMemo(() => {
+    return speakersArray.filter((speaker: any) => {
+      // Search query filter
+      const matchesSearch = searchQuery === "" || 
+        speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        speaker.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        speaker.category?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Category filter
+      const matchesCategory = selectedCategories.size === 0 || 
+        selectedCategories.has(speaker.category || '');
+      
+      // Status filter (verified/featured)
+      const matchesStatus = selectedStatuses.size === 0 || 
+        (selectedStatuses.has('verified') && speaker.verified) ||
+        (selectedStatuses.has('featured') && speaker.featured);
+      
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+  }, [speakersArray, searchQuery, selectedCategories, selectedStatuses]);
 
-  // Filter speakers for category assignment dialog
-  const filteredCategorySpeakers = speakersArray.filter((speaker: any) => 
-    speaker.name.toLowerCase().includes(categorySearchQuery.toLowerCase()) ||
-    speaker.title?.toLowerCase().includes(categorySearchQuery.toLowerCase())
-  );
+  // Memoize bulk operation IDs to prevent unnecessary recalculations
+  const bulkSpeakerIds = useMemo(() => {
+    return filteredSpeakers.map((s: any) => s.id);
+  }, [filteredSpeakers]);
+
+  // Memoize category speakers filtering for better performance
+  const filteredCategorySpeakers = useMemo(() => {
+    return speakersArray.filter((speaker: any) => 
+      speaker.name.toLowerCase().includes(categorySearchQuery.toLowerCase()) ||
+      speaker.title?.toLowerCase().includes(categorySearchQuery.toLowerCase())
+    );
+  }, [speakersArray, categorySearchQuery]);
   
-  const totalSpeakers = speakersArray.length;
-  const verifiedSpeakers = speakersArray.filter((s: any) => s.verified).length;
-  const featuredSpeakers = speakersArray.filter((s: any) => s.featured).length;
+  // Memoize speaker statistics for better performance
+  const speakerStats = useMemo(() => {
+    const total = speakersArray.length;
+    const verified = speakersArray.filter((s: any) => s.verified).length;
+    const featured = speakersArray.filter((s: any) => s.featured).length;
+    return { total, verified, featured };
+  }, [speakersArray]);
+
+  const { total: totalSpeakers, verified: verifiedSpeakers, featured: featuredSpeakers } = speakerStats;
   const totalCategories = categoriesArray.length;
 
   return (
@@ -1571,8 +1586,7 @@ export default function AdminDashboard() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          const allSpeakerIds = filteredSpeakers.map((s: any) => s.id);
-                          bulkToggleContactMutation.mutate({ speakerIds: allSpeakerIds, hideContact: true });
+                          bulkToggleContactMutation.mutate({ speakerIds: bulkSpeakerIds, hideContact: true });
                         }}
                         disabled={bulkToggleContactMutation.isPending}
                       >
@@ -1583,8 +1597,7 @@ export default function AdminDashboard() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          const allSpeakerIds = filteredSpeakers.map((s: any) => s.id);
-                          bulkToggleContactMutation.mutate({ speakerIds: allSpeakerIds, hideContact: false });
+                          bulkToggleContactMutation.mutate({ speakerIds: bulkSpeakerIds, hideContact: false });
                         }}
                         disabled={bulkToggleContactMutation.isPending}
                       >
@@ -1595,8 +1608,7 @@ export default function AdminDashboard() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          const allSpeakerIds = filteredSpeakers.map((s: any) => s.id);
-                          bulkToggleRatingsMutation.mutate({ speakerIds: allSpeakerIds, hideRatings: true });
+                          bulkToggleRatingsMutation.mutate({ speakerIds: bulkSpeakerIds, hideRatings: true });
                         }}
                         disabled={bulkToggleRatingsMutation.isPending}
                       >
@@ -1607,8 +1619,7 @@ export default function AdminDashboard() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          const allSpeakerIds = filteredSpeakers.map((s: any) => s.id);
-                          bulkToggleRatingsMutation.mutate({ speakerIds: allSpeakerIds, hideRatings: false });
+                          bulkToggleRatingsMutation.mutate({ speakerIds: bulkSpeakerIds, hideRatings: false });
                         }}
                         disabled={bulkToggleRatingsMutation.isPending}
                       >
