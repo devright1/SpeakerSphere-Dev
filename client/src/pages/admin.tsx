@@ -1053,6 +1053,21 @@ export default function AdminDashboard() {
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
   
+  // Handler to toggle category selection in application editing
+  const toggleApplicationCategory = (categoryName: string) => {
+    if (!editableApplicationData) return;
+    
+    const currentCategories = editableApplicationData.selectedCategories || [];
+    const updatedCategories = currentCategories.includes(categoryName)
+      ? currentCategories.filter((cat: string) => cat !== categoryName)
+      : [...currentCategories, categoryName];
+    
+    setEditableApplicationData({
+      ...editableApplicationData,
+      selectedCategories: updatedCategories
+    });
+  };
+  
   // Memoize speaker filtering to prevent performance issues with large speaker lists
   const filteredSpeakers = useMemo(() => {
     return speakersArray.filter((speaker: any) => {
@@ -3691,6 +3706,51 @@ export default function AdminDashboard() {
                       </>
                     ) : (
                       <>
+                        {/* Editable Categories */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Selected Categories</label>
+                          <div className="bg-white p-4 rounded border">
+                            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                              {categoriesArray.map((category: any) => {
+                                const isSelected = editableApplicationData?.selectedCategories?.includes(category.name) || false;
+                                return (
+                                  <div key={category.name} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`edit-category-${category.name}`}
+                                      checked={isSelected}
+                                      onCheckedChange={() => toggleApplicationCategory(category.name)}
+                                    />
+                                    <label 
+                                      htmlFor={`edit-category-${category.name}`} 
+                                      className="text-sm cursor-pointer flex-1 truncate"
+                                      title={category.description || category.name}
+                                    >
+                                      {category.name}
+                                    </label>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {editableApplicationData?.selectedCategories && editableApplicationData.selectedCategories.length > 0 && (
+                              <div className="mt-3 pt-3 border-t">
+                                <p className="text-xs text-gray-600 mb-2">Currently selected ({editableApplicationData.selectedCategories.length}):</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {editableApplicationData.selectedCategories.map((categoryName: string) => (
+                                    <Badge 
+                                      key={categoryName} 
+                                      className="bg-purple-100 text-purple-800 cursor-pointer hover:bg-purple-200"
+                                      onClick={() => toggleApplicationCategory(categoryName)}
+                                    >
+                                      {categoryName} ×
+                                    </Badge>
+                                  ))}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">Click on a category badge to remove it</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
                         {/* Editable Specific Topics */}
                         <div>
                           <label className="text-sm font-medium mb-2 block">Specific Topics of Expertise</label>
