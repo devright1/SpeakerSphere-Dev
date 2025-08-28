@@ -993,6 +993,7 @@ export default function AdminDashboard() {
   const totalCategories = categoriesArray.length;
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       {/* Admin Header */}
       <header className="bg-white shadow-sm border-b">
@@ -3662,6 +3663,142 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
     </div>
+
+    {/* Application Details Modal */}
+    <Dialog open={!!selectedApplicationDetails} onOpenChange={() => {
+      console.log('Dialog closing, selectedApplicationDetails was:', selectedApplicationDetails);
+      setSelectedApplicationDetails(null);
+    }}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">
+            Application Details - {selectedApplicationDetails?.firstName} {selectedApplicationDetails?.lastName}
+          </DialogTitle>
+          <DialogDescription>
+            Submitted on {selectedApplicationDetails && new Date(selectedApplicationDetails.createdAt).toLocaleDateString()}
+          </DialogDescription>
+        </DialogHeader>
+        
+        {selectedApplicationDetails && (
+          <div className="space-y-4">
+            {/* Basic Info */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-bold text-blue-900 mb-3">Personal Information</h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><strong>Name:</strong> {selectedApplicationDetails.firstName} {selectedApplicationDetails.lastName}</div>
+                <div><strong>Email:</strong> {selectedApplicationDetails.email}</div>
+                <div><strong>Phone:</strong> {selectedApplicationDetails.phone || 'Not provided'}</div>
+                <div><strong>Title:</strong> {selectedApplicationDetails.title}</div>
+                <div><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</div>
+                <div><strong>Experience:</strong> {selectedApplicationDetails.yearsExperience} years</div>
+              </div>
+            </div>
+
+            {/* Categories & Topics */}
+            {(selectedApplicationDetails.selectedCategories?.length > 0 || selectedApplicationDetails.specificTopics) && (
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <h3 className="font-bold text-purple-900 mb-3">Categories & Expertise</h3>
+                {selectedApplicationDetails.selectedCategories?.length > 0 && (
+                  <div className="mb-3">
+                    <strong className="text-sm">Selected Categories:</strong>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedApplicationDetails.selectedCategories.map((category: string) => (
+                        <Badge key={category} className="bg-purple-100 text-purple-800 text-xs">
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {selectedApplicationDetails.specificTopics && (
+                  <div>
+                    <strong className="text-sm">Specific Topics:</strong>
+                    <p className="text-sm mt-1">{selectedApplicationDetails.specificTopics}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Speaking Experience */}
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="font-bold text-green-900 mb-3">Speaking Information</h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <strong>Speaking Topics:</strong>
+                  <p>{selectedApplicationDetails.speakingTopics}</p>
+                </div>
+                <div>
+                  <strong>Previous Experience:</strong>
+                  <p>{selectedApplicationDetails.previousExperience}</p>
+                </div>
+                {selectedApplicationDetails.availableFormats?.length > 0 && (
+                  <div>
+                    <strong>Available Formats:</strong>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedApplicationDetails.availableFormats.map((format: string) => (
+                        <Badge key={format} className="bg-blue-100 text-blue-800 text-xs">
+                          {format}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div><strong>Travel:</strong> {selectedApplicationDetails.travelWillingness}</div>
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h3 className="font-bold text-yellow-900 mb-3">Additional Information</h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <strong>Biography:</strong>
+                  <p>{selectedApplicationDetails.biography}</p>
+                </div>
+                <div>
+                  <strong>Credentials:</strong>
+                  <p>{selectedApplicationDetails.credentials}</p>
+                </div>
+                {selectedApplicationDetails.website && (
+                  <div>
+                    <strong>Website:</strong> 
+                    <a href={selectedApplicationDetails.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                      {selectedApplicationDetails.website}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-bold text-gray-900 mb-3">Application Status</h3>
+              <div className="flex items-center gap-4 text-sm">
+                <div>
+                  <strong>Status:</strong>
+                  <Badge className={`ml-2 ${
+                    selectedApplicationDetails.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                    selectedApplicationDetails.status === 'approved' ? 'bg-green-100 text-green-800' :
+                    selectedApplicationDetails.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {selectedApplicationDetails.status?.charAt(0).toUpperCase() + selectedApplicationDetails.status?.slice(1)}
+                  </Badge>
+                </div>
+                <div><strong>Submitted:</strong> {new Date(selectedApplicationDetails.createdAt).toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex justify-end pt-4 border-t">
+          <Button onClick={() => setSelectedApplicationDetails(null)}>
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
@@ -3938,140 +4075,6 @@ function InquiriesManagement() {
       </CardContent>
     </Card>
     
-    {/* Application Details Modal */}
-    <Dialog open={!!selectedApplicationDetails} onOpenChange={() => {
-      console.log('Dialog closing, selectedApplicationDetails was:', selectedApplicationDetails);
-      setSelectedApplicationDetails(null);
-    }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Application Details - {selectedApplicationDetails?.firstName} {selectedApplicationDetails?.lastName}
-          </DialogTitle>
-          <DialogDescription>
-            Submitted on {selectedApplicationDetails && new Date(selectedApplicationDetails.createdAt).toLocaleDateString()}
-          </DialogDescription>
-        </DialogHeader>
-        
-        {selectedApplicationDetails && (
-          <div className="space-y-4">
-            {/* Basic Info */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-bold text-blue-900 mb-3">Personal Information</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><strong>Name:</strong> {selectedApplicationDetails.firstName} {selectedApplicationDetails.lastName}</div>
-                <div><strong>Email:</strong> {selectedApplicationDetails.email}</div>
-                <div><strong>Phone:</strong> {selectedApplicationDetails.phone || 'Not provided'}</div>
-                <div><strong>Title:</strong> {selectedApplicationDetails.title}</div>
-                <div><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</div>
-                <div><strong>Experience:</strong> {selectedApplicationDetails.yearsExperience} years</div>
-              </div>
-            </div>
-
-            {/* Categories & Topics */}
-            {(selectedApplicationDetails.selectedCategories?.length > 0 || selectedApplicationDetails.specificTopics) && (
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h3 className="font-bold text-purple-900 mb-3">Categories & Expertise</h3>
-                {selectedApplicationDetails.selectedCategories?.length > 0 && (
-                  <div className="mb-3">
-                    <strong className="text-sm">Selected Categories:</strong>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedApplicationDetails.selectedCategories.map((category: string) => (
-                        <Badge key={category} className="bg-purple-100 text-purple-800 text-xs">
-                          {category}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {selectedApplicationDetails.specificTopics && (
-                  <div>
-                    <strong className="text-sm">Specific Topics:</strong>
-                    <p className="text-sm mt-1">{selectedApplicationDetails.specificTopics}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Speaking Experience */}
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-bold text-green-900 mb-3">Speaking Information</h3>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <strong>Speaking Topics:</strong>
-                  <p>{selectedApplicationDetails.speakingTopics}</p>
-                </div>
-                <div>
-                  <strong>Previous Experience:</strong>
-                  <p>{selectedApplicationDetails.previousExperience}</p>
-                </div>
-                {selectedApplicationDetails.availableFormats?.length > 0 && (
-                  <div>
-                    <strong>Available Formats:</strong>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedApplicationDetails.availableFormats.map((format: string) => (
-                        <Badge key={format} className="bg-blue-100 text-blue-800 text-xs">
-                          {format}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div><strong>Travel:</strong> {selectedApplicationDetails.travelWillingness}</div>
-              </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <h3 className="font-bold text-yellow-900 mb-3">Additional Information</h3>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <strong>Biography:</strong>
-                  <p>{selectedApplicationDetails.biography}</p>
-                </div>
-                <div>
-                  <strong>Credentials:</strong>
-                  <p>{selectedApplicationDetails.credentials}</p>
-                </div>
-                {selectedApplicationDetails.website && (
-                  <div>
-                    <strong>Website:</strong> 
-                    <a href={selectedApplicationDetails.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
-                      {selectedApplicationDetails.website}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Status */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-bold text-gray-900 mb-3">Application Status</h3>
-              <div className="flex items-center gap-4 text-sm">
-                <div>
-                  <strong>Status:</strong>
-                  <Badge className={`ml-2 ${
-                    selectedApplicationDetails.status === 'pending' ? 'bg-blue-100 text-blue-800' :
-                    selectedApplicationDetails.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    selectedApplicationDetails.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {selectedApplicationDetails.status?.charAt(0).toUpperCase() + selectedApplicationDetails.status?.slice(1)}
-                  </Badge>
-                </div>
-                <div><strong>Submitted:</strong> {new Date(selectedApplicationDetails.createdAt).toLocaleString()}</div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="flex justify-end pt-4 border-t">
-          <Button onClick={() => setSelectedApplicationDetails(null)}>
-            Close
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
     </>
   );
 }
