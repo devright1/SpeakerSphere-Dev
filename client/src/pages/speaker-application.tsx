@@ -534,14 +534,14 @@ export default function SpeakerApplicationPage() {
 
                       <div className="space-y-3">
                         <Label>Available Speaking Formats *</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 border rounded-lg p-4 bg-slate-50 dark:bg-slate-800">
                           {speakingFormats.map((format) => (
                             <div key={format} className="flex items-center space-x-2">
                               <Checkbox
                                 id={format}
                                 onCheckedChange={(checked) => handleFormatChange(format, checked as boolean)}
                               />
-                              <Label htmlFor={format} className="text-sm font-normal">
+                              <Label htmlFor={format} className="text-sm cursor-pointer">
                                 {format}
                               </Label>
                             </div>

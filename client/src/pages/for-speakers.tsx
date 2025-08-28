@@ -686,26 +686,24 @@ export default function ForSpeakers() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Available Speaking Formats * (Select all that apply)</FormLabel>
-                              <div className="grid grid-cols-2 gap-3">
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 border rounded-lg p-4 bg-slate-50 dark:bg-slate-800">
                                 {speakingFormats.map((format) => (
                                   <div key={format} className="flex items-center space-x-2">
-                                    <input
-                                      type="checkbox"
+                                    <Checkbox
                                       id={format}
                                       checked={field.value?.includes(format) || false}
-                                      onChange={(e) => {
+                                      onCheckedChange={(checked) => {
                                         const currentFormats = field.value || [];
-                                        if (e.target.checked) {
+                                        if (checked) {
                                           field.onChange([...currentFormats, format]);
                                         } else {
                                           field.onChange(currentFormats.filter((f: string) => f !== format));
                                         }
                                       }}
-                                      className="rounded border-gray-300"
                                     />
-                                    <label htmlFor={format} className="text-sm font-medium">
+                                    <Label htmlFor={format} className="text-sm cursor-pointer">
                                       {format}
-                                    </label>
+                                    </Label>
                                   </div>
                                 ))}
                               </div>
