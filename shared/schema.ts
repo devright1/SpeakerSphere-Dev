@@ -151,7 +151,9 @@ export const speakerApplications = pgTable("speaker_applications", {
   credentials: text("credentials").notNull(),
   
   // Speaking Information
-  speakingTopics: text("speaking_topics").notNull(),
+  selectedCategories: text("selected_categories").array().notNull(), // Array of selected official categories
+  specificTopics: text("specific_topics").notNull(), // Detailed list of specific expertise topics
+  speakingTopics: text("speaking_topics").notNull(), // Keep for backward compatibility
   previousExperience: text("previous_experience").notNull(),
   availableFormats: text("available_formats").array().notNull(),
   travelWillingness: text("travel_willingness").notNull(),

@@ -17,6 +17,28 @@ import { ArrowLeft, CheckCircle2, Loader2, Send, User, FileText, Briefcase, Glob
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// Official categories from your CSV mapping
+const officialCategories = [
+  "AI & Innovation",
+  "Anesthesia & Sedation", 
+  "Bone Grafting & Regeneration",
+  "Digital Dentistry",
+  "Education & Training",
+  "Endodontics",
+  "Esthetic Dentistry",
+  "Full Arch Rehabilitation",
+  "Implant Dentistry",
+  "Leadership",
+  "Oral Surgery",
+  "Orthodontics",
+  "Periodontics",
+  "Practice Management",
+  "Prosthodontics",
+  "Research",
+  "Sleep Medicine",
+  "Technology & Innovation"
+];
+
 // Validation schema for speaker application
 const speakerApplicationSchema = z.object({
   // Personal Information
@@ -39,6 +61,8 @@ const speakerApplicationSchema = z.object({
   credentials: z.string().min(1, "Credentials and education are required"),
   
   // Speaking Information
+  selectedCategories: z.array(z.string()).min(1, "Please select at least one category"),
+  specificTopics: z.string().min(10, "Please provide specific topics (at least 10 characters)"),
   speakingTopics: z.string().min(1, "Speaking topics are required"),
   previousExperience: z.string().min(1, "Previous speaking experience is required"),
   availableFormats: z.array(z.string()).min(1, "Please select at least one format"),
@@ -106,6 +130,8 @@ export default function SpeakerApplicationPage() {
       specialty: "",
       yearsExperience: "",
       credentials: "",
+      selectedCategories: [],
+      specificTopics: "",
       speakingTopics: "",
       previousExperience: "",
       availableFormats: [],
@@ -154,6 +180,15 @@ export default function SpeakerApplicationPage() {
       form.setValue("availableFormats", [...currentFormats, format]);
     } else {
       form.setValue("availableFormats", currentFormats.filter(f => f !== format));
+    }
+  };
+
+  const handleCategoryChange = (category: string, checked: boolean) => {
+    const currentCategories = form.getValues("selectedCategories");
+    if (checked) {
+      form.setValue("selectedCategories", [...currentCategories, category]);
+    } else {
+      form.setValue("selectedCategories", currentCategories.filter(c => c !== category));
     }
   };
 
@@ -430,8 +465,50 @@ export default function SpeakerApplicationPage() {
                         <h3 className="text-lg font-semibold">Speaking Information</h3>
                       </div>
 
+                      {/* Category Selection */}
+                      <div className="space-y-3">
+                        <Label>Speaking Categories * (Select all that apply)</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 border rounded-lg p-4 bg-slate-50 dark:bg-slate-800">
+                          {officialCategories.map((category) => (
+                            <div key={category} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`category-${category}`}
+                                checked={form.getValues("selectedCategories").includes(category)}
+                                onCheckedChange={(checked) => handleCategoryChange(category, checked as boolean)}
+                              />
+                              <Label 
+                                htmlFor={`category-${category}`} 
+                                className="text-sm cursor-pointer"
+                              >
+                                {category}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                        {form.formState.errors.selectedCategories && (
+                          <p className="text-sm text-red-600">{form.formState.errors.selectedCategories.message}</p>
+                        )}
+                      </div>
+
+                      {/* Specific Topics */}
                       <div className="space-y-2">
-                        <Label htmlFor="speakingTopics">Speaking Topics *</Label>
+                        <Label htmlFor="specificTopics">Specific Topics of Expertise *</Label>
+                        <Textarea
+                          id="specificTopics"
+                          {...form.register("specificTopics")}
+                          placeholder="List your specific areas of expertise and topics you can speak about in detail (e.g., 'All-on-4 implants, Digital workflow integration, Guided surgery protocols')"
+                          className="min-h-[100px]"
+                        />
+                        {form.formState.errors.specificTopics && (
+                          <p className="text-sm text-red-600">{form.formState.errors.specificTopics.message}</p>
+                        )}
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          Please be specific about your expertise areas. This helps us match you with relevant speaking opportunities.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="speakingTopics">General Speaking Topics *</Label>
                         <Textarea
                           id="speakingTopics"
                           {...form.register("speakingTopics")}
