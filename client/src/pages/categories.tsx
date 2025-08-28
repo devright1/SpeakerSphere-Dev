@@ -10,13 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FolderOpen, Users, ArrowRight, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
-interface SpeakingTopic {
+interface Category {
   id: number;
   name: string;
   slug: string;
   description: string | null;
   speakerCount: number;
-  category: string | null;
   isActive: boolean;
   createdAt: Date;
 }
@@ -27,15 +26,15 @@ export default function Categories() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
   
-  const { data: topics = [], isLoading: topicsLoading } = useQuery<SpeakingTopic[]>({
-    queryKey: ["/api/topics"],
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
   });
 
-  // Filter and sort topics
-  const filteredAndSortedTopics = topics
-    .filter(topic => 
-      topic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (topic.description && topic.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Filter and sort categories
+  const filteredAndSortedCategories = categories
+    .filter(category => 
+      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
       switch (sortBy) {
@@ -49,10 +48,10 @@ export default function Categories() {
     });
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredAndSortedTopics.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredAndSortedCategories.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedTopics = filteredAndSortedTopics.slice(startIndex, endIndex);
+  const paginatedCategories = filteredAndSortedCategories.slice(startIndex, endIndex);
 
   // Reset to page 1 when search term changes
   const handleSearchChange = (value: string) => {
@@ -65,7 +64,7 @@ export default function Categories() {
     setCurrentPage(1);
   };
 
-  if (topicsLoading) {
+  if (categoriesLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -73,7 +72,7 @@ export default function Categories() {
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading topics...</p>
+              <p className="text-muted-foreground">Loading categories...</p>
             </div>
           </div>
         </div>
@@ -91,10 +90,10 @@ export default function Categories() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Speaker Topics
+              Speaker Categories
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Discover world-class speakers organized by their specific speaking topics and areas of expertise. 
+              Discover world-class speakers organized by their areas of expertise across 18 medical specialties. 
               Find the perfect match for your event's needs.
             </p>
             
@@ -103,7 +102,7 @@ export default function Categories() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search topics..."
+                  placeholder="Search categories..."
                   value={searchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-10"
@@ -130,14 +129,14 @@ export default function Categories() {
           {/* Results Summary */}
           <div className="mb-6">
             <p className="text-muted-foreground">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedTopics.length)} of {filteredAndSortedTopics.length} topics
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedCategories.length)} of {filteredAndSortedCategories.length} categories
               {searchTerm && ` matching "${searchTerm}"`}
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedTopics.map((topic) => (
-              <Card key={topic.id} className="group hover:shadow-lg transition-shadow duration-300">
+            {paginatedCategories.map((category) => (
+              <Card key={category.id} className="group hover:shadow-lg transition-shadow duration-300">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -145,12 +144,12 @@ export default function Categories() {
                     </div>
                     <div className="flex-1">
                       <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {topic.name}
+                        {category.name}
                       </CardTitle>
                       <div className="flex items-center space-x-2 mt-1">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <Badge variant="secondary" className="text-xs">
-                          {topic.speakerCount} {topic.speakerCount === 1 ? 'speaker' : 'speakers'}
+                          {category.speakerCount} {category.speakerCount === 1 ? 'speaker' : 'speakers'}
                         </Badge>
                       </div>
                     </div>
@@ -159,11 +158,11 @@ export default function Categories() {
                 
                 <CardContent className="pt-0">
                   <CardDescription className="text-muted-foreground mb-4 line-clamp-3">
-                    {topic.description || `Speakers who specialize in ${topic.name}`}
+                    {category.description || `Speakers who specialize in ${category.name}`}
                   </CardDescription>
                   
                   <div className="flex justify-between items-center">
-                    <Link href={`/speakers?topic=${encodeURIComponent(topic.name)}`}>
+                    <Link href={`/speakers?category=${encodeURIComponent(category.name)}`}>
                       <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                         View Speakers
                         <ArrowRight className="h-4 w-4 ml-2" />
@@ -176,7 +175,7 @@ export default function Categories() {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && filteredAndSortedTopics.length > 0 && (
+          {totalPages > 1 && filteredAndSortedCategories.length > 0 && (
             <div className="mt-8 flex justify-center items-center space-x-2">
               <Button
                 variant="outline"
@@ -241,16 +240,16 @@ export default function Categories() {
             </div>
           )}
 
-          {filteredAndSortedTopics.length === 0 && (
+          {filteredAndSortedCategories.length === 0 && (
             <div className="text-center py-16">
               <FolderOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                {searchTerm ? "No Topics Found" : "No Topics Available"}
+                {searchTerm ? "No Categories Found" : "No Categories Available"}
               </h3>
               <p className="text-muted-foreground">
                 {searchTerm 
-                  ? `No topics match "${searchTerm}". Try a different search term.`
-                  : "Topics are currently being updated. Please check back soon."
+                  ? `No categories match "${searchTerm}". Try a different search term.`
+                  : "Categories are currently being updated. Please check back soon."
                 }
               </p>
             </div>

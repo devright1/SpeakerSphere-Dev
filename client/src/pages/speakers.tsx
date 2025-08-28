@@ -15,6 +15,7 @@ import type { Speaker } from "@shared/schema";
 interface FilterState {
   category?: string;
   categories?: string[];
+  topics?: string[];
   location?: string;
   minRating?: number;
   maxFee?: number;
@@ -38,6 +39,11 @@ export default function Speakers() {
     
     if (urlParams.get('category')) {
       initialFilters.category = urlParams.get('category')!;
+    }
+
+    if (urlParams.get('topic')) {
+      // Single topic from URL (e.g., from Categories page)
+      initialFilters.topics = [urlParams.get('topic')!];
     }
 
     if (urlParams.get('search')) {
