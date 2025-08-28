@@ -192,6 +192,8 @@ export function registerAdminRoutes(app: Express) {
       const applicationId = parseInt(req.params.id);
       const updates = req.body;
       
+      console.log("Update request received:", JSON.stringify(updates, null, 2));
+      
       // Get current application to check if it exists
       const currentApplication = await storage.getSpeakerApplication(applicationId);
       if (!currentApplication) {
@@ -199,7 +201,21 @@ export function registerAdminRoutes(app: Express) {
       }
       
       // Filter out fields that shouldn't be updated (timestamps, IDs, etc.)
-      const { id, createdAt, reviewedAt, createdSpeakerId, ...allowedUpdates } = updates;
+      const allowedUpdates: any = {};
+      const excludeFields = ['id', 'createdAt', 'reviewedAt', 'createdSpeakerId'];
+      
+      for (const [key, value] of Object.entries(updates)) {
+        // Skip excluded fields and any field that looks like a timestamp
+        if (!excludeFields.includes(key) && 
+            !key.toLowerCase().includes('at') && 
+            !key.toLowerCase().includes('date') &&
+            key !== 'createdAt' &&
+            key !== 'reviewedAt') {
+          allowedUpdates[key] = value;
+        }
+      }
+      
+      console.log("Filtered updates:", JSON.stringify(allowedUpdates, null, 2));
       
       // Update the application directly in the database
       const [updatedApplication] = await db.update(speakerApplications)
