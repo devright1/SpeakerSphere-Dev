@@ -3002,11 +3002,6 @@ export default function AdminDashboard() {
                             </div>
                           )}
                           
-                          {inquiry.adminNotes && (
-                            <div className="text-sm bg-gray-50 p-2 rounded">
-                              <strong>Admin Notes:</strong> {inquiry.adminNotes}
-                            </div>
-                          )}
                           
                           <div className="flex gap-2">
                             <Button 

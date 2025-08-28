@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
-import { speakers, users } from "../shared/schema";
+import { speakers, users, speakerApplications } from "../shared/schema";
 import { eq, desc } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import bcrypt from "bcryptjs";
@@ -182,6 +182,35 @@ export function registerAdminRoutes(app: Express) {
       res.json(updatedApplication);
     } catch (error) {
       console.error("Failed to update application status:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Update full application data
+  app.patch("/api/admin/speaker-applications/:id", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      // Get current application to check if it exists
+      const currentApplication = await storage.getSpeakerApplication(applicationId);
+      if (!currentApplication) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
+      // Update the application directly in the database
+      const [updatedApplication] = await db.update(speakerApplications)
+        .set(updates)
+        .where(eq(speakerApplications.id, applicationId))
+        .returning();
+      
+      if (!updatedApplication) {
+        return res.status(500).json({ message: "Failed to update application" });
+      }
+      
+      res.json(updatedApplication);
+    } catch (error) {
+      console.error("Failed to update application:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
