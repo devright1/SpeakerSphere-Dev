@@ -29,33 +29,33 @@ export default function TestimonialsSection() {
   ];
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What Our Clients Say</h2>
-          <p className="text-xl text-gray-600">Real experiences from event planners and organizations</p>
+    <section className="section-spacing">
+      <div className="container-spacing">
+        <div className="text-center mb-16">
+          <h2 className="font-bold text-gray-900 mb-6 text-balance">What Our Clients Say</h2>
+          <p className="text-xl md:text-2xl text-gray-600 text-balance max-w-4xl mx-auto leading-relaxed">Real experiences from event planners and organizations</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
           {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="bg-gray-50 rounded-2xl p-8">
-              <div className="flex text-yellow-400 mb-4">
+            <div key={testimonial.id} className="bg-gray-50 rounded-2xl card-spacing hover-lift clean-transition">
+              <div className="flex text-yellow-400 mb-6">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-current" />
+                  <Star key={i} className="w-6 h-6 fill-current" />
                 ))}
               </div>
-              <blockquote className="text-gray-700 mb-6 italic">
+              <blockquote className="text-gray-700 mb-8 italic text-lg leading-relaxed">
                 "{testimonial.quote}"
               </blockquote>
               <div className="flex items-center">
                 <img 
                   src={testimonial.avatar} 
                   alt={testimonial.author}
-                  className="w-12 h-12 rounded-full object-cover mr-4"
+                  className="w-14 h-14 rounded-full object-cover mr-4"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900">{testimonial.author}</div>
-                  <div className="text-gray-600 text-sm">{testimonial.title}, {testimonial.company}</div>
+                  <div className="font-semibold text-gray-900 text-lg">{testimonial.author}</div>
+                  <div className="text-gray-600">{testimonial.title}, {testimonial.company}</div>
                 </div>
               </div>
             </div>

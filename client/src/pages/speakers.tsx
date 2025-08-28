@@ -122,45 +122,45 @@ export default function Speakers() {
       <Header />
       
       {/* Hero Search Section */}
-      <section className="bg-devright-blue text-white py-20" style={{backgroundColor: '#1E4347'}}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Find Your Next Dental Speaker</h1>
-            <p className="text-xl opacity-90 mb-8">Browse our curated collection of verified dental professionals and industry experts</p>
+      <section className="bg-devright-blue text-white section-spacing" style={{backgroundColor: '#1E4347'}}>
+        <div className="container-spacing">
+          <div className="text-center mb-12">
+            <h1 className="font-bold mb-6 text-balance">Find Your Next Dental Speaker</h1>
+            <p className="text-xl md:text-2xl opacity-90 mb-8 text-balance max-w-4xl mx-auto">Browse our curated collection of verified dental professionals and industry experts</p>
           </div>
           <SpeakerSearch onSearch={handleSearch} />
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <section className="section-spacing bg-white">
+        <div className="container-spacing">
+          <div className="content-grid">
             {/* Filters Sidebar */}
             <div className="lg:col-span-1">
               <SearchFilters onFilterChange={handleFilterChange} />
             </div>
 
             {/* Results */}
-            <div className="lg:col-span-3">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+            <div className="lg:col-span-3 space-y-8">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+                <div className="space-y-2">
+                  <h2 className="font-bold text-gray-900">
                     {isLoading ? "Loading..." : `${speakers?.length || 0} Speakers Found`}
                   </h2>
                   {filters.category && (
-                    <p className="text-lg text-gray-600 mt-1">
+                    <p className="text-lg text-gray-600">
                       Category: <span className="font-medium text-primary">{filters.category}</span>
                     </p>
                   )}
                   {!isLoading && speakers && speakers.length > SPEAKERS_PER_PAGE && (
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500">
                       Showing {startIndex + 1}-{Math.min(endIndex, speakers.length)} of {speakers.length}
                     </p>
                   )}
                 </div>
                 <select 
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                  className="px-4 py-3 border border-gray-300 rounded-lg focus-ring bg-white text-gray-900"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
@@ -180,9 +180,9 @@ export default function Speakers() {
               )}
 
               {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="results-grid">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="bg-white rounded-xl shadow-md p-6">
+                    <div key={i} className="bg-white rounded-xl shadow-md card-spacing hover-lift clean-transition">
                       <div className="flex items-start space-x-4">
                         <Skeleton className="w-16 h-16 rounded-full" />
                         <div className="flex-1 space-y-2">
@@ -197,7 +197,7 @@ export default function Speakers() {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="results-grid">
                     {paginatedSpeakers.map((speaker) => (
                       <SpeakerCard key={speaker.id} speaker={speaker} />
                     ))}
@@ -205,16 +205,17 @@ export default function Speakers() {
                   
                   {/* Pagination Controls */}
                   {totalPages > 1 && (
-                    <div className="flex justify-center items-center space-x-2 mt-8">
+                    <div className="flex justify-center items-center gap-4 mt-12 pt-8 border-t border-gray-200">
                       <Button
                         variant="outline"
                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
+                        className="px-6 py-3 font-medium"
                       >
                         Previous
                       </Button>
                       
-                      <div className="flex space-x-1">
+                      <div className="flex gap-2">
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                           let pageNum;
                           if (totalPages <= 5) {
@@ -232,7 +233,7 @@ export default function Speakers() {
                               key={pageNum}
                               variant={currentPage === pageNum ? "default" : "outline"}
                               onClick={() => setCurrentPage(pageNum)}
-                              className="w-10 h-10"
+                              className="w-12 h-12 font-medium"
                             >
                               {pageNum}
                             </Button>
@@ -244,6 +245,7 @@ export default function Speakers() {
                         variant="outline"
                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
+                        className="px-6 py-3 font-medium"
                       >
                         Next
                       </Button>

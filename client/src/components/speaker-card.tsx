@@ -100,7 +100,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
   };
 
   return (
-    <Card className={`overflow-hidden hover:shadow-xl transition-all duration-300 ${featured ? "shadow-lg h-[700px] flex flex-col" : "shadow-md"}`}>
+    <Card className={`overflow-hidden hover-lift clean-transition ${featured ? "shadow-lg h-[700px] flex flex-col" : "shadow-md"}`}>
       <div className="relative overflow-hidden flex-shrink-0">
         {!imageError && speaker.imageUrl ? (
           <img 
@@ -149,7 +149,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         </button>
       </div>
       
-      <CardContent className={`p-6 ${featured ? "flex flex-col flex-1" : ""}`}>
+      <CardContent className={`card-spacing ${featured ? "flex flex-col flex-1" : ""}`}>
         {/* Badges moved below image */}
         <div className="flex gap-2 mb-3">
           {speaker.verified && (
@@ -184,13 +184,13 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
           </Badge>
         </div>
 
-        <h3 className="text-xl font-bold text-gray-900 mb-2">{speaker.name}</h3>
+        <h3 className="font-bold text-gray-900 mb-3">{speaker.name}</h3>
         
         {/* Content area with proper flex layout */}
         <div className={featured ? "flex-1 flex flex-col justify-between" : ""}>
           <div className="flex-1">
-            <p className="text-primary font-semibold mb-2">{speaker.title}</p>
-            <p className={`text-gray-600 mb-4 ${featured ? "line-clamp-3" : "line-clamp-3"}`}>
+            <p className="text-primary font-semibold mb-3 text-lg">{speaker.title}</p>
+            <p className={`text-gray-600 mb-6 leading-relaxed ${featured ? "line-clamp-3" : "line-clamp-3"}`}>
               {speaker.bio}
             </p>
 

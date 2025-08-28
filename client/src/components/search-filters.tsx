@@ -82,20 +82,20 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
   };
 
   return (
-    <Card className="sticky top-6">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+    <Card className="sticky top-6 shadow-lg border-0">
+      <CardHeader className="card-spacing pb-4">
+        <CardTitle className="flex items-center justify-between text-xl">
           Filter Speakers
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="clean-transition">
             Clear All
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6 max-h-[70vh] scrollable-filters">
+      <CardContent className="space-y-8 max-h-[70vh] scrollable-filters px-6 pb-6">
         {/* Categories */}
         <div>
-          <h4 className="font-semibold text-gray-900 mb-3">Categories</h4>
-          <div className="space-y-2">
+          <h4 className="font-semibold text-gray-900 mb-4 text-lg">Categories</h4>
+          <div className="space-y-3">
             {sortedCategories?.map((category) => (
               <div key={category.id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -149,7 +149,7 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
 
 
 
-        <Button onClick={applyFilters} className="w-full bg-primary hover:bg-blue-700">
+        <Button onClick={applyFilters} className="w-full bg-primary hover:bg-blue-700 py-3 text-lg font-semibold clean-transition">
           Apply Filters
         </Button>
       </CardContent>

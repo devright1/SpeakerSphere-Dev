@@ -35,11 +35,11 @@ export default function FeaturedSpeakers() {
   }, [speakers]);
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Featured Speakers</h2>
-          <p className="text-xl text-gray-600">Top-rated podium speakers trusted by event directors and reviewed by their peers</p>
+    <section className="section-spacing">
+      <div className="container-spacing">
+        <div className="text-center mb-16">
+          <h2 className="font-bold text-gray-900 mb-6 text-balance">Featured Speakers</h2>
+          <p className="text-xl md:text-2xl text-gray-600 text-balance max-w-4xl mx-auto leading-relaxed">Top-rated podium speakers trusted by event directors and reviewed by their peers</p>
         </div>
 
         {error && (
@@ -52,9 +52,9 @@ export default function FeaturedSpeakers() {
         )}
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="results-grid">
             {[...Array(24)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-lg p-6">
+              <div key={i} className="bg-white rounded-2xl shadow-lg card-spacing">
                 <Skeleton className="w-full h-48 mb-6" />
                 <div className="space-y-3">
                   <Skeleton className="h-6 w-3/4" />
@@ -66,18 +66,18 @@ export default function FeaturedSpeakers() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="results-grid">
             {shuffledSpeakers.map((speaker) => (
-              <div key={`${speaker.id}-${Math.random()}`} className="transform transition-transform hover:scale-105">
+              <div key={`${speaker.id}-${Math.random()}`} className="hover-lift clean-transition">
                 <SpeakerCard speaker={speaker} featured />
               </div>
             ))}
           </div>
         )}
 
-        <div className="text-center mt-12">
+        <div className="text-center mt-16 pt-8 border-t border-gray-200">
           <Link href="/speakers">
-            <button className="bg-primary text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold text-lg transition-colors">
+            <button className="bg-primary text-white px-10 py-4 rounded-lg hover:bg-blue-700 font-semibold text-lg clean-transition shadow-lg hover-lift">
               View All Speakers
             </button>
           </Link>

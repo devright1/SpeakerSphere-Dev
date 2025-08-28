@@ -11,9 +11,13 @@ export default function Home() {
     <div className="min-h-screen bg-neutral">
       <Header />
       <HeroSection />
-      <FeaturedSpeakers />
+      <div className="bg-white">
+        <FeaturedSpeakers />
+      </div>
       <StatsSection />
-      <TestimonialsSection />
+      <div className="bg-white">
+        <TestimonialsSection />
+      </div>
       <CTASection />
       <Footer />
     </div>
