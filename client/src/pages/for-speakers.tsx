@@ -606,7 +606,7 @@ export default function ForSpeakers() {
                               <div key={category} className="flex items-center space-x-2">
                                 <Checkbox
                                   id={`category-${category}`}
-                                  checked={applicationForm.getValues("selectedCategories").includes(category)}
+                                  checked={applicationForm.getValues("selectedCategories")?.includes(category) || false}
                                   onCheckedChange={(checked) => handleCategoryChange(category, checked as boolean)}
                                 />
                                 <Label 
