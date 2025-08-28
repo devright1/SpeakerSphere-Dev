@@ -9,49 +9,98 @@ const pool = new Pool({
 // Category mapping based on speaking topics
 const categoryMappings = {
   'Periodontology': [
-    'periodontology', 'periodontics', 'periodontal', 'gum disease', 'peri-implantitis'
+    'periodontology', 'periodontics', 'periodontal', 'gum disease', 'peri-implantitis',
+    'microsurgical periodontology', 'periodontal surgery', 'periodontal regeneration',
+    'periodontal medicine', 'periodontal microbiology', 'periodontal plastic surgery',
+    'periodontal research', 'chronic periodontitis', 'perio-prosthodontic', 'perio-prosthodontics'
   ],
   'Prosthodontics': [
-    'prosthodontics', 'prosthetic', 'crowns', 'bridges', 'dentures', 'full arch', 'removable prosthetics'
+    'prosthodontics', 'prosthetic', 'crowns', 'bridges', 'dentures', 'full arch', 'removable prosthetics',
+    'maxillofacial prosthetics', 'maxillofacial prosthodontics', 'complex prosthodontics',
+    'advanced prosthodontics', 'clinical prosthodontics', 'conical telescopic prosthodontics',
+    'digital prosthodontics', 'implant prosthodontics', 'full-arch prosthodontics'
   ],
   'Implant Dentistry': [
-    'implant', 'osseointegration', 'zygomatic', 'pterygoid', 'immediate loading'
+    'implant', 'osseointegration', 'zygomatic', 'pterygoid', 'immediate loading',
+    'implant surgery', 'implant placement', 'implant dentistry', 'implant reconstruction',
+    'implant complications', 'implant maintenance', 'implant prosthetic', 'implantology',
+    'full arch implant', 'digital implant', 'all-on-4', 'all-on-x', 'subperiosteal implants',
+    'extramaxillary implants', 'ceramic zirconia implants', 'biocompatible implant'
   ],
   'Oral Surgery': [
-    'oral surgery', 'maxillofacial surgery', 'surgical', 'extractions', 'bone grafting'
+    'oral surgery', 'maxillofacial surgery', 'surgical', 'extractions', 'bone grafting',
+    'craniomaxillofacial surgery', 'craniofacial surgery', 'complex oral surgery',
+    'advanced oral surgery', 'surgical procedures', 'guided bone regeneration',
+    'bone reconstruction', 'bone regeneration', 'tissue reconstruction', 'ridge augmentation',
+    'maxillary sinus augmentation', 'segmental osteotomy', 'virtual surgical planning'
   ],
   'Digital Dentistry': [
-    'digital', 'cad/cam', '3d printing', 'digital workflows', 'digital lab', 'intraoral scanning'
+    'digital', 'cad/cam', '3d printing', 'digital workflows', 'digital lab', 'intraoral scanning',
+    'digital technology', 'digital treatment planning', 'digital smile design',
+    'digital interdisciplinary', 'digital occlusion', 'cbct', '3d imaging',
+    'navigated surgery', 'digital software', 'cad-cam technology', '3d model surgery',
+    'aesthetic digital prosthetics', 'clinic-to-lab integration'
   ],
   'Orthodontics': [
-    'orthodontics', 'orthodontic', 'clear aligners', 'braces', 'teeth straightening'
+    'orthodontics', 'orthodontic', 'clear aligners', 'braces', 'teeth straightening',
+    'interdisciplinary orthodontics', 'adult orthodontics', 'clear aligner therapy',
+    'invisalign', 'airway orthodontics', 'midfacial expansion', 'digital orthodontics',
+    'same-day treatment', 'contemporary treatments', 'orthodontics & sleep medicine'
   ],
   'Esthetic Dentistry': [
-    'esthetic', 'aesthetic', 'cosmetic', 'smile design', 'veneers', 'whitening'
+    'esthetic', 'aesthetic', 'cosmetic', 'smile design', 'veneers', 'whitening',
+    'esthetic implant', 'esthetic zone', 'complex esthetic', 'facial cosmetics',
+    'aesthetic dentistry 4.0', 'adhesive rehabilitation', 'bonding procedures',
+    'ceramic technology', 'zirconia restorations', 'posterior restorations'
   ],
   'Practice Management': [
-    'practice management', 'business', 'dso', 'operations', 'leadership', 'team management'
+    'practice management', 'business', 'dso', 'operations', 'leadership', 'team management',
+    'practice growth', 'business development', 'team building', 'dental leadership',
+    'practice philosophy', 'change management', 'market strategy', 'practice adaptation',
+    'dental operations', 'dental team management', 'building managing teams',
+    'leadership development', 'leadership resilience', 'specialty operations',
+    'dental practice leadership', 'dental practice operations'
   ],
   'General Dentistry': [
-    'general dentistry', 'comprehensive care', 'preventive', 'restorative dentistry'
+    'general dentistry', 'comprehensive care', 'preventive', 'restorative dentistry',
+    'comprehensive dentistry', 'patient-centered care', 'patient-first care',
+    'saving teeth', 'restorative vs implant', 'teeth vs implants', 'access to care'
   ],
   'Endodontics': [
-    'endodontics', 'root canal', 'pulp therapy', 'regenerative endodontics'
+    'endodontics', 'root canal', 'pulp therapy', 'regenerative endodontics',
+    'innovations in endodontics', 'root canal therapy'
   ],
   'Sleep Medicine': [
-    'sleep medicine', 'sleep apnea', 'airway', 'oral appliances'
+    'sleep medicine', 'sleep apnea', 'airway', 'oral appliances',
+    'dental sleep medicine', 'dental sleep solutions', 'obstructive sleep apnea',
+    'pediatric osa', 'airway management', 'emergency airway management',
+    'airway and smile integration'
   ],
   'Dental Hygiene': [
-    'dental hygiene', 'preventive care', 'patient education', 'infection control'
+    'dental hygiene', 'preventive care', 'patient education', 'infection control',
+    'preventive', 'patient communication', 'team workflows', 'periodontal assessment',
+    'waterline safety', 'cdipc standards'
   ],
   'Education': [
-    'education', 'training', 'curriculum', 'continuing education', 'clinical research'
+    'education', 'training', 'curriculum', 'continuing education', 'clinical research',
+    'academic leadership', 'academic education', 'academic instruction', 'academic mentorship',
+    'clinical education', 'dental education', 'periodontal education', 'oral surgery education',
+    'anesthesia education', 'assessment methodologies', 'curriculum development',
+    'clinical training', 'chair-based clinical research', 'academic periodontology',
+    'academic writing', 'instructional design', 'educational program'
   ],
   'Technology': [
-    'ai technology', 'automation', 'equipment', 'innovation', 'robotics'
+    'ai technology', 'automation', 'equipment', 'innovation', 'robotics',
+    'artificial intelligence', 'ai in dentistry', 'ai in healthcare', 'ai-powered research',
+    'dental innovation', 'advanced dental technology', 'innovations for dental labs',
+    'practice automation', 'data-driven innovation', 'translational medicine',
+    'entrepreneurship', 'teledentistry', 'ai in clinical practice'
   ],
   'Pediatric Dentistry': [
-    'pediatric', 'children', 'adolescent'
+    'pediatric', 'children', 'adolescent', 'pediatric dentistry',
+    'cleft and craniofacial surgery', 'pediatric maxillofacial care',
+    'cleft lip/palate', 'cleft care', 'cleft palate reconstruction',
+    'children\'s primary dental', 'pediatric osa'
   ]
 };
 
