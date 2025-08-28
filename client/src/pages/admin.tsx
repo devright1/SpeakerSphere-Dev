@@ -3347,65 +3347,232 @@ export default function AdminDashboard() {
               </DialogDescription>
             </DialogHeader>
             {selectedApplicationDetails && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Personal Information</h4>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p><strong>Name:</strong> {selectedApplicationDetails.firstName} {selectedApplicationDetails.lastName}</p>
-                      <p><strong>Title:</strong> {selectedApplicationDetails.title}</p>
-                      <p><strong>Email:</strong> {selectedApplicationDetails.email}</p>
-                      <p><strong>Phone:</strong> {selectedApplicationDetails.phone}</p>
-                      <p><strong>Location:</strong> {selectedApplicationDetails.location}</p>
-                      <p><strong>Website:</strong> {selectedApplicationDetails.website}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Professional Information</h4>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</p>
-                      <p><strong>Experience:</strong> {selectedApplicationDetails.yearsExperience} years</p>
-                      <p><strong>Education:</strong> {selectedApplicationDetails.education}</p>
-                      <p><strong>Travel Willingness:</strong> {selectedApplicationDetails.travelWillingness}</p>
+              <div className="space-y-6">
+                {/* Personal Information */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                    <div className="w-2 h-6 bg-blue-500 rounded-full mr-3"></div>
+                    Personal Information
+                  </h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="space-y-2">
+                        <p><strong>First Name:</strong> {selectedApplicationDetails.firstName}</p>
+                        <p><strong>Last Name:</strong> {selectedApplicationDetails.lastName}</p>
+                        <p><strong>Email:</strong> {selectedApplicationDetails.email}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p><strong>Phone:</strong> {selectedApplicationDetails.phone}</p>
+                        <p><strong>Website:</strong> {selectedApplicationDetails.website || 'Not provided'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-                
-                {selectedApplicationDetails.bio && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Biography</h4>
-                    <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">{selectedApplicationDetails.bio}</p>
-                  </div>
-                )}
 
-                {selectedApplicationDetails.selectedCategories && selectedApplicationDetails.selectedCategories.length > 0 && (
+                {/* Social Media Links */}
+                {(selectedApplicationDetails.instagramUrl || selectedApplicationDetails.twitterUrl || selectedApplicationDetails.facebookUrl || selectedApplicationDetails.linkedinUrl) && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Categories</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedApplicationDetails.selectedCategories.map((category: string, index: number) => (
-                        <Badge key={`${category}-${index}`} className="bg-purple-100 text-purple-800">
-                          {category}
-                        </Badge>
-                      ))}
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                      <div className="w-2 h-6 bg-green-500 rounded-full mr-3"></div>
+                      Social Media Links
+                    </h4>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="space-y-2">
+                          {selectedApplicationDetails.instagramUrl && (
+                            <p><strong>Instagram:</strong> <a href={selectedApplicationDetails.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.instagramUrl}</a></p>
+                          )}
+                          {selectedApplicationDetails.twitterUrl && (
+                            <p><strong>Twitter:</strong> <a href={selectedApplicationDetails.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.twitterUrl}</a></p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          {selectedApplicationDetails.facebookUrl && (
+                            <p><strong>Facebook:</strong> <a href={selectedApplicationDetails.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.facebookUrl}</a></p>
+                          )}
+                          {selectedApplicationDetails.linkedinUrl && (
+                            <p><strong>LinkedIn:</strong> <a href={selectedApplicationDetails.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.linkedinUrl}</a></p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                <div className="pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-500">
-                      Status: <Badge className={
-                        selectedApplicationDetails.status === 'pending' ? 'bg-blue-100 text-blue-800' :
-                        selectedApplicationDetails.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        selectedApplicationDetails.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }>
-                        {selectedApplicationDetails.status?.charAt(0).toUpperCase() + selectedApplicationDetails.status?.slice(1)}
+                {/* Professional Information */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                    <div className="w-2 h-6 bg-purple-500 rounded-full mr-3"></div>
+                    Professional Information
+                  </h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="space-y-2">
+                        <p><strong>Title:</strong> {selectedApplicationDetails.title}</p>
+                        <p><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p><strong>Years of Experience:</strong> {selectedApplicationDetails.yearsExperience}</p>
+                        <p><strong>Credentials:</strong> {selectedApplicationDetails.credentials}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Speaking Information */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                    <div className="w-2 h-6 bg-orange-500 rounded-full mr-3"></div>
+                    Speaking Information
+                  </h4>
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                    {/* Categories */}
+                    {selectedApplicationDetails.selectedCategories && selectedApplicationDetails.selectedCategories.length > 0 && (
+                      <div>
+                        <p className="font-medium text-sm mb-2">Selected Categories:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedApplicationDetails.selectedCategories.map((category: string, index: number) => (
+                            <Badge key={`${category}-${index}`} className="bg-purple-100 text-purple-800">
+                              {category}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Specific Topics */}
+                    {selectedApplicationDetails.specificTopics && (
+                      <div>
+                        <p className="font-medium text-sm mb-2">Specific Topics of Expertise:</p>
+                        <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.specificTopics}</p>
+                      </div>
+                    )}
+
+                    {/* Speaking Topics (backward compatibility) */}
+                    {selectedApplicationDetails.speakingTopics && selectedApplicationDetails.speakingTopics !== selectedApplicationDetails.specificTopics && (
+                      <div>
+                        <p className="font-medium text-sm mb-2">Speaking Topics:</p>
+                        <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.speakingTopics}</p>
+                      </div>
+                    )}
+
+                    {/* Previous Experience */}
+                    {selectedApplicationDetails.previousExperience && (
+                      <div>
+                        <p className="font-medium text-sm mb-2">Previous Speaking Experience:</p>
+                        <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.previousExperience}</p>
+                      </div>
+                    )}
+
+                    {/* Available Formats */}
+                    {selectedApplicationDetails.availableFormats && selectedApplicationDetails.availableFormats.length > 0 && (
+                      <div>
+                        <p className="font-medium text-sm mb-2">Available Speaking Formats:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedApplicationDetails.availableFormats.map((format: string, index: number) => (
+                            <Badge key={`${format}-${index}`} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              {format}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Travel Willingness */}
+                    <div>
+                      <p className="font-medium text-sm mb-2">Travel Willingness:</p>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        {selectedApplicationDetails.travelWillingness}
                       </Badge>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      Submitted: {new Date(selectedApplicationDetails.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+
+                {/* Biography */}
+                {selectedApplicationDetails.biography && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                      <div className="w-2 h-6 bg-teal-500 rounded-full mr-3"></div>
+                      Biography
+                    </h4>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 leading-relaxed">{selectedApplicationDetails.biography}</p>
                     </div>
+                  </div>
+                )}
+
+                {/* Additional Information */}
+                {(selectedApplicationDetails.specialRequirements || selectedApplicationDetails.references) && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                      <div className="w-2 h-6 bg-pink-500 rounded-full mr-3"></div>
+                      Additional Information
+                    </h4>
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                      {selectedApplicationDetails.specialRequirements && (
+                        <div>
+                          <p className="font-medium text-sm mb-2">Special Requirements:</p>
+                          <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.specialRequirements}</p>
+                        </div>
+                      )}
+                      
+                      {selectedApplicationDetails.references && (
+                        <div>
+                          <p className="font-medium text-sm mb-2">References:</p>
+                          <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.references}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Application Status & Timeline */}
+                <div className="pt-4 border-t border-gray-200">
+                  <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                    <div className="w-2 h-6 bg-gray-500 rounded-full mr-3"></div>
+                    Application Status
+                  </h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium">Status:</span>
+                        <Badge className={
+                          selectedApplicationDetails.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                          selectedApplicationDetails.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          selectedApplicationDetails.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }>
+                          {selectedApplicationDetails.status?.charAt(0).toUpperCase() + selectedApplicationDetails.status?.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Submitted: {new Date(selectedApplicationDetails.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    
+                    {selectedApplicationDetails.reviewedBy && (
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p><strong>Reviewed by:</strong> {selectedApplicationDetails.reviewedBy}</p>
+                        {selectedApplicationDetails.reviewedAt && (
+                          <p><strong>Reviewed on:</strong> {new Date(selectedApplicationDetails.reviewedAt).toLocaleDateString()}</p>
+                        )}
+                      </div>
+                    )}
+                    
+                    {selectedApplicationDetails.adminNotes && (
+                      <div className="mt-3">
+                        <p className="font-medium text-sm mb-2">Admin Notes:</p>
+                        <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.adminNotes}</p>
+                      </div>
+                    )}
+                    
+                    {selectedApplicationDetails.createdSpeakerId && (
+                      <div className="mt-3">
+                        <p className="text-sm text-green-600">
+                          <strong>Speaker Profile Created:</strong> ID #{selectedApplicationDetails.createdSpeakerId}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
