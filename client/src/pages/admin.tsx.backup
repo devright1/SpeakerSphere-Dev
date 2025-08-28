@@ -3728,7 +3728,6 @@ function InquiriesManagement() {
   };
 
   return (
-    <>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -3934,126 +3933,484 @@ function InquiriesManagement() {
         )}
       </CardContent>
     </Card>
-    
-    {/* Application Details Modal */}
+  );
+}
+
+// Detailed Application View Dialog Component
+function ApplicationDetailsDialog({ application, isOpen, onClose }: {
+  application: any;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  if (!application) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-gray-900">
+            Application Details - {application.firstName} {application.lastName}
+          </DialogTitle>
+          <DialogDescription>
+            Complete application information submitted on {new Date(application.createdAt).toLocaleDateString()}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-8">
+          {/* Personal Information */}
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg">
+            <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center">
+              <Users className="h-5 w-5 mr-2" />
+              Personal Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="space-y-3">
+                  <div>
+                    <span className="font-semibold text-gray-700">Full Name:</span>
+                    <p className="text-gray-900">{application.firstName} {application.lastName}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Email:</span>
+                    <p className="text-gray-900">{application.email}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Phone:</span>
+                    <p className="text-gray-900">{application.phone || 'Not provided'}</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div className="space-y-3">
+                  <div>
+                    <span className="font-semibold text-gray-700">Website:</span>
+                    <p className="text-gray-900">{application.website ? (
+                      <a href={application.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        {application.website}
+                      </a>
+                    ) : 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Instagram:</span>
+                    <p className="text-gray-900">{application.instagramUrl ? (
+                      <a href={application.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        {application.instagramUrl}
+                      </a>
+                    ) : 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">LinkedIn:</span>
+                    <p className="text-gray-900">{application.linkedinUrl ? (
+                      <a href={application.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        {application.linkedinUrl}
+                      </a>
+                    ) : 'Not provided'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Professional Information */}
+          <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg">
+            <h3 className="text-lg font-bold text-green-900 mb-4 flex items-center">
+              <Star className="h-5 w-5 mr-2" />
+              Professional Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div>
+                  <span className="font-semibold text-gray-700">Title:</span>
+                  <p className="text-gray-900">{application.title}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Specialty:</span>
+                  <p className="text-gray-900">{application.specialty}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Years of Experience:</span>
+                  <p className="text-gray-900">{application.yearsExperience}</p>
+                </div>
+              </div>
+              <div>
+                <div>
+                  <span className="font-semibold text-gray-700">Education & Credentials:</span>
+                  <p className="text-gray-900 whitespace-pre-wrap">{application.credentials}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Speaking Information */}
+          <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-lg">
+            <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center">
+              <MessageSquare className="h-5 w-5 mr-2" />
+              Speaking Information
+            </h3>
+            
+            {/* Selected Categories */}
+            {application.selectedCategories && application.selectedCategories.length > 0 && (
+              <div className="mb-4">
+                <span className="font-semibold text-gray-700">Selected Categories:</span>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {application.selectedCategories.map((category: string) => (
+                    <Badge key={category} className="bg-purple-100 text-purple-800 border-purple-300">
+                      {category}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Specific Topics */}
+            {application.specificTopics && (
+              <div className="mb-4">
+                <span className="font-semibold text-gray-700">Specific Topics of Expertise:</span>
+                <p className="text-gray-900 mt-1 whitespace-pre-wrap">{application.specificTopics}</p>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <span className="font-semibold text-gray-700">General Speaking Topics:</span>
+                <p className="text-gray-900 whitespace-pre-wrap">{application.speakingTopics}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Previous Speaking Experience:</span>
+                <p className="text-gray-900 whitespace-pre-wrap">{application.previousExperience}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Available Speaking Formats:</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {application.availableFormats && application.availableFormats.map((format: string) => (
+                    <Badge key={format} className="bg-blue-100 text-blue-800 border-blue-300">
+                      {format}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Travel Willingness:</span>
+                <p className="text-gray-900">{application.travelWillingness}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Information */}
+          <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-lg">
+            <h3 className="text-lg font-bold text-yellow-900 mb-4 flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              Additional Information
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <span className="font-semibold text-gray-700">Professional Biography:</span>
+                <p className="text-gray-900 whitespace-pre-wrap mt-1">{application.biography}</p>
+              </div>
+              {application.specialRequirements && (
+                <div>
+                  <span className="font-semibold text-gray-700">Special Requirements:</span>
+                  <p className="text-gray-900 whitespace-pre-wrap mt-1">{application.specialRequirements}</p>
+                </div>
+              )}
+              {application.references && (
+                <div>
+                  <span className="font-semibold text-gray-700">References:</span>
+                  <p className="text-gray-900 whitespace-pre-wrap mt-1">{application.references}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Application Status */}
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+              <Settings className="h-5 w-5 mr-2" />
+              Application Status
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div>
+                  <span className="font-semibold text-gray-700">Status:</span>
+                  <Badge className={`ml-2 ${
+                    application.status === 'pending' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                    application.status === 'approved' ? 'bg-green-100 text-green-800 border-green-300' :
+                    application.status === 'under_review' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                    'bg-red-100 text-red-800 border-red-300'
+                  }`}>
+                    {application.status?.charAt(0).toUpperCase() + application.status?.slice(1)}
+                  </Badge>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Submitted:</span>
+                  <p className="text-gray-900">{new Date(application.createdAt).toLocaleString()}</p>
+                </div>
+                {application.reviewedAt && (
+                  <div>
+                    <span className="font-semibold text-gray-700">Reviewed:</span>
+                    <p className="text-gray-900">{new Date(application.reviewedAt).toLocaleString()}</p>
+                  </div>
+                )}
+              </div>
+              <div>
+                {application.reviewedBy && (
+                  <div>
+                    <span className="font-semibold text-gray-700">Reviewed By:</span>
+                    <p className="text-gray-900">{application.reviewedBy}</p>
+                  </div>
+                )}
+                {application.adminNotes && (
+                  <div>
+                    <span className="font-semibold text-gray-700">Admin Notes:</span>
+                    <p className="text-gray-900 whitespace-pre-wrap">{application.adminNotes}</p>
+                  </div>
+                )}
+                {application.createdSpeakerId && (
+                  <div>
+                    <span className="font-semibold text-gray-700">Created Speaker ID:</span>
+                    <p className="text-gray-900">{application.createdSpeakerId}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex justify-end pt-4 border-t">
+          <Button onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
     <Dialog open={!!selectedApplicationDetails} onOpenChange={() => setSelectedApplicationDetails(null)}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
+          <DialogTitle className="text-2xl font-bold text-gray-900">
             Application Details - {selectedApplicationDetails?.firstName} {selectedApplicationDetails?.lastName}
           </DialogTitle>
           <DialogDescription>
-            Submitted on {selectedApplicationDetails && new Date(selectedApplicationDetails.createdAt).toLocaleDateString()}
+            Complete application information submitted on {selectedApplicationDetails && new Date(selectedApplicationDetails.createdAt).toLocaleDateString()}
           </DialogDescription>
         </DialogHeader>
         
         {selectedApplicationDetails && (
-          <div className="space-y-4">
-            {/* Basic Info */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-bold text-blue-900 mb-3">Personal Information</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><strong>Name:</strong> {selectedApplicationDetails.firstName} {selectedApplicationDetails.lastName}</div>
-                <div><strong>Email:</strong> {selectedApplicationDetails.email}</div>
-                <div><strong>Phone:</strong> {selectedApplicationDetails.phone || 'Not provided'}</div>
-                <div><strong>Title:</strong> {selectedApplicationDetails.title}</div>
-                <div><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</div>
-                <div><strong>Experience:</strong> {selectedApplicationDetails.yearsExperience} years</div>
-              </div>
-            </div>
-
-            {/* Categories & Topics */}
-            {(selectedApplicationDetails.selectedCategories?.length > 0 || selectedApplicationDetails.specificTopics) && (
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h3 className="font-bold text-purple-900 mb-3">Categories & Expertise</h3>
-                {selectedApplicationDetails.selectedCategories?.length > 0 && (
-                  <div className="mb-3">
-                    <strong className="text-sm">Selected Categories:</strong>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedApplicationDetails.selectedCategories.map((category: string) => (
-                        <Badge key={category} className="bg-purple-100 text-purple-800 text-xs">
-                          {category}
-                        </Badge>
-                      ))}
+          <div className="space-y-8">
+            {/* Personal Information */}
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg">
+              <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Personal Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="font-semibold text-gray-700">Full Name:</span>
+                      <p className="text-gray-900">{selectedApplicationDetails.firstName} {selectedApplicationDetails.lastName}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">Email:</span>
+                      <p className="text-gray-900">{selectedApplicationDetails.email}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">Phone:</span>
+                      <p className="text-gray-900">{selectedApplicationDetails.phone || 'Not provided'}</p>
                     </div>
                   </div>
-                )}
-                {selectedApplicationDetails.specificTopics && (
-                  <div>
-                    <strong className="text-sm">Specific Topics:</strong>
-                    <p className="text-sm mt-1">{selectedApplicationDetails.specificTopics}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Speaking Experience */}
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-bold text-green-900 mb-3">Speaking Information</h3>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <strong>Speaking Topics:</strong>
-                  <p>{selectedApplicationDetails.speakingTopics}</p>
                 </div>
                 <div>
-                  <strong>Previous Experience:</strong>
-                  <p>{selectedApplicationDetails.previousExperience}</p>
-                </div>
-                {selectedApplicationDetails.availableFormats?.length > 0 && (
-                  <div>
-                    <strong>Available Formats:</strong>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedApplicationDetails.availableFormats.map((format: string) => (
-                        <Badge key={format} className="bg-blue-100 text-blue-800 text-xs">
-                          {format}
-                        </Badge>
-                      ))}
+                  <div className="space-y-3">
+                    <div>
+                      <span className="font-semibold text-gray-700">Website:</span>
+                      <p className="text-gray-900">{selectedApplicationDetails.website ? (
+                        <a href={selectedApplicationDetails.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          {selectedApplicationDetails.website}
+                        </a>
+                      ) : 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">Instagram:</span>
+                      <p className="text-gray-900">{selectedApplicationDetails.instagramUrl ? (
+                        <a href={selectedApplicationDetails.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          {selectedApplicationDetails.instagramUrl}
+                        </a>
+                      ) : 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">LinkedIn:</span>
+                      <p className="text-gray-900">{selectedApplicationDetails.linkedinUrl ? (
+                        <a href={selectedApplicationDetails.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          {selectedApplicationDetails.linkedinUrl}
+                        </a>
+                      ) : 'Not provided'}</p>
                     </div>
                   </div>
-                )}
-                <div><strong>Travel:</strong> {selectedApplicationDetails.travelWillingness}</div>
+                </div>
               </div>
             </div>
 
-            {/* Additional Details */}
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <h3 className="font-bold text-yellow-900 mb-3">Additional Information</h3>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <strong>Biography:</strong>
-                  <p>{selectedApplicationDetails.biography}</p>
-                </div>
-                <div>
-                  <strong>Credentials:</strong>
-                  <p>{selectedApplicationDetails.credentials}</p>
-                </div>
-                {selectedApplicationDetails.website && (
+            {/* Professional Information */}
+            <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg">
+              <h3 className="text-lg font-bold text-green-900 mb-4 flex items-center">
+                <Star className="h-5 w-5 mr-2" />
+                Professional Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
                   <div>
-                    <strong>Website:</strong> 
-                    <a href={selectedApplicationDetails.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
-                      {selectedApplicationDetails.website}
-                    </a>
+                    <span className="font-semibold text-gray-700">Title:</span>
+                    <p className="text-gray-900">{selectedApplicationDetails.title}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Specialty:</span>
+                    <p className="text-gray-900">{selectedApplicationDetails.specialty}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Years of Experience:</span>
+                    <p className="text-gray-900">{selectedApplicationDetails.yearsExperience}</p>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Education & Credentials:</span>
+                    <p className="text-gray-900 whitespace-pre-wrap">{selectedApplicationDetails.credentials}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Speaking Information */}
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-lg">
+              <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center">
+                <MessageSquare className="h-5 w-5 mr-2" />
+                Speaking Information
+              </h3>
+              
+              {/* Selected Categories */}
+              {selectedApplicationDetails.selectedCategories && selectedApplicationDetails.selectedCategories.length > 0 && (
+                <div className="mb-4">
+                  <span className="font-semibold text-gray-700">Selected Categories:</span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedApplicationDetails.selectedCategories.map((category: string) => (
+                      <Badge key={category} className="bg-purple-100 text-purple-800 border-purple-300">
+                        {category}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Specific Topics */}
+              {selectedApplicationDetails.specificTopics && (
+                <div className="mb-4">
+                  <span className="font-semibold text-gray-700">Specific Topics of Expertise:</span>
+                  <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedApplicationDetails.specificTopics}</p>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <span className="font-semibold text-gray-700">General Speaking Topics:</span>
+                  <p className="text-gray-900 whitespace-pre-wrap">{selectedApplicationDetails.speakingTopics}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Previous Speaking Experience:</span>
+                  <p className="text-gray-900 whitespace-pre-wrap">{selectedApplicationDetails.previousExperience}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Available Speaking Formats:</span>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedApplicationDetails.availableFormats && selectedApplicationDetails.availableFormats.map((format: string) => (
+                      <Badge key={format} className="bg-blue-100 text-blue-800 border-blue-300">
+                        {format}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Travel Willingness:</span>
+                  <p className="text-gray-900">{selectedApplicationDetails.travelWillingness}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Information */}
+            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-lg">
+              <h3 className="text-lg font-bold text-yellow-900 mb-4 flex items-center">
+                <FileText className="h-5 w-5 mr-2" />
+                Additional Information
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <span className="font-semibold text-gray-700">Professional Biography:</span>
+                  <p className="text-gray-900 whitespace-pre-wrap mt-1">{selectedApplicationDetails.biography}</p>
+                </div>
+                {selectedApplicationDetails.specialRequirements && (
+                  <div>
+                    <span className="font-semibold text-gray-700">Special Requirements:</span>
+                    <p className="text-gray-900 whitespace-pre-wrap mt-1">{selectedApplicationDetails.specialRequirements}</p>
+                  </div>
+                )}
+                {selectedApplicationDetails.references && (
+                  <div>
+                    <span className="font-semibold text-gray-700">References:</span>
+                    <p className="text-gray-900 whitespace-pre-wrap mt-1">{selectedApplicationDetails.references}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Status */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-bold text-gray-900 mb-3">Application Status</h3>
-              <div className="flex items-center gap-4 text-sm">
-                <div>
-                  <strong>Status:</strong>
-                  <Badge className={`ml-2 ${
-                    selectedApplicationDetails.status === 'pending' ? 'bg-blue-100 text-blue-800' :
-                    selectedApplicationDetails.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    selectedApplicationDetails.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {selectedApplicationDetails.status?.charAt(0).toUpperCase() + selectedApplicationDetails.status?.slice(1)}
-                  </Badge>
+            {/* Application Status */}
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Settings className="h-5 w-5 mr-2" />
+                Application Status
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div>
+                    <span className="font-semibold text-gray-700">Status:</span>
+                    <Badge className={`ml-2 ${
+                      selectedApplicationDetails.status === 'pending' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                      selectedApplicationDetails.status === 'approved' ? 'bg-green-100 text-green-800 border-green-300' :
+                      selectedApplicationDetails.status === 'under_review' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                      'bg-red-100 text-red-800 border-red-300'
+                    }`}>
+                      {selectedApplicationDetails.status?.charAt(0).toUpperCase() + selectedApplicationDetails.status?.slice(1)}
+                    </Badge>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Submitted:</span>
+                    <p className="text-gray-900">{new Date(selectedApplicationDetails.createdAt).toLocaleString()}</p>
+                  </div>
+                  {selectedApplicationDetails.reviewedAt && (
+                    <div>
+                      <span className="font-semibold text-gray-700">Reviewed:</span>
+                      <p className="text-gray-900">{new Date(selectedApplicationDetails.reviewedAt).toLocaleString()}</p>
+                    </div>
+                  )}
                 </div>
-                <div><strong>Submitted:</strong> {new Date(selectedApplicationDetails.createdAt).toLocaleString()}</div>
+                <div>
+                  {selectedApplicationDetails.reviewedBy && (
+                    <div>
+                      <span className="font-semibold text-gray-700">Reviewed By:</span>
+                      <p className="text-gray-900">{selectedApplicationDetails.reviewedBy}</p>
+                    </div>
+                  )}
+                  {selectedApplicationDetails.adminNotes && (
+                    <div>
+                      <span className="font-semibold text-gray-700">Admin Notes:</span>
+                      <p className="text-gray-900 whitespace-pre-wrap">{selectedApplicationDetails.adminNotes}</p>
+                    </div>
+                  )}
+                  {selectedApplicationDetails.createdSpeakerId && (
+                    <div>
+                      <span className="font-semibold text-gray-700">Created Speaker ID:</span>
+                      <p className="text-gray-900">{selectedApplicationDetails.createdSpeakerId}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -4066,6 +4423,5 @@ function InquiriesManagement() {
         </div>
       </DialogContent>
     </Dialog>
-    </>
   );
 }
