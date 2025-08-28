@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +37,10 @@ export default function AdminDashboard() {
   const [isCategoryEditDialogOpen, setIsCategoryEditDialogOpen] = useState(false);
   const [categoryAssignments, setCategoryAssignments] = useState<{[key: string]: boolean}>({});
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
+  const [speakerAssignmentCategory, setSpeakerAssignmentCategory] = useState<any>(null);
+  const [isAssignmentDialogOpen, setIsAssignmentDialogOpen] = useState(false);
+  const [assignmentSearchQuery, setAssignmentSearchQuery] = useState("");
   const [feeRangeVisible, setFeeRangeVisible] = useState(false);
   
   // Admin speakers filter states
@@ -658,6 +662,30 @@ export default function AdminDashboard() {
     setCategoryAssignments(assignments);
     setCategorySearchQuery(""); // Reset search when opening dialog
     setIsCategoryEditDialogOpen(true);
+  };
+
+  const toggleCategoryExpansion = (categoryId: number) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  const handleSpeakerAssignment = (category: any) => {
+    setSpeakerAssignmentCategory(category);
+    setIsAssignmentDialogOpen(true);
+    setAssignmentSearchQuery("");
+  };
+
+  const getSpeakersInCategory = (categoryName: string) => {
+    return speakersArray.filter((speaker: any) => speaker.category === categoryName);
+  };
+
+  const getUnassignedSpeakers = () => {
+    return speakersArray.filter((speaker: any) => !speaker.category || speaker.category === '');
   };
 
   const handleSaveCategoryAssignments = async () => {
@@ -2591,30 +2619,103 @@ export default function AdminDashboard() {
                   </div>
                   
                   <div className="grid gap-4">
-                    {categoriesArray.map((category: any) => (
-                      <div key={category.name} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <FolderOpen className="h-8 w-8 text-primary" />
-                          <div>
-                            <h4 className="font-medium">{category.name}</h4>
-                            <p className="text-sm text-gray-600">{category.description}</p>
+                    {categoriesArray.map((category: any) => {
+                      const categoryId = category.id || category.name;
+                      const speakersInCategory = getSpeakersInCategory(category.name);
+                      const isExpanded = expandedCategories.has(categoryId);
+                      
+                      return (
+                        <div key={categoryId} className="border rounded-lg">
+                          <div className="flex items-center justify-between p-4">
+                            <div className="flex items-center space-x-4">
+                              <button
+                                onClick={() => toggleCategoryExpansion(categoryId)}
+                                className="text-primary hover:text-primary/80 transition-colors"
+                              >
+                                <FolderOpen className="h-8 w-8" />
+                              </button>
+                              <div>
+                                <h4 className="font-medium">{category.name}</h4>
+                                <p className="text-sm text-gray-600">{category.description}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="outline">
+                                {speakersInCategory.length} speakers
+                              </Badge>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => toggleCategoryExpansion(categoryId)}
+                              >
+                                {isExpanded ? 'Collapse' : 'View Speakers'}
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleSpeakerAssignment(category)}
+                              >
+                                Manage
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditCategory(category)}
+                              >
+                                Edit
+                              </Button>
+                              <Button variant="outline" size="sm">Delete</Button>
+                            </div>
                           </div>
+                          
+                          {isExpanded && (
+                            <div className="border-t bg-gray-50 p-4">
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between mb-4">
+                                  <h5 className="font-medium text-sm">Speakers in {category.name}</h5>
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => handleSpeakerAssignment(category)}
+                                    className="bg-primary text-white"
+                                  >
+                                    Add/Remove Speakers
+                                  </Button>
+                                </div>
+                                
+                                {speakersInCategory.length > 0 ? (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    {speakersInCategory.map((speaker: any) => (
+                                      <div key={speaker.id} className="flex items-center justify-between bg-white p-3 rounded border text-sm">
+                                        <div className="flex items-center space-x-2">
+                                          <UserCheck className="h-4 w-4 text-green-600" />
+                                          <span className="font-medium">{speaker.name}</span>
+                                        </div>
+                                        <Badge variant="outline" className="text-xs">
+                                          {speaker.verified ? 'Verified' : 'Unverified'}
+                                        </Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-8 text-gray-500">
+                                    <Users className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                                    <p className="text-sm">No speakers assigned to this category</p>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="mt-2"
+                                      onClick={() => handleSpeakerAssignment(category)}
+                                    >
+                                      Add Speakers
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline">
-                            {speakersArray.filter((s: any) => s.category === category.name).length} speakers
-                          </Badge>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEditCategory(category)}
-                          >
-                            Edit
-                          </Button>
-                          <Button variant="outline" size="sm">Delete</Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </CardContent>
@@ -2939,6 +3040,140 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Speaker Assignment Dialog */}
+        {isAssignmentDialogOpen && speakerAssignmentCategory && (
+          <Dialog open={isAssignmentDialogOpen} onOpenChange={setIsAssignmentDialogOpen}>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+              <DialogHeader>
+                <DialogTitle>Manage Speakers - {speakerAssignmentCategory.name}</DialogTitle>
+                <DialogDescription>
+                  Add or remove speakers from the "{speakerAssignmentCategory.name}" category
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="flex flex-col space-y-4 h-full overflow-hidden">
+                {/* Search */}
+                <Input
+                  placeholder="Search speakers by name..."
+                  value={assignmentSearchQuery}
+                  onChange={(e) => setAssignmentSearchQuery(e.target.value)}
+                  className="w-full"
+                />
+                
+                <div className="flex-1 overflow-y-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Currently Assigned Speakers */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-green-700 flex items-center">
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        Assigned to {speakerAssignmentCategory.name}
+                        <Badge variant="outline" className="ml-2">
+                          {getSpeakersInCategory(speakerAssignmentCategory.name).length}
+                        </Badge>
+                      </h4>
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {getSpeakersInCategory(speakerAssignmentCategory.name)
+                          .filter((speaker: any) => 
+                            assignmentSearchQuery === '' || 
+                            speaker.name.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
+                          )
+                          .map((speaker: any) => (
+                            <div key={speaker.id} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="flex items-center space-x-2">
+                                <UserCheck className="h-4 w-4 text-green-600" />
+                                <span className="font-medium">{speaker.name}</span>
+                                {speaker.verified && <Badge variant="outline" className="text-xs">Verified</Badge>}
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => {
+                                  updateCategoryAssignmentMutation.mutate({
+                                    speakerId: speaker.id,
+                                    category: null
+                                  });
+                                }}
+                                disabled={updateCategoryAssignmentMutation.isPending}
+                                className="text-red-600 border-red-300 hover:bg-red-50"
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ))
+                        }
+                        {getSpeakersInCategory(speakerAssignmentCategory.name).length === 0 && (
+                          <div className="text-center py-8 text-gray-500">
+                            <Users className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                            <p className="text-sm">No speakers assigned</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Available Speakers to Assign */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-blue-700 flex items-center">
+                        <Users className="h-4 w-4 mr-2" />
+                        Available Speakers
+                        <Badge variant="outline" className="ml-2">
+                          {speakersArray
+                            .filter((speaker: any) => speaker.category !== speakerAssignmentCategory.name)
+                            .length}
+                        </Badge>
+                      </h4>
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {speakersArray
+                          .filter((speaker: any) => 
+                            speaker.category !== speakerAssignmentCategory.name &&
+                            (assignmentSearchQuery === '' || 
+                             speaker.name.toLowerCase().includes(assignmentSearchQuery.toLowerCase()))
+                          )
+                          .map((speaker: any) => (
+                            <div key={speaker.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <div className="flex items-center space-x-2">
+                                <Users className="h-4 w-4 text-blue-600" />
+                                <div>
+                                  <span className="font-medium">{speaker.name}</span>
+                                  {speaker.category && (
+                                    <div className="text-xs text-gray-600">
+                                      Currently in: {speaker.category}
+                                    </div>
+                                  )}
+                                </div>
+                                {speaker.verified && <Badge variant="outline" className="text-xs">Verified</Badge>}
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => {
+                                  updateCategoryAssignmentMutation.mutate({
+                                    speakerId: speaker.id,
+                                    category: speakerAssignmentCategory.name
+                                  });
+                                }}
+                                disabled={updateCategoryAssignmentMutation.isPending}
+                                className="text-green-600 border-green-300 hover:bg-green-50"
+                              >
+                                Add
+                              </Button>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <DialogClose asChild>
+                  <Button variant="outline" className="w-full">
+                    Done
+                  </Button>
+                </DialogClose>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );
