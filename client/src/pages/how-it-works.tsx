@@ -19,7 +19,7 @@ export default function HowItWorks() {
     {
       icon: Calendar,
       title: "Request Booking",
-      description: "Submit an inquiry directly through the platform with your event details. Speakers will respond with availability and pricing."
+      description: "Submit an inquiry directly through the platform with your event details. Our team will get back to you with speaker availability and pricing, faster than you can say 'open wide.'"
     },
     {
       icon: Star,
