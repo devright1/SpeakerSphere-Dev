@@ -48,6 +48,10 @@ export default function AdminDashboard() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set());
   
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+  
   // User management states
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [userFilterRole, setUserFilterRole] = useState("all");
@@ -1048,6 +1052,19 @@ export default function AdminDashboard() {
     });
   }, [speakersArray, searchQuery, selectedCategories, selectedStatuses]);
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategories, selectedStatuses]);
+
+  // Calculate pagination for filtered speakers
+  const totalPages = Math.ceil(filteredSpeakers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSpeakers = useMemo(() => {
+    return filteredSpeakers.slice(startIndex, endIndex);
+  }, [filteredSpeakers, startIndex, endIndex]);
+
   // Memoize bulk operation IDs to prevent unnecessary recalculations
   const bulkSpeakerIds = useMemo(() => {
     return filteredSpeakers.map((s: any) => s.id);
@@ -1629,8 +1646,8 @@ export default function AdminDashboard() {
                     </div>
                     
                     <div className="grid gap-4">
-                      {filteredSpeakers.length > 0 ? (
-                        filteredSpeakers.map((speaker: any) => (
+                      {paginatedSpeakers.length > 0 ? (
+                        paginatedSpeakers.map((speaker: any) => (
                         <div key={speaker.slug} className="p-4 border rounded-lg">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
@@ -1812,6 +1829,68 @@ export default function AdminDashboard() {
                         </div>
                       )}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center items-center space-x-2 mt-6 pt-4 border-t">
+                        <span className="text-sm text-gray-600 mr-4">
+                          Showing {startIndex + 1}-{Math.min(endIndex, filteredSpeakers.length)} of {filteredSpeakers.length} speakers
+                        </span>
+                        
+                        {/* Previous Button */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                        >
+                          Previous
+                        </Button>
+                        
+                        {/* Page Numbers */}
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
+                            // Show first page, last page, current page, and pages around current
+                            const showPage = pageNumber === 1 || 
+                                           pageNumber === totalPages || 
+                                           Math.abs(pageNumber - currentPage) <= 2;
+                            
+                            if (!showPage && pageNumber !== 2 && pageNumber !== totalPages - 1) {
+                              // Show ellipsis
+                              if (pageNumber === 3 && currentPage > 5) {
+                                return <span key={pageNumber} className="px-2 text-gray-400">...</span>;
+                              }
+                              if (pageNumber === totalPages - 2 && currentPage < totalPages - 4) {
+                                return <span key={pageNumber} className="px-2 text-gray-400">...</span>;
+                              }
+                              return null;
+                            }
+                            
+                            return (
+                              <Button
+                                key={pageNumber}
+                                variant={currentPage === pageNumber ? "default" : "outline"}
+                                size="sm"
+                                className="min-w-[40px]"
+                                onClick={() => setCurrentPage(pageNumber)}
+                              >
+                                {pageNumber}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Next Button */}
+                        <Button
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
