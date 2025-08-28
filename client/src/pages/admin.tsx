@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon, FileText } from "lucide-react";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon, FileText, Save } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -93,6 +93,8 @@ export default function AdminDashboard() {
   const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
   const [actionType, setActionType] = useState<'create_new' | 'add_to_existing' | null>(null);
   const [selectedApplicationDetails, setSelectedApplicationDetails] = useState<any>(null);
+  const [isEditingApplication, setIsEditingApplication] = useState(false);
+  const [editableApplicationData, setEditableApplicationData] = useState<any>(null);
   
   const { toast } = useToast();
 
@@ -579,6 +581,27 @@ export default function AdminDashboard() {
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update application", variant: "destructive" });
+    },
+  });
+
+  // Edit application mutation
+  const editApplicationMutation = useMutation({
+    mutationFn: async ({ applicationId, updates }: { applicationId: number; updates: any }) => {
+      const response = await fetch(`/api/admin/speaker-applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) throw new Error('Failed to edit application');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Application updated successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-applications"] });
+      setIsEditingApplication(false);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to edit application", variant: "destructive" });
     },
   });
 
@@ -3338,12 +3361,67 @@ export default function AdminDashboard() {
         )}
 
         {/* Application Details Dialog */}
-        <Dialog open={!!selectedApplicationDetails} onOpenChange={(open) => !open && setSelectedApplicationDetails(null)}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <Dialog open={!!selectedApplicationDetails} onOpenChange={(open) => {
+          if (!open) {
+            setSelectedApplicationDetails(null);
+            setIsEditingApplication(false);
+            setEditableApplicationData(null);
+          }
+        }}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Application Details</DialogTitle>
+              <DialogTitle className="flex items-center justify-between">
+                <span>Application Details</span>
+                <div className="flex items-center space-x-2">
+                  {!isEditingApplication ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingApplication(true);
+                        setEditableApplicationData({...selectedApplicationDetails});
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (editableApplicationData) {
+                            editApplicationMutation.mutate({
+                              applicationId: editableApplicationData.id,
+                              updates: editableApplicationData
+                            });
+                          }
+                        }}
+                        disabled={editApplicationMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                        Save
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setIsEditingApplication(false);
+                          setEditableApplicationData(null);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </DialogTitle>
               <DialogDescription>
-                Review the full application details for this speaker
+                {isEditingApplication 
+                  ? "Edit the application details below and save your changes"
+                  : "Review the full application details for this speaker"
+                }
               </DialogDescription>
             </DialogHeader>
             {selectedApplicationDetails && (
@@ -3355,46 +3433,132 @@ export default function AdminDashboard() {
                     Personal Information
                   </h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="space-y-2">
-                        <p><strong>First Name:</strong> {selectedApplicationDetails.firstName}</p>
-                        <p><strong>Last Name:</strong> {selectedApplicationDetails.lastName}</p>
-                        <p><strong>Email:</strong> {selectedApplicationDetails.email}</p>
+                    {!isEditingApplication ? (
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="space-y-2">
+                          <p><strong>First Name:</strong> {selectedApplicationDetails.firstName}</p>
+                          <p><strong>Last Name:</strong> {selectedApplicationDetails.lastName}</p>
+                          <p><strong>Email:</strong> {selectedApplicationDetails.email}</p>
+                        </div>
+                        <div className="space-y-2">
+                          <p><strong>Phone:</strong> {selectedApplicationDetails.phone}</p>
+                          <p><strong>Website:</strong> {selectedApplicationDetails.website || 'Not provided'}</p>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <p><strong>Phone:</strong> {selectedApplicationDetails.phone}</p>
-                        <p><strong>Website:</strong> {selectedApplicationDetails.website || 'Not provided'}</p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium">First Name</label>
+                            <Input
+                              value={editableApplicationData?.firstName || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, firstName: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Last Name</label>
+                            <Input
+                              value={editableApplicationData?.lastName || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, lastName: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Email</label>
+                            <Input
+                              type="email"
+                              value={editableApplicationData?.email || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, email: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium">Phone</label>
+                            <Input
+                              value={editableApplicationData?.phone || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, phone: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Website</label>
+                            <Input
+                              value={editableApplicationData?.website || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, website: e.target.value})}
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Social Media Links */}
-                {(selectedApplicationDetails.instagramUrl || selectedApplicationDetails.twitterUrl || selectedApplicationDetails.facebookUrl || selectedApplicationDetails.linkedinUrl) && (
+                {(selectedApplicationDetails.instagramUrl || selectedApplicationDetails.twitterUrl || selectedApplicationDetails.facebookUrl || selectedApplicationDetails.linkedinUrl || isEditingApplication) && (
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3 flex items-center">
                       <div className="w-2 h-6 bg-green-500 rounded-full mr-3"></div>
                       Social Media Links
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="space-y-2">
-                          {selectedApplicationDetails.instagramUrl && (
-                            <p><strong>Instagram:</strong> <a href={selectedApplicationDetails.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.instagramUrl}</a></p>
-                          )}
-                          {selectedApplicationDetails.twitterUrl && (
-                            <p><strong>Twitter:</strong> <a href={selectedApplicationDetails.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.twitterUrl}</a></p>
-                          )}
+                      {!isEditingApplication ? (
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="space-y-2">
+                            {selectedApplicationDetails.instagramUrl && (
+                              <p><strong>Instagram:</strong> <a href={selectedApplicationDetails.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.instagramUrl}</a></p>
+                            )}
+                            {selectedApplicationDetails.twitterUrl && (
+                              <p><strong>Twitter:</strong> <a href={selectedApplicationDetails.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.twitterUrl}</a></p>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            {selectedApplicationDetails.facebookUrl && (
+                              <p><strong>Facebook:</strong> <a href={selectedApplicationDetails.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.facebookUrl}</a></p>
+                            )}
+                            {selectedApplicationDetails.linkedinUrl && (
+                              <p><strong>LinkedIn:</strong> <a href={selectedApplicationDetails.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.linkedinUrl}</a></p>
+                            )}
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          {selectedApplicationDetails.facebookUrl && (
-                            <p><strong>Facebook:</strong> <a href={selectedApplicationDetails.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.facebookUrl}</a></p>
-                          )}
-                          {selectedApplicationDetails.linkedinUrl && (
-                            <p><strong>LinkedIn:</strong> <a href={selectedApplicationDetails.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedApplicationDetails.linkedinUrl}</a></p>
-                          )}
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-sm font-medium">Instagram URL</label>
+                              <Input
+                                value={editableApplicationData?.instagramUrl || ''}
+                                onChange={(e) => setEditableApplicationData({...editableApplicationData, instagramUrl: e.target.value})}
+                                placeholder="https://instagram.com/username"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium">Twitter URL</label>
+                              <Input
+                                value={editableApplicationData?.twitterUrl || ''}
+                                onChange={(e) => setEditableApplicationData({...editableApplicationData, twitterUrl: e.target.value})}
+                                placeholder="https://twitter.com/username"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-sm font-medium">Facebook URL</label>
+                              <Input
+                                value={editableApplicationData?.facebookUrl || ''}
+                                onChange={(e) => setEditableApplicationData({...editableApplicationData, facebookUrl: e.target.value})}
+                                placeholder="https://facebook.com/page"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium">LinkedIn URL</label>
+                              <Input
+                                value={editableApplicationData?.linkedinUrl || ''}
+                                onChange={(e) => setEditableApplicationData({...editableApplicationData, linkedinUrl: e.target.value})}
+                                placeholder="https://linkedin.com/in/profile"
+                              />
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -3406,16 +3570,53 @@ export default function AdminDashboard() {
                     Professional Information
                   </h4>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="space-y-2">
-                        <p><strong>Title:</strong> {selectedApplicationDetails.title}</p>
-                        <p><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</p>
+                    {!isEditingApplication ? (
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="space-y-2">
+                          <p><strong>Title:</strong> {selectedApplicationDetails.title}</p>
+                          <p><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</p>
+                        </div>
+                        <div className="space-y-2">
+                          <p><strong>Years of Experience:</strong> {selectedApplicationDetails.yearsExperience}</p>
+                          <p><strong>Credentials:</strong> {selectedApplicationDetails.credentials}</p>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <p><strong>Years of Experience:</strong> {selectedApplicationDetails.yearsExperience}</p>
-                        <p><strong>Credentials:</strong> {selectedApplicationDetails.credentials}</p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium">Title</label>
+                            <Input
+                              value={editableApplicationData?.title || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, title: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Specialty</label>
+                            <Input
+                              value={editableApplicationData?.specialty || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, specialty: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium">Years of Experience</label>
+                            <Input
+                              value={editableApplicationData?.yearsExperience || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, yearsExperience: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Credentials</label>
+                            <Input
+                              value={editableApplicationData?.credentials || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, credentials: e.target.value})}
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -3426,101 +3627,187 @@ export default function AdminDashboard() {
                     Speaking Information
                   </h4>
                   <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-                    {/* Categories */}
-                    {selectedApplicationDetails.selectedCategories && selectedApplicationDetails.selectedCategories.length > 0 && (
-                      <div>
-                        <p className="font-medium text-sm mb-2">Selected Categories:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedApplicationDetails.selectedCategories.map((category: string, index: number) => (
-                            <Badge key={`${category}-${index}`} className="bg-purple-100 text-purple-800">
-                              {category}
-                            </Badge>
-                          ))}
+                    {!isEditingApplication ? (
+                      <>
+                        {/* Categories */}
+                        {selectedApplicationDetails.selectedCategories && selectedApplicationDetails.selectedCategories.length > 0 && (
+                          <div>
+                            <p className="font-medium text-sm mb-2">Selected Categories:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {selectedApplicationDetails.selectedCategories.map((category: string, index: number) => (
+                                <Badge key={`${category}-${index}`} className="bg-purple-100 text-purple-800">
+                                  {category}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Specific Topics */}
+                        {selectedApplicationDetails.specificTopics && (
+                          <div>
+                            <p className="font-medium text-sm mb-2">Specific Topics of Expertise:</p>
+                            <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.specificTopics}</p>
+                          </div>
+                        )}
+
+                        {/* Speaking Topics (backward compatibility) */}
+                        {selectedApplicationDetails.speakingTopics && selectedApplicationDetails.speakingTopics !== selectedApplicationDetails.specificTopics && (
+                          <div>
+                            <p className="font-medium text-sm mb-2">Speaking Topics:</p>
+                            <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.speakingTopics}</p>
+                          </div>
+                        )}
+
+                        {/* Previous Experience */}
+                        {selectedApplicationDetails.previousExperience && (
+                          <div>
+                            <p className="font-medium text-sm mb-2">Previous Speaking Experience:</p>
+                            <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.previousExperience}</p>
+                          </div>
+                        )}
+
+                        {/* Available Formats */}
+                        {selectedApplicationDetails.availableFormats && selectedApplicationDetails.availableFormats.length > 0 && (
+                          <div>
+                            <p className="font-medium text-sm mb-2">Available Speaking Formats:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {selectedApplicationDetails.availableFormats.map((format: string, index: number) => (
+                                <Badge key={`${format}-${index}`} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                  {format}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Travel Willingness */}
+                        <div>
+                          <p className="font-medium text-sm mb-2">Travel Willingness:</p>
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            {selectedApplicationDetails.travelWillingness}
+                          </Badge>
                         </div>
-                      </div>
-                    )}
-                    
-                    {/* Specific Topics */}
-                    {selectedApplicationDetails.specificTopics && (
-                      <div>
-                        <p className="font-medium text-sm mb-2">Specific Topics of Expertise:</p>
-                        <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.specificTopics}</p>
-                      </div>
-                    )}
-
-                    {/* Speaking Topics (backward compatibility) */}
-                    {selectedApplicationDetails.speakingTopics && selectedApplicationDetails.speakingTopics !== selectedApplicationDetails.specificTopics && (
-                      <div>
-                        <p className="font-medium text-sm mb-2">Speaking Topics:</p>
-                        <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.speakingTopics}</p>
-                      </div>
-                    )}
-
-                    {/* Previous Experience */}
-                    {selectedApplicationDetails.previousExperience && (
-                      <div>
-                        <p className="font-medium text-sm mb-2">Previous Speaking Experience:</p>
-                        <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.previousExperience}</p>
-                      </div>
-                    )}
-
-                    {/* Available Formats */}
-                    {selectedApplicationDetails.availableFormats && selectedApplicationDetails.availableFormats.length > 0 && (
-                      <div>
-                        <p className="font-medium text-sm mb-2">Available Speaking Formats:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedApplicationDetails.availableFormats.map((format: string, index: number) => (
-                            <Badge key={`${format}-${index}`} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                              {format}
-                            </Badge>
-                          ))}
+                      </>
+                    ) : (
+                      <>
+                        {/* Editable Specific Topics */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Specific Topics of Expertise</label>
+                          <Textarea
+                            value={editableApplicationData?.specificTopics || ''}
+                            onChange={(e) => setEditableApplicationData({...editableApplicationData, specificTopics: e.target.value})}
+                            rows={3}
+                            placeholder="Enter specific areas of expertise and topics..."
+                          />
                         </div>
-                      </div>
-                    )}
 
-                    {/* Travel Willingness */}
-                    <div>
-                      <p className="font-medium text-sm mb-2">Travel Willingness:</p>
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                        {selectedApplicationDetails.travelWillingness}
-                      </Badge>
-                    </div>
+                        {/* Editable Previous Experience */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Previous Speaking Experience</label>
+                          <Textarea
+                            value={editableApplicationData?.previousExperience || ''}
+                            onChange={(e) => setEditableApplicationData({...editableApplicationData, previousExperience: e.target.value})}
+                            rows={3}
+                            placeholder="Describe previous speaking experience..."
+                          />
+                        </div>
+
+                        {/* Travel Willingness */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Travel Willingness</label>
+                          <Select 
+                            value={editableApplicationData?.travelWillingness || ''}
+                            onValueChange={(value) => setEditableApplicationData({...editableApplicationData, travelWillingness: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select travel preference" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Local Only">Local Only</SelectItem>
+                              <SelectItem value="Regional">Regional</SelectItem>
+                              <SelectItem value="National">National</SelectItem>
+                              <SelectItem value="International">International</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
                 {/* Biography */}
-                {selectedApplicationDetails.biography && (
+                {(selectedApplicationDetails.biography || isEditingApplication) && (
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3 flex items-center">
                       <div className="w-2 h-6 bg-teal-500 rounded-full mr-3"></div>
                       Biography
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 leading-relaxed">{selectedApplicationDetails.biography}</p>
+                      {!isEditingApplication ? (
+                        <p className="text-sm text-gray-600 leading-relaxed">{selectedApplicationDetails.biography}</p>
+                      ) : (
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Biography</label>
+                          <Textarea
+                            value={editableApplicationData?.biography || ''}
+                            onChange={(e) => setEditableApplicationData({...editableApplicationData, biography: e.target.value})}
+                            rows={4}
+                            className="w-full"
+                            placeholder="Enter speaker biography..."
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
 
                 {/* Additional Information */}
-                {(selectedApplicationDetails.specialRequirements || selectedApplicationDetails.references) && (
+                {(selectedApplicationDetails.specialRequirements || selectedApplicationDetails.references || isEditingApplication) && (
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3 flex items-center">
                       <div className="w-2 h-6 bg-pink-500 rounded-full mr-3"></div>
                       Additional Information
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                      {selectedApplicationDetails.specialRequirements && (
-                        <div>
-                          <p className="font-medium text-sm mb-2">Special Requirements:</p>
-                          <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.specialRequirements}</p>
-                        </div>
-                      )}
-                      
-                      {selectedApplicationDetails.references && (
-                        <div>
-                          <p className="font-medium text-sm mb-2">References:</p>
-                          <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.references}</p>
-                        </div>
+                      {!isEditingApplication ? (
+                        <>
+                          {selectedApplicationDetails.specialRequirements && (
+                            <div>
+                              <p className="font-medium text-sm mb-2">Special Requirements:</p>
+                              <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.specialRequirements}</p>
+                            </div>
+                          )}
+                          
+                          {selectedApplicationDetails.references && (
+                            <div>
+                              <p className="font-medium text-sm mb-2">References:</p>
+                              <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.references}</p>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Special Requirements</label>
+                            <Textarea
+                              value={editableApplicationData?.specialRequirements || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, specialRequirements: e.target.value})}
+                              rows={3}
+                              placeholder="Any special requirements or accommodations..."
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">References</label>
+                            <Textarea
+                              value={editableApplicationData?.references || ''}
+                              onChange={(e) => setEditableApplicationData({...editableApplicationData, references: e.target.value})}
+                              rows={3}
+                              placeholder="Professional references..."
+                            />
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
