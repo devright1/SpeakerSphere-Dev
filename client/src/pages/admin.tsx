@@ -3336,6 +3336,198 @@ export default function AdminDashboard() {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Application Details Dialog */}
+        <Dialog open={!!selectedApplicationDetails} onOpenChange={(open) => !open && setSelectedApplicationDetails(null)}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Application Details</DialogTitle>
+              <DialogDescription>
+                Review the full application details for this speaker
+              </DialogDescription>
+            </DialogHeader>
+            {selectedApplicationDetails && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Personal Information</h4>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p><strong>Name:</strong> {selectedApplicationDetails.firstName} {selectedApplicationDetails.lastName}</p>
+                      <p><strong>Title:</strong> {selectedApplicationDetails.title}</p>
+                      <p><strong>Email:</strong> {selectedApplicationDetails.email}</p>
+                      <p><strong>Phone:</strong> {selectedApplicationDetails.phone}</p>
+                      <p><strong>Location:</strong> {selectedApplicationDetails.location}</p>
+                      <p><strong>Website:</strong> {selectedApplicationDetails.website}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Professional Information</h4>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</p>
+                      <p><strong>Experience:</strong> {selectedApplicationDetails.yearsExperience} years</p>
+                      <p><strong>Education:</strong> {selectedApplicationDetails.education}</p>
+                      <p><strong>Travel Willingness:</strong> {selectedApplicationDetails.travelWillingness}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedApplicationDetails.bio && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Biography</h4>
+                    <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">{selectedApplicationDetails.bio}</p>
+                  </div>
+                )}
+
+                {selectedApplicationDetails.selectedCategories && selectedApplicationDetails.selectedCategories.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Categories</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedApplicationDetails.selectedCategories.map((category: string, index: number) => (
+                        <Badge key={`${category}-${index}`} className="bg-purple-100 text-purple-800">
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                      Status: <Badge className={
+                        selectedApplicationDetails.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                        selectedApplicationDetails.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        selectedApplicationDetails.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }>
+                        {selectedApplicationDetails.status?.charAt(0).toUpperCase() + selectedApplicationDetails.status?.slice(1)}
+                      </Badge>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Submitted: {new Date(selectedApplicationDetails.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setSelectedApplicationDetails(null)}>
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Duplicate Check Dialog */}
+        <Dialog open={duplicateCheckDialogOpen} onOpenChange={setDuplicateCheckDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Potential Duplicate Check</DialogTitle>
+              <DialogDescription>
+                {actionType === 'create_new' 
+                  ? "Review potential duplicates before creating a new speaker profile"
+                  : "Select an existing speaker to link this application to"
+                }
+              </DialogDescription>
+            </DialogHeader>
+            
+            {currentApplication && (
+              <div className="space-y-6">
+                {/* Application Info */}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">Application Details</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p><strong>Name:</strong> {currentApplication.firstName} {currentApplication.lastName}</p>
+                      <p><strong>Email:</strong> {currentApplication.email}</p>
+                    </div>
+                    <div>
+                      <p><strong>Specialty:</strong> {currentApplication.specialty}</p>
+                      <p><strong>Location:</strong> {currentApplication.location}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Potential Matches */}
+                {potentialDuplicates.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3">Potential Matches Found</h4>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {potentialDuplicates.map((match: any) => (
+                        <div key={match.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <img 
+                              src={match.imageUrl || "/api/placeholder/40/40"} 
+                              alt={match.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                            <div>
+                              <p className="font-medium">{match.name}</p>
+                              <p className="text-sm text-gray-600">{match.title}</p>
+                              <p className="text-xs text-gray-500">{match.location}</p>
+                            </div>
+                          </div>
+                          {actionType === 'add_to_existing' && (
+                            <Button
+                              size="sm"
+                              variant={selectedExistingSpeaker === match.id ? "default" : "outline"}
+                              onClick={() => setSelectedExistingSpeaker(match.id)}
+                            >
+                              {selectedExistingSpeaker === match.id ? "Selected" : "Select"}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {potentialDuplicates.length === 0 && (
+                  <div className="text-center py-6 text-gray-500">
+                    <UserCheck className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p>No potential duplicates found. Safe to proceed.</p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setDuplicateCheckDialogOpen(false);
+                      setCurrentApplication(null);
+                      setPotentialDuplicates([]);
+                      setSelectedExistingSpeaker(null);
+                      setActionType(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  
+                  {actionType === 'create_new' && (
+                    <Button 
+                      onClick={handleCreateNewProfile}
+                      disabled={approveApplicationMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {approveApplicationMutation.isPending ? "Creating..." : "Create New Profile"}
+                    </Button>
+                  )}
+                  
+                  {actionType === 'add_to_existing' && (
+                    <Button 
+                      onClick={handleLinkToExisting}
+                      disabled={linkToExistingSpeakerMutation.isPending || !selectedExistingSpeaker}
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
+                      {linkToExistingSpeakerMutation.isPending ? "Linking..." : "Link to Selected Speaker"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
