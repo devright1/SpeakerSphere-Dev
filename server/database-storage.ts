@@ -142,7 +142,7 @@ export class DatabaseStorage implements IStorage {
     let query = db.select().from(speakers);
     
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
     
     const result = await query;
@@ -675,23 +675,6 @@ export class DatabaseStorage implements IStorage {
     return result.map(bookmark => bookmark.speakerId);
   }
 
-  // Speaker Applications
-  async createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication> {
-    const [result] = await db.insert(speakerApplications).values(application).returning();
-    return result;
-  }
-
-  async getSpeakerApplications(): Promise<SpeakerApplication[]> {
-    return await db.select().from(speakerApplications).orderBy(desc(speakerApplications.createdAt));
-  }
-
-  async updateSpeakerApplication(id: number, updates: Partial<SpeakerApplication>): Promise<SpeakerApplication | undefined> {
-    const [result] = await db.update(speakerApplications)
-      .set(updates)
-      .where(eq(speakerApplications.id, id))
-      .returning();
-    return result;
-  }
 
   // Speaker Interaction Tracking
   async createSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<SpeakerInteraction> {
@@ -780,167 +763,6 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  // Speaker Applications
-  async createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication> {
-    const result = await db.insert(speakerApplications).values(application).returning();
-    return result[0];
-  }
-
-  async getAllSpeakerApplications(): Promise<SpeakerApplication[]> {
-    return await db.select().from(speakerApplications).orderBy(desc(speakerApplications.createdAt));
-  }
-
-  async getSpeakerApplication(id: number): Promise<SpeakerApplication | undefined> {
-    const result = await db.select().from(speakerApplications).where(eq(speakerApplications.id, id)).limit(1);
-    return result[0];
-  }
-
-  async updateSpeakerApplicationStatus(
-    id: number, 
-    status: string, 
-    adminNotes?: string, 
-    reviewedBy?: string
-  ): Promise<SpeakerApplication> {
-    const updateData: any = {
-      status,
-      reviewedAt: new Date()
-    };
-    
-    if (adminNotes) updateData.adminNotes = adminNotes;
-    if (reviewedBy) updateData.reviewedBy = reviewedBy;
-    
-    const result = await db
-      .update(speakerApplications)
-      .set(updateData)
-      .where(eq(speakerApplications.id, id))
-      .returning();
-    
-    return result[0];
-  }
-
-  async approveSpeakerApplication(applicationId: number, reviewedBy: string): Promise<{ speaker: Speaker; user: User }> {
-    const application = await this.getSpeakerApplication(applicationId);
-    if (!application) {
-      throw new Error("Speaker application not found");
-    }
-
-    // Create speaker profile from application data
-    const fullName = `${application.firstName} ${application.lastName}`;
-    const slug = fullName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-    
-    const speakerData: InsertSpeaker = {
-      name: fullName,
-      slug: slug,
-      title: application.title,
-      bio: application.biography || 'Professional speaker and expert in healthcare',
-      expertise: [application.specialty],
-      location: 'Location to be updated',
-      imageUrl: '/api/placeholder/300/300',
-      category: application.specialty,
-      achievements: [],
-      lectures: [],
-      email: application.email,
-      phone: application.phone || '',
-      website: application.website || '',
-      languages: ['English'],
-      medicalSpecialties: [application.specialty],
-      speakerType: 'clinical',
-      verified: true,
-      featured: false,
-      hideProfile: false,
-      hideRatings: false,
-      hideSocial: false,
-      hideContact: false
-    };
-
-    const speaker = await this.createSpeaker(speakerData);
-
-    // Create user account for the speaker
-    const userData = {
-      email: application.email,
-      passwordHash: '', // Will be set during first login
-      firstName: application.firstName,
-      lastName: application.lastName,
-      title: application.title,
-      company: application.specialty,
-      accountType: 'speaker',
-      speakerId: speaker.id
-    };
-
-    const user = await this.createUser(userData);
-
-    // Update application status
-    await this.updateSpeakerApplicationStatus(applicationId, 'approved', 'Application approved and accounts created', reviewedBy);
-
-    // Update application with created speaker ID
-    await db
-      .update(speakerApplications)
-      .set({ createdSpeakerId: speaker.id })
-      .where(eq(speakerApplications.id, applicationId));
-
-    return { speaker, user };
-  }
-
-  // Analytics
-  async trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void> {
-    await db.insert(speakerInteractions).values(interaction);
-  }
-
-  async getSpeakerAnalytics(speakerId: number): Promise<any> {
-    // Basic analytics implementation
-    const interactions = await db
-      .select()
-      .from(speakerInteractions)
-      .where(eq(speakerInteractions.speakerId, speakerId));
-
-    return {
-      totalInteractions: interactions.length,
-      profileViews: interactions.filter(i => i.interactionType === 'profile_view').length,
-      emailClicks: interactions.filter(i => i.interactionType === 'email_click').length,
-      phoneClicks: interactions.filter(i => i.interactionType === 'phone_click').length,
-      websiteClicks: interactions.filter(i => i.interactionType === 'website_click').length
-    };
-  }
-
-  // User management for authentication
-  async createUser(user: Omit<InsertUser, 'password'> & { passwordHash: string }): Promise<User> {
-    const result = await db.insert(users).values(user).returning();
-    return result[0];
-  }
-
-  async updateUserLastLogin(userId: string): Promise<void> {
-    await db
-      .update(users)
-      .set({ lastLoginAt: new Date() })
-      .where(eq(users.id, userId));
-  }
-
-  async updateUserPassword(userId: string, passwordHash: string): Promise<void> {
-    await db
-      .update(users)
-      .set({ passwordHash, updatedAt: new Date() })
-      .where(eq(users.id, userId));
-  }
-
-  async updateUserSubscription(userId: string, subscriptionData: Partial<User>): Promise<User> {
-    const [updatedUser] = await db.update(users)
-      .set({ 
-        ...subscriptionData,
-        updatedAt: new Date()
-      })
-      .where(eq(users.id, userId))
-      .returning();
-    
-    if (!updatedUser) {
-      throw new Error("User not found");
-    }
-    
-    return updatedUser;
-  }
-
   // Speaker Content Management Methods
   async createSpeakerContent(content: InsertSpeakerContent): Promise<SpeakerContent> {
     const result = await db.insert(speakerContent).values(content).returning();
@@ -976,7 +798,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(speakerContent)
       .where(eq(speakerContent.id, contentId));
-    return result.rowCount > 0;
+    return result.rowCount ? result.rowCount > 0 : false;
   }
 
   async incrementContentDownloadCount(contentId: number): Promise<void> {
@@ -1058,7 +880,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(contentAccessCodes)
       .where(eq(contentAccessCodes.id, accessCodeId));
-    return result.rowCount > 0;
+    return result.rowCount ? result.rowCount > 0 : false;
   }
 
   // Content Download Tracking
@@ -1104,5 +926,61 @@ export class DatabaseStorage implements IStorage {
       .from(contentDownloads)
       .where(eq(contentDownloads.userId, userId))
       .orderBy(desc(contentDownloads.downloadedAt));
+  }
+
+  // Missing methods to implement IStorage interface
+  async updateUserLastLogin(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserPassword(userId: string, passwordHash: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserSubscription(userId: string, subscriptionData: Partial<User>): Promise<User> {
+    const result = await db.update(users)
+      .set({ 
+        ...subscriptionData,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!result[0]) {
+      throw new Error("User not found");
+    }
+    
+    return result[0];
+  }
+
+  async getSpeakerApplication(id: number): Promise<SpeakerApplication | undefined> {
+    const result = await db.select().from(speakerApplications).where(eq(speakerApplications.id, id)).limit(1);
+    return result[0];
+  }
+
+  async trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void> {
+    await db.insert(speakerInteractions).values(interaction);
+  }
+
+  async getSpeakerAnalytics(speakerId: number): Promise<any> {
+    // Basic analytics implementation
+    const interactions = await db
+      .select()
+      .from(speakerInteractions)
+      .where(eq(speakerInteractions.speakerId, speakerId));
+
+    return {
+      totalInteractions: interactions.length,
+      profileViews: interactions.filter(i => i.interactionType === 'profile_view').length,
+      emailClicks: interactions.filter(i => i.interactionType === 'email_click').length,
+      phoneClicks: interactions.filter(i => i.interactionType === 'phone_click').length,
+      websiteClicks: interactions.filter(i => i.interactionType === 'website_click').length
+    };
   }
 }
