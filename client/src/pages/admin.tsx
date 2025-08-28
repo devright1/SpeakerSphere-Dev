@@ -2623,7 +2623,135 @@ export default function AdminDashboard() {
 
           {/* Inquiries Management */}
           <TabsContent value="inquiries" className="space-y-6">
-            <InquiriesManagement />
+            {/* Inquiries Management */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Speaker Inquiries</h3>
+                <div className="flex gap-2">
+                  <Select value={inquiryStatusFilter} onValueChange={setInquiryStatusFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="contacted">Contacted</SelectItem>
+                      <SelectItem value="booked">Booked</SelectItem>
+                      <SelectItem value="declined">Declined</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    placeholder="Search inquiries..."
+                    value={inquirySearchQuery}
+                    onChange={(e) => setInquirySearchQuery(e.target.value)}
+                    className="w-64"
+                  />
+                </div>
+              </div>
+
+              {inquiriesLoading ? (
+                <div className="text-center py-8">Loading inquiries...</div>
+              ) : (
+                <div className="space-y-4">
+                  {inquiries
+                    .filter(inquiry => 
+                      (inquiryStatusFilter === 'all' || inquiry.status === inquiryStatusFilter) &&
+                      (inquirySearchQuery === '' || 
+                       inquiry.clientName.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
+                       inquiry.clientEmail.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
+                       inquiry.clientCompany?.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
+                       inquiry.speakerName?.toLowerCase().includes(inquirySearchQuery.toLowerCase())
+                      )
+                    )
+                    .map((inquiry) => (
+                      <Card key={inquiry.id} className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Badge variant={
+                                inquiry.status === 'pending' ? 'default' :
+                                inquiry.status === 'contacted' ? 'secondary' :
+                                inquiry.status === 'booked' ? 'default' :
+                                'outline'
+                              }>
+                                {inquiry.status}
+                              </Badge>
+                              <span className="font-medium">{inquiry.clientName}</span>
+                            </div>
+                            <span className="text-sm text-gray-600">
+                              {new Date(inquiry.createdAt || '').toLocaleDateString()}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <strong>Client:</strong> {inquiry.clientName}<br />
+                              <strong>Email:</strong> {inquiry.clientEmail}<br />
+                              <strong>Company:</strong> {inquiry.clientCompany || 'N/A'}
+                            </div>
+                            <div>
+                              <strong>Speaker:</strong> {inquiry.speakerName || 'N/A'}<br />
+                              <strong>Event Date:</strong> {inquiry.eventDate ? new Date(inquiry.eventDate).toLocaleDateString() : 'N/A'}<br />
+                              <strong>Budget:</strong> {inquiry.budget || 'N/A'}
+                            </div>
+                          </div>
+                          
+                          {inquiry.message && (
+                            <div className="text-sm">
+                              <strong>Message:</strong> {inquiry.message}
+                            </div>
+                          )}
+                          
+                          {inquiry.adminNotes && (
+                            <div className="text-sm bg-gray-50 p-2 rounded">
+                              <strong>Admin Notes:</strong> {inquiry.adminNotes}
+                            </div>
+                          )}
+                          
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => updateInquiryStatusMutation.mutate({ 
+                                inquiryId: inquiry.id, 
+                                status: 'contacted' 
+                              })}
+                            >
+                              Mark Contacted
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => updateInquiryStatusMutation.mutate({ 
+                                inquiryId: inquiry.id, 
+                                status: 'booked' 
+                              })}
+                            >
+                              Mark Booked
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => updateInquiryStatusMutation.mutate({ 
+                                inquiryId: inquiry.id, 
+                                status: 'declined' 
+                              })}
+                            >
+                              Mark Declined
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                    
+                  {inquiries.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No inquiries found.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
