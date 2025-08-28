@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -181,6 +181,38 @@ export default function AdminDashboard() {
       return response.json();
     },
   });
+
+  // Memoize application filtering and counts to prevent performance issues during tab switching
+  const applicationCounts = useMemo(() => {
+    if (!applications) return { pending: 0, under_review: 0, approved: 0, rejected: 0, all: 0 };
+    
+    const counts = {
+      pending: 0,
+      under_review: 0,
+      approved: 0,
+      rejected: 0,
+      all: applications.length
+    };
+    
+    applications.forEach((app: any) => {
+      if (app.status === 'pending') counts.pending++;
+      else if (app.status === 'under_review') counts.under_review++;
+      else if (app.status === 'approved') counts.approved++;
+      else if (app.status === 'rejected') counts.rejected++;
+    });
+    
+    return counts;
+  }, [applications]);
+
+  const filteredApplications = useMemo(() => {
+    if (!applications) return [];
+    
+    if (applicationStatusFilter === "all") {
+      return applications;
+    }
+    
+    return applications.filter((app: any) => app.status === applicationStatusFilter);
+  }, [applications, applicationStatusFilter]);
 
   const handleLogout = () => {
     localStorage.removeItem("adminAuthenticated");
@@ -1209,37 +1241,32 @@ export default function AdminDashboard() {
                     <TabsTrigger value="pending">
                       Pending 
                       <Badge variant="outline" className="ml-2">
-                        {applications?.filter((app: any) => app.status === 'pending').length || 0}
+                        {applicationCounts.pending}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="under_review">
                       Under Review
                       <Badge variant="outline" className="ml-2">
-                        {applications?.filter((app: any) => app.status === 'under_review').length || 0}
+                        {applicationCounts.under_review}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="approved">
                       Approved
                       <Badge variant="outline" className="ml-2">
-                        {applications?.filter((app: any) => app.status === 'approved').length || 0}
+                        {applicationCounts.approved}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="rejected">
                       Rejected
                       <Badge variant="outline" className="ml-2">
-                        {applications?.filter((app: any) => app.status === 'rejected').length || 0}
+                        {applicationCounts.rejected}
                       </Badge>
                     </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value={applicationStatusFilter} className="space-y-6">
-                    {applications && applications.length > 0 ? (
-                      applications
-                        .filter((app: any) => applicationStatusFilter === "all" || app.status === applicationStatusFilter)
-                        .length > 0 ? (
-                        applications
-                          .filter((app: any) => applicationStatusFilter === "all" || app.status === applicationStatusFilter)
-                          .map((application: any) => (
+                    {filteredApplications.length > 0 ? (
+                      filteredApplications.map((application: any) => (
                       <div key={application.id} className="p-6 border rounded-xl bg-gradient-to-r from-blue-50 via-white to-purple-50 border-blue-200 hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -1352,34 +1379,22 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </div>
-                          ))
-                        ) : (
-                          <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                            <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-                            <h3 className="text-xl font-semibold text-gray-900 mb-3">No applications for this status</h3>
-                            <p className="text-gray-500 max-w-lg mx-auto mb-6">
-                              {applicationStatusFilter === "all" 
-                                ? "Applications will appear here when speakers submit them through the portal."
-                                : `No ${applicationStatusFilter} applications found.`
-                              }
-                            </p>
-                            <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
-                              View Application Portal →
-                            </Button>
-                          </div>
-                        )
-                      ) : (
-                        <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                          <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-                          <h3 className="text-xl font-semibold text-gray-900 mb-3">No Speaker Applications</h3>
-                          <p className="text-gray-500 max-w-lg mx-auto mb-6">
-                            Applications will appear here when speakers submit them through the "For Speakers" portal.
-                          </p>
-                          <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
-                            View Application Portal →
-                          </Button>
-                        </div>
-                      )}
+                    ))
+                    ) : (
+                      <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                        <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">No applications for this status</h3>
+                        <p className="text-gray-500 max-w-lg mx-auto mb-6">
+                          {applicationStatusFilter === "all" 
+                            ? "Applications will appear here when speakers submit them through the portal."
+                            : `No ${applicationStatusFilter.replace('_', ' ')} applications found.`
+                          }
+                        </p>
+                        <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
+                          View Application Portal →
+                        </Button>
+                      </div>
+                    )}
                   </TabsContent>
                 </Tabs>
               </CardContent>
