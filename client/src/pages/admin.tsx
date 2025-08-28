@@ -657,7 +657,7 @@ export default function AdminDashboard() {
     const currentSpeakers = Array.isArray(speakers) ? speakers : [];
     const assignments: {[key: string]: boolean} = {};
     currentSpeakers.forEach((speaker: any) => {
-      assignments[speaker.id] = speaker.category === category.name;
+      assignments[speaker.id] = speaker.categories && Array.isArray(speaker.categories) && speaker.categories.includes(category.name);
     });
     setCategoryAssignments(assignments);
     setCategorySearchQuery(""); // Reset search when opening dialog
@@ -681,11 +681,15 @@ export default function AdminDashboard() {
   };
 
   const getSpeakersInCategory = (categoryName: string) => {
-    return speakersArray.filter((speaker: any) => speaker.category === categoryName);
+    return speakersArray.filter((speaker: any) => 
+      speaker.categories && Array.isArray(speaker.categories) && speaker.categories.includes(categoryName)
+    );
   };
 
   const getUnassignedSpeakers = () => {
-    return speakersArray.filter((speaker: any) => !speaker.category || speaker.category === '');
+    return speakersArray.filter((speaker: any) => 
+      !speaker.categories || !Array.isArray(speaker.categories) || speaker.categories.length === 0
+    );
   };
 
   const handleSaveCategoryAssignments = async () => {
@@ -695,7 +699,7 @@ export default function AdminDashboard() {
     Object.entries(categoryAssignments).forEach(([speakerId, isAssigned]) => {
       const speaker = speakersArray.find((s: any) => s.id === parseInt(speakerId));
       if (speaker) {
-        const currentlyAssigned = speaker.category === editingCategory.name;
+        const currentlyAssigned = speaker.categories && Array.isArray(speaker.categories) && speaker.categories.includes(editingCategory.name);
         
         if (isAssigned !== currentlyAssigned) {
           // Need to update this speaker
@@ -3118,14 +3122,15 @@ export default function AdminDashboard() {
                         Available Speakers
                         <Badge variant="outline" className="ml-2">
                           {speakersArray
-                            .filter((speaker: any) => speaker.category !== speakerAssignmentCategory.name)
-                            .length}
+                            .filter((speaker: any) => 
+                              !(speaker.categories && Array.isArray(speaker.categories) && speaker.categories.includes(speakerAssignmentCategory.name))
+                            ).length}
                         </Badge>
                       </h4>
                       <div className="space-y-2 max-h-96 overflow-y-auto">
                         {speakersArray
                           .filter((speaker: any) => 
-                            speaker.category !== speakerAssignmentCategory.name &&
+                            !(speaker.categories && Array.isArray(speaker.categories) && speaker.categories.includes(speakerAssignmentCategory.name)) &&
                             (assignmentSearchQuery === '' || 
                              speaker.name.toLowerCase().includes(assignmentSearchQuery.toLowerCase()))
                           )
@@ -3135,9 +3140,9 @@ export default function AdminDashboard() {
                                 <Users className="h-4 w-4 text-blue-600" />
                                 <div>
                                   <span className="font-medium">{speaker.name}</span>
-                                  {speaker.category && (
+                                  {speaker.categories && Array.isArray(speaker.categories) && speaker.categories.length > 0 && (
                                     <div className="text-xs text-gray-600">
-                                      Currently in: {speaker.category}
+                                      Currently in: {speaker.categories.join(', ')}
                                     </div>
                                   )}
                                 </div>
