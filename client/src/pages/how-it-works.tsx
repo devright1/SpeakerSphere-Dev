@@ -9,7 +9,7 @@ export default function HowItWorks() {
     {
       icon: Search,
       title: "Search & Filter",
-      description: "Browse our verified speakers by category, expertise, location, and ratings. Use our advanced filters to find the perfect match for your event."
+      description: "Browse our verified speakers by category, expertise, location, and ratings. Use our advanced filters to find the perfect match for your event - no need to brush past the best options!"
     },
     {
       icon: UserCheck,
