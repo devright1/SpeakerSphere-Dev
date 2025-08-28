@@ -266,19 +266,8 @@ export class DatabaseStorage implements IStorage {
   async getCategories(): Promise<Category[]> {
     const result = await db.select().from(categories);
     
-    // Calculate actual speaker counts for each category from the database
-    for (const category of result) {
-      const speakerCount = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(speakers)
-        .where(and(
-          sql`${category.name} = ANY(${speakers.categories})`,
-          or(eq(speakers.hideProfile, false), sql`hide_profile IS NULL`)
-        ));
-      
-      category.speakerCount = parseInt(speakerCount[0]?.count as any) || 0;
-    }
-    
+    // Return static categories without dynamic recalculation to prevent changes
+    // Speaker counts are updated only when speakers are actually added/removed
     return result.sort((a, b) => a.name.localeCompare(b.name));
   }
 

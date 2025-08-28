@@ -552,13 +552,8 @@ export class MemStorage implements IStorage {
   async getCategories(): Promise<Category[]> {
     const categories = Array.from(this.categories.values());
     
-    // Calculate actual speaker counts for each category
-    categories.forEach(category => {
-      const speakersInCategory = Array.from(this.speakers.values())
-        .filter(speaker => speaker.categories?.includes(category.name));
-      category.speakerCount = speakersInCategory.length;
-    });
-    
+    // Return static categories without dynamic recalculation to prevent changes
+    // Speaker counts are updated only when speakers are actually added/removed
     return categories.sort((a, b) => a.name.localeCompare(b.name));
   }
 
