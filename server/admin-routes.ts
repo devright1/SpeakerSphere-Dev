@@ -198,9 +198,12 @@ export function registerAdminRoutes(app: Express) {
         return res.status(404).json({ message: "Application not found" });
       }
       
+      // Filter out fields that shouldn't be updated (timestamps, IDs, etc.)
+      const { id, createdAt, reviewedAt, createdSpeakerId, ...allowedUpdates } = updates;
+      
       // Update the application directly in the database
       const [updatedApplication] = await db.update(speakerApplications)
-        .set(updates)
+        .set(allowedUpdates)
         .where(eq(speakerApplications.id, applicationId))
         .returning();
       
