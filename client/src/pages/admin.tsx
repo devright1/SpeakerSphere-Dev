@@ -2265,7 +2265,10 @@ export default function AdminDashboard() {
                             )}
                             <Button 
                               variant="outline"
-                              onClick={() => setSelectedApplicationDetails(application)}
+                              onClick={() => {
+                                console.log('View Details clicked for application:', application);
+                                setSelectedApplicationDetails(application);
+                              }}
                               className="border-blue-600 text-blue-700 hover:bg-blue-50"
                             >
                               <FileText className="h-4 w-4 mr-2" />
@@ -3936,7 +3939,10 @@ function InquiriesManagement() {
     </Card>
     
     {/* Application Details Modal */}
-    <Dialog open={!!selectedApplicationDetails} onOpenChange={() => setSelectedApplicationDetails(null)}>
+    <Dialog open={!!selectedApplicationDetails} onOpenChange={() => {
+      console.log('Dialog closing, selectedApplicationDetails was:', selectedApplicationDetails);
+      setSelectedApplicationDetails(null);
+    }}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
