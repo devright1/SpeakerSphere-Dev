@@ -24,7 +24,7 @@ export default function HowItWorks() {
     {
       icon: Star,
       title: "Leave Review",
-      description: "After your event, share your experience to help other event planners make informed decisions."
+      description: "After your event, leave a review on your speaker's profile. Your insights build trust and help others in the community find their perfect match. Like flossing, it's quick but makes a big difference."
     }
   ];
 
