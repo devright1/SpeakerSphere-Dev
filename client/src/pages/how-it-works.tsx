@@ -14,7 +14,7 @@ export default function HowItWorks() {
     {
       icon: UserCheck,
       title: "Review Profiles",
-      description: "Explore detailed speaker profiles with professional backgrounds, speaking topics, video portfolios, and authentic peer reviews, so you can pick the perfect speaker without any cavities in your planning."
+      description: "Explore detailed speaker profiles with professional backgrounds, speaking topics, speaker resources, and authentic peer reviews, so you can pick the perfect speaker without any cavities in your planning."
     },
     {
       icon: Calendar,
