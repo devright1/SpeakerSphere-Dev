@@ -993,7 +993,6 @@ export default function AdminDashboard() {
   const totalCategories = categoriesArray.length;
 
   return (
-    <>
     <div className="min-h-screen bg-gray-50">
       {/* Admin Header */}
       <header className="bg-white shadow-sm border-b">
@@ -1707,6 +1706,561 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            <TabsContent value="applications" className="space-y-6">
+              {/* Applications Management */}
+              <Card>
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl text-gray-900 flex items-center">
+                        <MessageSquare className="h-6 w-6 mr-3 text-blue-600" />
+                        Speaker Application Queue
+                      </CardTitle>
+                      <CardDescription className="text-gray-600 mt-2">
+                        Review applications submitted by speakers who want to join the platform
+                      </CardDescription>
+                    </div>
+                    <div className="flex space-x-3">
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Applications
+                      </Button>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        {applications?.length || 0} Total Applications
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    {applications && applications.length > 0 ? (
+                      applications.map((application: any) => (
+                        <div key={application.id} className={`p-6 border rounded-xl transition-shadow hover:shadow-lg ${
+                          application.status === 'pending' ? 'bg-gradient-to-r from-blue-50 via-white to-blue-50 border-blue-200' :
+                          application.status === 'approved' ? 'bg-gradient-to-r from-green-50 via-white to-green-50 border-green-200' :
+                          application.status === 'under_review' ? 'bg-gradient-to-r from-yellow-50 via-white to-yellow-50 border-yellow-200' :
+                          'bg-gradient-to-r from-red-50 via-white to-red-50 border-red-200'
+                        }`}>
+                          <div className="flex justify-between items-start mb-6">
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <h4 className="font-bold text-xl text-gray-900">{application.firstName} {application.lastName}</h4>
+                                  <p className="text-gray-600 font-medium">{application.title}</p>
+                                </div>
+                                <Badge 
+                                  className={`px-3 py-1 ${
+                                    application.status === 'pending' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                                    application.status === 'approved' ? 'bg-green-100 text-green-800 border-green-300' :
+                                    application.status === 'under_review' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                                    'bg-red-100 text-red-800 border-red-300'
+                                  }`}
+                                >
+                                  {application.status?.charAt(0).toUpperCase() + application.status?.slice(1)}
+                                </Badge>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div className="space-y-2">
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">📧 Email:</span> 
+                                    <span className="text-gray-600 ml-2">{application.email}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">🏥 Specialty:</span> 
+                                    <span className="text-gray-600 ml-2">{application.specialty}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">⏱️ Experience:</span> 
+                                    <span className="text-gray-600 ml-2">{application.yearsExperience} years</span>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">📱 Phone:</span> 
+                                    <span className="text-gray-600 ml-2">{application.phone || 'Not provided'}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">🌐 Website:</span> 
+                                    <span className="text-gray-600 ml-2">{application.website || 'Not provided'}</span>
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">📅 Applied:</span> 
+                                    <span className="text-gray-600 ml-2">{new Date(application.createdAt).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                                <div className="text-sm">
+                                  <span className="font-semibold text-gray-700">🎯 Speaking Topics:</span> 
+                                  <p className="text-gray-600 mt-1">{application.speakingTopics}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+                            {application.status === 'pending' && (
+                              <>
+                                <Button 
+                                  onClick={() => {
+                                    setCurrentApplication(application);
+                                    setIsCheckingDuplicates(true);
+                                    checkDuplicatesMutation.mutate(application.id);
+                                  }}
+                                  disabled={isCheckingDuplicates}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  {isCheckingDuplicates ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                      Checking...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <UserCheck className="h-4 w-4 mr-2" />
+                                      Approve Application
+                                    </>
+                                  )}
+                                </Button>
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => updateApplicationMutation.mutate({ applicationId: application.id, status: 'under_review' })}
+                                  disabled={updateApplicationMutation.isPending}
+                                  className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
+                                >
+                                  <Star className="h-4 w-4 mr-2" />
+                                  Mark for Review
+                                </Button>
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => updateApplicationMutation.mutate({ applicationId: application.id, status: 'rejected' })}
+                                  disabled={updateApplicationMutation.isPending}
+                                  className="border-red-600 text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                            
+                            {application.status === 'under_review' && (
+                              <>
+                                <Button 
+                                  onClick={() => {
+                                    setCurrentApplication(application);
+                                    setIsCheckingDuplicates(true);
+                                    checkDuplicatesMutation.mutate(application.id);
+                                  }}
+                                  disabled={isCheckingDuplicates}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  {isCheckingDuplicates ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                      Checking...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <UserCheck className="h-4 w-4 mr-2" />
+                                      Approve Application
+                                    </>
+                                  )}
+                                </Button>
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => updateApplicationMutation.mutate({ applicationId: application.id, status: 'rejected' })}
+                                  disabled={updateApplicationMutation.isPending}
+                                  className="border-red-600 text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                            
+                            <Button 
+                              variant="outline"
+                              onClick={() => {
+                                console.log('View Details clicked for application:', application);
+                                setSelectedApplicationDetails(application);
+                              }}
+                              className="border-blue-600 text-blue-700 hover:bg-blue-50"
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              View Details
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              onClick={() => window.open(`mailto:${application.email}`, '_blank')}
+                            >
+                              <Mail className="h-4 w-4 mr-2" />
+                              Contact Applicant
+                            </Button>
+                            {application.status === 'approved' && application.createdSpeakerId && (
+                              <Button 
+                                variant="outline"
+                                onClick={() => {
+                                  // Switch to speaker accounts tab
+                                  const speakerAccountsTab = document.querySelector('[value="speaker-accounts"]') as HTMLElement;
+                                  speakerAccountsTab?.click();
+                                }}
+                              >
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                View Speaker Account
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                        <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">No Speaker Applications</h3>
+                        <p className="text-gray-500 max-w-lg mx-auto mb-6">
+                          Applications will appear here when speakers submit them through the "For Speakers" portal. Speakers can apply by visiting the dedicated application page.
+                        </p>
+                        <div className="flex justify-center">
+                          <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
+                            View Application Portal →
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="speaker-accounts" className="space-y-8">
+              {/* Section Header */}
+              <div className="text-center border-b border-gray-200 pb-6">
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">Speaker Accounts Management</h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Manage speakers who joined through the application approval process. These accounts were created from approved speaker applications submitted via the "For Speakers" portal.
+                </p>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                  <CardContent className="p-6 text-center">
+                    <UserCheck className="h-12 w-12 mx-auto mb-3 text-green-600" />
+                    <div className="text-3xl font-bold text-green-700 mb-1">
+                      {applications?.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-green-800">Application-Based Accounts</div>
+                    <div className="text-xs text-green-600 mt-1">From approved applications</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                  <CardContent className="p-6 text-center">
+                    <Users className="h-12 w-12 mx-auto mb-3 text-blue-600" />
+                    <div className="text-3xl font-bold text-blue-700 mb-1">
+                      {speakersArray.filter((s: any) => !applications?.some((app: any) => app.createdSpeakerId === s.id)).length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-blue-800">Manual Accounts</div>
+                    <div className="text-xs text-blue-600 mt-1">Added directly by admin</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                  <CardContent className="p-6 text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-3 text-purple-600" />
+                    <div className="text-3xl font-bold text-purple-700 mb-1">
+                      {speakersArray.length || 0}
+                    </div>
+                    <div className="text-sm font-medium text-purple-800">Total Speaker Accounts</div>
+                    <div className="text-xs text-purple-600 mt-1">All speakers combined</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Application-Based Accounts Section */}
+              <Card>
+                <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl text-gray-900 flex items-center">
+                        <UserCheck className="h-6 w-6 mr-3 text-green-600" />
+                        Application-Based Speaker Accounts
+                      </CardTitle>
+                      <CardDescription className="text-gray-600 mt-2">
+                        Speakers who applied through the "For Speakers" portal and were approved by admin review
+                      </CardDescription>
+                    </div>
+                    <div className="flex space-x-3">
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Accounts
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={handleBulkImport}
+                        disabled={isBulkImporting}
+                      >
+                        {isBulkImporting ? (
+                          <>
+                            <div className="animate-spin h-4 w-4 mr-2 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                            Importing...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Bulk Import Speakers
+                          </>
+                        )}
+                      </Button>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Manual Add Speaker
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {applications && applications.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length > 0 ? (
+                      // Find speakers created from approved applications
+                      applications
+                        .filter((app: any) => app.status === 'approved' && app.createdSpeakerId)
+                        .map((app: any) => {
+                          // Find the corresponding speaker
+                          const speaker = speakersArray.find((s: any) => s.id === app.createdSpeakerId);
+                          if (!speaker) return null;
+                          
+                          return (
+                            <div key={speaker.id} className="p-6 border rounded-xl bg-gradient-to-r from-green-50 via-white to-blue-50 border-green-200 hover:shadow-md transition-shadow">
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-center space-x-4">
+                                  <img 
+                                    src={speaker.imageUrl} 
+                                    alt={speaker.name}
+                                    className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg"
+                                  />
+                                  <div>
+                                    <h4 className="font-semibold text-xl text-gray-900">{speaker.name}</h4>
+                                    <p className="text-gray-600 font-medium">{speaker.title}</p>
+                                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
+                                      <span className="flex items-center">
+                                        📧 Applied: {new Date(app.createdAt).toLocaleDateString()}
+                                      </span>
+                                      <span className="flex items-center">
+                                        ✅ Approved: {new Date(app.reviewedAt).toLocaleDateString()}
+                                      </span>
+                                      <span className="text-xs text-gray-400">
+                                        Application #{app.id}
+                                      </span>
+                                    </div>
+                                    
+                                    {/* Login Credentials Section */}
+                                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                      <div className="text-sm font-medium text-blue-900 mb-2">
+                                        🔐 Login Credentials
+                                      </div>
+                                      <div className="space-y-1 text-sm">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-blue-700 font-medium">Email:</span>
+                                          <code className="bg-white px-2 py-1 rounded text-blue-800 border">{app.email}</code>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-blue-700 font-medium">Password:</span>
+                                          <div className="flex items-center space-x-2">
+                                            {/* Check if user has changed password from original */}
+                                            {(() => {
+                                              // Find the user associated with this application
+                                              const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
+                                              
+
+                                              
+                                              const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
+                                                new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
+                                              
+                                              const showPasswordChanged = hasChangedPassword;
+                                              
+                                              if (showPasswordChanged) {
+                                                return (
+                                                  <div className="flex items-center space-x-2">
+                                                    <span className="bg-orange-100 px-2 py-1 rounded text-orange-800 border border-orange-200 font-mono text-sm">
+                                                      ⚠️ Password Changed by User
+                                                    </span>
+                                                    <Button 
+                                                      size="sm" 
+                                                      variant="ghost"
+                                                      className="text-xs h-7 px-2 text-orange-600 hover:text-orange-800"
+                                                      onClick={() => {
+                                                        alert(`This user has changed their password from the original generated one.\n\nOriginal generated password is no longer valid.\nUser must use their new password to log in.`);
+                                                      }}
+                                                    >
+                                                      ℹ️ Info
+                                                    </Button>
+                                                  </div>
+                                                );
+                                              } else {
+                                                const originalPassword = (() => {
+                                                  const seed = `${app.id}-${app.email}`;
+                                                  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+                                                  let result = '';
+                                                  for (let i = 0; i < 12; i++) {
+                                                    const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+                                                    result += chars[charIndex];
+                                                  }
+                                                  return result;
+                                                })();
+                                                
+                                                return (
+                                                  <code className="bg-white px-2 py-1 rounded text-blue-800 border font-mono text-sm">
+                                                    {originalPassword}
+                                                  </code>
+                                                );
+                                              }
+                                            })()}
+                                            {(() => {
+                                              // Only show copy button if password hasn't been changed
+                                              const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
+                                              const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
+                                                new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
+                                              
+                                              const showPasswordChanged = hasChangedPassword;
+                                              
+                                              if (!showPasswordChanged) {
+                                                return (
+                                                  <Button 
+                                                    size="sm" 
+                                                    variant="ghost"
+                                                    className="text-xs h-7 px-2 text-blue-600 hover:text-blue-800"
+                                                    onClick={() => {
+                                                      const password = (() => {
+                                                        const seed = `${app.id}-${app.email}`;
+                                                        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+                                                        let result = '';
+                                                        for (let i = 0; i < 12; i++) {
+                                                          const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+                                                          result += chars[charIndex];
+                                                        }
+                                                        return result;
+                                                      })();
+                                                      const credentials = `Email: ${app.email}\nPassword: ${password}\nLogin URL: ${window.location.origin}/auth`;
+                                                      navigator.clipboard?.writeText(credentials);
+                                                      alert(`Login credentials copied to clipboard:\n\nEmail: ${app.email}\nPassword: ${password}`);
+                                                    }}
+                                                  >
+                                                    📋 Copy
+                                                  </Button>
+                                                );
+                                              }
+                                              return null;
+                                            })()}
+                                          </div>
+                                        </div>
+                                        {(() => {
+                                          const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
+                                          const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
+                                            new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
+                                          
+                                          const showPasswordChanged = hasChangedPassword;
+                                          
+                                          if (showPasswordChanged) {
+                                            return (
+                                              <div className="text-xs text-orange-600 mt-2 p-2 bg-orange-100 rounded border border-orange-200">
+                                                ⚠️ <strong>Password Updated:</strong> This user has changed their password. The original generated password is no longer valid.
+                                                {associatedUser?.updatedAt && (
+                                                  <div className="mt-1 text-orange-500">
+                                                    Changed on: {new Date(associatedUser.updatedAt).toLocaleString()}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            );
+                                          } else {
+                                            return (
+                                              <div className="text-xs text-blue-600 mt-2 p-2 bg-blue-100 rounded">
+                                                💡 <strong>Generated Password:</strong> This password is generated based on the application ID and remains consistent. 
+                                                Click "Copy" to copy credentials for sharing with the speaker.
+                                              </div>
+                                            );
+                                          }
+                                        })()}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col items-end space-y-3">
+                                  <Badge className="bg-green-100 text-green-800 border-green-300 px-3 py-1">
+                                    <UserCheck className="h-3 w-3 mr-1" />
+                                    Application-Based Account
+                                  </Badge>
+                                  <div className="flex space-x-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => handleEditSpeaker(speaker)}
+                                    >
+                                      <Edit className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => window.open(`/speaker/${speaker.slug}`, '_blank')}
+                                    >
+                                      <ExternalLink className="h-4 w-4 mr-1" />
+                                      View
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => handleToggleSpeakerVisibility(speaker.id)}
+                                      className={speaker.hideProfile ? "border-red-200 text-red-600 hover:bg-red-50" : "border-green-200 text-green-600 hover:bg-green-50"}
+                                    >
+                                      {speaker.hideProfile ? (
+                                        <>
+                                          <EyeOff className="h-4 w-4 mr-1" />
+                                          Hidden
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="h-4 w-4 mr-1" />
+                                          Visible
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                        .filter(Boolean) // Remove null entries
+                    ) : (
+                      <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                        <UserCheck className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">No Application-Based Speaker Accounts</h3>
+                        <p className="text-gray-500 max-w-lg mx-auto mb-6">
+                          Speaker accounts will appear here when applications are approved and speaker profiles are created through the application review process.
+                        </p>
+                        <div className="flex justify-center space-x-3">
+                          <Button variant="outline" onClick={() => {
+                            // Switch to applications tab - you'll need to implement this
+                            const applicationsTab = document.querySelector('[value="applications"]') as HTMLElement;
+                            applicationsTab?.click();
+                          }}>
+                            View Pending Applications →
+                          </Button>
+                          <Button onClick={() => setIsManualAddDialogOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Speaker Manually
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </TabsContent>
 
           <TabsContent value="users" className="space-y-6">
@@ -2257,1990 +2811,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
-
-                
-                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                  <CardContent className="p-6 text-center">
-                    <Star className="h-12 w-12 mx-auto mb-3 text-green-600" />
-                    <div className="text-3xl font-bold text-green-700 mb-1">
-                      {applications?.filter((app: any) => app.status === 'approved').length || 0}
-                    </div>
-                    <div className="text-sm font-medium text-green-800">Approved</div>
-                    <div className="text-xs text-green-600 mt-1">Speaker accounts created</div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-                  <CardContent className="p-6 text-center">
-                    <TrendingUp className="h-12 w-12 mx-auto mb-3 text-yellow-600" />
-                    <div className="text-3xl font-bold text-yellow-700 mb-1">
-                      {applications?.filter((app: any) => app.status === 'under_review').length || 0}
-                    </div>
-                    <div className="text-sm font-medium text-yellow-800">Under Review</div>
-                    <div className="text-xs text-yellow-600 mt-1">Being evaluated</div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-                  <CardContent className="p-6 text-center">
-                    <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-red-600" />
-                    <div className="text-3xl font-bold text-red-700 mb-1">
-                      {applications?.filter((app: any) => app.status === 'rejected').length || 0}
-                    </div>
-                    <div className="text-sm font-medium text-red-800">Rejected</div>
-                    <div className="text-xs text-red-600 mt-1">Not approved</div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Applications Management */}
-              <Card>
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-xl text-gray-900 flex items-center">
-                        <MessageSquare className="h-6 w-6 mr-3 text-blue-600" />
-                        Speaker Application Queue
-                      </CardTitle>
-                      <CardDescription className="text-gray-600 mt-2">
-                        Review applications submitted by speakers who want to join the platform
-                      </CardDescription>
-                    </div>
-                    <div className="flex space-x-3">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Export Applications
-                      </Button>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                        {applications?.length || 0} Total Applications
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="space-y-6">
-                    {applications && applications.length > 0 ? (
-                      applications.map((application: any) => (
-                        <div key={application.id} className={`p-6 border rounded-xl transition-shadow hover:shadow-lg ${
-                          application.status === 'pending' ? 'bg-gradient-to-r from-blue-50 via-white to-blue-50 border-blue-200' :
-                          application.status === 'approved' ? 'bg-gradient-to-r from-green-50 via-white to-green-50 border-green-200' :
-                          application.status === 'under_review' ? 'bg-gradient-to-r from-yellow-50 via-white to-yellow-50 border-yellow-200' :
-                          'bg-gradient-to-r from-red-50 via-white to-red-50 border-red-200'
-                        }`}>
-                          <div className="flex justify-between items-start mb-6">
-                            <div className="flex-1">
-                              <div className="flex items-start justify-between mb-3">
-                                <div>
-                                  <h4 className="font-bold text-xl text-gray-900">{application.firstName} {application.lastName}</h4>
-                                  <p className="text-gray-600 font-medium">{application.title}</p>
-                                </div>
-                                <Badge 
-                                  className={`px-3 py-1 ${
-                                    application.status === 'pending' ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                                    application.status === 'approved' ? 'bg-green-100 text-green-800 border-green-300' :
-                                    application.status === 'under_review' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
-                                    'bg-red-100 text-red-800 border-red-300'
-                                  }`}
-                                >
-                                  {application.status?.charAt(0).toUpperCase() + application.status?.slice(1)}
-                                </Badge>
-                              </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div className="space-y-2">
-                                  <div className="text-sm">
-                                    <span className="font-semibold text-gray-700">📧 Email:</span> 
-                                    <span className="text-gray-600 ml-2">{application.email}</span>
-                                  </div>
-                                  <div className="text-sm">
-                                    <span className="font-semibold text-gray-700">🏥 Specialty:</span> 
-                                    <span className="text-gray-600 ml-2">{application.specialty}</span>
-                                  </div>
-                                  <div className="text-sm">
-                                    <span className="font-semibold text-gray-700">⏱️ Experience:</span> 
-                                    <span className="text-gray-600 ml-2">{application.yearsExperience}</span>
-                                  </div>
-                                </div>
-                                <div className="space-y-2">
-                                  <div className="text-sm">
-                                    <span className="font-semibold text-gray-700">📅 Applied:</span> 
-                                    <span className="text-gray-600 ml-2">{new Date(application.createdAt).toLocaleDateString()}</span>
-                                  </div>
-                                  <div className="text-sm">
-                                    <span className="font-semibold text-gray-700">📞 Phone:</span> 
-                                    <span className="text-gray-600 ml-2">{application.phone || 'Not provided'}</span>
-                                  </div>
-                                  <div className="text-sm">
-                                    <span className="font-semibold text-gray-700">🌐 Website:</span> 
-                                    <span className="text-gray-600 ml-2">{application.website || 'Not provided'}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                <div className="text-sm">
-                                  <span className="font-semibold text-gray-700">🎤 Speaking Topics:</span>
-                                  <p className="text-gray-600 mt-1">{application.speakingTopics}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-                            {application.status === 'pending' && (
-                              <>
-                                <Button 
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                  onClick={() => {
-                                    setCurrentApplication(application);
-                                    setActionType('create_new');
-                                    setIsCheckingDuplicates(true);
-                                    checkDuplicatesMutation.mutate(application.id);
-                                  }}
-                                >
-                                  <UserPlus className="h-4 w-4 mr-2" />
-                                  Create New Speaker Profile
-                                </Button>
-                                <Button 
-                                  variant="outline"
-                                  className="border-orange-600 text-orange-700 hover:bg-orange-50"
-                                  onClick={() => {
-                                    setCurrentApplication(application);
-                                    setActionType('add_to_existing');
-                                    setIsCheckingDuplicates(true);
-                                    checkDuplicatesMutation.mutate(application.id);
-                                  }}
-                                >
-                                  <LinkIcon className="h-4 w-4 mr-2" />
-                                  Add to Existing Speaker
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
-                                  onClick={() => handleApplicationAction(application.id, 'under_review')}
-                                >
-                                  👁️ Mark Under Review
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  className="border-red-600 text-red-700 hover:bg-red-50"
-                                  onClick={() => handleApplicationAction(application.id, 'rejected')}
-                                >
-                                  ❌ Reject Application
-                                </Button>
-                              </>
-                            )}
-                            <Button 
-                              variant="outline"
-                              onClick={() => {
-                                console.log('View Details clicked for application:', application);
-                                setSelectedApplicationDetails(application);
-                              }}
-                              className="border-blue-600 text-blue-700 hover:bg-blue-50"
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              View Details
-                            </Button>
-                            <Button 
-                              variant="outline"
-                              onClick={() => window.open(`mailto:${application.email}`, '_blank')}
-                            >
-                              <Mail className="h-4 w-4 mr-2" />
-                              Contact Applicant
-                            </Button>
-                            {application.status === 'approved' && application.createdSpeakerId && (
-                              <Button 
-                                variant="outline"
-                                onClick={() => {
-                                  // Switch to speaker accounts tab
-                                  const speakerAccountsTab = document.querySelector('[value="speaker-accounts"]') as HTMLElement;
-                                  speakerAccountsTab?.click();
-                                }}
-                              >
-                                <UserCheck className="h-4 w-4 mr-2" />
-                                View Speaker Account
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                        <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-                        <h3 className="text-xl font-semibold text-gray-900 mb-3">No Speaker Applications</h3>
-                        <p className="text-gray-500 max-w-lg mx-auto mb-6">
-                          Applications will appear here when speakers submit them through the "For Speakers" portal. Speakers can apply by visiting the dedicated application page.
-                        </p>
-                        <div className="flex justify-center">
-                          <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
-                            View Application Portal →
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="speaker-accounts" className="space-y-8">
-              {/* Section Header */}
-              <div className="text-center border-b border-gray-200 pb-6">
-                <h2 className="text-3xl font-bold text-gray-900 mb-3">Speaker Accounts Management</h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Manage speakers who joined through the application approval process. These accounts were created from approved speaker applications submitted via the "For Speakers" portal.
-                </p>
-              </div>
-
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                  <CardContent className="p-6 text-center">
-                    <UserCheck className="h-12 w-12 mx-auto mb-3 text-green-600" />
-                    <div className="text-3xl font-bold text-green-700 mb-1">
-                      {applications?.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length || 0}
-                    </div>
-                    <div className="text-sm font-medium text-green-800">Application-Based Accounts</div>
-                    <div className="text-xs text-green-600 mt-1">From approved applications</div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                  <CardContent className="p-6 text-center">
-                    <Users className="h-12 w-12 mx-auto mb-3 text-blue-600" />
-                    <div className="text-3xl font-bold text-blue-700 mb-1">
-                      {speakersArray.filter((s: any) => !applications?.some((app: any) => app.createdSpeakerId === s.id)).length || 0}
-                    </div>
-                    <div className="text-sm font-medium text-blue-800">Manual Accounts</div>
-                    <div className="text-xs text-blue-600 mt-1">Added directly by admin</div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                  <CardContent className="p-6 text-center">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-3 text-purple-600" />
-                    <div className="text-3xl font-bold text-purple-700 mb-1">
-                      {speakersArray.length || 0}
-                    </div>
-                    <div className="text-sm font-medium text-purple-800">Total Speaker Accounts</div>
-                    <div className="text-xs text-purple-600 mt-1">All speakers combined</div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Application-Based Accounts Section */}
-              <Card>
-                <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-xl text-gray-900 flex items-center">
-                        <UserCheck className="h-6 w-6 mr-3 text-green-600" />
-                        Application-Based Speaker Accounts
-                      </CardTitle>
-                      <CardDescription className="text-gray-600 mt-2">
-                        Speakers who applied through the "For Speakers" portal and were approved by admin review
-                      </CardDescription>
-                    </div>
-                    <div className="flex space-x-3">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Export Accounts
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={handleBulkImport}
-                        disabled={isBulkImporting}
-                      >
-                        {isBulkImporting ? (
-                          <>
-                            <div className="animate-spin h-4 w-4 mr-2 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                            Importing...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4 mr-2" />
-                            Bulk Import Speakers
-                          </>
-                        )}
-                      </Button>
-                      <Button size="sm">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Manual Add Speaker
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {applications && applications.filter((app: any) => app.status === 'approved' && app.createdSpeakerId).length > 0 ? (
-                      // Find speakers created from approved applications
-                      applications
-                        .filter((app: any) => app.status === 'approved' && app.createdSpeakerId)
-                        .map((app: any) => {
-                          // Find the corresponding speaker
-                          const speaker = speakersArray.find((s: any) => s.id === app.createdSpeakerId);
-                          if (!speaker) return null;
-                          
-                          return (
-                            <div key={speaker.id} className="p-6 border rounded-xl bg-gradient-to-r from-green-50 via-white to-blue-50 border-green-200 hover:shadow-md transition-shadow">
-                              <div className="flex items-start justify-between">
-                                <div className="flex items-center space-x-4">
-                                  <img 
-                                    src={speaker.imageUrl} 
-                                    alt={speaker.name}
-                                    className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg"
-                                  />
-                                  <div>
-                                    <h4 className="font-semibold text-xl text-gray-900">{speaker.name}</h4>
-                                    <p className="text-gray-600 font-medium">{speaker.title}</p>
-                                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
-                                      <span className="flex items-center">
-                                        📧 Applied: {new Date(app.createdAt).toLocaleDateString()}
-                                      </span>
-                                      <span className="flex items-center">
-                                        ✅ Approved: {new Date(app.reviewedAt).toLocaleDateString()}
-                                      </span>
-                                      <span className="text-xs text-gray-400">
-                                        Application #{app.id}
-                                      </span>
-                                    </div>
-                                    
-                                    {/* Login Credentials Section */}
-                                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                      <div className="text-sm font-medium text-blue-900 mb-2">
-                                        🔐 Login Credentials
-                                      </div>
-                                      <div className="space-y-1 text-sm">
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-blue-700 font-medium">Email:</span>
-                                          <code className="bg-white px-2 py-1 rounded text-blue-800 border">{app.email}</code>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-blue-700 font-medium">Password:</span>
-                                          <div className="flex items-center space-x-2">
-                                            {/* Check if user has changed password from original */}
-                                            {(() => {
-                                              // Find the user associated with this application
-                                              const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
-                                              
-
-                                              
-                                              const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
-                                                new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
-                                              
-                                              const showPasswordChanged = hasChangedPassword;
-                                              
-                                              if (showPasswordChanged) {
-                                                return (
-                                                  <div className="flex items-center space-x-2">
-                                                    <span className="bg-orange-100 px-2 py-1 rounded text-orange-800 border border-orange-200 font-mono text-sm">
-                                                      ⚠️ Password Changed by User
-                                                    </span>
-                                                    <Button 
-                                                      size="sm" 
-                                                      variant="ghost"
-                                                      className="text-xs h-7 px-2 text-orange-600 hover:text-orange-800"
-                                                      onClick={() => {
-                                                        alert(`This user has changed their password from the original generated one.\n\nOriginal generated password is no longer valid.\nUser must use their new password to log in.`);
-                                                      }}
-                                                    >
-                                                      ℹ️ Info
-                                                    </Button>
-                                                  </div>
-                                                );
-                                              } else {
-                                                const originalPassword = (() => {
-                                                  const seed = `${app.id}-${app.email}`;
-                                                  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-                                                  let result = '';
-                                                  for (let i = 0; i < 12; i++) {
-                                                    const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
-                                                    result += chars[charIndex];
-                                                  }
-                                                  return result;
-                                                })();
-                                                
-                                                return (
-                                                  <code className="bg-white px-2 py-1 rounded text-blue-800 border font-mono text-sm">
-                                                    {originalPassword}
-                                                  </code>
-                                                );
-                                              }
-                                            })()}
-                                            {(() => {
-                                              // Only show copy button if password hasn't been changed
-                                              const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
-                                              const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
-                                                new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
-                                              
-                                              const showPasswordChanged = hasChangedPassword;
-                                              
-                                              if (!showPasswordChanged) {
-                                                return (
-                                                  <Button 
-                                                    size="sm" 
-                                                    variant="ghost"
-                                                    className="text-xs h-7 px-2 text-blue-600 hover:text-blue-800"
-                                                    onClick={() => {
-                                                      const password = (() => {
-                                                        const seed = `${app.id}-${app.email}`;
-                                                        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-                                                        let result = '';
-                                                        for (let i = 0; i < 12; i++) {
-                                                          const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
-                                                          result += chars[charIndex];
-                                                        }
-                                                        return result;
-                                                      })();
-                                                      const credentials = `Email: ${app.email}\nPassword: ${password}\nLogin URL: ${window.location.origin}/auth`;
-                                                      navigator.clipboard?.writeText(credentials);
-                                                      alert(`Login credentials copied to clipboard:\n\nEmail: ${app.email}\nPassword: ${password}`);
-                                                    }}
-                                                  >
-                                                    📋 Copy
-                                                  </Button>
-                                                );
-                                              }
-                                              return null;
-                                            })()}
-                                          </div>
-                                        </div>
-                                        {(() => {
-                                          const associatedUser = users?.find((u: any) => u.email === app.email && u.speakerId === speaker.id);
-                                          const hasChangedPassword = associatedUser && associatedUser.updatedAt && 
-                                            new Date(associatedUser.updatedAt) > new Date(associatedUser.createdAt);
-                                          
-                                          const showPasswordChanged = hasChangedPassword;
-                                          
-                                          if (showPasswordChanged) {
-                                            return (
-                                              <div className="text-xs text-orange-600 mt-2 p-2 bg-orange-100 rounded border border-orange-200">
-                                                ⚠️ <strong>Password Updated:</strong> This user has changed their password. The original generated password is no longer valid.
-                                                {associatedUser?.updatedAt && (
-                                                  <div className="mt-1 text-orange-500">
-                                                    Changed on: {new Date(associatedUser.updatedAt).toLocaleString()}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            );
-                                          } else {
-                                            return (
-                                              <div className="text-xs text-blue-600 mt-2 p-2 bg-blue-100 rounded">
-                                                💡 <strong>Generated Password:</strong> This password is generated based on the application ID and remains consistent. 
-                                                Click "Copy" to copy credentials for sharing with the speaker.
-                                              </div>
-                                            );
-                                          }
-                                        })()}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex flex-col items-end space-y-3">
-                                  <Badge className="bg-green-100 text-green-800 border-green-300 px-3 py-1">
-                                    <UserCheck className="h-3 w-3 mr-1" />
-                                    Application-Based Account
-                                  </Badge>
-                                  <div className="flex space-x-2">
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      onClick={() => handleEditSpeaker(speaker)}
-                                    >
-                                      <Edit className="h-4 w-4 mr-1" />
-                                      Edit
-                                    </Button>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      onClick={() => window.open(`/speaker/${speaker.slug}`, '_blank')}
-                                    >
-                                      <ExternalLink className="h-4 w-4 mr-1" />
-                                      View
-                                    </Button>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      onClick={() => handleToggleSpeakerVisibility(speaker.id)}
-                                      className={speaker.hideProfile ? "border-red-200 text-red-600 hover:bg-red-50" : "border-green-200 text-green-600 hover:bg-green-50"}
-                                    >
-                                      {speaker.hideProfile ? (
-                                        <>
-                                          <EyeOff className="h-4 w-4 mr-1" />
-                                          Hidden
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Eye className="h-4 w-4 mr-1" />
-                                          Visible
-                                        </>
-                                      )}
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })
-                        .filter(Boolean) // Remove null entries
-                    ) : (
-                      <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                        <UserCheck className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-                        <h3 className="text-xl font-semibold text-gray-900 mb-3">No Application-Based Speaker Accounts</h3>
-                        <p className="text-gray-500 max-w-lg mx-auto mb-6">
-                          Speaker accounts will appear here when applications are approved and speaker profiles are created through the application review process.
-                        </p>
-                        <div className="flex justify-center space-x-3">
-                          <Button variant="outline" onClick={() => {
-                            // Switch to applications tab - you'll need to implement this
-                            const applicationsTab = document.querySelector('[value="applications"]') as HTMLElement;
-                            applicationsTab?.click();
-                          }}>
-                            View Pending Applications →
-                          </Button>
-                          <Button onClick={() => setIsManualAddDialogOpen(true)}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Speaker Manually
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
       </div>
-
-      {/* Edit Speaker Dialog */}
-      {editingSpeaker && (
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Speaker Profile</DialogTitle>
-              <DialogDescription>
-                Update speaker information and profile details
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Basic Information</h3>
-                
-                <div>
-                  <Label htmlFor="name">Name *</Label>
-                  <Input 
-                    id="name"
-                    value={editingSpeaker.name || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, name: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="title">Title *</Label>
-                  <Input 
-                    id="title"
-                    value={editingSpeaker.title || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, title: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="bio">Biography</Label>
-                  <Textarea 
-                    id="bio"
-                    rows={4}
-                    value={editingSpeaker.bio || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, bio: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="location">Location *</Label>
-                  <Input 
-                    id="location"
-                    value={editingSpeaker.location || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, location: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label>Categories (select multiple)</Label>
-                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-md">
-                    {categoriesArray.map((category: any) => (
-                      <div key={category.name} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={`category-${category.name}`}
-                          checked={editingSpeaker.category?.includes(category.name) || false}
-                          onChange={(e) => {
-                            const currentCategories = editingSpeaker.category ? editingSpeaker.category.split(', ') : [];
-                            let newCategories;
-                            if (e.target.checked) {
-                              newCategories = [...currentCategories, category.name];
-                            } else {
-                              newCategories = currentCategories.filter((cat: string) => cat !== category.name);
-                            }
-                            setEditingSpeaker({
-                              ...editingSpeaker,
-                              category: newCategories.join(', ')
-                            });
-                          }}
-                          className="rounded"
-                        />
-                        <label htmlFor={`category-${category.name}`} className="text-sm cursor-pointer">
-                          {category.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Speaker Types (select multiple)</Label>
-                  <div className="grid grid-cols-2 gap-2 p-3 border rounded-md">
-                    {speakerTypes.map((type) => (
-                      <div key={type} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={`type-${type}`}
-                          checked={editingSpeaker.speakerType?.includes(type) || false}
-                          onChange={(e) => {
-                            const currentTypes = editingSpeaker.speakerType ? editingSpeaker.speakerType.split(', ') : [];
-                            let newTypes;
-                            if (e.target.checked) {
-                              newTypes = [...currentTypes, type];
-                            } else {
-                              newTypes = currentTypes.filter((t: string) => t !== type);
-                            }
-                            setEditingSpeaker({
-                              ...editingSpeaker,
-                              speakerType: newTypes.join(', ')
-                            });
-                          }}
-                          className="rounded"
-                        />
-                        <label htmlFor={`type-${type}`} className="text-sm cursor-pointer">
-                          {type}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="fee">Speaking Fee</Label>
-                  <Input 
-                    id="fee"
-                    placeholder="e.g., $5,000 - $10,000"
-                    value={editingSpeaker.fee || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, fee: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="experience">Experience (Years)</Label>
-                  <Input 
-                    id="experience"
-                    type="number"
-                    placeholder="e.g., 15"
-                    value={editingSpeaker.experience || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, experience: parseInt(e.target.value) || 0})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="topics">Speaking Topics (comma-separated)</Label>
-                  <Textarea 
-                    id="topics"
-                    rows={3}
-                    placeholder="Full Arch Rehabilitation, Digital Workflows, Team Management"
-                    value={editingSpeaker.lectures ? editingSpeaker.lectures.join(', ') : ''} 
-                    onChange={(e) => setEditingSpeaker({
-                      ...editingSpeaker, 
-                      lectures: e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                    })}
-                  />
-                </div>
-              </div>
-
-              {/* Contact & Media */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Contact & Media</h3>
-                
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input 
-                    id="email"
-                    type="email"
-                    value={editingSpeaker.email || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, email: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input 
-                    id="phone"
-                    value={editingSpeaker.phone || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, phone: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="website">Website</Label>
-                  <Input 
-                    id="website"
-                    placeholder="https://"
-                    value={editingSpeaker.website || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, website: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="imageUrl">Profile Image URL</Label>
-                  <Input 
-                    id="imageUrl"
-                    placeholder="https://"
-                    value={editingSpeaker.imageUrl || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, imageUrl: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="instagramHandle">Instagram Handle</Label>
-                  <Input 
-                    id="instagramHandle"
-                    placeholder="@username"
-                    value={editingSpeaker.instagramHandle || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, instagramHandle: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="facebookHandle">Facebook Handle</Label>
-                  <Input 
-                    id="facebookHandle"
-                    placeholder="@username or profile URL"
-                    value={editingSpeaker.facebookHandle || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, facebookHandle: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="xHandle">X (Twitter) Handle</Label>
-                  <Input 
-                    id="xHandle"
-                    placeholder="@username"
-                    value={editingSpeaker.xHandle || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, xHandle: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="linkedinHandle">LinkedIn Profile</Label>
-                  <Input 
-                    id="linkedinHandle"
-                    placeholder="linkedin.com/in/username or full URL"
-                    value={editingSpeaker.linkedinHandle || ''} 
-                    onChange={(e) => setEditingSpeaker({...editingSpeaker, linkedinHandle: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="expertise">Expertise (comma-separated)</Label>
-                  <Textarea 
-                    id="expertise"
-                    rows={3}
-                    placeholder="Digital Workflows, Guided Surgery, CAD/CAM"
-                    value={editingSpeaker.expertise ? editingSpeaker.expertise.join(', ') : ''} 
-                    onChange={(e) => setEditingSpeaker({
-                      ...editingSpeaker, 
-                      expertise: e.target.value.split(',').map(item => item.trim())
-                    })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="languages">Languages (comma-separated)</Label>
-                  <Input 
-                    id="languages"
-                    placeholder="English, Spanish, German"
-                    value={editingSpeaker.languages ? editingSpeaker.languages.join(', ') : ''} 
-                    onChange={(e) => setEditingSpeaker({
-                      ...editingSpeaker, 
-                      languages: e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                    })}
-                  />
-                </div>
-
-                {/* Experience Section */}
-                <div className="pt-4 border-t">
-                  <h4 className="text-md font-semibold mb-3">Professional Experience</h4>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="education">Education & Credentials</Label>
-                      <Textarea 
-                        id="education"
-                        rows={2}
-                        placeholder="DDS, University of California San Francisco; Prosthodontic Residency, UCLA"
-                        value={editingSpeaker.education || ''} 
-                        onChange={(e) => setEditingSpeaker({...editingSpeaker, education: e.target.value})}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="certifications">Certifications & Awards</Label>
-                      <Textarea 
-                        id="certifications"
-                        rows={2}
-                        placeholder="Board Certified Prosthodontist; Fellow, American College of Prosthodontists"
-                        value={editingSpeaker.certifications || ''} 
-                        onChange={(e) => setEditingSpeaker({...editingSpeaker, certifications: e.target.value})}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="affiliations">Professional Affiliations</Label>
-                      <Textarea 
-                        id="affiliations"
-                        rows={2}
-                        placeholder="American Dental Association; International Congress of Oral Implantologists"
-                        value={editingSpeaker.affiliations || ''} 
-                        onChange={(e) => setEditingSpeaker({...editingSpeaker, affiliations: e.target.value})}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="publications">Publications & Research</Label>
-                      <Textarea 
-                        id="publications"
-                        rows={2}
-                        placeholder="Author of 50+ peer-reviewed articles; Contributing editor, Journal of Prosthodontics"
-                        value={editingSpeaker.publications || ''} 
-                        onChange={(e) => setEditingSpeaker({...editingSpeaker, publications: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Visibility Controls Section */}
-                <div className="pt-4 border-t">
-                  <h4 className="text-md font-semibold mb-3">Visibility Settings</h4>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="hideProfile"
-                        checked={editingSpeaker.hideProfile || false}
-                        onChange={(e) => setEditingSpeaker({...editingSpeaker, hideProfile: e.target.checked})}
-                        className="rounded"
-                      />
-                      <label htmlFor="hideProfile" className="text-sm">Hide entire profile from public view</label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="hideRatings"
-                        checked={editingSpeaker.hideRatings || false}
-                        onChange={(e) => setEditingSpeaker({...editingSpeaker, hideRatings: e.target.checked})}
-                        className="rounded"
-                      />
-                      <label htmlFor="hideRatings" className="text-sm">Hide ratings and reviews</label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="hideSocial"
-                        checked={editingSpeaker.hideSocial || false}
-                        onChange={(e) => setEditingSpeaker({...editingSpeaker, hideSocial: e.target.checked})}
-                        className="rounded"
-                      />
-                      <label htmlFor="hideSocial" className="text-sm">Hide social media links</label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="hideContact"
-                        checked={editingSpeaker.hideContact || false}
-                        onChange={(e) => setEditingSpeaker({...editingSpeaker, hideContact: e.target.checked})}
-                        className="rounded"
-                      />
-                      <label htmlFor="hideContact" className="text-sm">Hide contact information</label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center space-x-6">
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        checked={editingSpeaker.verified || false}
-                        onCheckedChange={(checked) => setEditingSpeaker({...editingSpeaker, verified: checked})}
-                      />
-                      <Label>Verified</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        checked={editingSpeaker.featured || false}
-                        onCheckedChange={(checked) => setEditingSpeaker({...editingSpeaker, featured: checked})}
-                      />
-                      <Label>Featured</Label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-6 border-t mt-6">
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteClick}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Profile
-              </Button>
-              
-              <div className="flex space-x-3">
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleSaveSpeaker}
-                  disabled={updateSpeakerMutation.isPending}
-                >
-                  {updateSpeakerMutation.isPending ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-red-600">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              Confirm Delete
-            </DialogTitle>
-            <DialogDescription>
-              {editingSpeaker?.email && typeof editingSpeaker?.id === 'string' ? (
-                <>This will permanently delete the user account for {editingSpeaker?.name || editingSpeaker?.email}. All user data will be removed immediately.</>
-              ) : (
-                <>This will permanently delete {editingSpeaker?.name}'s profile. The profile will be moved to recently deleted for 14 days before permanent removal.</>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Warning:</strong> This action cannot be undone. Please enter your admin password to confirm.
-              </AlertDescription>
-            </Alert>
-            
-            <div>
-              <Label htmlFor="deletePassword">Admin Password *</Label>
-              <Input 
-                id="deletePassword"
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleDeleteConfirm()}
-              />
-              {deleteError && (
-                <p className="text-sm text-red-600 mt-1">{deleteError}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteConfirm}
-              disabled={deleteSpeakerMutation.isPending || deleteUserMutation.isPending}
-            >
-              {(deleteSpeakerMutation.isPending || deleteUserMutation.isPending) ? "Deleting..." : 
-               editingSpeaker?.email && typeof editingSpeaker?.id === 'string' ? "Delete User" : "Delete Profile"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Category Edit Dialog */}
-      <Dialog open={isCategoryEditDialogOpen} onOpenChange={setIsCategoryEditDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Edit Category: {editingCategory?.name}</DialogTitle>
-            <DialogDescription>
-              Select which speakers should be assigned to the "{editingCategory?.name}" category
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex-1 overflow-y-auto p-1">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <h4 className="font-medium">{editingCategory?.name}</h4>
-                  <p className="text-sm text-gray-600">{editingCategory?.description}</p>
-                </div>
-                <Badge variant="outline">
-                  {Object.values(categoryAssignments).filter(Boolean).length} speakers assigned
-                </Badge>
-              </div>
-              
-              {/* Search Box */}
-              <div className="border-b pb-4">
-                <Label className="text-sm font-medium">Search Speakers</Label>
-                <Input
-                  type="text"
-                  placeholder="Type speaker name to search..."
-                  value={categorySearchQuery}
-                  onChange={(e) => setCategorySearchQuery(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-sm text-gray-700">
-                    {categorySearchQuery ? `Search Results (${filteredCategorySpeakers.length})` : `All Speakers (${speakersArray.length})`}:
-                  </h4>
-                  {categorySearchQuery && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setCategorySearchQuery("")}
-                      className="text-xs"
-                    >
-                      Clear Search
-                    </Button>
-                  )}
-                </div>
-                
-                {filteredCategorySpeakers.length > 0 ? (
-                  filteredCategorySpeakers.map((speaker: any) => (
-                  <div key={speaker.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center space-x-3">
-                      <img 
-                        src={speaker.imageUrl} 
-                        alt={speaker.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="font-medium">{speaker.name}</p>
-                        <p className="text-sm text-gray-600">{speaker.title}</p>
-                        {speaker.category && speaker.category !== editingCategory?.name && (
-                          <p className="text-xs text-gray-500">Currently in: {speaker.category}</p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`speaker-${speaker.id}`}
-                        checked={categoryAssignments[speaker.id] || false}
-                        onChange={(e) => {
-                          setCategoryAssignments({
-                            ...categoryAssignments,
-                            [speaker.id]: e.target.checked
-                          });
-                        }}
-                        className="rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                      <Label htmlFor={`speaker-${speaker.id}`} className="text-sm cursor-pointer">
-                        Assign to {editingCategory?.name}
-                      </Label>
-                    </div>
-                  </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No speakers found matching "{categorySearchQuery}"</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setIsCategoryEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSaveCategoryAssignments}
-              disabled={updateCategoryAssignmentMutation.isPending}
-            >
-              {updateCategoryAssignmentMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Bulk Action Dialog */}
-      <Dialog open={isBulkActionDialogOpen} onOpenChange={setIsBulkActionDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Bulk User Actions</DialogTitle>
-            <DialogDescription>
-              Apply actions to {selectedUsers.size} selected users
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="bulkAction">Select Action</Label>
-              <Select value={bulkAction} onValueChange={setBulkAction}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose action..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="activate">Activate Users</SelectItem>
-                  <SelectItem value="deactivate">Deactivate Users</SelectItem>
-                  <SelectItem value="verify">Verify Emails</SelectItem>
-                  <SelectItem value="unverify">Unverify Emails</SelectItem>
-                  <SelectItem value="promote">Promote to Admin</SelectItem>
-                  <SelectItem value="demote">Demote to User</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="bulkPassword">Admin Password *</Label>
-              <Input 
-                id="bulkPassword"
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-              />
-              {deleteError && (
-                <p className="text-sm text-red-600 mt-1">{deleteError}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button variant="outline" onClick={() => {
-              setIsBulkActionDialogOpen(false);
-              setBulkAction("");
-              setDeletePassword("");
-              setDeleteError("");
-            }}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleBulkAction}
-              disabled={!bulkAction || bulkUpdateUsersMutation.isPending}
-            >
-              {bulkUpdateUsersMutation.isPending ? "Processing..." : "Apply Action"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Manual Add Speaker Dialog */}
-      <Dialog open={isManualAddDialogOpen} onOpenChange={setIsManualAddDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Speaker Manually</DialogTitle>
-            <DialogDescription>
-              Create a new speaker profile manually. This speaker will be marked as manually added for tracking purposes.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Basic Information</h3>
-              
-              <div>
-                <Label htmlFor="manualName">Speaker Name *</Label>
-                <Input 
-                  id="manualName"
-                  value={manualSpeakerData.name}
-                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, name: e.target.value})}
-                  placeholder="Dr. John Smith"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="manualTitle">Professional Title *</Label>
-                <Input 
-                  id="manualTitle"
-                  value={manualSpeakerData.title}
-                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, title: e.target.value})}
-                  placeholder="Orthodontist, CEO of Smith Dental Group"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="manualCategory">Category</Label>
-                <Select 
-                  value={manualSpeakerData.category} 
-                  onValueChange={(value) => setManualSpeakerData({...manualSpeakerData, category: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.isArray(categories) ? categories.map((category: Category) => (
-                      <SelectItem key={category.id} value={category.name}>
-                        {category.name}
-                      </SelectItem>
-                    )) : null}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="manualLocation">Location</Label>
-                <Input 
-                  id="manualLocation"
-                  value={manualSpeakerData.location}
-                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, location: e.target.value})}
-                  placeholder="New York, NY"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="manualExpertise">Expertise Areas</Label>
-                <Input 
-                  id="manualExpertise"
-                  value={manualSpeakerData.expertise}
-                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, expertise: e.target.value})}
-                  placeholder="Orthodontics, Digital Dentistry, Practice Management"
-                />
-              </div>
-            </div>
-
-            {/* Contact & Additional Info */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Contact & Additional Info</h3>
-              
-              <div>
-                <Label htmlFor="manualEmail">Email</Label>
-                <Input 
-                  id="manualEmail"
-                  type="email"
-                  value={manualSpeakerData.email}
-                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, email: e.target.value})}
-                  placeholder="speaker@example.com"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="manualPhone">Phone</Label>
-                <Input 
-                  id="manualPhone"
-                  value={manualSpeakerData.phone}
-                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, phone: e.target.value})}
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="manualWebsite">Website</Label>
-                <Input 
-                  id="manualWebsite"
-                  value={manualSpeakerData.website}
-                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, website: e.target.value})}
-                  placeholder="https://www.example.com"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="manualImageUrl">Profile Image URL</Label>
-                <Input 
-                  id="manualImageUrl"
-                  value={manualSpeakerData.imageUrl}
-                  onChange={(e) => setManualSpeakerData({...manualSpeakerData, imageUrl: e.target.value})}
-                  placeholder="https://example.com/profile.jpg"
-                />
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    checked={manualSpeakerData.verified}
-                    onCheckedChange={(checked) => setManualSpeakerData({...manualSpeakerData, verified: checked})}
-                  />
-                  <Label>Verified Speaker</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    checked={manualSpeakerData.featured}
-                    onCheckedChange={(checked) => setManualSpeakerData({...manualSpeakerData, featured: checked})}
-                  />
-                  <Label>Featured Speaker</Label>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Biography */}
-          <div className="space-y-4 mt-6">
-            <h3 className="text-lg font-semibold">Biography</h3>
-            <div>
-              <Label htmlFor="manualBio">Professional Biography</Label>
-              <Textarea 
-                id="manualBio"
-                value={manualSpeakerData.bio}
-                onChange={(e) => setManualSpeakerData({...manualSpeakerData, bio: e.target.value})}
-                placeholder="Enter speaker's professional background, achievements, and speaking expertise..."
-                rows={4}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-6 border-t mt-6">
-            <Button variant="outline" onClick={() => setIsManualAddDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={() => addSpeakerMutation.mutate(manualSpeakerData)}
-              disabled={addSpeakerMutation.isPending || !manualSpeakerData.name.trim() || !manualSpeakerData.title.trim()}
-            >
-              {addSpeakerMutation.isPending ? "Adding Speaker..." : "Add Speaker"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Duplicate Checking Dialog */}
-      <Dialog open={duplicateCheckDialogOpen} onOpenChange={setDuplicateCheckDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              {actionType === 'create_new' ? (
-                <>
-                  <UserPlus className="h-5 w-5 mr-2 text-green-600" />
-                  Create New Speaker Profile
-                </>
-              ) : (
-                <>
-                  <LinkIcon className="h-5 w-5 mr-2 text-orange-600" />
-                  Add to Existing Speaker
-                </>
-              )}
-            </DialogTitle>
-            <DialogDescription>
-              {actionType === 'create_new' 
-                ? `Creating profile for "${currentApplication?.firstName} ${currentApplication?.lastName}". Check below for potential duplicates before proceeding.`
-                : `Adding application from "${currentApplication?.firstName} ${currentApplication?.lastName}" to an existing speaker profile. Select the speaker to link to.`
-              }
-            </DialogDescription>
-          </DialogHeader>
-
-          {isCheckingDuplicates ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Checking for potential duplicates...</p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {/* Current Application Info */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h3 className="font-semibold text-blue-900 mb-2">New Application Details</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium text-blue-800">Name:</span> {currentApplication?.firstName} {currentApplication?.lastName}
-                  </div>
-                  <div>
-                    <span className="font-medium text-blue-800">Email:</span> {currentApplication?.email}
-                  </div>
-                  <div>
-                    <span className="font-medium text-blue-800">Title:</span> {currentApplication?.title}
-                  </div>
-                  <div>
-                    <span className="font-medium text-blue-800">Specialty:</span> {currentApplication?.specialty}
-                  </div>
-                </div>
-              </div>
-
-              {/* Potential Duplicates */}
-              {potentialDuplicates.length > 0 ? (
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-4">
-                    Found {potentialDuplicates.length} Potential Matches
-                  </h3>
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {potentialDuplicates.map((speaker: any) => (
-                      <div 
-                        key={speaker.id}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                          selectedExistingSpeaker === speaker.id 
-                            ? 'border-green-500 bg-green-50' 
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => setSelectedExistingSpeaker(speaker.id)}
-                      >
-                        <div className="flex items-start space-x-4">
-                          <div className="flex-shrink-0">
-                            <input
-                              type="radio"
-                              name="existingSpeaker"
-                              value={speaker.id}
-                              checked={selectedExistingSpeaker === speaker.id}
-                              onChange={() => setSelectedExistingSpeaker(speaker.id)}
-                              className="mt-1"
-                            />
-                          </div>
-                          <img 
-                            src={speaker.imageUrl || '/api/placeholder/80/80'} 
-                            alt={speaker.name}
-                            className="w-16 h-16 rounded-full object-cover"
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900">{speaker.name}</h4>
-                            <p className="text-gray-600">{speaker.title}</p>
-                            <div className="grid grid-cols-2 gap-2 mt-2 text-sm text-gray-500">
-                              <div>Email: {speaker.email || 'Not provided'}</div>
-                              <div>Category: {speaker.category || 'Not set'}</div>
-                              <div>Location: {speaker.location || 'Not provided'}</div>
-                              <div>Rating: {speaker.rating ? `${speaker.rating}/5` : 'No ratings'}</div>
-                            </div>
-                            {speaker.matchReason && (
-                              <div className="mt-2">
-                                <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
-                                  Match: {speaker.matchReason}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className={`text-center py-8 rounded-lg border ${actionType === 'add_to_existing' ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'}`}>
-                  <Users className={`h-12 w-12 mx-auto mb-4 ${actionType === 'add_to_existing' ? 'text-orange-600' : 'text-green-600'}`} />
-                  <h3 className={`font-semibold mb-2 ${actionType === 'add_to_existing' ? 'text-orange-900' : 'text-green-900'}`}>
-                    {actionType === 'add_to_existing' ? 'No Matching Speakers Found' : 'No Duplicates Found'}
-                  </h3>
-                  <p className={actionType === 'add_to_existing' ? 'text-orange-700' : 'text-green-700'}>
-                    {actionType === 'add_to_existing' 
-                      ? 'No existing speakers match this application. You may want to create a new profile instead.'
-                      : 'This appears to be a unique speaker profile.'
-                    }
-                  </p>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 pt-4 border-t">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setDuplicateCheckDialogOpen(false);
-                    setCurrentApplication(null);
-                    setPotentialDuplicates([]);
-                    setSelectedExistingSpeaker(null);
-                    setActionType(null);
-                  }}
-                >
-                  Cancel
-                </Button>
-                
-                {actionType === 'add_to_existing' ? (
-                  // Show only link button for "Add to Existing" action
-                  <Button 
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
-                    onClick={handleLinkToExisting}
-                    disabled={linkToExistingSpeakerMutation.isPending || !selectedExistingSpeaker}
-                  >
-                    {linkToExistingSpeakerMutation.isPending ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Linking...
-                      </>
-                    ) : (
-                      <>
-                        <LinkIcon className="h-4 w-4 mr-2" />
-                        {selectedExistingSpeaker ? 'Link to Selected Speaker' : 'Select a Speaker First'}
-                      </>
-                    )}
-                  </Button>
-                ) : actionType === 'create_new' ? (
-                  // Show both buttons for "Create New" action
-                  <>
-                    {potentialDuplicates.length > 0 && selectedExistingSpeaker && (
-                      <Button 
-                        variant="outline" 
-                        className="border-orange-600 text-orange-700 hover:bg-orange-50"
-                        onClick={handleLinkToExisting}
-                        disabled={linkToExistingSpeakerMutation.isPending}
-                      >
-                        {linkToExistingSpeakerMutation.isPending ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2"></div>
-                            Linking...
-                          </>
-                        ) : (
-                          <>
-                            <LinkIcon className="h-4 w-4 mr-2" />
-                            Link to Selected Speaker Instead
-                          </>
-                        )}
-                      </Button>
-                    )}
-                    
-                    <Button 
-                      className="bg-green-600 hover:bg-green-700 text-white"
-                      onClick={handleCreateNewProfile}
-                      disabled={approveApplicationMutation.isPending}
-                    >
-                      {approveApplicationMutation.isPending ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Creating...
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          Create New Profile
-                        </>
-                      )}
-                    </Button>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
-
-    {/* Application Details Modal */}
-    <Dialog open={!!selectedApplicationDetails} onOpenChange={() => {
-      console.log('Dialog closing, selectedApplicationDetails was:', selectedApplicationDetails);
-      setSelectedApplicationDetails(null);
-    }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Application Details - {selectedApplicationDetails?.firstName} {selectedApplicationDetails?.lastName}
-          </DialogTitle>
-          <DialogDescription>
-            Submitted on {selectedApplicationDetails && new Date(selectedApplicationDetails.createdAt).toLocaleDateString()}
-          </DialogDescription>
-        </DialogHeader>
-        
-        {selectedApplicationDetails && (
-          <div className="space-y-4">
-            {/* Basic Info */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-bold text-blue-900 mb-3">Personal Information</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><strong>Name:</strong> {selectedApplicationDetails.firstName} {selectedApplicationDetails.lastName}</div>
-                <div><strong>Email:</strong> {selectedApplicationDetails.email}</div>
-                <div><strong>Phone:</strong> {selectedApplicationDetails.phone || 'Not provided'}</div>
-                <div><strong>Title:</strong> {selectedApplicationDetails.title}</div>
-                <div><strong>Specialty:</strong> {selectedApplicationDetails.specialty}</div>
-                <div><strong>Experience:</strong> {selectedApplicationDetails.yearsExperience} years</div>
-              </div>
-            </div>
-
-            {/* Categories & Topics */}
-            {(selectedApplicationDetails.selectedCategories?.length > 0 || selectedApplicationDetails.specificTopics) && (
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h3 className="font-bold text-purple-900 mb-3">Categories & Expertise</h3>
-                {selectedApplicationDetails.selectedCategories?.length > 0 && (
-                  <div className="mb-3">
-                    <strong className="text-sm">Selected Categories:</strong>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedApplicationDetails.selectedCategories.map((category: string) => (
-                        <Badge key={category} className="bg-purple-100 text-purple-800 text-xs">
-                          {category}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {selectedApplicationDetails.specificTopics && (
-                  <div>
-                    <strong className="text-sm">Specific Topics:</strong>
-                    <p className="text-sm mt-1">{selectedApplicationDetails.specificTopics}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Speaking Experience */}
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-bold text-green-900 mb-3">Speaking Information</h3>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <strong>Speaking Topics:</strong>
-                  <p>{selectedApplicationDetails.speakingTopics}</p>
-                </div>
-                <div>
-                  <strong>Previous Experience:</strong>
-                  <p>{selectedApplicationDetails.previousExperience}</p>
-                </div>
-                {selectedApplicationDetails.availableFormats?.length > 0 && (
-                  <div>
-                    <strong>Available Formats:</strong>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedApplicationDetails.availableFormats.map((format: string) => (
-                        <Badge key={format} className="bg-blue-100 text-blue-800 text-xs">
-                          {format}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div><strong>Travel:</strong> {selectedApplicationDetails.travelWillingness}</div>
-              </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <h3 className="font-bold text-yellow-900 mb-3">Additional Information</h3>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <strong>Biography:</strong>
-                  <p>{selectedApplicationDetails.biography}</p>
-                </div>
-                <div>
-                  <strong>Credentials:</strong>
-                  <p>{selectedApplicationDetails.credentials}</p>
-                </div>
-                {selectedApplicationDetails.website && (
-                  <div>
-                    <strong>Website:</strong> 
-                    <a href={selectedApplicationDetails.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
-                      {selectedApplicationDetails.website}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Status */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-bold text-gray-900 mb-3">Application Status</h3>
-              <div className="flex items-center gap-4 text-sm">
-                <div>
-                  <strong>Status:</strong>
-                  <Badge className={`ml-2 ${
-                    selectedApplicationDetails.status === 'pending' ? 'bg-blue-100 text-blue-800' :
-                    selectedApplicationDetails.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    selectedApplicationDetails.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {selectedApplicationDetails.status?.charAt(0).toUpperCase() + selectedApplicationDetails.status?.slice(1)}
-                  </Badge>
-                </div>
-                <div><strong>Submitted:</strong> {new Date(selectedApplicationDetails.createdAt).toLocaleString()}</div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="flex justify-end pt-4 border-t">
-          <Button onClick={() => setSelectedApplicationDetails(null)}>
-            Close
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-    </>
-  );
-}
-
-// InquiriesManagement Component
-function InquiriesManagement() {
-  const { toast } = useToast();
-  const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(null);
-  const [inquiryStatusFilter, setInquiryStatusFilter] = useState("all");
-  const [inquirySearchQuery, setInquirySearchQuery] = useState("");
-
-  // Fetch all inquiries
-  const { data: inquiries = [], isLoading: inquiriesLoading } = useQuery<(Inquiry & { speakerName?: string })[]>({
-    queryKey: ["/api/admin/inquiries"],
-    queryFn: async () => {
-      const response = await fetch("/api/admin/inquiries");
-      if (!response.ok) throw new Error("Failed to fetch inquiries");
-      return response.json();
-    },
-  });
-
-  // Update inquiry status mutation
-  const updateInquiryStatusMutation = useMutation({
-    mutationFn: async ({ inquiryId, status, adminNotes }: { inquiryId: number; status: string; adminNotes?: string }) => {
-      const response = await fetch(`/api/admin/inquiries/${inquiryId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, adminNotes }),
-      });
-      if (!response.ok) throw new Error('Failed to update inquiry status');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: "Success", description: "Inquiry status updated successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/inquiries"] });
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to update inquiry status", variant: "destructive" });
-    },
-  });
-
-  // Filter inquiries based on search and status
-  const filteredInquiries = inquiries.filter((inquiry) => {
-    const matchesSearch = inquirySearchQuery === "" || 
-      inquiry.clientName.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
-      inquiry.clientEmail.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
-      inquiry.clientCompany.toLowerCase().includes(inquirySearchQuery.toLowerCase()) ||
-      inquiry.speakerName?.toLowerCase().includes(inquirySearchQuery.toLowerCase());
-    
-    const matchesStatus = inquiryStatusFilter === "all" || inquiry.status === inquiryStatusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
-
-  const handleStatusUpdate = (inquiryId: number, newStatus: string) => {
-    updateInquiryStatusMutation.mutate({ inquiryId, status: newStatus });
-  };
-
-  // Status color mapping
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "pending": return "bg-yellow-100 text-yellow-800";
-      case "responded": return "bg-blue-100 text-blue-800";
-      case "booked": return "bg-green-100 text-green-800";
-      case "declined": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  return (
-    <>
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="h-6 w-6" />
-          Speaker Inquiries Management
-        </CardTitle>
-        <CardDescription>
-          View and manage all speaker inquiries from potential clients. All inquiries are routed through the admin panel for review and processing.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* Search and Filter Controls */}
-        <div className="space-y-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Search inquiries (client name, email, company, speaker)..."
-                value={inquirySearchQuery}
-                onChange={(e) => setInquirySearchQuery(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            <Select value={inquiryStatusFilter} onValueChange={setInquiryStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="responded">Responded</SelectItem>
-                <SelectItem value="booked">Booked</SelectItem>
-                <SelectItem value="declined">Declined</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Summary Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-              <div className="text-2xl font-bold text-yellow-700">
-                {inquiries.filter(i => i.status === 'pending').length}
-              </div>
-              <div className="text-sm text-yellow-600">Pending</div>
-            </div>
-            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-              <div className="text-2xl font-bold text-blue-700">
-                {inquiries.filter(i => i.status === 'responded').length}
-              </div>
-              <div className="text-sm text-blue-600">Responded</div>
-            </div>
-            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-              <div className="text-2xl font-bold text-green-700">
-                {inquiries.filter(i => i.status === 'booked').length}
-              </div>
-              <div className="text-sm text-green-600">Booked</div>
-            </div>
-            <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-              <div className="text-2xl font-bold text-red-700">
-                {inquiries.filter(i => i.status === 'declined').length}
-              </div>
-              <div className="text-sm text-red-600">Declined</div>
-            </div>
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-              <div className="text-2xl font-bold text-gray-700">{inquiries.length}</div>
-              <div className="text-sm text-gray-600">Total</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Inquiries List */}
-        {inquiriesLoading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        ) : filteredInquiries.length === 0 ? (
-          <div className="text-center py-12">
-            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No inquiries found</h3>
-            <p className="text-gray-500">
-              {inquirySearchQuery || inquiryStatusFilter !== "all" 
-                ? "Try adjusting your search or filter criteria"
-                : "No speaker inquiries have been submitted yet"
-              }
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredInquiries.map((inquiry) => (
-              <Card key={inquiry.id} className="border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-lg">{inquiry.clientName}</h3>
-                          <p className="text-gray-600">{inquiry.clientCompany}</p>
-                          <p className="text-sm text-gray-500">{inquiry.clientEmail}</p>
-                        </div>
-                        <Badge className={getStatusBadgeColor(inquiry.status || 'pending')}>
-                          {inquiry.status || 'pending'}
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium text-gray-700">Speaker:</span>
-                          <span className="ml-2">{inquiry.speakerName || `Speaker ID ${inquiry.speakerId}`}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700">Event Type:</span>
-                          <span className="ml-2">{inquiry.eventType}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700">Event Date:</span>
-                          <span className="ml-2">{inquiry.eventDate}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700">Event Location:</span>
-                          <span className="ml-2">{inquiry.eventLocation}</span>
-                        </div>
-                        {inquiry.budget && (
-                          <div>
-                            <span className="font-medium text-gray-700">Budget:</span>
-                            <span className="ml-2">${inquiry.budget}</span>
-                          </div>
-                        )}
-                        <div>
-                          <span className="font-medium text-gray-700">Submitted:</span>
-                          <span className="ml-2">{inquiry.createdAt ? new Date(inquiry.createdAt).toLocaleDateString() : 'N/A'}</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <span className="font-medium text-gray-700">Message:</span>
-                        <p className="mt-1 text-gray-600 whitespace-pre-wrap">{inquiry.message}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col gap-2 lg:w-48">
-                      <div className="text-sm font-medium text-gray-700 mb-2">Update Status:</div>
-                      <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
-                        <Button
-                          size="sm"
-                          variant={inquiry.status === 'responded' ? 'default' : 'outline'}
-                          onClick={() => handleStatusUpdate(inquiry.id, 'responded')}
-                          disabled={updateInquiryStatusMutation.isPending}
-                          className="text-xs"
-                        >
-                          Mark Responded
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={inquiry.status === 'booked' ? 'default' : 'outline'}
-                          onClick={() => handleStatusUpdate(inquiry.id, 'booked')}
-                          disabled={updateInquiryStatusMutation.isPending}
-                          className="text-xs bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          Mark Booked
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={inquiry.status === 'declined' ? 'default' : 'outline'}
-                          onClick={() => handleStatusUpdate(inquiry.id, 'declined')}
-                          disabled={updateInquiryStatusMutation.isPending}
-                          className="text-xs bg-red-600 hover:bg-red-700 text-white"
-                        >
-                          Mark Declined
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={inquiry.status === 'pending' ? 'default' : 'outline'}
-                          onClick={() => handleStatusUpdate(inquiry.id, 'pending')}
-                          disabled={updateInquiryStatusMutation.isPending}
-                          className="text-xs"
-                        >
-                          Reset to Pending
-                        </Button>
-                      </div>
-                      
-                      {/* Contact Actions */}
-                      <div className="border-t border-gray-200 pt-3 mt-3">
-                        <div className="text-sm font-medium text-gray-700 mb-2">Contact Client:</div>
-                        <div className="flex flex-col gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => window.open(`mailto:${inquiry.clientEmail}?subject=Re: Speaking Inquiry for ${inquiry.speakerName}&body=Dear ${inquiry.clientName},%0D%0A%0D%0AThank you for your inquiry regarding ${inquiry.speakerName} for your ${inquiry.eventType}.%0D%0A%0D%0ABest regards,%0D%0AThe Speaker Sphere Team`)}
-                            className="text-xs"
-                          >
-                            <Mail className="h-3 w-3 mr-1" />
-                            Send Email
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-    
-    </>
   );
 }
