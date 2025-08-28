@@ -42,6 +42,7 @@ export default function AdminDashboard() {
   const [isAssignmentDialogOpen, setIsAssignmentDialogOpen] = useState(false);
   const [assignmentSearchQuery, setAssignmentSearchQuery] = useState("");
   const [feeRangeVisible, setFeeRangeVisible] = useState(false);
+  const [applicationStatusFilter, setApplicationStatusFilter] = useState("all");
   
   // Admin speakers filter states
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
@@ -1201,9 +1202,44 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {applications && applications.length > 0 ? (
-                    applications.map((application: any) => (
+                {/* Application Status Tabs */}
+                <Tabs value={applicationStatusFilter} onValueChange={setApplicationStatusFilter} className="space-y-4">
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="all">All Applications</TabsTrigger>
+                    <TabsTrigger value="pending">
+                      Pending 
+                      <Badge variant="outline" className="ml-2">
+                        {applications?.filter((app: any) => app.status === 'pending').length || 0}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="under_review">
+                      Under Review
+                      <Badge variant="outline" className="ml-2">
+                        {applications?.filter((app: any) => app.status === 'under_review').length || 0}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="approved">
+                      Approved
+                      <Badge variant="outline" className="ml-2">
+                        {applications?.filter((app: any) => app.status === 'approved').length || 0}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="rejected">
+                      Rejected
+                      <Badge variant="outline" className="ml-2">
+                        {applications?.filter((app: any) => app.status === 'rejected').length || 0}
+                      </Badge>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value={applicationStatusFilter} className="space-y-6">
+                    {applications && applications.length > 0 ? (
+                      applications
+                        .filter((app: any) => applicationStatusFilter === "all" || app.status === applicationStatusFilter)
+                        .length > 0 ? (
+                        applications
+                          .filter((app: any) => applicationStatusFilter === "all" || app.status === applicationStatusFilter)
+                          .map((application: any) => (
                       <div key={application.id} className="p-6 border rounded-xl bg-gradient-to-r from-blue-50 via-white to-purple-50 border-blue-200 hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -1316,20 +1352,36 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                      <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-3">No Speaker Applications</h3>
-                      <p className="text-gray-500 max-w-lg mx-auto mb-6">
-                        Applications will appear here when speakers submit them through the "For Speakers" portal.
-                      </p>
-                      <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
-                        View Application Portal →
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                            <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+                            <h3 className="text-xl font-semibold text-gray-900 mb-3">No applications for this status</h3>
+                            <p className="text-gray-500 max-w-lg mx-auto mb-6">
+                              {applicationStatusFilter === "all" 
+                                ? "Applications will appear here when speakers submit them through the portal."
+                                : `No ${applicationStatusFilter} applications found.`
+                              }
+                            </p>
+                            <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
+                              View Application Portal →
+                            </Button>
+                          </div>
+                        )
+                      ) : (
+                        <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                          <MessageSquare className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+                          <h3 className="text-xl font-semibold text-gray-900 mb-3">No Speaker Applications</h3>
+                          <p className="text-gray-500 max-w-lg mx-auto mb-6">
+                            Applications will appear here when speakers submit them through the "For Speakers" portal.
+                          </p>
+                          <Button variant="outline" onClick={() => window.open('/for-speakers', '_blank')}>
+                            View Application Portal →
+                          </Button>
+                        </div>
+                      )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
 
