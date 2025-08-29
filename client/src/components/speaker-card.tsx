@@ -89,7 +89,6 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
     e.preventDefault(); // Prevent any parent click handlers
     e.stopPropagation();
     
-    console.log('Heart clicked for speaker:', speaker.id, 'Currently bookmarked:', isBookmarked);
     
     if (!isAuthenticated) {
       setShowAuthDialog(true);
@@ -100,7 +99,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
   };
 
   return (
-    <Card className={`overflow-hidden hover-lift clean-transition ${featured ? "shadow-lg h-[700px] flex flex-col" : "shadow-md"}`}>
+    <Card className={`overflow-hidden hover-lift clean-transition ${featured ? "shadow-lg h-[700px] flex flex-col" : "shadow-md h-full flex flex-col"}`}>
       <div className="relative overflow-hidden flex-shrink-0">
         {!imageError && speaker.imageUrl ? (
           <img 
@@ -149,7 +148,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         </button>
       </div>
       
-      <CardContent className={`card-spacing ${featured ? "flex flex-col flex-1" : ""}`}>
+      <CardContent className="card-spacing flex flex-col h-full">
         {/* Badges moved below image */}
         <div className="flex gap-2 mb-3">
           {speaker.verified && (
@@ -186,156 +185,155 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
 
         <h3 className="font-bold text-gray-900 mb-3">{speaker.name}</h3>
         
-        {/* Content area with proper flex layout */}
-        <div className={featured ? "flex-1 flex flex-col justify-between" : ""}>
-          <div className="flex-1">
-            <p className="text-primary font-semibold mb-3 text-lg">{speaker.title}</p>
-            <p className={`text-gray-600 mb-6 leading-relaxed ${featured ? "line-clamp-3" : "line-clamp-3"}`}>
-              {speaker.bio}
-            </p>
+        {/* Content area that expands to fill available space */}
+        <div className="flex-1 flex flex-col">
+          <p className="text-primary font-semibold mb-2 text-lg">{speaker.title}</p>
+          <p className="text-gray-600 mb-4 leading-relaxed line-clamp-2">
+            {speaker.bio}
+          </p>
 
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-1 mb-2">
-                {topicsLoading ? (
-                  <div className="flex items-center space-x-1">
-                    <div className="animate-pulse bg-gray-200 h-5 w-16 rounded"></div>
-                    <div className="animate-pulse bg-gray-200 h-5 w-20 rounded"></div>
-                  </div>
-                ) : speakerTopics && speakerTopics.length > 0 ? (
-                  <>
-                    {speakerTopics.slice(0, featured ? 2 : 3).map((topic: any) => (
-                      <Badge key={topic.id} variant="secondary" className="text-xs">
-                        {topic.name}
-                      </Badge>
-                    ))}
-                    {speakerTopics.length > (featured ? 2 : 3) && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{speakerTopics.length - (featured ? 2 : 3)} more
-                      </Badge>
-                    )}
-                  </>
-                ) : (
-                  <Badge variant="outline" className="text-xs text-muted-foreground">
-                    No topics available
-                  </Badge>
-                )}
-              </div>
-              
-              {/* Social Media Icons */}
-              {!speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
-                <div className="flex items-center gap-2 mt-2">
-                  {speaker.instagramHandle && (
-                    <a 
-                      href={`https://instagram.com/${speaker.instagramHandle}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-gray-500 hover:text-pink-600 transition-colors"
-                      title={`Follow ${speaker.name} on Instagram`}
-                    >
-                      <FaInstagram className="w-4 h-4" />
-                    </a>
-                  )}
-                  {speaker.linkedinHandle && (
-                    <a 
-                      href={speaker.linkedinHandle.includes('linkedin.com') ? speaker.linkedinHandle : `https://linkedin.com/in/${speaker.linkedinHandle}`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-gray-500 hover:text-blue-600 transition-colors"
-                      title={`Connect with ${speaker.name} on LinkedIn`}
-                    >
-                      <FaLinkedin className="w-4 h-4" />
-                    </a>
-                  )}
-                  {speaker.facebookHandle && (
-                    <a 
-                      href={speaker.facebookHandle.includes('facebook.com') ? speaker.facebookHandle : `https://facebook.com/${speaker.facebookHandle}`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-gray-500 hover:text-blue-700 transition-colors"
-                      title={`Follow ${speaker.name} on Facebook`}
-                    >
-                      <FaFacebook className="w-4 h-4" />
-                    </a>
-                  )}
-                  {speaker.xHandle && (
-                    <a 
-                      href={speaker.xHandle.includes('x.com') || speaker.xHandle.includes('twitter.com') ? speaker.xHandle : `https://x.com/${speaker.xHandle}`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-gray-500 hover:text-gray-900 transition-colors"
-                      title={`Follow ${speaker.name} on X`}
-                    >
-                      <FaXTwitter className="w-4 h-4" />
-                    </a>
-                  )}
-                  {/* Fallback for speakers with socialMedia array but no specific handles */}
-                  {!speaker.instagramHandle && !speaker.linkedinHandle && !speaker.facebookHandle && !speaker.xHandle && speaker.socialMedia && speaker.socialMedia.map((link, index) => {
-                    if (link.includes('instagram.com')) {
-                      return (
-                        <a 
-                          key={index}
-                          href={link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-gray-500 hover:text-pink-600 transition-colors"
-                          title={`Follow ${speaker.name} on Instagram`}
-                        >
-                          <FaInstagram className="w-4 h-4" />
-                        </a>
-                      );
-                    }
-                    if (link.includes('linkedin.com')) {
-                      return (
-                        <a 
-                          key={index}
-                          href={link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-gray-500 hover:text-blue-600 transition-colors"
-                          title={`Connect with ${speaker.name} on LinkedIn`}
-                        >
-                          <FaLinkedin className="w-4 h-4" />
-                        </a>
-                      );
-                    }
-                    if (link.includes('facebook.com')) {
-                      return (
-                        <a 
-                          key={index}
-                          href={link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-gray-500 hover:text-blue-700 transition-colors"
-                          title={`Follow ${speaker.name} on Facebook`}
-                        >
-                          <FaFacebook className="w-4 h-4" />
-                        </a>
-                      );
-                    }
-                    if (link.includes('x.com') || link.includes('twitter.com')) {
-                      return (
-                        <a 
-                          key={index}
-                          href={link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-gray-500 hover:text-gray-900 transition-colors"
-                          title={`Follow ${speaker.name} on X`}
-                        >
-                          <FaXTwitter className="w-4 h-4" />
-                        </a>
-                      );
-                    }
-                    return null;
-                  })}
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1 mb-2">
+              {topicsLoading ? (
+                <div className="flex items-center space-x-1">
+                  <div className="animate-pulse bg-gray-200 h-5 w-16 rounded"></div>
+                  <div className="animate-pulse bg-gray-200 h-5 w-20 rounded"></div>
                 </div>
+              ) : speakerTopics && speakerTopics.length > 0 ? (
+                <>
+                  {speakerTopics.slice(0, 2).map((topic: any) => (
+                    <Badge key={topic.id} variant="secondary" className="text-xs">
+                      {topic.name}
+                    </Badge>
+                  ))}
+                  {speakerTopics.length > 2 && (
+                    <Badge variant="secondary" className="text-xs">
+                      +{speakerTopics.length - 2} more
+                    </Badge>
+                  )}
+                </>
+              ) : (
+                <Badge variant="outline" className="text-xs text-muted-foreground">
+                  No topics available
+                </Badge>
               )}
             </div>
-
-
+            
+            {/* Social Media Icons */}
+            {!speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
+              <div className="flex items-center gap-2 mt-2">
+                {speaker.instagramHandle && (
+                  <a 
+                    href={`https://instagram.com/${speaker.instagramHandle}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-pink-600 transition-colors"
+                    title={`Follow ${speaker.name} on Instagram`}
+                  >
+                    <FaInstagram className="w-4 h-4" />
+                  </a>
+                )}
+                {speaker.linkedinHandle && (
+                  <a 
+                    href={speaker.linkedinHandle.includes('linkedin.com') ? speaker.linkedinHandle : `https://linkedin.com/in/${speaker.linkedinHandle}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-blue-600 transition-colors"
+                    title={`Connect with ${speaker.name} on LinkedIn`}
+                  >
+                    <FaLinkedin className="w-4 h-4" />
+                  </a>
+                )}
+                {speaker.facebookHandle && (
+                  <a 
+                    href={speaker.facebookHandle.includes('facebook.com') ? speaker.facebookHandle : `https://facebook.com/${speaker.facebookHandle}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-blue-700 transition-colors"
+                    title={`Follow ${speaker.name} on Facebook`}
+                  >
+                    <FaFacebook className="w-4 h-4" />
+                  </a>
+                )}
+                {speaker.xHandle && (
+                  <a 
+                    href={speaker.xHandle.includes('x.com') || speaker.xHandle.includes('twitter.com') ? speaker.xHandle : `https://x.com/${speaker.xHandle}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-gray-900 transition-colors"
+                    title={`Follow ${speaker.name} on X`}
+                  >
+                    <FaXTwitter className="w-4 h-4" />
+                  </a>
+                )}
+                {/* Fallback for speakers with socialMedia array but no specific handles */}
+                {!speaker.instagramHandle && !speaker.linkedinHandle && !speaker.facebookHandle && !speaker.xHandle && speaker.socialMedia && speaker.socialMedia.map((link, index) => {
+                  if (link.includes('instagram.com')) {
+                    return (
+                      <a 
+                        key={index}
+                        href={link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-gray-500 hover:text-pink-600 transition-colors"
+                        title={`Follow ${speaker.name} on Instagram`}
+                      >
+                        <FaInstagram className="w-4 h-4" />
+                      </a>
+                    );
+                  }
+                  if (link.includes('linkedin.com')) {
+                    return (
+                      <a 
+                        key={index}
+                        href={link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-gray-500 hover:text-blue-600 transition-colors"
+                        title={`Connect with ${speaker.name} on LinkedIn`}
+                      >
+                        <FaLinkedin className="w-4 h-4" />
+                      </a>
+                    );
+                  }
+                  if (link.includes('facebook.com')) {
+                    return (
+                      <a 
+                        key={index}
+                        href={link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-gray-500 hover:text-blue-700 transition-colors"
+                        title={`Follow ${speaker.name} on Facebook`}
+                      >
+                        <FaFacebook className="w-4 h-4" />
+                      </a>
+                    );
+                  }
+                  if (link.includes('x.com') || link.includes('twitter.com')) {
+                    return (
+                      <a 
+                        key={index}
+                        href={link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-gray-500 hover:text-gray-900 transition-colors"
+                        title={`Follow ${speaker.name} on X`}
+                      >
+                        <FaXTwitter className="w-4 h-4" />
+                      </a>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Button area - always visible at bottom */}
+          {/* Spacer to push button to bottom */}
+          <div className="flex-1"></div>
+
+          {/* Button area - always at bottom */}
           <div className="flex gap-2 mt-4">
             <Link href={`/speakers/${(speaker as any).slug}`} className="flex-1">
               <Button 
