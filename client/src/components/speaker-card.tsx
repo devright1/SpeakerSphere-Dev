@@ -178,9 +178,6 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               <span className="text-sm text-gray-600">{speaker.overallRating} ({speaker.reviewCount})</span>
             </div>
           )}
-          <Badge variant="outline" className="text-xs">
-            {speaker.speakerType}
-          </Badge>
         </div>
 
         <h3 className="font-bold text-gray-900 mb-3">{speaker.name}</h3>
