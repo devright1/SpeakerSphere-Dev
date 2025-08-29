@@ -33,7 +33,7 @@ export default function HowItWorks() {
     "Authentic peer reviews from vetted events",
     "Comprehensive speaker profiles and resources",
     "Secure inquiry and booking process",
-    "Video portfolios and speaking samples",
+    "Stay connected with the healthcare speaking community",
     "Advanced search and filtering tools"
   ];
 
