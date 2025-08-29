@@ -37,9 +37,6 @@ import {
   Share2, 
   MessageCircle,
   AlertCircle,
-  Instagram,
-  Linkedin,
-  Facebook,
   UserPlus,
   LogIn,
   FileText,
@@ -50,6 +47,8 @@ import {
   Download,
   Folder
 } from "lucide-react";
+import { FaInstagram, FaLinkedin, FaFacebook } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import type { Speaker, Review } from "@shared/schema";
 
 const inquirySchema = z.object({
@@ -605,41 +604,120 @@ export default function SpeakerProfile() {
                       </Button>
                       
                       {/* Social Media Icons */}
-                      {!speaker.hideSocial && (
-                        <div className="flex items-center gap-3 ml-4">
+                      {!speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
+                        <div className="flex items-center gap-2 ml-4">
                           {speaker.instagramHandle && (
                             <a 
                               href={`https://instagram.com/${speaker.instagramHandle}`} 
                               target="_blank" 
                               rel="noopener noreferrer"
                               onClick={() => tracking.trackSocialClick('instagram')}
-                              className="text-gray-600 hover:text-pink-600 transition-colors"
+                              className="text-gray-500 hover:text-pink-600 transition-colors"
+                              title={`Follow ${speaker.name} on Instagram`}
                             >
-                              <Instagram className="w-5 h-5" />
+                              <FaInstagram className="w-4 h-4" />
                             </a>
                           )}
-                          {speaker.socialMedia && speaker.socialMedia.find(link => link.includes('linkedin')) && (
+                          {speaker.linkedinHandle && (
                             <a 
-                              href={speaker.socialMedia.find(link => link.includes('linkedin'))} 
+                              href={speaker.linkedinHandle.includes('linkedin.com') ? speaker.linkedinHandle : `https://linkedin.com/in/${speaker.linkedinHandle}`}
                               target="_blank" 
                               rel="noopener noreferrer"
                               onClick={() => tracking.trackSocialClick('linkedin')}
-                              className="text-gray-600 hover:text-blue-600 transition-colors"
+                              className="text-gray-500 hover:text-blue-600 transition-colors"
+                              title={`Connect with ${speaker.name} on LinkedIn`}
                             >
-                              <Linkedin className="w-5 h-5" />
+                              <FaLinkedin className="w-4 h-4" />
                             </a>
                           )}
-                          {speaker.socialMedia && speaker.socialMedia.find(link => link.includes('facebook')) && (
+                          {speaker.facebookHandle && (
                             <a 
-                              href={speaker.socialMedia.find(link => link.includes('facebook'))} 
+                              href={speaker.facebookHandle.includes('facebook.com') ? speaker.facebookHandle : `https://facebook.com/${speaker.facebookHandle}`}
                               target="_blank" 
                               rel="noopener noreferrer"
                               onClick={() => tracking.trackSocialClick('facebook')}
-                              className="text-gray-600 hover:text-blue-700 transition-colors"
+                              className="text-gray-500 hover:text-blue-700 transition-colors"
+                              title={`Follow ${speaker.name} on Facebook`}
                             >
-                              <Facebook className="w-5 h-5" />
+                              <FaFacebook className="w-4 h-4" />
                             </a>
                           )}
+                          {speaker.xHandle && (
+                            <a 
+                              href={speaker.xHandle.includes('x.com') || speaker.xHandle.includes('twitter.com') ? speaker.xHandle : `https://x.com/${speaker.xHandle}`}
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              onClick={() => tracking.trackSocialClick('x')}
+                              className="text-gray-500 hover:text-gray-900 transition-colors"
+                              title={`Follow ${speaker.name} on X`}
+                            >
+                              <FaXTwitter className="w-4 h-4" />
+                            </a>
+                          )}
+                          {/* Fallback for speakers with socialMedia array but no specific handles */}
+                          {!speaker.instagramHandle && !speaker.linkedinHandle && !speaker.facebookHandle && !speaker.xHandle && speaker.socialMedia && speaker.socialMedia.map((link, index) => {
+                            if (link.includes('instagram.com')) {
+                              return (
+                                <a 
+                                  key={index}
+                                  href={link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  onClick={() => tracking.trackSocialClick('instagram')}
+                                  className="text-gray-500 hover:text-pink-600 transition-colors"
+                                  title={`Follow ${speaker.name} on Instagram`}
+                                >
+                                  <FaInstagram className="w-4 h-4" />
+                                </a>
+                              );
+                            }
+                            if (link.includes('linkedin.com')) {
+                              return (
+                                <a 
+                                  key={index}
+                                  href={link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  onClick={() => tracking.trackSocialClick('linkedin')}
+                                  className="text-gray-500 hover:text-blue-600 transition-colors"
+                                  title={`Connect with ${speaker.name} on LinkedIn`}
+                                >
+                                  <FaLinkedin className="w-4 h-4" />
+                                </a>
+                              );
+                            }
+                            if (link.includes('facebook.com')) {
+                              return (
+                                <a 
+                                  key={index}
+                                  href={link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  onClick={() => tracking.trackSocialClick('facebook')}
+                                  className="text-gray-500 hover:text-blue-700 transition-colors"
+                                  title={`Follow ${speaker.name} on Facebook`}
+                                >
+                                  <FaFacebook className="w-4 h-4" />
+                                </a>
+                              );
+                            }
+                            if (link.includes('x.com') || link.includes('twitter.com')) {
+                              return (
+                                <a 
+                                  key={index}
+                                  href={link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  onClick={() => tracking.trackSocialClick('x')}
+                                  className="text-gray-500 hover:text-gray-900 transition-colors"
+                                  title={`Follow ${speaker.name} on X`}
+                                >
+                                  <FaXTwitter className="w-4 h-4" />
+                                </a>
+                              );
+                            }
+                            return null;
+                          })}
                         </div>
                       )}
                     </div>
