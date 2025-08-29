@@ -1716,5 +1716,58 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Bookmark endpoints
+  // Toggle bookmark (create or delete)
+  app.post("/api/users/:userId/bookmarks", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const { speakerId } = req.body;
+      
+      if (!speakerId) {
+        return res.status(400).json({ message: "Speaker ID is required" });
+      }
+      
+      const result = await storage.toggleUserBookmark(userId, speakerId);
+      
+      res.json({
+        success: true,
+        bookmarked: result.bookmarked,
+        message: result.bookmarked ? "Speaker bookmarked" : "Bookmark removed"
+      });
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      res.status(500).json({ message: "Failed to toggle bookmark" });
+    }
+  });
+
+  // Check if speaker is bookmarked
+  app.get("/api/users/:userId/bookmarks/check/:speakerId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const speakerId = parseInt(req.params.speakerId);
+      
+      const isBookmarked = await storage.isUserBookmarked(userId, speakerId);
+      
+      res.json({ bookmarked: isBookmarked });
+    } catch (error) {
+      console.error("Error checking bookmark status:", error);
+      res.status(500).json({ message: "Failed to check bookmark status" });
+    }
+  });
+
+  // Get all user bookmarks
+  app.get("/api/users/:userId/bookmarks", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      const bookmarks = await storage.getUserBookmarks(userId);
+      
+      res.json(bookmarks);
+    } catch (error) {
+      console.error("Error fetching bookmarks:", error);
+      res.status(500).json({ message: "Failed to fetch bookmarks" });
+    }
+  });
+
   return app;
 }
