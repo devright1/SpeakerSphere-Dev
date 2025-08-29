@@ -1720,32 +1720,20 @@ export function registerRoutes(app: Express): Express {
   // Toggle bookmark (create or delete)
   app.post("/api/users/:userId/bookmarks", async (req, res) => {
     try {
-      console.log("BOOKMARK POST REQUEST:", {
-        userId: req.params.userId,
-        body: req.body,
-        headers: req.headers
-      });
-      
       const userId = req.params.userId;
       const { speakerId } = req.body;
       
       if (!speakerId) {
-        console.log("No speakerId provided");
         return res.status(400).json({ message: "Speaker ID is required" });
       }
       
-      console.log("Calling toggleUserBookmark with:", { userId, speakerId });
       const result = await storage.toggleUserBookmark(userId, speakerId);
-      console.log("Bookmark toggle result:", result);
       
-      const response = {
+      res.json({
         success: true,
         bookmarked: result.bookmarked,
         message: result.bookmarked ? "Speaker bookmarked" : "Bookmark removed"
-      };
-      
-      console.log("Sending response:", response);
-      res.json(response);
+      });
     } catch (error) {
       console.error("Error toggling bookmark:", error);
       res.status(500).json({ message: "Failed to toggle bookmark" });
@@ -1767,14 +1755,14 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
-  // Get all user bookmarks
+  // Get all user bookmarks (returns speaker IDs only for frontend compatibility)
   app.get("/api/users/:userId/bookmarks", async (req, res) => {
     try {
       const userId = req.params.userId;
       
-      const bookmarks = await storage.getUserBookmarks(userId);
+      const bookmarkIds = await storage.getUserBookmarkIds(userId);
       
-      res.json(bookmarks);
+      res.json(bookmarkIds);
     } catch (error) {
       console.error("Error fetching bookmarks:", error);
       res.status(500).json({ message: "Failed to fetch bookmarks" });
