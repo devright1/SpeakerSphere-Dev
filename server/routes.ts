@@ -75,7 +75,7 @@ const upload = multer({
       cb(null, filename);
     }
   }),
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
 export function registerRoutes(app: Express): Express {
@@ -561,7 +561,23 @@ export function registerRoutes(app: Express): Express {
   });
 
   // Submit review for specific speaker (with file upload support)
-  app.post("/api/speakers/:speakerId/reviews", upload.single('photo'), async (req, res) => {
+  app.post("/api/speakers/:speakerId/reviews", (req, res, next) => {
+    upload.single('photo')(req, res, (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({
+            success: false,
+            message: "File size too large. Please upload an image smaller than 10MB."
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          message: "File upload error: " + err.message
+        });
+      }
+      next();
+    });
+  }, async (req, res) => {
     try {
       const speakerId = parseInt(req.params.speakerId);
       const user = (req as any).session?.user;
