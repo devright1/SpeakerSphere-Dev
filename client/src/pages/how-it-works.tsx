@@ -31,7 +31,7 @@ export default function HowItWorks() {
   const benefits = [
     "Access to 500+ verified healthcare speakers",
     "Authentic peer reviews from real events",
-    "Direct communication with speakers",
+    "Comprehensive speaker profiles and resources",
     "Secure inquiry and booking process",
     "Video portfolios and speaking samples",
     "Advanced search and filtering tools"
