@@ -75,7 +75,7 @@ export default function HowItWorks() {
                 Why Choose SpeakerSphere?
               </h2>
               <p className="text-xl text-gray-600 text-balance max-w-3xl mx-auto">
-                The trusted platform for healthcare speaking engagements
+                The only trusted platform for healthcare speaking engagements
               </p>
             </div>
             
