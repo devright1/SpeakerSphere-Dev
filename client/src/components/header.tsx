@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Lock, User, LogOut } from "lucide-react";
-import { useAuthState } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
 
 export default function Header() {
   const [location, setLocation] = useLocation();
-  const { user, isAuthenticated, logout } = useAuthState();
+  const { user, isAuthenticated, logout } = useAuth();
 
   // Navigation handlers for deployment compatibility
   const navigateToAuth = () => {

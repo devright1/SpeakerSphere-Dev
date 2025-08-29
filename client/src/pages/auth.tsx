@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, ArrowLeft, CheckCircle2, Loader2, Sparkles, User, UserCheck, Info } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 // Validation schemas
 const loginSchema = z.object({
@@ -46,6 +47,7 @@ export default function AuthPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitStep, setSubmitStep] = useState<"idle" | "loading" | "success" | "error">("idle");
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -79,8 +81,8 @@ export default function AuthPage() {
       setSubmitStep("success");
       setIsSuccess(true);
       
-      localStorage.setItem('userToken', data.token);
-      localStorage.setItem('userData', JSON.stringify(data.user));
+      // Use the auth context login method to properly update state
+      login(data.token, data.user);
       
       setTimeout(() => {
         toast({
@@ -118,8 +120,8 @@ export default function AuthPage() {
       setSubmitStep("success");
       setIsSuccess(true);
       
-      localStorage.setItem('userToken', data.token);
-      localStorage.setItem('userData', JSON.stringify(data.user));
+      // Use the auth context login method to properly update state
+      login(data.token, data.user);
       
       setTimeout(() => {
         toast({
