@@ -1192,4 +1192,62 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  // Review management endpoints
+  // Get all pending reviews for admin approval
+  app.get("/api/admin/reviews", async (req, res) => {
+    try {
+      const reviews = await storage.getPendingReviews();
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching pending reviews:", error);
+      res.status(500).json({ message: "Failed to fetch pending reviews" });
+    }
+  });
+
+  // Approve a review
+  app.post("/api/admin/reviews/:id/approve", async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const { adminNotes } = req.body;
+      
+      const updatedReview = await storage.approveReview(reviewId, adminNotes);
+      
+      if (!updatedReview) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
+      res.json({
+        success: true,
+        message: "Review approved successfully",
+        review: updatedReview
+      });
+    } catch (error) {
+      console.error("Error approving review:", error);
+      res.status(500).json({ message: "Failed to approve review" });
+    }
+  });
+
+  // Reject a review
+  app.post("/api/admin/reviews/:id/reject", async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const { adminNotes } = req.body;
+      
+      const updatedReview = await storage.rejectReview(reviewId, adminNotes);
+      
+      if (!updatedReview) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
+      res.json({
+        success: true,
+        message: "Review rejected successfully",
+        review: updatedReview
+      });
+    } catch (error) {
+      console.error("Error rejecting review:", error);
+      res.status(500).json({ message: "Failed to reject review" });
+    }
+  });
 }

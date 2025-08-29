@@ -560,6 +560,52 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Submit review for specific speaker (with file upload support)
+  app.post("/api/speakers/:speakerId/reviews", upload.single('photo'), async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const user = (req as any).session?.user;
+      
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const reviewData = {
+        speakerId,
+        userId: user.id,
+        reviewerName: req.body.reviewerName,
+        reviewerTitle: req.body.reviewerTitle,
+        reviewerCompany: req.body.reviewerCompany,
+        overallRating: parseInt(req.body.rating),
+        speakingStyleRating: parseInt(req.body.rating), // Use same rating for all aspects for now
+        podiumPresenceRating: parseInt(req.body.rating),
+        technicalProficiencyRating: parseInt(req.body.rating),
+        contentRelevanceRating: parseInt(req.body.rating),
+        easeOfWorkingRating: parseInt(req.body.rating),
+        visualDesignRating: parseInt(req.body.rating),
+        comment: req.body.comment,
+        eventType: req.body.eventType,
+        eventDate: req.body.eventDate,
+        photoUrl: req.file ? `/uploads/${req.file.filename}` : null,
+        approvalStatus: 'pending' // Reviews start as pending admin approval
+      };
+
+      const review = await storage.createReview(reviewData);
+      
+      res.status(201).json({
+        success: true,
+        message: "Review submitted successfully and is pending approval",
+        review
+      });
+    } catch (error) {
+      console.error("Error creating review:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to submit review"
+      });
+    }
+  });
+
   // Get reviews for a speaker
   app.get("/api/speakers/:speakerId/reviews", async (req, res) => {
     try {

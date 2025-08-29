@@ -96,6 +96,11 @@ export interface IStorage {
   removeSpeakerTopic(speakerId: number, topicId: number): Promise<boolean>;
   bulkAddSpeakerTopics(speakerId: number, topicIds: number[]): Promise<void>;
   
+  // Review management
+  getPendingReviews(): Promise<Review[]>;
+  approveReview(reviewId: number, adminNotes?: string): Promise<Review | undefined>;
+  rejectReview(reviewId: number, adminNotes?: string): Promise<Review | undefined>;
+  
   // Videos
   getVideosBySpeakerId(speakerId: number): Promise<Video[]>;
   getFeaturedVideosBySpeakerId(speakerId: number): Promise<Video[]>;
@@ -505,7 +510,7 @@ export class MemStorage implements IStorage {
 
   async getReviewsBySpeakerId(speakerId: number): Promise<Review[]> {
     return Array.from(this.reviews.values())
-      .filter(review => review.speakerId === speakerId)
+      .filter(review => review.speakerId === speakerId && review.approvalStatus === 'approved')
       .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
   }
 
@@ -513,10 +518,50 @@ export class MemStorage implements IStorage {
     const review: Review = { 
       ...insertReview, 
       id: this.currentReviewId++,
+      approvalStatus: 'pending',
+      verified: false,
       createdAt: new Date()
     };
     this.reviews.set(review.id, review);
     return review;
+  }
+
+  async getPendingReviews(): Promise<Review[]> {
+    return Array.from(this.reviews.values())
+      .filter(review => review.approvalStatus === 'pending')
+      .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+  }
+
+  async approveReview(reviewId: number, adminNotes?: string): Promise<Review | undefined> {
+    const review = this.reviews.get(reviewId);
+    if (!review) return undefined;
+    
+    const updatedReview: Review = {
+      ...review,
+      approvalStatus: 'approved',
+      adminNotes,
+      approvedAt: new Date(),
+      approvedBy: 'admin' // In a real app, this would be the admin user ID
+    };
+    
+    this.reviews.set(reviewId, updatedReview);
+    return updatedReview;
+  }
+
+  async rejectReview(reviewId: number, adminNotes?: string): Promise<Review | undefined> {
+    const review = this.reviews.get(reviewId);
+    if (!review) return undefined;
+    
+    const updatedReview: Review = {
+      ...review,
+      approvalStatus: 'rejected',
+      adminNotes,
+      approvedAt: new Date(),
+      approvedBy: 'admin' // In a real app, this would be the admin user ID
+    };
+    
+    this.reviews.set(reviewId, updatedReview);
+    return updatedReview;
   }
 
   async createInquiry(insertInquiry: InsertInquiry): Promise<Inquiry> {
