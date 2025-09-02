@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
 import { speakers, users, speakerApplications, reviews } from "../shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import bcrypt from "bcryptjs";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
@@ -1302,6 +1302,27 @@ export function registerAdminRoutes(app: Express) {
       if (!updatedReview) {
         return res.status(404).json({ message: "Review not found" });
       }
+
+      // Recalculate speaker's overall rating based on all approved reviews
+      const approvedReviewsForSpeaker = await db.select({
+        overallRating: reviews.overallRating
+      })
+      .from(reviews)
+      .where(and(
+        eq(reviews.speakerId, updatedReview.speakerId),
+        eq(reviews.approvalStatus, 'approved')
+      ));
+
+      if (approvedReviewsForSpeaker.length > 0) {
+        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + review.overallRating, 0) / approvedReviewsForSpeaker.length;
+        
+        // Update speaker's overall rating
+        await db.update(speakers)
+          .set({ 
+            overallRating: avgRating.toFixed(1) // Store as string with 1 decimal place
+          })
+          .where(eq(speakers.id, updatedReview.speakerId));
+      }
       
       res.json({
         success: true,
@@ -1332,6 +1353,34 @@ export function registerAdminRoutes(app: Express) {
       
       if (!updatedReview) {
         return res.status(404).json({ message: "Review not found" });
+      }
+
+      // Recalculate speaker's overall rating based on remaining approved reviews
+      const approvedReviewsForSpeaker = await db.select({
+        overallRating: reviews.overallRating
+      })
+      .from(reviews)
+      .where(and(
+        eq(reviews.speakerId, updatedReview.speakerId),
+        eq(reviews.approvalStatus, 'approved')
+      ));
+
+      if (approvedReviewsForSpeaker.length > 0) {
+        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + review.overallRating, 0) / approvedReviewsForSpeaker.length;
+        
+        // Update speaker's overall rating
+        await db.update(speakers)
+          .set({ 
+            overallRating: avgRating.toFixed(1) // Store as string with 1 decimal place
+          })
+          .where(eq(speakers.id, updatedReview.speakerId));
+      } else {
+        // No approved reviews left, reset rating
+        await db.update(speakers)
+          .set({ 
+            overallRating: "0.0"
+          })
+          .where(eq(speakers.id, updatedReview.speakerId));
       }
       
       res.json({
