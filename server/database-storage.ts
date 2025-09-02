@@ -366,6 +366,11 @@ export class DatabaseStorage implements IStorage {
     await db.insert(speakerTopics).values(values);
   }
 
+  async clearSpeakerTopics(speakerId: number): Promise<void> {
+    await db.delete(speakerTopics)
+      .where(eq(speakerTopics.speakerId, speakerId));
+  }
+
   // Videos
   async getVideosBySpeakerId(speakerId: number): Promise<Video[]> {
     const result = await db.select().from(videos)

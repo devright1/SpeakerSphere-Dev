@@ -483,6 +483,37 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Update speaker topics
+  app.put("/api/speakers/:id/topics", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      const { topicIds } = req.body;
+
+      if (!Array.isArray(topicIds)) {
+        return res.status(400).json({ message: "topicIds must be an array" });
+      }
+
+      // Remove all existing topics for this speaker
+      await storage.clearSpeakerTopics(speakerId);
+
+      // Add new topics if any are selected
+      if (topicIds.length > 0) {
+        await storage.bulkAddSpeakerTopics(speakerId, topicIds);
+      }
+
+      // Update speaker counts for all affected topics
+      const allTopics = await storage.getSpeakingTopics();
+      for (const topic of allTopics) {
+        await storage.updateTopicSpeakerCount(topic.id);
+      }
+
+      res.json({ success: true, message: "Speaker topics updated successfully" });
+    } catch (error) {
+      console.error("Error updating speaker topics:", error);
+      res.status(500).json({ message: "Failed to update speaker topics" });
+    }
+  });
+
   // Submit inquiry
   app.post("/api/inquiries", async (req, res) => {
     try {

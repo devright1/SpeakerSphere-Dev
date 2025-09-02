@@ -63,6 +63,10 @@ export default function SpeakerDashboard() {
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
   const reviewsPerPage = 10;
+  
+  // Topics management state
+  const [isEditingTopics, setIsEditingTopics] = useState(false);
+  const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
 
   // Helper functions for reviews
   const toggleReviewExpanded = (reviewId: number) => {
@@ -84,6 +88,7 @@ export default function SpeakerDashboard() {
   const getTotalReviewPages = (reviews: any[]) => {
     return Math.ceil(reviews.length / reviewsPerPage);
   };
+
 
   // Download handler that properly handles errors
   const handleDownload = async (contentId: number, originalName: string) => {
@@ -174,6 +179,27 @@ export default function SpeakerDashboard() {
       return response.json();
     },
     enabled: !!speakerProfile?.id,
+  });
+
+  // Fetch speaker topics
+  const { data: speakerTopics, refetch: refetchSpeakerTopics } = useQuery({
+    queryKey: ['/api/speakers/topics', speakerProfile?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/topics`);
+      if (!response.ok) throw new Error('Failed to fetch speaker topics');
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id,
+  });
+
+  // Fetch all available topics
+  const { data: allTopics } = useQuery({
+    queryKey: ['/api/topics'],
+    queryFn: async () => {
+      const response = await fetch('/api/topics');
+      if (!response.ok) throw new Error('Failed to fetch topics');
+      return response.json();
+    },
   });
 
   // Fetch speaker content
@@ -364,6 +390,37 @@ export default function SpeakerDashboard() {
     },
   });
 
+  // Update speaker topics mutation
+  const updateTopicsMutation = useMutation({
+    mutationFn: async (topicIds: number[]) => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/topics`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topicIds }),
+      });
+      if (!response.ok) throw new Error('Failed to update topics');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/speakers/topics', speakerProfile?.id] });
+      refetchSpeakerTopics();
+      setIsEditingTopics(false);
+      toast({
+        title: "Topics Updated",
+        description: "Your speaking topics have been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update topics. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Toggle content visibility
   const toggleContentVisibility = (contentId: number, isPublic: boolean) => {
     updateContentMutation.mutate({ contentId, isPublic });
@@ -374,6 +431,36 @@ export default function SpeakerDashboard() {
       setEditForm(speakerProfile);
     }
   }, [speakerProfile]);
+
+  // Initialize selected topics when speaker topics are loaded
+  useEffect(() => {
+    if (speakerTopics && !isEditingTopics) {
+      setSelectedTopics(speakerTopics.map((topic: any) => topic.id));
+    }
+  }, [speakerTopics, isEditingTopics]);
+
+  // Topics management handlers
+  const handleEditTopics = () => {
+    setIsEditingTopics(true);
+    setSelectedTopics(speakerTopics?.map((topic: any) => topic.id) || []);
+  };
+
+  const handleTopicToggle = (topicId: number) => {
+    setSelectedTopics(prev => 
+      prev.includes(topicId) 
+        ? prev.filter(id => id !== topicId)
+        : [...prev, topicId]
+    );
+  };
+
+  const handleCancelTopicsEdit = () => {
+    setIsEditingTopics(false);
+    setSelectedTopics(speakerTopics?.map((topic: any) => topic.id) || []);
+  };
+
+  const handleSaveTopics = () => {
+    updateTopicsMutation.mutate(selectedTopics);
+  };
 
   const handleSave = () => {
     updateProfileMutation.mutate(editForm);
@@ -735,6 +822,97 @@ export default function SpeakerDashboard() {
                     </CardContent>
                   </Card>
                 )}
+
+                {/* Speaking Topics */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <BookOpen className="h-5 w-5 mr-2" />
+                        Speaking Topics
+                      </div>
+                      {!isEditingTopics && (
+                        <Button variant="ghost" size="sm" onClick={handleEditTopics}>
+                          <Edit3 className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {isEditingTopics ? (
+                      <div className="space-y-4">
+                        <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
+                          {allTopics?.map((topic: any) => (
+                            <div key={topic.id} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={`topic-${topic.id}`}
+                                checked={selectedTopics.includes(topic.id)}
+                                onChange={() => handleTopicToggle(topic.id)}
+                                className="rounded border-gray-300"
+                              />
+                              <label
+                                htmlFor={`topic-${topic.id}`}
+                                className="text-sm cursor-pointer flex-1"
+                              >
+                                {topic.name}
+                                {topic.category && (
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    ({topic.category})
+                                  </span>
+                                )}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            onClick={handleSaveTopics}
+                            disabled={updateTopicsMutation.isPending}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {updateTopicsMutation.isPending ? (
+                              <>
+                                <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="h-4 w-4 mr-1" />
+                                Save
+                              </>
+                            )}
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={handleCancelTopicsEdit}>
+                            Cancel
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Selected {selectedTopics.length} topic{selectedTopics.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {speakerTopics && speakerTopics.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {speakerTopics.map((topic: any) => (
+                              <Badge key={topic.id} variant="outline" className="text-xs">
+                                {topic.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">No speaking topics selected</p>
+                        )}
+                        <div className="text-xs text-gray-400">
+                          {speakerTopics?.length || 0} topic{speakerTopics?.length !== 1 ? 's' : ''} selected
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </TabsContent>
