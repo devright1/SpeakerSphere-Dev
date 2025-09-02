@@ -204,7 +204,10 @@ export class DatabaseStorage implements IStorage {
   // Reviews
   async getReviewsBySpeakerId(speakerId: number): Promise<Review[]> {
     const result = await db.select().from(reviews)
-      .where(eq(reviews.speakerId, speakerId))
+      .where(and(
+        eq(reviews.speakerId, speakerId),
+        eq(reviews.approvalStatus, 'approved')
+      ))
       .orderBy(desc(reviews.createdAt));
     return result;
   }
