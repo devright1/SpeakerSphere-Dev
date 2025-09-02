@@ -578,7 +578,7 @@ export default function SpeakerProfile() {
                             if (isAuthenticated) {
                               setIsReviewOpen(true);
                             } else {
-                              window.location.href = "/api/login";
+                              window.location.href = "/auth";
                             }
                           }}
                           className="bg-primary hover:bg-blue-700 text-white"
@@ -892,7 +892,7 @@ export default function SpeakerProfile() {
                             if (isAuthenticated) {
                               setIsReviewOpen(true);
                             } else {
-                              window.location.href = "/api/login";
+                              window.location.href = "/auth";
                             }
                           }}
                           className="mt-3"
@@ -1135,7 +1135,7 @@ export default function SpeakerProfile() {
                           if (isAuthenticated) {
                             setIsReviewOpen(true);
                           } else {
-                            window.location.href = "/api/login";
+                            window.location.href = "/auth";
                           }
                         }}
                       >
