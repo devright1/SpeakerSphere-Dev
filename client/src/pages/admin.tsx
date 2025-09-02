@@ -43,6 +43,14 @@ export default function AdminDashboard() {
   const [assignmentSearchQuery, setAssignmentSearchQuery] = useState("");
   const [feeRangeVisible, setFeeRangeVisible] = useState(false);
   const [applicationStatusFilter, setApplicationStatusFilter] = useState("all");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  
+  // Handle opening image modal
+  const openImageModal = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setIsImageModalOpen(true);
+  };
   
   // Admin speakers filter states
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
@@ -3184,11 +3192,11 @@ export default function AdminDashboard() {
                                     <img 
                                       src={review.photoUrl} 
                                       alt="Review photo"
-                                      className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-80"
-                                      onClick={() => window.open(review.photoUrl, '_blank')}
+                                      className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 hover:scale-105 transition-all"
+                                      onClick={() => openImageModal(review.photoUrl)}
                                     />
                                     <p className="text-xs text-gray-500 mt-2">
-                                      Click image to view full size
+                                      Click image to view full size in popup
                                     </p>
                                   </div>
                                 </div>
@@ -4220,6 +4228,26 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Image Modal */}
+        <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+            <DialogHeader className="p-6 pb-2">
+              <DialogTitle>Review Photo</DialogTitle>
+            </DialogHeader>
+            <div className="p-6 pt-0">
+              {selectedImage && (
+                <div className="flex justify-center">
+                  <img 
+                    src={selectedImage} 
+                    alt="Review photo"
+                    className="max-w-full max-h-[70vh] object-contain rounded-lg border border-gray-200"
+                  />
+                </div>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>
