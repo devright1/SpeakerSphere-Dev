@@ -3116,7 +3116,7 @@ export default function AdminDashboard() {
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
+                              <div className="flex items-center gap-2 mb-3">
                                 <Badge variant="secondary">Pending Review</Badge>
                                 <div className="flex items-center">
                                   {[...Array(5)].map((_, i) => (
@@ -3128,6 +3128,30 @@ export default function AdminDashboard() {
                                   <span className="text-sm text-gray-600 ml-2">
                                     {review.overallRating}/5 stars
                                   </span>
+                                </div>
+                              </div>
+                              
+                              {/* Speaker Information */}
+                              <div className="bg-blue-50 rounded-lg p-3 mb-4">
+                                <h4 className="font-medium text-sm text-blue-900 mb-2">Review for Speaker:</h4>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                                    {review.speakerImageUrl ? (
+                                      <img 
+                                        src={review.speakerImageUrl} 
+                                        alt={review.speakerName}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-blue-300 flex items-center justify-center text-white font-medium text-xs">
+                                        {review.speakerName?.charAt(0)}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-blue-900">{review.speakerName}</p>
+                                    <p className="text-xs text-blue-700">Speaker ID: {review.speakerId}</p>
+                                  </div>
                                 </div>
                               </div>
                               
@@ -3154,8 +3178,19 @@ export default function AdminDashboard() {
                               </div>
                               
                               {review.photoUrl && (
-                                <div className="mt-3">
-                                  <p className="text-sm text-gray-600">Photo attached: {review.photoUrl}</p>
+                                <div className="mt-4">
+                                  <h4 className="font-medium text-sm text-gray-900 mb-2">Submitted Photo:</h4>
+                                  <div className="bg-gray-50 rounded-lg p-3">
+                                    <img 
+                                      src={review.photoUrl} 
+                                      alt="Review photo"
+                                      className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-80"
+                                      onClick={() => window.open(review.photoUrl, '_blank')}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-2">
+                                      Click image to view full size
+                                    </p>
+                                  </div>
                                 </div>
                               )}
                             </div>

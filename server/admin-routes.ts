@@ -1197,10 +1197,41 @@ export function registerAdminRoutes(app: Express) {
   // Get all pending reviews for admin approval
   app.get("/api/admin/reviews", async (req, res) => {
     try {
-      // Query pending reviews directly from database since storage uses in-memory
-      const result = await db.select().from(reviews)
-        .where(eq(reviews.approvalStatus, 'pending'))
-        .orderBy(desc(reviews.createdAt));
+      // Query pending reviews with speaker information
+      const result = await db.select({
+        id: reviews.id,
+        speakerId: reviews.speakerId,
+        userId: reviews.userId,
+        reviewerName: reviews.reviewerName,
+        reviewerTitle: reviews.reviewerTitle,
+        reviewerCompany: reviews.reviewerCompany,
+        overallRating: reviews.overallRating,
+        speakingStyleRating: reviews.speakingStyleRating,
+        podiumPresenceRating: reviews.podiumPresenceRating,
+        technicalProficiencyRating: reviews.technicalProficiencyRating,
+        contentRelevanceRating: reviews.contentRelevanceRating,
+        easeOfWorkingRating: reviews.easeOfWorkingRating,
+        visualDesignRating: reviews.visualDesignRating,
+        comment: reviews.comment,
+        eventType: reviews.eventType,
+        eventDate: reviews.eventDate,
+        photoUrl: reviews.photoUrl,
+        verified: reviews.verified,
+        approvalStatus: reviews.approvalStatus,
+        adminNotes: reviews.adminNotes,
+        approvedAt: reviews.approvedAt,
+        approvedBy: reviews.approvedBy,
+        createdAt: reviews.createdAt,
+        // Include speaker information
+        speakerName: speakers.name,
+        speakerSlug: speakers.slug,
+        speakerImageUrl: speakers.imageUrl
+      })
+      .from(reviews)
+      .leftJoin(speakers, eq(reviews.speakerId, speakers.id))
+      .where(eq(reviews.approvalStatus, 'pending'))
+      .orderBy(desc(reviews.createdAt));
+      
       res.json(result);
     } catch (error) {
       console.error("Error fetching pending reviews:", error);
@@ -1214,7 +1245,15 @@ export function registerAdminRoutes(app: Express) {
       const reviewId = parseInt(req.params.id);
       const { adminNotes } = req.body;
       
-      const updatedReview = await storage.approveReview(reviewId, adminNotes);
+      const [updatedReview] = await db.update(reviews)
+        .set({ 
+          approvalStatus: 'approved',
+          adminNotes: adminNotes || 'Review approved for publication',
+          approvedAt: new Date(),
+          approvedBy: 'admin'
+        })
+        .where(eq(reviews.id, reviewId))
+        .returning();
       
       if (!updatedReview) {
         return res.status(404).json({ message: "Review not found" });
@@ -1237,7 +1276,15 @@ export function registerAdminRoutes(app: Express) {
       const reviewId = parseInt(req.params.id);
       const { adminNotes } = req.body;
       
-      const updatedReview = await storage.rejectReview(reviewId, adminNotes);
+      const [updatedReview] = await db.update(reviews)
+        .set({ 
+          approvalStatus: 'rejected',
+          adminNotes: adminNotes || 'Review rejected due to policy violation',
+          approvedAt: new Date(),
+          approvedBy: 'admin'
+        })
+        .where(eq(reviews.id, reviewId))
+        .returning();
       
       if (!updatedReview) {
         return res.status(404).json({ message: "Review not found" });
