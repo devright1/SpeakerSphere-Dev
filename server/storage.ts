@@ -95,6 +95,7 @@ export interface IStorage {
   addSpeakerTopic(speakerId: number, topicId: number): Promise<SpeakerTopic>;
   removeSpeakerTopic(speakerId: number, topicId: number): Promise<boolean>;
   bulkAddSpeakerTopics(speakerId: number, topicIds: number[]): Promise<void>;
+  clearSpeakerTopics(speakerId: number): Promise<void>;
   
   // Review management
   getPendingReviews(): Promise<Review[]>;
