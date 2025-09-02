@@ -128,6 +128,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (filters?.search) {
+      // Use safe string comparison - Drizzle automatically parameterizes these queries
       const searchTerm = `%${filters.search.toLowerCase()}%`;
       conditions.push(
         or(

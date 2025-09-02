@@ -2,11 +2,20 @@ import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { helmetConfig, rateLimiters, handleValidationError } from "./security";
 import path from "path";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Apply security headers first
+app.use(helmetConfig);
+
+// Apply general rate limiting
+app.use('/api/', rateLimiters.general);
+
+// Body parsing with size limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Serve attached assets
 app.use("/attached_assets", express.static(path.resolve(process.cwd(), "attached_assets")));
@@ -51,9 +60,17 @@ app.use((req, res, next) => {
 
   await registerRoutes(app);
 
+  // Security error handling middleware
+  app.use(handleValidationError);
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+
+    // Log security-related errors
+    if (status === 429 || status === 400 || status === 413) {
+      log(`Security error: ${status} - ${message}`);
+    }
 
     res.status(status).json({ message });
     throw err;

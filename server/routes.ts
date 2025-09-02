@@ -13,6 +13,13 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 import path from "path";
 import fs from "fs";
+import { 
+  rateLimiters, 
+  validators, 
+  validateRequest, 
+  validateFileUpload, 
+  SecurityUtils 
+} from "./security";
 
 // Types for user authentication
 interface AuthenticatedRequest extends Request {
@@ -107,10 +114,25 @@ export function registerRoutes(app: Express): Express {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Speaker application submission
-  app.post("/api/auth/speaker-application", async (req, res) => {
+  // Speaker application submission with rate limiting and validation
+  app.post("/api/auth/speaker-application", 
+    rateLimiters.contact,
+    validators.speakerProfile,
+    validateRequest,
+    async (req: any, res: any) => {
     try {
-      const validatedData = insertSpeakerApplicationSchema.parse(req.body);
+      // Sanitize input data
+      const sanitizedData = {
+        ...req.body,
+        name: SecurityUtils.sanitizeText(req.body.name),
+        bio: SecurityUtils.sanitizeHtml(req.body.bio || ''),
+        email: SecurityUtils.sanitizeEmail(req.body.email),
+        location: SecurityUtils.sanitizeText(req.body.location || ''),
+        expertise: req.body.expertise?.map((skill: string) => SecurityUtils.sanitizeText(skill)),
+        languages: req.body.languages?.map((lang: string) => SecurityUtils.sanitizeText(lang))
+      };
+
+      const validatedData = insertSpeakerApplicationSchema.parse(sanitizedData);
       
       // Create speaker application record
       const application = await storage.createSpeakerApplication(validatedData);
@@ -138,10 +160,25 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
-  // User registration
-  app.post("/api/auth/register", async (req, res) => {
+  // User registration with rate limiting and validation
+  app.post("/api/auth/register", 
+    rateLimiters.auth,
+    [
+      validators.speakerProfile[4], // email validation
+      validators.speakerProfile[0], // name validation
+    ],
+    validateRequest,
+    async (req: any, res: any) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      // Sanitize input data
+      const sanitizedData = {
+        ...req.body,
+        name: SecurityUtils.sanitizeText(req.body.name),
+        email: SecurityUtils.sanitizeEmail(req.body.email),
+        password: req.body.password // Don't sanitize password, just validate
+      };
+
+      const userData = insertUserSchema.parse(sanitizedData);
 
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
@@ -484,7 +521,12 @@ export function registerRoutes(app: Express): Express {
   });
 
   // Update speaker topics
-  app.put("/api/speakers/:id/topics", async (req, res) => {
+  app.put("/api/speakers/:id/topics", 
+    rateLimiters.general,
+    validators.id,
+    validators.topics,
+    validateRequest,
+    async (req: any, res: any) => {
     try {
       const speakerId = parseInt(req.params.id);
       const { topicIds } = req.body;
@@ -580,7 +622,11 @@ export function registerRoutes(app: Express): Express {
   });
 
   // Submit review
-  app.post("/api/reviews", async (req, res) => {
+  app.post("/api/reviews", 
+    rateLimiters.reviews,
+    validators.review,
+    validateRequest,
+    async (req: any, res: any) => {
     try {
       const review = await storage.createReview(req.body);
       res.status(201).json({
@@ -733,7 +779,11 @@ export function registerRoutes(app: Express): Express {
   });
 
   // Search speakers with advanced filters - simplified to use getSpeakers
-  app.get("/api/search", async (req, res) => {
+  app.get("/api/search", 
+    rateLimiters.search,
+    validators.search,
+    validateRequest,
+    async (req: any, res: any) => {
     try {
       const {
         q: query,
@@ -958,7 +1008,12 @@ export function registerRoutes(app: Express): Express {
   // Content Management API Routes
   
   // Upload content file
-  app.post("/api/speakers/:speakerId/content", upload.single('file'), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/speakers/:speakerId/content", 
+    rateLimiters.uploads,
+    validators.id,
+    upload.single('file'), 
+    validateFileUpload,
+    async (req: AuthenticatedRequest, res) => {
     try {
       const speakerId = parseInt(req.params.speakerId);
       const { description, category, isPublic } = req.body;
