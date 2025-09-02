@@ -609,7 +609,7 @@ export function registerRoutes(app: Express): Express {
         comment: req.body.comment,
         eventType: req.body.eventType,
         eventDate: req.body.eventDate,
-        photoUrl: req.file ? `/uploads/${req.file.filename}` : null,
+        photoUrl: req.file ? `/uploads/${speakerId}/${req.file.filename}` : null,
         approvalStatus: 'pending' // Reviews start as pending admin approval
       };
 
