@@ -722,28 +722,176 @@ export default function SpeakerDashboard() {
               </CardHeader>
               <CardContent>
                 {speakerReviews && speakerReviews.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {speakerReviews.map((review: any) => (
-                      <div key={review.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
+                      <div key={review.id} className="border rounded-lg p-6 bg-white shadow-sm">
+                        {/* Header with overall rating and date */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-3">
                             <div className="flex">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                   key={star}
-                                  className={`h-4 w-4 ${
-                                    star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                  className={`h-5 w-5 ${
+                                    star <= review.overallRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
                                   }`}
                                 />
                               ))}
                             </div>
-                            <span className="font-medium">{review.rating}/5</span>
+                            <span className="font-bold text-lg">{review.overallRating}/5</span>
+                            <Badge variant="outline" className="ml-2">Overall Rating</Badge>
                           </div>
                           <span className="text-sm text-gray-500">
                             {new Date(review.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-gray-700">{review.comment}</p>
+
+                        {/* Reviewer Information */}
+                        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                          <h4 className="font-semibold text-gray-900 mb-2">Reviewer</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                            <div><span className="font-medium">Name:</span> {review.reviewerName}</div>
+                            <div><span className="font-medium">Title:</span> {review.reviewerTitle}</div>
+                            <div><span className="font-medium">Company:</span> {review.reviewerCompany}</div>
+                          </div>
+                        </div>
+
+                        {/* Event Details */}
+                        <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                          <h4 className="font-semibold text-gray-900 mb-2">Event Details</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <div><span className="font-medium">Event Type:</span> {review.eventType}</div>
+                            <div><span className="font-medium">Event Date:</span> {new Date(review.eventDate).toLocaleDateString()}</div>
+                          </div>
+                        </div>
+
+                        {/* Detailed Ratings */}
+                        <div className="mb-4 p-3 bg-green-50 rounded-lg">
+                          <h4 className="font-semibold text-gray-900 mb-3">Detailed Ratings</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            <div className="flex items-center justify-between">
+                              <span>Speaking Style:</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= review.speakingStyleRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-medium">{review.speakingStyleRating}/5</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Podium Presence:</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= review.podiumPresenceRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-medium">{review.podiumPresenceRating}/5</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Technical Proficiency:</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= review.technicalProficiencyRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-medium">{review.technicalProficiencyRating}/5</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Content Relevance:</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= review.contentRelevanceRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-medium">{review.contentRelevanceRating}/5</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Ease of Working:</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= review.easeOfWorkingRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-medium">{review.easeOfWorkingRating}/5</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Visual Design:</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= review.visualDesignRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-medium">{review.visualDesignRating}/5</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Review Comment */}
+                        <div className="mb-4">
+                          <h4 className="font-semibold text-gray-900 mb-2">Review Comments</h4>
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="flex items-center justify-between">
+                          <Badge 
+                            variant={review.approvalStatus === 'approved' ? 'default' : 'secondary'}
+                            className="flex items-center space-x-1"
+                          >
+                            <Check className="h-3 w-3" />
+                            <span>{review.approvalStatus === 'approved' ? 'Approved Review' : 'Pending Review'}</span>
+                          </Badge>
+                          {review.verified && (
+                            <Badge variant="outline" className="flex items-center space-x-1">
+                              <Crown className="h-3 w-3" />
+                              <span>Verified</span>
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
