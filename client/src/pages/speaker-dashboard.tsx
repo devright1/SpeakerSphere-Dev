@@ -58,6 +58,32 @@ export default function SpeakerDashboard() {
     expiresAt: '',
     maxUses: ''
   });
+  
+  // Reviews pagination and expand/collapse state
+  const [currentReviewPage, setCurrentReviewPage] = useState(1);
+  const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
+  const reviewsPerPage = 10;
+
+  // Helper functions for reviews
+  const toggleReviewExpanded = (reviewId: number) => {
+    const newExpanded = new Set(expandedReviews);
+    if (newExpanded.has(reviewId)) {
+      newExpanded.delete(reviewId);
+    } else {
+      newExpanded.add(reviewId);
+    }
+    setExpandedReviews(newExpanded);
+  };
+
+  const getPaginatedReviews = (reviews: any[]) => {
+    const startIndex = (currentReviewPage - 1) * reviewsPerPage;
+    const endIndex = startIndex + reviewsPerPage;
+    return reviews.slice(startIndex, endIndex);
+  };
+
+  const getTotalReviewPages = (reviews: any[]) => {
+    return Math.ceil(reviews.length / reviewsPerPage);
+  };
 
   // Download handler that properly handles errors
   const handleDownload = async (contentId: number, originalName: string) => {
@@ -722,178 +748,254 @@ export default function SpeakerDashboard() {
               </CardHeader>
               <CardContent>
                 {speakerReviews && speakerReviews.length > 0 ? (
-                  <div className="space-y-6">
-                    {speakerReviews.map((review: any) => (
-                      <div key={review.id} className="border rounded-lg p-6 bg-white shadow-sm">
-                        {/* Header with overall rating and date */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="flex">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-5 w-5 ${
-                                    star <= review.overallRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="font-bold text-lg">{review.overallRating}/5</span>
-                            <Badge variant="outline" className="ml-2">Overall Rating</Badge>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
+                  <div className="space-y-4">
+                    {/* Reviews Summary */}
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">
+                        Showing {Math.min(reviewsPerPage, speakerReviews.length - (currentReviewPage - 1) * reviewsPerPage)} of {speakerReviews.length} reviews
+                      </p>
+                    </div>
 
-                        {/* Reviewer Information */}
-                        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                          <h4 className="font-semibold text-gray-900 mb-2">Reviewer</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                            <div><span className="font-medium">Name:</span> {review.reviewerName}</div>
-                            <div><span className="font-medium">Title:</span> {review.reviewerTitle}</div>
-                            <div><span className="font-medium">Company:</span> {review.reviewerCompany}</div>
-                          </div>
-                        </div>
-
-                        {/* Event Details */}
-                        <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                          <h4 className="font-semibold text-gray-900 mb-2">Event Details</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                            <div><span className="font-medium">Event Type:</span> {review.eventType}</div>
-                            <div><span className="font-medium">Event Date:</span> {new Date(review.eventDate).toLocaleDateString()}</div>
-                          </div>
-                        </div>
-
-                        {/* Detailed Ratings */}
-                        <div className="mb-4 p-3 bg-green-50 rounded-lg">
-                          <h4 className="font-semibold text-gray-900 mb-3">Detailed Ratings</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                            <div className="flex items-center justify-between">
-                              <span>Speaking Style:</span>
-                              <div className="flex items-center space-x-2">
-                                <div className="flex">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star
-                                      key={star}
-                                      className={`h-4 w-4 ${
-                                        star <= review.speakingStyleRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="font-medium">{review.speakingStyleRating}/5</span>
+                    {/* Paginated Reviews */}
+                    {getPaginatedReviews(speakerReviews).map((review: any) => (
+                      <div key={review.id} className="border rounded-lg bg-white shadow-sm">
+                        {/* Collapsed Header */}
+                        <div 
+                          className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                          onClick={() => toggleReviewExpanded(review.id)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-4 w-4 ${
+                                      star <= review.overallRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                    }`}
+                                  />
+                                ))}
                               </div>
+                              <span className="font-semibold">{review.overallRating}/5</span>
+                              <span className="text-sm text-gray-600">by {review.reviewerName}</span>
+                              <Badge 
+                                variant={review.approvalStatus === 'approved' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {review.approvalStatus === 'approved' ? 'Approved' : 'Pending'}
+                              </Badge>
                             </div>
-                            <div className="flex items-center justify-between">
-                              <span>Podium Presence:</span>
-                              <div className="flex items-center space-x-2">
-                                <div className="flex">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star
-                                      key={star}
-                                      className={`h-4 w-4 ${
-                                        star <= review.podiumPresenceRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="font-medium">{review.podiumPresenceRating}/5</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>Technical Proficiency:</span>
-                              <div className="flex items-center space-x-2">
-                                <div className="flex">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star
-                                      key={star}
-                                      className={`h-4 w-4 ${
-                                        star <= review.technicalProficiencyRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="font-medium">{review.technicalProficiencyRating}/5</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>Content Relevance:</span>
-                              <div className="flex items-center space-x-2">
-                                <div className="flex">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star
-                                      key={star}
-                                      className={`h-4 w-4 ${
-                                        star <= review.contentRelevanceRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="font-medium">{review.contentRelevanceRating}/5</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>Ease of Working:</span>
-                              <div className="flex items-center space-x-2">
-                                <div className="flex">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star
-                                      key={star}
-                                      className={`h-4 w-4 ${
-                                        star <= review.easeOfWorkingRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="font-medium">{review.easeOfWorkingRating}/5</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>Visual Design:</span>
-                              <div className="flex items-center space-x-2">
-                                <div className="flex">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star
-                                      key={star}
-                                      className={`h-4 w-4 ${
-                                        star <= review.visualDesignRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="font-medium">{review.visualDesignRating}/5</span>
-                              </div>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-gray-500">
+                                {new Date(review.createdAt).toLocaleDateString()}
+                              </span>
+                              <Button variant="ghost" size="sm">
+                                {expandedReviews.has(review.id) ? (
+                                  <>
+                                    <EyeOff className="h-4 w-4 mr-1" />
+                                    Collapse
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Expand
+                                  </>
+                                )}
+                              </Button>
                             </div>
                           </div>
                         </div>
 
-                        {/* Review Comment */}
-                        <div className="mb-4">
-                          <h4 className="font-semibold text-gray-900 mb-2">Review Comments</h4>
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-gray-700 leading-relaxed">{review.comment}</p>
-                          </div>
-                        </div>
+                        {/* Expanded Content */}
+                        {expandedReviews.has(review.id) && (
+                          <div className="border-t p-4 space-y-4">
+                            {/* Reviewer Information */}
+                            <div className="p-3 bg-gray-50 rounded-lg">
+                              <h4 className="font-semibold text-gray-900 mb-2">Reviewer</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                                <div><span className="font-medium">Name:</span> {review.reviewerName}</div>
+                                <div><span className="font-medium">Title:</span> {review.reviewerTitle}</div>
+                                <div><span className="font-medium">Company:</span> {review.reviewerCompany}</div>
+                              </div>
+                            </div>
 
-                        {/* Status Badge */}
-                        <div className="flex items-center justify-between">
-                          <Badge 
-                            variant={review.approvalStatus === 'approved' ? 'default' : 'secondary'}
-                            className="flex items-center space-x-1"
-                          >
-                            <Check className="h-3 w-3" />
-                            <span>{review.approvalStatus === 'approved' ? 'Approved Review' : 'Pending Review'}</span>
-                          </Badge>
-                          {review.verified && (
-                            <Badge variant="outline" className="flex items-center space-x-1">
-                              <Crown className="h-3 w-3" />
-                              <span>Verified</span>
-                            </Badge>
-                          )}
-                        </div>
+                            {/* Event Details */}
+                            <div className="p-3 bg-blue-50 rounded-lg">
+                              <h4 className="font-semibold text-gray-900 mb-2">Event Details</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                <div><span className="font-medium">Event Type:</span> {review.eventType}</div>
+                                <div><span className="font-medium">Event Date:</span> {new Date(review.eventDate).toLocaleDateString()}</div>
+                              </div>
+                            </div>
+
+                            {/* Detailed Ratings */}
+                            <div className="p-3 bg-green-50 rounded-lg">
+                              <h4 className="font-semibold text-gray-900 mb-3">Detailed Ratings</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div className="flex items-center justify-between">
+                                  <span>Speaking Style:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="flex">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${
+                                            star <= review.speakingStyleRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="font-medium">{review.speakingStyleRating}/5</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span>Podium Presence:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="flex">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${
+                                            star <= review.podiumPresenceRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="font-medium">{review.podiumPresenceRating}/5</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span>Technical Proficiency:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="flex">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${
+                                            star <= review.technicalProficiencyRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="font-medium">{review.technicalProficiencyRating}/5</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span>Content Relevance:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="flex">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${
+                                            star <= review.contentRelevanceRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="font-medium">{review.contentRelevanceRating}/5</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span>Ease of Working:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="flex">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${
+                                            star <= review.easeOfWorkingRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="font-medium">{review.easeOfWorkingRating}/5</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span>Visual Design:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="flex">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${
+                                            star <= review.visualDesignRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="font-medium">{review.visualDesignRating}/5</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Review Comment */}
+                            <div>
+                              <h4 className="font-semibold text-gray-900 mb-2">Review Comments</h4>
+                              <div className="p-3 bg-gray-50 rounded-lg">
+                                <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                              </div>
+                            </div>
+
+                            {/* Status and Verification */}
+                            <div className="flex items-center justify-between pt-2">
+                              <Badge 
+                                variant={review.approvalStatus === 'approved' ? 'default' : 'secondary'}
+                                className="flex items-center space-x-1"
+                              >
+                                <Check className="h-3 w-3" />
+                                <span>{review.approvalStatus === 'approved' ? 'Approved Review' : 'Pending Review'}</span>
+                              </Badge>
+                              {review.verified && (
+                                <Badge variant="outline" className="flex items-center space-x-1">
+                                  <Crown className="h-3 w-3" />
+                                  <span>Verified</span>
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
+
+                    {/* Pagination */}
+                    {getTotalReviewPages(speakerReviews) > 1 && (
+                      <div className="mt-6 flex items-center justify-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentReviewPage(Math.max(1, currentReviewPage - 1))}
+                          disabled={currentReviewPage === 1}
+                        >
+                          Previous
+                        </Button>
+                        
+                        <div className="flex space-x-1">
+                          {Array.from({ length: getTotalReviewPages(speakerReviews) }, (_, i) => i + 1).map((page) => (
+                            <Button
+                              key={page}
+                              variant={currentReviewPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentReviewPage(page)}
+                              className="min-w-[40px]"
+                            >
+                              {page}
+                            </Button>
+                          ))}
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentReviewPage(Math.min(getTotalReviewPages(speakerReviews), currentReviewPage + 1))}
+                          disabled={currentReviewPage === getTotalReviewPages(speakerReviews)}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <p className="text-gray-500 text-center py-8">No reviews yet</p>
