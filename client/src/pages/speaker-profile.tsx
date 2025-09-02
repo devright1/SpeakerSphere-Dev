@@ -67,7 +67,12 @@ const reviewSchema = z.object({
   reviewerName: z.string().min(1, "Name is required"),
   reviewerTitle: z.string().min(1, "Title is required"),
   reviewerCompany: z.string().min(1, "Company is required"),
-  rating: z.number().min(1).max(5),
+  speakingStyleRating: z.number().min(1).max(5),
+  podiumPresenceRating: z.number().min(1).max(5),
+  technicalProficiencyRating: z.number().min(1).max(5),
+  contentRelevanceRating: z.number().min(1).max(5),
+  easeOfWorkingRating: z.number().min(1).max(5),
+  visualDesignRating: z.number().min(1).max(5),
   comment: z.string().min(10, "Written review is required (minimum 10 characters)"),
   eventType: z.string().min(1, "Event type is required"),
   eventDate: z.string().min(1, "Event date is required"),
@@ -236,7 +241,12 @@ export default function SpeakerProfile() {
       reviewerName: "",
       reviewerTitle: "",
       reviewerCompany: "",
-      rating: 5,
+      speakingStyleRating: 5,
+      podiumPresenceRating: 5,
+      technicalProficiencyRating: 5,
+      contentRelevanceRating: 5,
+      easeOfWorkingRating: 5,
+      visualDesignRating: 5,
       comment: "",
       eventType: "",
       eventDate: "",
@@ -311,7 +321,12 @@ export default function SpeakerProfile() {
       formData.append('reviewerName', data.reviewerName);
       formData.append('reviewerTitle', data.reviewerTitle);
       formData.append('reviewerCompany', data.reviewerCompany);
-      formData.append('rating', data.rating.toString());
+      formData.append('speakingStyleRating', data.speakingStyleRating.toString());
+      formData.append('podiumPresenceRating', data.podiumPresenceRating.toString());
+      formData.append('technicalProficiencyRating', data.technicalProficiencyRating.toString());
+      formData.append('contentRelevanceRating', data.contentRelevanceRating.toString());
+      formData.append('easeOfWorkingRating', data.easeOfWorkingRating.toString());
+      formData.append('visualDesignRating', data.visualDesignRating.toString());
       formData.append('comment', data.comment);
       formData.append('eventType', data.eventType);
       formData.append('eventDate', data.eventDate);
@@ -344,7 +359,12 @@ export default function SpeakerProfile() {
         reviewerName: "",
         reviewerTitle: "",
         reviewerCompany: "",
-        rating: 5,
+        speakingStyleRating: 5,
+        podiumPresenceRating: 5,
+        technicalProficiencyRating: 5,
+        contentRelevanceRating: 5,
+        easeOfWorkingRating: 5,
+        visualDesignRating: 5,
         comment: "",
         eventType: "",
         eventDate: "",
@@ -1364,41 +1384,209 @@ export default function SpeakerProfile() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={reviewForm.control}
-                  name="rating"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Rating *</FormLabel>
-                      <FormControl>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              className="focus:outline-none"
-                              onMouseEnter={() => setHoveredRating(star)}
-                              onMouseLeave={() => setHoveredRating(0)}
-                              onClick={() => field.onChange(star)}
-                            >
-                              <Star
-                                className={`w-8 h-8 transition-colors ${
-                                  star <= (hoveredRating || field.value)
-                                    ? "text-yellow-400 fill-yellow-400"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            </button>
-                          ))}
-                          <span className="ml-2 text-sm text-gray-600">
-                            {field.value ? `${field.value}/5` : "Click to rate"}
-                          </span>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Rating Categories */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">Rate Each Category *</h3>
+                  <p className="text-sm text-gray-600">Please rate the speaker in each of the following areas:</p>
+                  
+                  {/* Speaking Style Rating */}
+                  <FormField
+                    control={reviewForm.control}
+                    name="speakingStyleRating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Speaking Style</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                className="focus:outline-none"
+                                onClick={() => field.onChange(star)}
+                              >
+                                <Star
+                                  className={`w-6 h-6 transition-colors ${
+                                    star <= field.value
+                                      ? "text-yellow-400 fill-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              </button>
+                            ))}
+                            <span className="ml-2 text-sm text-gray-600">{field.value}/5</span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Podium Presence Rating */}
+                  <FormField
+                    control={reviewForm.control}
+                    name="podiumPresenceRating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Podium Presence</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                className="focus:outline-none"
+                                onClick={() => field.onChange(star)}
+                              >
+                                <Star
+                                  className={`w-6 h-6 transition-colors ${
+                                    star <= field.value
+                                      ? "text-yellow-400 fill-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              </button>
+                            ))}
+                            <span className="ml-2 text-sm text-gray-600">{field.value}/5</span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Technical Proficiency Rating */}
+                  <FormField
+                    control={reviewForm.control}
+                    name="technicalProficiencyRating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Technical Proficiency</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                className="focus:outline-none"
+                                onClick={() => field.onChange(star)}
+                              >
+                                <Star
+                                  className={`w-6 h-6 transition-colors ${
+                                    star <= field.value
+                                      ? "text-yellow-400 fill-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              </button>
+                            ))}
+                            <span className="ml-2 text-sm text-gray-600">{field.value}/5</span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Content Relevance Rating */}
+                  <FormField
+                    control={reviewForm.control}
+                    name="contentRelevanceRating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Content Relevance</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                className="focus:outline-none"
+                                onClick={() => field.onChange(star)}
+                              >
+                                <Star
+                                  className={`w-6 h-6 transition-colors ${
+                                    star <= field.value
+                                      ? "text-yellow-400 fill-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              </button>
+                            ))}
+                            <span className="ml-2 text-sm text-gray-600">{field.value}/5</span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Ease of Working Rating */}
+                  <FormField
+                    control={reviewForm.control}
+                    name="easeOfWorkingRating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ease of Working</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                className="focus:outline-none"
+                                onClick={() => field.onChange(star)}
+                              >
+                                <Star
+                                  className={`w-6 h-6 transition-colors ${
+                                    star <= field.value
+                                      ? "text-yellow-400 fill-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              </button>
+                            ))}
+                            <span className="ml-2 text-sm text-gray-600">{field.value}/5</span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Visual Design Rating */}
+                  <FormField
+                    control={reviewForm.control}
+                    name="visualDesignRating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Visual Design</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                className="focus:outline-none"
+                                onClick={() => field.onChange(star)}
+                              >
+                                <Star
+                                  className={`w-6 h-6 transition-colors ${
+                                    star <= field.value
+                                      ? "text-yellow-400 fill-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              </button>
+                            ))}
+                            <span className="ml-2 text-sm text-gray-600">{field.value}/5</span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

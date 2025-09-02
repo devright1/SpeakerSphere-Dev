@@ -605,13 +605,20 @@ export function registerRoutes(app: Express): Express {
         reviewerName: req.body.reviewerName,
         reviewerTitle: req.body.reviewerTitle,
         reviewerCompany: req.body.reviewerCompany,
-        overallRating: parseInt(req.body.rating),
-        speakingStyleRating: parseInt(req.body.rating), // Use same rating for all aspects for now
-        podiumPresenceRating: parseInt(req.body.rating),
-        technicalProficiencyRating: parseInt(req.body.rating),
-        contentRelevanceRating: parseInt(req.body.rating),
-        easeOfWorkingRating: parseInt(req.body.rating),
-        visualDesignRating: parseInt(req.body.rating),
+        speakingStyleRating: parseInt(req.body.speakingStyleRating),
+        podiumPresenceRating: parseInt(req.body.podiumPresenceRating),
+        technicalProficiencyRating: parseInt(req.body.technicalProficiencyRating),
+        contentRelevanceRating: parseInt(req.body.contentRelevanceRating),
+        easeOfWorkingRating: parseInt(req.body.easeOfWorkingRating),
+        visualDesignRating: parseInt(req.body.visualDesignRating),
+        overallRating: Math.round(
+          (parseInt(req.body.speakingStyleRating) + 
+           parseInt(req.body.podiumPresenceRating) + 
+           parseInt(req.body.technicalProficiencyRating) + 
+           parseInt(req.body.contentRelevanceRating) + 
+           parseInt(req.body.easeOfWorkingRating) + 
+           parseInt(req.body.visualDesignRating)) / 6
+        ),
         comment: req.body.comment,
         eventType: req.body.eventType,
         eventDate: req.body.eventDate,
