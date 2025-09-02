@@ -88,6 +88,12 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    firstName: "",
+    lastName: "",
+    title: "",
+    company: "",
+  });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -105,6 +111,18 @@ export default function ProfilePage() {
   };
 
   const user = getUserData();
+
+  // Initialize profile data when user data is available
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        title: user.title || "",
+        company: user.company || "",
+      });
+    }
+  }, [user]);
 
   // Fetch user activity stats
   const { data: userStats, isLoading: statsLoading } = useQuery<UserStats>({
@@ -181,6 +199,50 @@ export default function ProfilePage() {
   });
 
 
+
+  // Profile update mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async () => {
+      const token = localStorage.getItem('userToken');
+      const response = await fetch(`/api/users/${user?.id}/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update profile");
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Update localStorage with new user data
+      if (data.user) {
+        localStorage.setItem('userData', JSON.stringify(data.user));
+      }
+      
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+      
+      setIsEditingProfile(false);
+      // Refresh the page to show updated data
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Password change mutation
   const changePasswordMutation = useMutation({
@@ -366,27 +428,131 @@ export default function ProfilePage() {
 
                   {/* User Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <div>
-                        <h1 className="text-2xl font-bold text-gray-900">
-                          {user.firstName} {user.lastName}
-                        </h1>
-                        {user.title && (
-                          <p className="text-lg text-gray-600">{user.title}</p>
-                        )}
-                        {user.company && (
-                          <p className="text-sm text-gray-500">{user.company}</p>
-                        )}
+                    {!isEditingProfile ? (
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div>
+                          <h1 className="text-2xl font-bold text-gray-900">
+                            {user.firstName} {user.lastName}
+                          </h1>
+                          {user.title && (
+                            <p className="text-lg text-gray-600">{user.title}</p>
+                          )}
+                          {user.company && (
+                            <p className="text-sm text-gray-500">{user.company}</p>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="self-start sm:self-auto"
+                          onClick={() => setIsEditingProfile(true)}
+                        >
+                          <Edit3 className="h-4 w-4 mr-2" />
+                          Edit Profile
+                        </Button>
                       </div>
-                      <Button
-                        variant="outline"
-                        className="self-start sm:self-auto"
-                        onClick={() => setIsEditingProfile(true)}
-                      >
-                        <Edit3 className="h-4 w-4 mr-2" />
-                        Edit Profile
-                      </Button>
-                    </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 mb-2 block">
+                              First Name *
+                            </Label>
+                            <Input
+                              id="firstName"
+                              type="text"
+                              value={profileData.firstName}
+                              onChange={(e) => setProfileData({
+                                ...profileData,
+                                firstName: e.target.value
+                              })}
+                              placeholder="Enter your first name"
+                              className="w-full"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="lastName" className="text-sm font-medium text-gray-700 mb-2 block">
+                              Last Name *
+                            </Label>
+                            <Input
+                              id="lastName"
+                              type="text"
+                              value={profileData.lastName}
+                              onChange={(e) => setProfileData({
+                                ...profileData,
+                                lastName: e.target.value
+                              })}
+                              placeholder="Enter your last name"
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="title" className="text-sm font-medium text-gray-700 mb-2 block">
+                            Job Title
+                          </Label>
+                          <Input
+                            id="title"
+                            type="text"
+                            value={profileData.title}
+                            onChange={(e) => setProfileData({
+                              ...profileData,
+                              title: e.target.value
+                            })}
+                            placeholder="Enter your job title"
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="company" className="text-sm font-medium text-gray-700 mb-2 block">
+                            Company
+                          </Label>
+                          <Input
+                            id="company"
+                            type="text"
+                            value={profileData.company}
+                            onChange={(e) => setProfileData({
+                              ...profileData,
+                              company: e.target.value
+                            })}
+                            placeholder="Enter your company name"
+                            className="w-full"
+                          />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                          <Button
+                            onClick={() => updateProfileMutation.mutate()}
+                            disabled={updateProfileMutation.isPending}
+                            className="flex items-center gap-2"
+                          >
+                            {updateProfileMutation.isPending ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <UserCheck className="h-4 w-4" />
+                            )}
+                            Save Changes
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsEditingProfile(false);
+                              // Reset form data to original values
+                              setProfileData({
+                                firstName: user.firstName || "",
+                                lastName: user.lastName || "",
+                                title: user.title || "",
+                                company: user.company || "",
+                              });
+                            }}
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Badge variant="secondary" className="text-xs">

@@ -1664,6 +1664,42 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Update user profile endpoint
+  app.put("/api/users/:userId/profile", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const { firstName, lastName, title, company } = req.body;
+      
+      // Validate required fields
+      if (!firstName || !lastName) {
+        return res.status(400).json({ 
+          error: "First name and last name are required" 
+        });
+      }
+
+      // Update user profile
+      const updatedUser = await storage.updateUser(userId, {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        title: title?.trim() || null,
+        company: company?.trim() || null,
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.status(200).json({
+        success: true,
+        user: updatedUser,
+        message: "Profile updated successfully"
+      });
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Placeholder image endpoint
   app.get("/api/placeholder/:width/:height", (req, res) => {
     const { width, height } = req.params;
