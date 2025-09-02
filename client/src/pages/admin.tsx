@@ -190,6 +190,23 @@ export default function AdminDashboard() {
     },
   });
 
+  const deleteReviewMutation = useMutation({
+    mutationFn: async (reviewId: number) => {
+      const response = await fetch(`/api/admin/reviews/${reviewId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete review');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Review deleted successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/all-reviews"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete review", variant: "destructive" });
+    },
+  });
+
   // Check authentication on component mount
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("adminAuthenticated");
@@ -3250,6 +3267,19 @@ export default function AdminDashboard() {
                               >
                                 Reject
                               </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="text-red-600 border-red-600 hover:bg-red-50"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+                                    deleteReviewMutation.mutate(review.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete
+                              </Button>
                             </div>
                           </div>
                         </CardContent>
@@ -3359,6 +3389,22 @@ export default function AdminDashboard() {
                                     </div>
                                   )}
                                 </div>
+                                
+                                <div className="flex justify-end mt-4">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    className="text-red-600 border-red-600 hover:bg-red-50"
+                                    onClick={() => {
+                                      if (confirm('Are you sure you want to delete this approved review? This action cannot be undone.')) {
+                                        deleteReviewMutation.mutate(review.id);
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-1" />
+                                    Delete
+                                  </Button>
+                                </div>
                               </div>
                             </CardContent>
                           </Card>
@@ -3465,6 +3511,22 @@ export default function AdminDashboard() {
                                       <p className="text-sm text-red-800">{review.adminNotes}</p>
                                     </div>
                                   )}
+                                </div>
+                                
+                                <div className="flex justify-end mt-4">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    className="text-red-600 border-red-600 hover:bg-red-50"
+                                    onClick={() => {
+                                      if (confirm('Are you sure you want to delete this rejected review? This action cannot be undone.')) {
+                                        deleteReviewMutation.mutate(review.id);
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-1" />
+                                    Delete
+                                  </Button>
                                 </div>
                               </div>
                             </CardContent>

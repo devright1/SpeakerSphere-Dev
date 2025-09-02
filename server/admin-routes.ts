@@ -1344,4 +1344,28 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: "Failed to reject review" });
     }
   });
+
+  // Delete a review
+  app.delete("/api/admin/reviews/:id", async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      
+      const [deletedReview] = await db.delete(reviews)
+        .where(eq(reviews.id, reviewId))
+        .returning();
+      
+      if (!deletedReview) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
+      res.json({
+        success: true,
+        message: "Review deleted successfully",
+        deletedReview
+      });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
 }
