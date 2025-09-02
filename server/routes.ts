@@ -1638,28 +1638,37 @@ export function registerRoutes(app: Express): Express {
 
   // Profile picture update endpoint
   app.put("/api/users/:userId/profile-picture", async (req, res) => {
-    if (!req.body.profilePictureURL) {
-      return res.status(400).json({ error: "profilePictureURL is required" });
-    }
-
     try {
-      const objectStorageService = new ObjectStorageService();
-      const objectPath = objectStorageService.normalizeObjectEntityPath(
-        req.body.profilePictureURL,
-      );
+      let updatedUser;
+      
+      if (req.body.profilePictureURL) {
+        // Update with new profile picture
+        const objectStorageService = new ObjectStorageService();
+        const objectPath = objectStorageService.normalizeObjectEntityPath(
+          req.body.profilePictureURL,
+        );
 
-      // Update user profile with new profile picture
-      const updatedUser = await storage.updateUser(req.params.userId, {
-        profileImageUrl: objectPath,
-      });
+        updatedUser = await storage.updateUser(req.params.userId, {
+          profileImageUrl: objectPath,
+        });
+      } else if (req.body.remove === true) {
+        // Remove profile picture (set to null)
+        updatedUser = await storage.updateUser(req.params.userId, {
+          profileImageUrl: null,
+        });
+      } else {
+        return res.status(400).json({ 
+          error: "Either profilePictureURL or remove=true is required" 
+        });
+      }
 
       res.status(200).json({
         success: true,
         user: updatedUser,
-        objectPath: objectPath,
+        message: req.body.remove ? "Profile picture removed" : "Profile picture updated",
       });
     } catch (error) {
-      console.error("Error setting profile picture:", error);
+      console.error("Error updating profile picture:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

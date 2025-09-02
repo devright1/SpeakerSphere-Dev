@@ -25,7 +25,8 @@ import {
   Lock,
   Shield,
   X,
-  UserCheck
+  UserCheck,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -382,30 +383,70 @@ export default function ProfilePage() {
               <CardContent className="relative px-6 pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16">
                   {/* Profile Picture */}
-                  <div className="relative">
-                    <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
-                      <AvatarImage src={user.profileImageUrl} alt={`${user.firstName} ${user.lastName}`} />
-                      <AvatarFallback className="text-xl font-semibold bg-blue-500 text-white">
-                        {getInitials(user.firstName, user.lastName)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <ObjectUploader
-                      maxNumberOfFiles={1}
-                      maxFileSize={5 * 1024 * 1024} // 5MB limit
-                      onGetUploadParameters={async () => {
-                        const response = await apiRequest("POST", "/api/objects/upload", {});
-                        const data = await response.json();
-                        return {
-                          method: "PUT" as const,
-                          url: data.uploadURL,
-                        };
-                      }}
-                      onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-                        if (result.successful && result.successful.length > 0) {
-                          const uploadedFile = result.successful[0];
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative">
+                      <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+                        <AvatarImage src={user.profileImageUrl} alt={`${user.firstName} ${user.lastName}`} />
+                        <AvatarFallback className="text-xl font-semibold bg-blue-500 text-white">
+                          {getInitials(user.firstName, user.lastName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ObjectUploader
+                        maxNumberOfFiles={1}
+                        maxFileSize={5 * 1024 * 1024} // 5MB limit
+                        onGetUploadParameters={async () => {
+                          const response = await apiRequest("POST", "/api/objects/upload", {});
+                          const data = await response.json();
+                          return {
+                            method: "PUT" as const,
+                            url: data.uploadURL,
+                          };
+                        }}
+                        onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                          if (result.successful && result.successful.length > 0) {
+                            const uploadedFile = result.successful[0];
+                            try {
+                              const response = await apiRequest("PUT", `/api/users/${user?.id}/profile-picture`, {
+                                profilePictureURL: uploadedFile.uploadURL,
+                              });
+                              const data = await response.json();
+                              
+                              if (data.success && data.user) {
+                                // Update localStorage with new user data
+                                localStorage.setItem('userData', JSON.stringify(data.user));
+                                
+                                toast({
+                                  title: "Profile Picture Updated",
+                                  description: "Your profile picture has been successfully updated!",
+                                });
+                                
+                                // Refresh the page to show new image
+                                window.location.reload();
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Upload Failed",
+                                description: "Failed to update profile picture. Please try again.",
+                                variant: "destructive",
+                              });
+                            }
+                          }
+                        }}
+                        buttonClassName="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 bg-blue-500 text-white shadow-md hover:bg-blue-600 hover:shadow-lg transition-all opacity-100"
+                      >
+                        <Camera className="h-4 w-4 text-white" />
+                      </ObjectUploader>
+                    </div>
+                    
+                    {/* Remove Profile Picture Button - only show when editing and user has a profile picture */}
+                    {isEditingProfile && user.profileImageUrl && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
                           try {
                             const response = await apiRequest("PUT", `/api/users/${user?.id}/profile-picture`, {
-                              profilePictureURL: uploadedFile.uploadURL,
+                              remove: true,
                             });
                             const data = await response.json();
                             
@@ -414,26 +455,27 @@ export default function ProfilePage() {
                               localStorage.setItem('userData', JSON.stringify(data.user));
                               
                               toast({
-                                title: "Profile Picture Updated",
-                                description: "Your profile picture has been successfully updated!",
+                                title: "Profile Picture Removed",
+                                description: "Your profile picture has been removed successfully.",
                               });
                               
-                              // Refresh the page to show new image
+                              // Refresh the page to show changes
                               window.location.reload();
                             }
                           } catch (error) {
                             toast({
-                              title: "Upload Failed",
-                              description: "Failed to update profile picture. Please try again.",
+                              title: "Remove Failed",
+                              description: "Failed to remove profile picture. Please try again.",
                               variant: "destructive",
                             });
                           }
-                        }
-                      }}
-                      buttonClassName="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 bg-blue-500 text-white shadow-md hover:bg-blue-600 hover:shadow-lg transition-all opacity-100"
-                    >
-                      <Camera className="h-4 w-4 text-white" />
-                    </ObjectUploader>
+                        }}
+                        className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Remove Picture
+                      </Button>
+                    )}
                   </div>
 
                   {/* User Info */}
