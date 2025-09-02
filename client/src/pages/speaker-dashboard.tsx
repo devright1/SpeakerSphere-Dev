@@ -140,14 +140,14 @@ export default function SpeakerDashboard() {
     enabled: !!user?.id,
   });
 
-  const { data: userReviews } = useQuery({
-    queryKey: ['/api/users/reviews', user?.id],
+  const { data: speakerReviews } = useQuery({
+    queryKey: ['/api/speakers/reviews', speakerProfile?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/users/reviews/${user?.id}`);
-      if (!response.ok) throw new Error('Failed to fetch user reviews');
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/reviews`);
+      if (!response.ok) throw new Error('Failed to fetch speaker reviews');
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: !!speakerProfile?.id,
   });
 
   // Fetch speaker content
@@ -484,7 +484,7 @@ export default function SpeakerDashboard() {
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews ({userReviews?.length || 0})</TabsTrigger>
+            <TabsTrigger value="reviews">Reviews ({speakerReviews?.length || 0})</TabsTrigger>
             <TabsTrigger value="stats">Analytics</TabsTrigger>
             <TabsTrigger value="content">My Content</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
@@ -721,9 +721,9 @@ export default function SpeakerDashboard() {
                 <CardDescription>See what people are saying about your speaking</CardDescription>
               </CardHeader>
               <CardContent>
-                {userReviews && userReviews.length > 0 ? (
+                {speakerReviews && speakerReviews.length > 0 ? (
                   <div className="space-y-4">
-                    {userReviews.map((review: any) => (
+                    {speakerReviews.map((review: any) => (
                       <div key={review.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
