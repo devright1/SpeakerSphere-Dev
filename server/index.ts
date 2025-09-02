@@ -11,6 +11,9 @@ app.use(express.urlencoded({ extended: false }));
 // Serve attached assets
 app.use("/attached_assets", express.static(path.resolve(process.cwd(), "attached_assets")));
 
+// Serve uploaded files
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

@@ -48,7 +48,6 @@ export default function AdminDashboard() {
   
   // Handle opening image modal
   const openImageModal = (imageUrl: string) => {
-    console.log("Opening image modal with URL:", imageUrl);
     setSelectedImage(imageUrl);
     setIsImageModalOpen(true);
   };
@@ -3195,16 +3194,9 @@ export default function AdminDashboard() {
                                       alt="Review photo"
                                       className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 hover:scale-105 transition-all"
                                       onClick={() => openImageModal(review.photoUrl)}
-                                      onError={(e) => {
-                                        console.error("Failed to load image:", review.photoUrl);
-                                        e.currentTarget.style.display = 'none';
-                                      }}
                                     />
                                     <p className="text-xs text-gray-500 mt-2">
                                       Click image to view full size in popup
-                                    </p>
-                                    <p className="text-xs text-red-500 mt-1">
-                                      Debug: {review.photoUrl}
                                     </p>
                                   </div>
                                 </div>
@@ -4247,23 +4239,12 @@ export default function AdminDashboard() {
             </DialogHeader>
             <div className="p-6 pt-0">
               {selectedImage && (
-                <div className="flex flex-col items-center space-y-4">
-                  <p className="text-sm text-gray-600">Image URL: {selectedImage}</p>
+                <div className="flex justify-center">
                   <img 
                     src={selectedImage} 
                     alt="Review photo"
                     className="max-w-full max-h-[70vh] object-contain rounded-lg border border-gray-200"
-                    onLoad={() => console.log("Modal image loaded successfully")}
-                    onError={(e) => {
-                      console.error("Modal image failed to load:", selectedImage);
-                      console.error("Error details:", e);
-                    }}
                   />
-                </div>
-              )}
-              {!selectedImage && (
-                <div className="text-center py-8 text-gray-500">
-                  <p>No image selected</p>
                 </div>
               )}
             </div>
