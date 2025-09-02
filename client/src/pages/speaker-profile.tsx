@@ -574,11 +574,26 @@ export default function SpeakerProfile() {
                     {!speaker.hideRatings && (
                       <div className="mb-4">
                         <Button 
-                          onClick={() => setIsReviewOpen(true)}
+                          onClick={() => {
+                            if (isAuthenticated) {
+                              setIsReviewOpen(true);
+                            } else {
+                              window.location.href = "/api/login";
+                            }
+                          }}
                           className="bg-primary hover:bg-blue-700 text-white"
                         >
-                          <Star className="w-4 h-4 mr-2" />
-                          Leave a Review
+                          {isAuthenticated ? (
+                            <>
+                              <Star className="w-4 h-4 mr-2" />
+                              Leave a Review
+                            </>
+                          ) : (
+                            <>
+                              <LogIn className="w-4 h-4 mr-2" />
+                              Login to leave a review
+                            </>
+                          )}
                         </Button>
                       </div>
                     )}
@@ -873,11 +888,27 @@ export default function SpeakerProfile() {
                         <p className="mb-2">No reviews yet</p>
                         <p className="text-sm">Be the first to review {speaker.name}</p>
                         <Button 
-                          onClick={() => setIsReviewOpen(true)}
+                          onClick={() => {
+                            if (isAuthenticated) {
+                              setIsReviewOpen(true);
+                            } else {
+                              window.location.href = "/api/login";
+                            }
+                          }}
                           className="mt-3"
                           size="sm"
                         >
-                          Leave a Review
+                          {isAuthenticated ? (
+                            <>
+                              <Star className="w-4 h-4 mr-2" />
+                              Leave a Review
+                            </>
+                          ) : (
+                            <>
+                              <LogIn className="w-4 h-4 mr-2" />
+                              Login to leave a review
+                            </>
+                          )}
                         </Button>
                       </div>
                     )}
@@ -1101,10 +1132,24 @@ export default function SpeakerProfile() {
                       <Button 
                         onClick={() => {
                           tracking.trackReviewSectionView();
-                          setIsReviewOpen(true);
+                          if (isAuthenticated) {
+                            setIsReviewOpen(true);
+                          } else {
+                            window.location.href = "/api/login";
+                          }
                         }}
                       >
-                        Leave a Review
+                        {isAuthenticated ? (
+                          <>
+                            <Star className="w-4 h-4 mr-2" />
+                            Leave a Review
+                          </>
+                        ) : (
+                          <>
+                            <LogIn className="w-4 h-4 mr-2" />
+                            Login to leave a review
+                          </>
+                        )}
                       </Button>
                     </div>
 
