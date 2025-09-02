@@ -24,7 +24,8 @@ import {
   UserPlus,
   Lock,
   Shield,
-  X
+  X,
+  UserCheck
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -115,14 +116,23 @@ export default function ProfilePage() {
   // Initialize profile data when user data is available
   useEffect(() => {
     if (user) {
-      setProfileData({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        title: user.title || "",
-        company: user.company || "",
+      setProfileData(prevData => {
+        // Only update if the data has actually changed
+        if (prevData.firstName !== (user.firstName || "") ||
+            prevData.lastName !== (user.lastName || "") ||
+            prevData.title !== (user.title || "") ||
+            prevData.company !== (user.company || "")) {
+          return {
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
+            title: user.title || "",
+            company: user.company || "",
+          };
+        }
+        return prevData;
       });
     }
-  }, [user]);
+  }, [user?.firstName, user?.lastName, user?.title, user?.company]);
 
   // Fetch user activity stats
   const { data: userStats, isLoading: statsLoading } = useQuery<UserStats>({
