@@ -527,9 +527,10 @@ export class MemStorage implements IStorage {
   }
 
   async getPendingReviews(): Promise<Review[]> {
-    return Array.from(this.reviews.values())
-      .filter(review => review.approvalStatus === 'pending')
-      .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+    const result = await this.db.select().from(reviews)
+      .where(eq(reviews.approvalStatus, 'pending'))
+      .orderBy(desc(reviews.createdAt));
+    return result;
   }
 
   async approveReview(reviewId: number, adminNotes?: string): Promise<Review | undefined> {

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
-import { speakers, users, speakerApplications } from "../shared/schema";
+import { speakers, users, speakerApplications, reviews } from "../shared/schema";
 import { eq, desc } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import bcrypt from "bcryptjs";
@@ -1197,8 +1197,11 @@ export function registerAdminRoutes(app: Express) {
   // Get all pending reviews for admin approval
   app.get("/api/admin/reviews", async (req, res) => {
     try {
-      const reviews = await storage.getPendingReviews();
-      res.json(reviews);
+      // Query pending reviews directly from database since storage uses in-memory
+      const result = await db.select().from(reviews)
+        .where(eq(reviews.approvalStatus, 'pending'))
+        .orderBy(desc(reviews.createdAt));
+      res.json(result);
     } catch (error) {
       console.error("Error fetching pending reviews:", error);
       res.status(500).json({ message: "Failed to fetch pending reviews" });
