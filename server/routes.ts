@@ -581,14 +581,21 @@ export function registerRoutes(app: Express): Express {
     try {
       const speakerId = parseInt(req.params.speakerId);
       const user = (req as any).session?.user;
+      const userIdHeader = req.headers['x-user-id'] as string;
       
-      if (!user) {
+      // Try to get user from session first, then from header
+      let userId;
+      if (user?.id) {
+        userId = user.id;
+      } else if (userIdHeader) {
+        userId = userIdHeader;
+      } else {
         return res.status(401).json({ message: "Authentication required" });
       }
 
       const reviewData = {
         speakerId,
-        userId: user.id,
+        userId: userId,
         reviewerName: req.body.reviewerName,
         reviewerTitle: req.body.reviewerTitle,
         reviewerCompany: req.body.reviewerCompany,

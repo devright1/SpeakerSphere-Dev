@@ -283,6 +283,20 @@ export default function SpeakerProfile() {
     mutationFn: async (data: z.infer<typeof reviewSchema>) => {
       if (!speaker) throw new Error("Speaker not found");
       
+      // Get user authentication 
+      const userData = localStorage.getItem('userData');
+      if (!userData) {
+        throw new Error('Authentication required to submit a review');
+      }
+      
+      let userId;
+      try {
+        const user = JSON.parse(userData);
+        userId = user.id;
+      } catch (error) {
+        throw new Error('Authentication required to submit a review');
+      }
+      
       // Create FormData to handle file upload
       const formData = new FormData();
       formData.append('reviewerName', data.reviewerName);
@@ -296,11 +310,15 @@ export default function SpeakerProfile() {
       
       const response = await fetch(`/api/speakers/${speaker.id}/reviews`, {
         method: 'POST',
+        headers: {
+          'X-User-ID': userId
+        },
         body: formData,
       });
       
       if (!response.ok) {
-        throw new Error('Failed to submit review');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit review');
       }
       
       return response.json();
