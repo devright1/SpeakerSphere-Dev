@@ -104,7 +104,7 @@ export default function HowItWorks() {
                 </Button>
               </Link>
               <Link href="/auth">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-white text-green-500 hover:bg-white hover:text-primary">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-white text-primary hover:bg-white hover:text-primary">
                   Sign Up Free
                 </Button>
               </Link>
