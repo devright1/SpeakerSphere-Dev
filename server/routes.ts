@@ -495,7 +495,13 @@ export function registerRoutes(app: Express): Express {
         });
       }
 
-      const inquiry = await storage.createInquiry(req.body);
+      // Ensure the inquiry is linked to the authenticated user's email
+      const inquiryData = {
+        ...req.body,
+        clientEmail: user.email || req.body.clientEmail, // Use authenticated user's email
+      };
+
+      const inquiry = await storage.createInquiry(inquiryData);
       
       // Get speaker information for email notifications
       const speaker = await storage.getSpeaker(inquiry.speakerId);

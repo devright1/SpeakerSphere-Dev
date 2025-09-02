@@ -209,9 +209,9 @@ export default function SpeakerProfile() {
   const inquiryForm = useForm<z.infer<typeof inquirySchema>>({
     resolver: zodResolver(inquirySchema),
     defaultValues: {
-      clientName: "",
-      clientEmail: "",
-      clientCompany: "",
+      clientName: user ? `${user.firstName} ${user.lastName}` : "",
+      clientEmail: user?.email || "",
+      clientCompany: user?.company || "",
       eventType: "",
       eventDate: "",
       eventLocation: "",
@@ -220,6 +220,15 @@ export default function SpeakerProfile() {
       message: "",
     },
   });
+
+  // Update form when user data becomes available
+  useEffect(() => {
+    if (user) {
+      inquiryForm.setValue("clientName", `${user.firstName} ${user.lastName}`);
+      inquiryForm.setValue("clientEmail", user.email || "");
+      inquiryForm.setValue("clientCompany", user.company || "");
+    }
+  }, [user, inquiryForm]);
 
   const reviewForm = useForm<z.infer<typeof reviewSchema>>({
     resolver: zodResolver(reviewSchema),
