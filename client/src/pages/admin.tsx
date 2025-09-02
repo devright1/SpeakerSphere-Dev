@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon, FileText, Save } from "lucide-react";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon, FileText, Save, CheckCircle, XCircle } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -136,10 +136,20 @@ export default function AdminDashboard() {
     },
   });
 
-  // Reviews query for admin management
-  const { data: pendingReviews } = useQuery({
-    queryKey: ["/api/admin/reviews"],
+  // Fetch all reviews and separate them by status
+  const { data: allReviews } = useQuery({
+    queryKey: ["/api/admin/all-reviews"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/all-reviews");
+      if (!response.ok) throw new Error("Failed to fetch reviews");
+      return response.json();
+    },
   });
+
+  // Separate reviews by status
+  const pendingReviews = allReviews?.filter((review: any) => review.approvalStatus === 'pending') || [];
+  const approvedReviews = allReviews?.filter((review: any) => review.approvalStatus === 'approved') || [];
+  const rejectedReviews = allReviews?.filter((review: any) => review.approvalStatus === 'rejected') || [];
 
   // Review approval mutations
   const approveReviewMutation = useMutation({
@@ -154,7 +164,7 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Review approved successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/all-reviews"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to approve review", variant: "destructive" });
@@ -173,7 +183,7 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Review rejected successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/all-reviews"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to reject review", variant: "destructive" });
@@ -3117,9 +3127,24 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {pendingReviews && pendingReviews.length > 0 ? (
-                    pendingReviews.map((review: any) => (
+                <Tabs defaultValue="pending" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="pending">
+                      Pending ({pendingReviews?.length || 0})
+                    </TabsTrigger>
+                    <TabsTrigger value="approved">
+                      Approved ({approvedReviews?.length || 0})
+                    </TabsTrigger>
+                    <TabsTrigger value="rejected">
+                      Rejected ({rejectedReviews?.length || 0})
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {/* Pending Reviews Tab */}
+                  <TabsContent value="pending" className="mt-4">
+                    <div className="space-y-4">
+                      {pendingReviews && pendingReviews.length > 0 ? (
+                        pendingReviews.map((review: any) => (
                       <Card key={review.id} className="border-l-4 border-l-yellow-500">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
@@ -3236,8 +3261,224 @@ export default function AdminDashboard() {
                       <p>No pending reviews found.</p>
                       <p className="text-sm">All reviews have been processed.</p>
                     </div>
-                  )}
-                </div>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  {/* Approved Reviews Tab */}
+                  <TabsContent value="approved" className="mt-4">
+                    <div className="space-y-4">
+                      {approvedReviews && approvedReviews.length > 0 ? (
+                        approvedReviews.map((review: any) => (
+                          <Card key={review.id} className="border-l-4 border-l-green-500">
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <Badge variant="default" className="bg-green-600">Approved</Badge>
+                                    <div className="flex items-center">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star 
+                                          key={i} 
+                                          className={`h-4 w-4 ${i < review.overallRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                                        />
+                                      ))}
+                                      <span className="text-sm text-gray-600 ml-2">
+                                        {review.overallRating}/5 stars
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Speaker Information */}
+                                  <div className="bg-green-50 rounded-lg p-3 mb-4">
+                                    <h4 className="font-medium text-sm text-green-900 mb-2">Review for Speaker:</h4>
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                                        {review.speakerImageUrl ? (
+                                          <img 
+                                            src={review.speakerImageUrl} 
+                                            alt={review.speakerName}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full bg-green-300 flex items-center justify-center text-white font-medium text-xs">
+                                            {review.speakerName?.charAt(0)}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-green-900">{review.speakerName}</p>
+                                        <p className="text-xs text-green-700">Speaker ID: {review.speakerId}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-900">Reviewer Information</h4>
+                                      <p className="text-sm text-gray-600">
+                                        <strong>{review.reviewerName}</strong>
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        {review.reviewerTitle} at {review.reviewerCompany}
+                                      </p>
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        Event: {review.eventType} on {review.eventDate}
+                                      </p>
+                                    </div>
+                                    
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-900">Review Comment</h4>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        "{review.comment}"
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  {review.photoUrl && (
+                                    <div className="mt-4">
+                                      <h4 className="font-medium text-sm text-gray-900 mb-2">Submitted Photo:</h4>
+                                      <div className="bg-gray-50 rounded-lg p-3">
+                                        <img 
+                                          src={review.photoUrl} 
+                                          alt="Review photo"
+                                          className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 hover:scale-105 transition-all"
+                                          onClick={() => openImageModal(review.photoUrl)}
+                                        />
+                                        <p className="text-xs text-gray-500 mt-2">
+                                          Click image to view full size in popup
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {review.adminNotes && (
+                                    <div className="mt-4 bg-green-50 p-3 rounded-lg">
+                                      <h4 className="font-medium text-sm text-green-900 mb-1">Admin Notes:</h4>
+                                      <p className="text-sm text-green-800">{review.adminNotes}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <CheckCircle className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                          <p>No approved reviews found.</p>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  {/* Rejected Reviews Tab */}
+                  <TabsContent value="rejected" className="mt-4">
+                    <div className="space-y-4">
+                      {rejectedReviews && rejectedReviews.length > 0 ? (
+                        rejectedReviews.map((review: any) => (
+                          <Card key={review.id} className="border-l-4 border-l-red-500">
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <Badge variant="destructive">Rejected</Badge>
+                                    <div className="flex items-center">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star 
+                                          key={i} 
+                                          className={`h-4 w-4 ${i < review.overallRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                                        />
+                                      ))}
+                                      <span className="text-sm text-gray-600 ml-2">
+                                        {review.overallRating}/5 stars
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Speaker Information */}
+                                  <div className="bg-red-50 rounded-lg p-3 mb-4">
+                                    <h4 className="font-medium text-sm text-red-900 mb-2">Review for Speaker:</h4>
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                                        {review.speakerImageUrl ? (
+                                          <img 
+                                            src={review.speakerImageUrl} 
+                                            alt={review.speakerName}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full bg-red-300 flex items-center justify-center text-white font-medium text-xs">
+                                            {review.speakerName?.charAt(0)}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-red-900">{review.speakerName}</p>
+                                        <p className="text-xs text-red-700">Speaker ID: {review.speakerId}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-900">Reviewer Information</h4>
+                                      <p className="text-sm text-gray-600">
+                                        <strong>{review.reviewerName}</strong>
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        {review.reviewerTitle} at {review.reviewerCompany}
+                                      </p>
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        Event: {review.eventType} on {review.eventDate}
+                                      </p>
+                                    </div>
+                                    
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-900">Review Comment</h4>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        "{review.comment}"
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  {review.photoUrl && (
+                                    <div className="mt-4">
+                                      <h4 className="font-medium text-sm text-gray-900 mb-2">Submitted Photo:</h4>
+                                      <div className="bg-gray-50 rounded-lg p-3">
+                                        <img 
+                                          src={review.photoUrl} 
+                                          alt="Review photo"
+                                          className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 hover:scale-105 transition-all"
+                                          onClick={() => openImageModal(review.photoUrl)}
+                                        />
+                                        <p className="text-xs text-gray-500 mt-2">
+                                          Click image to view full size in popup
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {review.adminNotes && (
+                                    <div className="mt-4 bg-red-50 p-3 rounded-lg">
+                                      <h4 className="font-medium text-sm text-red-900 mb-1">Admin Notes:</h4>
+                                      <p className="text-sm text-red-800">{review.adminNotes}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <XCircle className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                          <p>No rejected reviews found.</p>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>

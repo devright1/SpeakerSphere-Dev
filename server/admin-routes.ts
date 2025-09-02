@@ -1239,6 +1239,50 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Get all reviews (pending, approved, rejected) for admin management
+  app.get("/api/admin/all-reviews", async (req, res) => {
+    try {
+      // Query all reviews with speaker information
+      const result = await db.select({
+        id: reviews.id,
+        speakerId: reviews.speakerId,
+        userId: reviews.userId,
+        reviewerName: reviews.reviewerName,
+        reviewerTitle: reviews.reviewerTitle,
+        reviewerCompany: reviews.reviewerCompany,
+        overallRating: reviews.overallRating,
+        speakingStyleRating: reviews.speakingStyleRating,
+        podiumPresenceRating: reviews.podiumPresenceRating,
+        technicalProficiencyRating: reviews.technicalProficiencyRating,
+        contentRelevanceRating: reviews.contentRelevanceRating,
+        easeOfWorkingRating: reviews.easeOfWorkingRating,
+        visualDesignRating: reviews.visualDesignRating,
+        comment: reviews.comment,
+        eventType: reviews.eventType,
+        eventDate: reviews.eventDate,
+        photoUrl: reviews.photoUrl,
+        verified: reviews.verified,
+        approvalStatus: reviews.approvalStatus,
+        adminNotes: reviews.adminNotes,
+        approvedAt: reviews.approvedAt,
+        approvedBy: reviews.approvedBy,
+        createdAt: reviews.createdAt,
+        // Include speaker information
+        speakerName: speakers.name,
+        speakerSlug: speakers.slug,
+        speakerImageUrl: speakers.imageUrl
+      })
+      .from(reviews)
+      .leftJoin(speakers, eq(reviews.speakerId, speakers.id))
+      .orderBy(desc(reviews.createdAt));
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching all reviews:", error);
+      res.status(500).json({ message: "Failed to fetch all reviews" });
+    }
+  });
+
   // Approve a review
   app.post("/api/admin/reviews/:id/approve", async (req, res) => {
     try {
