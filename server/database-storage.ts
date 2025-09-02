@@ -595,10 +595,40 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getUserReviews(userId: string): Promise<Review[]> {
-    const result = await db.select().from(reviews)
-      .where(eq(reviews.userId, userId))
-      .orderBy(desc(reviews.createdAt));
+  async getUserReviews(userId: string): Promise<any[]> {
+    const result = await db.select({
+      id: reviews.id,
+      speakerId: reviews.speakerId,
+      userId: reviews.userId,
+      reviewerName: reviews.reviewerName,
+      reviewerTitle: reviews.reviewerTitle,
+      reviewerCompany: reviews.reviewerCompany,
+      overallRating: reviews.overallRating,
+      speakingStyleRating: reviews.speakingStyleRating,
+      podiumPresenceRating: reviews.podiumPresenceRating,
+      technicalProficiencyRating: reviews.technicalProficiencyRating,
+      contentRelevanceRating: reviews.contentRelevanceRating,
+      easeOfWorkingRating: reviews.easeOfWorkingRating,
+      visualDesignRating: reviews.visualDesignRating,
+      comment: reviews.comment,
+      eventType: reviews.eventType,
+      eventDate: reviews.eventDate,
+      photoUrl: reviews.photoUrl,
+      verified: reviews.verified,
+      approvalStatus: reviews.approvalStatus,
+      adminNotes: reviews.adminNotes,
+      approvedAt: reviews.approvedAt,
+      approvedBy: reviews.approvedBy,
+      createdAt: reviews.createdAt,
+      // Include speaker information
+      speakerName: speakers.name,
+      speakerSlug: speakers.slug,
+      speakerImageUrl: speakers.imageUrl
+    })
+    .from(reviews)
+    .leftJoin(speakers, eq(reviews.speakerId, speakers.id))
+    .where(eq(reviews.userId, userId))
+    .orderBy(desc(reviews.createdAt));
     return result;
   }
 

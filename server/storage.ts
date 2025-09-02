@@ -139,7 +139,7 @@ export interface IStorage {
   getUserBookmarks(userId: string): Promise<UserBookmark[]>;
   
   // User Profile Data
-  getUserReviews(userId: string): Promise<Review[]>;
+  getUserReviews(userId: string): Promise<any[]>;
   getUserInquiries(userId: string): Promise<Inquiry[]>;
   
   // Admin User Management
@@ -844,10 +844,21 @@ export class MemStorage implements IStorage {
       .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
   }
 
-  async getUserReviews(userId: string): Promise<Review[]> {
-    return Array.from(this.reviews.values())
+  async getUserReviews(userId: string): Promise<any[]> {
+    const userReviews = Array.from(this.reviews.values())
       .filter(review => review.userId === userId)
       .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+      
+    // Add speaker information to each review
+    return userReviews.map(review => {
+      const speaker = Array.from(this.speakers.values()).find(s => s.id === review.speakerId);
+      return {
+        ...review,
+        speakerName: speaker?.name || 'Unknown Speaker',
+        speakerSlug: speaker?.slug || '',
+        speakerImageUrl: speaker?.imageUrl || ''
+      };
+    });
   }
 
   async getUserInquiries(userId: string): Promise<Inquiry[]> {

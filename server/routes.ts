@@ -897,6 +897,20 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Get user reviews
+  app.get("/api/users/reviews/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      console.log("Getting reviews for user:", userId);
+      
+      const reviews = await storage.getUserReviews(userId);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching user reviews:", error);
+      res.status(500).json({ message: "Failed to fetch user reviews" });
+    }
+  });
+
   // Content Management API Routes
   
   // Upload content file

@@ -654,8 +654,62 @@ export default function ProfilePage() {
                       </div>
                     ) : userReviews && userReviews.length > 0 ? (
                       <div className="space-y-4">
-                        {/* Reviews list will be implemented here */}
-                        <p className="text-gray-600">Your reviews will appear here.</p>
+                        {userReviews.map((review: any) => (
+                          <div key={review.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-start gap-4">
+                              <img
+                                src={review.speakerImageUrl || '/api/placeholder/60/60'}
+                                alt={review.speakerName}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900">
+                                      Review for {review.speakerName}
+                                    </h4>
+                                    <p className="text-sm text-gray-600">
+                                      {review.eventType} • {review.eventDate}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-sm text-yellow-600">★</span>
+                                      <span className="text-sm font-medium">{review.overallRating}</span>
+                                    </div>
+                                    <Badge variant={
+                                      review.approvalStatus === 'approved' ? 'default' :
+                                      review.approvalStatus === 'pending' ? 'outline' : 'secondary'
+                                    }>
+                                      {review.approvalStatus}
+                                    </Badge>
+                                  </div>
+                                </div>
+                                
+                                <p className="text-gray-700 text-sm mb-3 line-clamp-3">
+                                  {review.comment}
+                                </p>
+                                
+                                <div className="flex justify-between items-center text-xs text-gray-500">
+                                  <span>
+                                    Submitted on {new Date(review.createdAt).toLocaleDateString()}
+                                  </span>
+                                  {review.approvedAt && (
+                                    <span>
+                                      Approved on {new Date(review.approvedAt).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                {review.adminNotes && (
+                                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                                    <strong>Admin note:</strong> {review.adminNotes}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <div className="text-center py-8">
