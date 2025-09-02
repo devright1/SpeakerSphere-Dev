@@ -1338,9 +1338,12 @@ export default function SpeakerProfile() {
 
       {/* Review Dialog */}
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Leave a Review for {speaker?.name}</DialogTitle>
+            <DialogDescription>
+              Please rate the speaker in each category and provide detailed feedback about your experience.
+            </DialogDescription>
           </DialogHeader>
           <Form {...reviewForm}>
             <form onSubmit={reviewForm.handleSubmit((data) => reviewMutation.mutate(data))} className="space-y-4">
