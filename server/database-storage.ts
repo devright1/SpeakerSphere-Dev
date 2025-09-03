@@ -1011,4 +1011,54 @@ export class DatabaseStorage implements IStorage {
       websiteClicks: interactions.filter(i => i.interactionType === 'website_click').length
     };
   }
+
+  // Email verification operations
+  async setEmailVerificationToken(userId: string, token: string, expires: Date): Promise<User | undefined> {
+    const result = await db.update(users)
+      .set({ 
+        verificationToken: token,
+        verificationTokenExpires: expires,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const result = await db.select()
+      .from(users)
+      .where(
+        and(
+          eq(users.verificationToken, token),
+          gte(users.verificationTokenExpires, new Date()) // Token not expired
+        )
+      );
+    return result[0];
+  }
+
+  async verifyUserEmail(userId: string): Promise<User | undefined> {
+    const result = await db.update(users)
+      .set({ 
+        emailVerified: true,
+        verificationToken: null,
+        verificationTokenExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
+
+  async clearVerificationToken(userId: string): Promise<User | undefined> {
+    const result = await db.update(users)
+      .set({ 
+        verificationToken: null,
+        verificationTokenExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
 }

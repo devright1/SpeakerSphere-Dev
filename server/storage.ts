@@ -118,6 +118,12 @@ export interface IStorage {
   updateUserPassword(userId: string, passwordHash: string): Promise<void>;
   updateUserSubscription(userId: string, subscriptionData: Partial<User>): Promise<User>;
   
+  // Email verification operations
+  setEmailVerificationToken(userId: string, token: string, expires: Date): Promise<User | undefined>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  verifyUserEmail(userId: string): Promise<User | undefined>;
+  clearVerificationToken(userId: string): Promise<User | undefined>;
+  
   // Speaker Application Methods
   createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;
   getSpeakerApplicationByEmail(email: string): Promise<SpeakerApplication | undefined>;

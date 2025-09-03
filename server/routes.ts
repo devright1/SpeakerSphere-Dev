@@ -20,6 +20,7 @@ import {
   validateFileUpload, 
   SecurityUtils 
 } from "./security";
+import { authRoutes } from "./auth-routes";
 
 // Types for user authentication
 interface AuthenticatedRequest extends Request {
@@ -106,7 +107,10 @@ export function registerRoutes(app: Express): Express {
     next();
   });
 
-  // Register admin routes first
+  // Register authentication routes first
+  app.use("/api/auth", authRoutes);
+  
+  // Register admin routes
   registerAdminRoutes(app);
   
   // Health check endpoint
