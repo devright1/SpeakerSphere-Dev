@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
-import { speakers, users, speakerApplications, reviews } from "../shared/schema";
+import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions } from "../shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import bcrypt from "bcryptjs";
@@ -90,13 +90,24 @@ export function registerAdminRoutes(app: Express) {
   app.delete("/api/admin/users/:id", async (req, res) => {
     try {
       const userId = req.params.id;
+      const { adminPassword } = req.body;
       console.log("Attempting to delete user:", userId);
+      
+      // Verify admin password
+      if (!adminPassword || adminPassword !== process.env.ADMIN_PASSWORD) {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
       
       // First check if user exists
       const existingUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
       if (existingUser.length === 0) {
         return res.status(404).json({ message: "User not found" });
       }
+      
+      // Delete associated data first to avoid foreign key constraints
+      await db.delete(userLikes).where(eq(userLikes.userId, userId));
+      await db.delete(userBookmarks).where(eq(userBookmarks.userId, userId));
+      await db.delete(userSessions).where(eq(userSessions.userId, userId));
       
       // Delete the user from database
       const result = await db.delete(users).where(eq(users.id, userId));
