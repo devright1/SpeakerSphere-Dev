@@ -93,8 +93,8 @@ export function registerAdminRoutes(app: Express) {
       const { adminPassword } = req.body;
       console.log("Attempting to delete user:", userId);
       
-      // Verify admin password
-      if (!adminPassword || adminPassword !== process.env.ADMIN_PASSWORD) {
+      // Verify admin password (use same password as admin login)
+      if (!adminPassword || adminPassword !== "Doneright123!") {
         return res.status(401).json({ message: "Invalid admin password" });
       }
       
