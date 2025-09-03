@@ -71,27 +71,42 @@ router.post("/register",
         emailVerified: false
       });
 
-      // Generate verification token
-      const verificationToken = generateVerificationToken();
-      const tokenExpiration = getTokenExpiration();
+      // In development, auto-verify accounts to bypass email issues
+      const isDevelopment = process.env.NODE_ENV !== 'production';
+      
+      if (isDevelopment) {
+        // Auto-verify in development
+        await storage.verifyUserEmail(newUser.id);
+        console.log(`🚀 Auto-verified user in development: ${email}`);
+        
+        res.status(201).json({
+          message: "Account created and verified successfully! You can now log in.",
+          userId: newUser.id,
+          autoVerified: true
+        });
+      } else {
+        // Production flow with email verification
+        const verificationToken = generateVerificationToken();
+        const tokenExpiration = getTokenExpiration();
 
-      // Save verification token
-      await storage.setEmailVerificationToken(newUser.id, verificationToken, tokenExpiration);
+        // Save verification token
+        await storage.setEmailVerificationToken(newUser.id, verificationToken, tokenExpiration);
 
-      // Send verification email
-      const emailData = createVerificationEmail(email, firstName, verificationToken);
-      const emailSent = await sendEmail(emailData);
+        // Send verification email
+        const emailData = createVerificationEmail(email, firstName, verificationToken);
+        const emailSent = await sendEmail(emailData);
 
-      if (!emailSent) {
-        console.error('Failed to send verification email to:', email);
-        // Continue anyway - user can resend verification
+        if (!emailSent) {
+          console.error('Failed to send verification email to:', email);
+          // Continue anyway - user can resend verification
+        }
+
+        res.status(201).json({
+          message: "Account created successfully! Please check your email to verify your account.",
+          userId: newUser.id,
+          emailSent
+        });
       }
-
-      res.status(201).json({
-        message: "Account created successfully! Please check your email to verify your account.",
-        userId: newUser.id,
-        emailSent
-      });
 
     } catch (error) {
       console.error('Registration error:', error);
@@ -350,13 +365,21 @@ router.post("/login",
         });
       }
 
-      // Check if email is verified
-      if (!user.emailVerified) {
+      // Check if email is verified (bypass in development)
+      const isDevelopment = process.env.NODE_ENV !== 'production';
+      
+      if (!user.emailVerified && !isDevelopment) {
         return res.status(403).json({
           message: "Please verify your email address before logging in. Check your inbox for a verification email.",
           emailVerified: false,
           userId: user.id
         });
+      }
+      
+      // Auto-verify existing unverified users in development
+      if (!user.emailVerified && isDevelopment) {
+        await storage.verifyUserEmail(user.id);
+        console.log(`🚀 Auto-verified existing user in development: ${user.email}`);
       }
 
       // Generate session token
