@@ -4534,6 +4534,55 @@ export default function AdminDashboard() {
           </DialogContent>
         </Dialog>
 
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete {editingSpeaker?.name || editingSpeaker?.email}? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="deletePassword">Admin Password</Label>
+                <Input
+                  id="deletePassword"
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Enter admin password to confirm"
+                />
+              </div>
+              {deleteError && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{deleteError}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setDeletePassword("");
+                  setDeleteError("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteConfirm}
+                disabled={deleteUserMutation.isPending || deleteSpeakerMutation.isPending}
+              >
+                {(deleteUserMutation.isPending || deleteSpeakerMutation.isPending) ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Image Modal */}
         <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] p-0">
