@@ -7,11 +7,20 @@ import path from "path";
 
 const app = express();
 
+// Trust proxy for accurate IP addresses in Replit environment
+app.set('trust proxy', true);
+
 // Apply security headers first
 app.use(helmetConfig);
 
-// Apply general rate limiting
-app.use('/api/', rateLimiters.general);
+// Apply general rate limiting (but exempt admin routes)
+app.use('/api/', (req, res, next) => {
+  // Skip rate limiting for admin routes
+  if (req.path.startsWith('/admin/')) {
+    return next();
+  }
+  return rateLimiters.general(req, res, next);
+});
 
 // Body parsing with size limits
 app.use(express.json({ limit: '10mb' }));

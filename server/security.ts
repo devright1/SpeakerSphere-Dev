@@ -73,6 +73,11 @@ export const createRateLimit = (windowMs: number, max: number, message?: string)
     message: message || 'Too many requests, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
+    // Configure to work with Replit's proxy setup
+    validate: {
+      trustProxy: false, // Disable the strict trust proxy validation
+      xForwardedForHeader: false // Disable X-Forwarded-For validation
+    },
     handler: (req: Request, res: Response) => {
       res.status(429).json({
         error: 'Rate limit exceeded',
