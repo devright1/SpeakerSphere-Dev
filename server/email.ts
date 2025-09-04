@@ -9,7 +9,7 @@ if (!process.env.SENDGRID_API_KEY) {
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Email configuration
-const FROM_EMAIL = 'noreply@speakersphere.com'; // You can customize this
+const FROM_EMAIL = 'noreply@devright.com'; // Verified SendGrid domain
 const FROM_NAME = 'SpeakerSphere Reviews';
 
 // Generate secure verification token
