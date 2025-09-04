@@ -93,8 +93,8 @@ export const rateLimiters = {
   // General API rate limit: 100 requests per 15 minutes
   general: createRateLimit(15 * 60 * 1000, 100),
   
-  // Auth endpoints: 5 attempts per 15 minutes
-  auth: createRateLimit(15 * 60 * 1000, 5, 'Too many authentication attempts'),
+  // Auth endpoints: 10 attempts per 15 minutes
+  auth: createRateLimit(15 * 60 * 1000, 10, 'Too many authentication attempts'),
   
   // Review submissions: 3 reviews per hour
   reviews: createRateLimit(60 * 60 * 1000, 3, 'Too many review submissions'),
