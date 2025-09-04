@@ -249,7 +249,7 @@ export async function sendEmail(emailData: any): Promise<boolean> {
     await sgMail.send(emailData);
     console.log(`Email sent successfully to ${emailData.to}`);
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Email sending failed:', error);
     if (error.response) {
       console.error('SendGrid error response:', error.response.body);

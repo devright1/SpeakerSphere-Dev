@@ -73,7 +73,6 @@ app.use((req, res, next) => {
     }
 
     res.status(status).json({ message });
-    throw err;
   });
 
   // Create HTTP server
