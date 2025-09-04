@@ -2000,5 +2000,39 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Test email endpoint for debugging
+  app.post("/api/test-email", async (req, res) => {
+    try {
+      const { sendEmail, createVerificationEmail } = await import("./email.js");
+      
+      // Create a test verification email
+      const testEmailData = createVerificationEmail(
+        "test@example.com",
+        "Test User", 
+        "test-token-123"
+      );
+      
+      // Try to send the email
+      const emailSent = await sendEmail(testEmailData);
+      
+      res.json({
+        success: emailSent,
+        message: emailSent ? "Test email sent successfully" : "Failed to send test email",
+        emailData: {
+          to: testEmailData.to,
+          subject: testEmailData.subject,
+          from: testEmailData.from
+        }
+      });
+    } catch (error) {
+      console.error('Test email error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Test email failed",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   return app;
 }
