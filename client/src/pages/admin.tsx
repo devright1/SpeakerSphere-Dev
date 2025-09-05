@@ -30,8 +30,10 @@ export default function AdminDashboard() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
-  const [newSpeakerType, setNewSpeakerType] = useState("");
-  const [speakerTypes, setSpeakerTypes] = useState(['Keynote', 'Clinical', 'Research', 'Educational', 'Workshop Leader', 'Panel Moderator']);
+  const [selectedTopicsForCategory, setSelectedTopicsForCategory] = useState<Set<number>>(new Set());
+  const [isTopicCategoryDialogOpen, setIsTopicCategoryDialogOpen] = useState(false);
+  const [topicCategoryFilter, setTopicCategoryFilter] = useState("");
+  const [selectedCategoryForTopics, setSelectedCategoryForTopics] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [isCategoryEditDialogOpen, setIsCategoryEditDialogOpen] = useState(false);
@@ -238,6 +240,16 @@ export default function AdminDashboard() {
 
   const { data: categories } = useQuery({
     queryKey: ["/api/categories"],
+  });
+
+  // Query for all topics
+  const { data: topics } = useQuery({
+    queryKey: ["/api/admin/topics"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/topics");
+      if (!response.ok) throw new Error("Failed to fetch topics");
+      return response.json();
+    },
   });
 
   const { data: users } = useQuery({
@@ -459,14 +471,47 @@ export default function AdminDashboard() {
     },
   });
 
-  // Add speaker type
-  const handleAddSpeakerType = () => {
-    if (newSpeakerType.trim() && !speakerTypes.includes(newSpeakerType.trim())) {
-      setSpeakerTypes([...speakerTypes, newSpeakerType.trim()]);
-      setNewSpeakerType("");
-      toast({ title: "Success", description: "Speaker type added successfully" });
-    }
-  };
+  // Topic category assignment mutation
+  const updateTopicCategoryMutation = useMutation({
+    mutationFn: async ({ topicId, category }: { topicId: number; category: string | null }) => {
+      const response = await fetch(`/api/admin/topics/${topicId}/category`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category }),
+      });
+      if (!response.ok) throw new Error('Failed to update topic category');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/topics"] });
+      toast({ title: "Success", description: "Topic category updated successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update topic category", variant: "destructive" });
+    },
+  });
+
+  // Bulk update topic categories mutation
+  const bulkUpdateTopicCategoriesMutation = useMutation({
+    mutationFn: async ({ topicIds, category }: { topicIds: number[]; category: string | null }) => {
+      const response = await fetch('/api/admin/topics/bulk-category-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topicIds, category }),
+      });
+      if (!response.ok) throw new Error('Failed to bulk update topic categories');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/topics"] });
+      setSelectedTopicsForCategory(new Set());
+      setIsTopicCategoryDialogOpen(false);
+      toast({ title: "Success", description: `Updated ${data.updatedTopics?.length || 0} topics successfully` });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to bulk update topic categories", variant: "destructive" });
+    },
+  });
 
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
@@ -3614,69 +3659,41 @@ export default function AdminDashboard() {
                       <div className="grid gap-3">
                         {categoriesArray.map((category: any) => (
                           <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
+                            <div className="flex-1">
                               <div className="font-medium">{category.name}</div>
                               <div className="text-sm text-gray-600">{category.description}</div>
-                              <div className="text-xs text-gray-500">{category.speakerCount || 0} speakers</div>
+                              <div className="text-xs text-gray-500">
+                                {category.speakerCount || 0} speakers • {topics?.filter((t: any) => t.category === category.name).length || 0} topics
+                              </div>
                             </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => deleteCategoryMutation.mutate(category.id)}
-                              disabled={deleteCategoryMutation.isPending}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              Delete
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedCategoryForTopics(category);
+                                  setIsTopicCategoryDialogOpen(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-700"
+                              >
+                                Manage Topics
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => deleteCategoryMutation.mutate(category.id)}
+                                disabled={deleteCategoryMutation.isPending}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                Delete
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Speaker Type Management */}
-                  <div className="pt-6 border-t">
-                    <h3 className="text-lg font-semibold mb-4">Speaker Type Management</h3>
-                    
-                    {/* Add New Speaker Type */}
-                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                      <h4 className="font-medium mb-3">Add New Speaker Type</h4>
-                      <div className="flex gap-3">
-                        <Input
-                          placeholder="Speaker Type (e.g., Workshop Leader)"
-                          value={newSpeakerType}
-                          onChange={(e) => setNewSpeakerType(e.target.value)}
-                        />
-                        <Button 
-                          onClick={handleAddSpeakerType}
-                          disabled={!newSpeakerType.trim()}
-                        >
-                          Add Type
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Existing Speaker Types */}
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Available Speaker Types</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {speakerTypes.map((type) => (
-                          <div key={type} className="flex items-center justify-between p-2 border rounded">
-                            <span className="text-sm">{type}</span>
-                            <button
-                              onClick={() => {
-                                setSpeakerTypes(speakerTypes.filter(t => t !== type));
-                                toast({ title: "Success", description: "Speaker type removed" });
-                              }}
-                              className="text-red-500 hover:text-red-700 text-xs"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Filter Settings */}
                   <div className="pt-6 border-t">
@@ -3717,10 +3734,10 @@ export default function AdminDashboard() {
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <div className="flex items-center space-x-2 text-blue-800">
                         <Settings className="h-5 w-5" />
-                        <span className="font-medium">Categories and Speaker Types</span>
+                        <span className="font-medium">Categories and Speaking Topics</span>
                       </div>
                       <p className="text-sm text-blue-700 mt-2">
-                        Manage available categories and speaker types used throughout the platform. 
+                        Manage available categories and organize speaking topics within categories. 
                         Changes will be reflected immediately in speaker profiles and search filters.
                       </p>
                     </div>
@@ -4599,6 +4616,156 @@ export default function AdminDashboard() {
                   />
                 </div>
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Topic Category Management Dialog */}
+        <Dialog open={isTopicCategoryDialogOpen} onOpenChange={setIsTopicCategoryDialogOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle>Manage Topics for Category: {selectedCategoryForTopics?.name}</DialogTitle>
+              <DialogDescription>
+                Assign or remove speaking topics from the "{selectedCategoryForTopics?.name}" category
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex flex-col space-y-4 h-full overflow-hidden">
+              {/* Search and Filter */}
+              <div className="flex gap-3">
+                <Input
+                  placeholder="Search topics..."
+                  value={topicCategoryFilter}
+                  onChange={(e) => setTopicCategoryFilter(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={() => {
+                    if (selectedTopicsForCategory.size > 0) {
+                      bulkUpdateTopicCategoriesMutation.mutate({
+                        topicIds: Array.from(selectedTopicsForCategory),
+                        category: selectedCategoryForTopics?.name || null
+                      });
+                    }
+                  }}
+                  disabled={selectedTopicsForCategory.size === 0 || bulkUpdateTopicCategoriesMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Assign Selected ({selectedTopicsForCategory.size})
+                </Button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Topics in this category */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-green-700 flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      In "{selectedCategoryForTopics?.name}" Category
+                      <Badge variant="outline" className="ml-2">
+                        {topics?.filter((t: any) => t.category === selectedCategoryForTopics?.name).length || 0}
+                      </Badge>
+                    </h4>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {topics?.filter((topic: any) => 
+                        topic.category === selectedCategoryForTopics?.name &&
+                        (topicCategoryFilter === '' || topic.name.toLowerCase().includes(topicCategoryFilter.toLowerCase()))
+                      ).map((topic: any) => (
+                        <div key={topic.id} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex-1">
+                            <span className="font-medium">{topic.name}</span>
+                            <div className="text-xs text-gray-500">{topic.speakerCount || 0} speakers</div>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => updateTopicCategoryMutation.mutate({
+                              topicId: topic.id,
+                              category: null
+                            })}
+                            disabled={updateTopicCategoryMutation.isPending}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                      {topics?.filter((t: any) => t.category === selectedCategoryForTopics?.name).length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <XCircle className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                          <p className="text-sm">No topics assigned to this category</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Unassigned topics */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-blue-700 flex items-center">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Unassigned Topics
+                      <Badge variant="outline" className="ml-2">
+                        {topics?.filter((t: any) => !t.category || t.category !== selectedCategoryForTopics?.name).length || 0}
+                      </Badge>
+                    </h4>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {topics?.filter((topic: any) => 
+                        (!topic.category || topic.category !== selectedCategoryForTopics?.name) &&
+                        (topicCategoryFilter === '' || topic.name.toLowerCase().includes(topicCategoryFilter.toLowerCase()))
+                      ).map((topic: any) => (
+                        <div key={topic.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-center space-x-2 flex-1">
+                            <Checkbox
+                              checked={selectedTopicsForCategory.has(topic.id)}
+                              onCheckedChange={(checked) => {
+                                const newSelected = new Set(selectedTopicsForCategory);
+                                if (checked) {
+                                  newSelected.add(topic.id);
+                                } else {
+                                  newSelected.delete(topic.id);
+                                }
+                                setSelectedTopicsForCategory(newSelected);
+                              }}
+                            />
+                            <div className="flex-1">
+                              <span className="font-medium">{topic.name}</span>
+                              <div className="text-xs text-gray-500">
+                                {topic.speakerCount || 0} speakers
+                                {topic.category && <span className="ml-2 text-orange-600">Currently in: {topic.category}</span>}
+                              </div>
+                            </div>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => updateTopicCategoryMutation.mutate({
+                              topicId: topic.id,
+                              category: selectedCategoryForTopics?.name || null
+                            })}
+                            disabled={updateTopicCategoryMutation.isPending}
+                            className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                          >
+                            Assign
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsTopicCategoryDialogOpen(false);
+                  setSelectedTopicsForCategory(new Set());
+                  setTopicCategoryFilter('');
+                }}
+              >
+                Close
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

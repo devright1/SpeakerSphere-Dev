@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
-import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions } from "../shared/schema";
+import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics } from "../shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import bcrypt from "bcryptjs";
@@ -1426,6 +1426,92 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting review:", error);
       res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
+
+  // Topic-Category Management
+  
+  // Get all topics with their category assignments
+  app.get("/api/admin/topics", async (req, res) => {
+    try {
+      const topics = await db.select().from(speakingTopics).orderBy(speakingTopics.name);
+      res.json(topics);
+    } catch (error) {
+      console.error("Error fetching topics:", error);
+      res.status(500).json({ message: "Failed to fetch topics" });
+    }
+  });
+
+  // Update topic's category assignment
+  app.patch("/api/admin/topics/:id/category", async (req, res) => {
+    try {
+      const topicId = parseInt(req.params.id);
+      const { category } = req.body;
+      
+      const [updatedTopic] = await db.update(speakingTopics)
+        .set({ category: category || null })
+        .where(eq(speakingTopics.id, topicId))
+        .returning();
+      
+      if (!updatedTopic) {
+        return res.status(404).json({ message: "Topic not found" });
+      }
+      
+      res.json({
+        success: true,
+        message: "Topic category updated successfully",
+        topic: updatedTopic
+      });
+    } catch (error) {
+      console.error("Error updating topic category:", error);
+      res.status(500).json({ message: "Failed to update topic category" });
+    }
+  });
+
+  // Bulk update topic categories
+  app.post("/api/admin/topics/bulk-category-update", async (req, res) => {
+    try {
+      const { topicIds, category } = req.body;
+      
+      if (!Array.isArray(topicIds) || topicIds.length === 0) {
+        return res.status(400).json({ message: "Topic IDs must be a non-empty array" });
+      }
+      
+      const updatedTopics = [];
+      for (const topicId of topicIds) {
+        const [updatedTopic] = await db.update(speakingTopics)
+          .set({ category: category || null })
+          .where(eq(speakingTopics.id, topicId))
+          .returning();
+        if (updatedTopic) {
+          updatedTopics.push(updatedTopic);
+        }
+      }
+      
+      res.json({
+        success: true,
+        message: `Updated ${updatedTopics.length} topics`,
+        updatedTopics
+      });
+    } catch (error) {
+      console.error("Error bulk updating topic categories:", error);
+      res.status(500).json({ message: "Failed to bulk update topic categories" });
+    }
+  });
+
+  // Get topics by category
+  app.get("/api/admin/categories/:categoryName/topics", async (req, res) => {
+    try {
+      const categoryName = decodeURIComponent(req.params.categoryName);
+      const topics = await db.select()
+        .from(speakingTopics)
+        .where(eq(speakingTopics.category, categoryName))
+        .orderBy(speakingTopics.name);
+      
+      res.json(topics);
+    } catch (error) {
+      console.error("Error fetching topics by category:", error);
+      res.status(500).json({ message: "Failed to fetch topics by category" });
     }
   });
 }
