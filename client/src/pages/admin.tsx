@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon, FileText, Save, CheckCircle, XCircle } from "lucide-react";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon, FileText, Save, CheckCircle, XCircle, ChevronUp, ChevronDown } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,8 @@ export default function AdminDashboard() {
   const [isTopicCategoryDialogOpen, setIsTopicCategoryDialogOpen] = useState(false);
   const [topicCategoryFilter, setTopicCategoryFilter] = useState("");
   const [selectedCategoryForTopics, setSelectedCategoryForTopics] = useState<any>(null);
+  const [newTopic, setNewTopic] = useState({ name: "", category: "" });
+  const [isTopicCreationExpanded, setIsTopicCreationExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [isCategoryEditDialogOpen, setIsCategoryEditDialogOpen] = useState(false);
@@ -510,6 +512,30 @@ export default function AdminDashboard() {
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to bulk update topic categories", variant: "destructive" });
+    },
+  });
+
+  // Create new topic mutation
+  const createTopicMutation = useMutation({
+    mutationFn: async (topic: { name: string; category: string | null }) => {
+      const response = await fetch('/api/admin/topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(topic),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create topic');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/topics"] });
+      setNewTopic({ name: "", category: "" });
+      toast({ title: "Success", description: "Topic created successfully" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -3694,6 +3720,110 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* Topic Management */}
+                  <div className="pt-6 border-t">
+                    <h3 className="text-lg font-semibold mb-4">Speaking Topic Management</h3>
+                    
+                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium">Create New Speaking Topic</h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsTopicCreationExpanded(!isTopicCreationExpanded)}
+                        >
+                          {isTopicCreationExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      
+                      {isTopicCreationExpanded && (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <Label htmlFor="topicName">Topic Name *</Label>
+                              <Input
+                                id="topicName"
+                                placeholder="e.g., Advanced Implant Techniques"
+                                value={newTopic.name}
+                                onChange={(e) => setNewTopic({ ...newTopic, name: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="topicCategory">Category (Optional)</Label>
+                              <Select
+                                value={newTopic.category}
+                                onValueChange={(value) => setNewTopic({ ...newTopic, category: value === "none" ? "" : value })}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">No Category</SelectItem>
+                                  {categoriesArray.map((category: any) => (
+                                    <SelectItem key={category.id} value={category.name}>
+                                      {category.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="flex gap-3">
+                            <Button 
+                              onClick={() => createTopicMutation.mutate({
+                                name: newTopic.name,
+                                category: newTopic.category || null
+                              })}
+                              disabled={!newTopic.name.trim() || createTopicMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              {createTopicMutation.isPending ? "Creating..." : "Create Topic"}
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              onClick={() => setNewTopic({ name: "", category: "" })}
+                            >
+                              Clear
+                            </Button>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Create a new speaking topic that can be assigned to speakers. Topics help organize speaker expertise areas.
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Topic Statistics */}
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-800 mb-2">Topic Overview</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <div className="text-2xl font-bold text-blue-600">
+                            {topics?.length || 0}
+                          </div>
+                          <div className="text-blue-700">Total Topics</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-green-600">
+                            {topics?.filter((t: any) => t.category).length || 0}
+                          </div>
+                          <div className="text-green-700">Categorized</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-orange-600">
+                            {topics?.filter((t: any) => !t.category).length || 0}
+                          </div>
+                          <div className="text-orange-700">Uncategorized</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-purple-600">
+                            {categoriesArray.length || 0}
+                          </div>
+                          <div className="text-purple-700">Categories</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Filter Settings */}
                   <div className="pt-6 border-t">

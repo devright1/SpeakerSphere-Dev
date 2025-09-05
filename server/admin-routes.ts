@@ -1499,6 +1499,56 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Create new topic
+  app.post("/api/admin/topics", async (req, res) => {
+    try {
+      const { name, category, slug } = req.body;
+      
+      if (!name?.trim()) {
+        return res.status(400).json({ message: "Topic name is required" });
+      }
+
+      // Generate slug if not provided
+      const finalSlug = slug || name.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+
+      // Check if topic with same name or slug already exists
+      const existingTopic = await db.query.speakingTopics.findFirst({
+        where: or(
+          eq(speakingTopics.name, name.trim()),
+          eq(speakingTopics.slug, finalSlug)
+        )
+      });
+
+      if (existingTopic) {
+        return res.status(400).json({ 
+          message: existingTopic.name === name.trim() 
+            ? "A topic with this name already exists" 
+            : "A topic with this slug already exists"
+        });
+      }
+
+      // Create the new topic
+      const [newTopic] = await db.insert(speakingTopics)
+        .values({
+          name: name.trim(),
+          slug: finalSlug,
+          category: category || null
+        })
+        .returning();
+
+      console.log(`✅ Created new topic: ${newTopic.name} (${newTopic.slug})`);
+      
+      res.status(201).json(newTopic);
+    } catch (error) {
+      console.error("Error creating topic:", error);
+      res.status(500).json({ message: "Failed to create topic" });
+    }
+  });
+
   // Get topics by category
   app.get("/api/admin/categories/:categoryName/topics", async (req, res) => {
     try {
