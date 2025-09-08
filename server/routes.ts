@@ -564,12 +564,20 @@ export function registerRoutes(app: Express): Express {
   // Submit inquiry
   app.post("/api/inquiries", async (req, res) => {
     try {
-      // Check if user is authenticated
-      const user = (req as any).session?.user;
-      if (!user) {
+      // Check if user is authenticated via token
+      const token = req.headers['x-user-id'] as string;
+      if (!token) {
         return res.status(401).json({
           success: false,
           message: "Authentication required to submit inquiry"
+        });
+      }
+
+      const user = await storage.getUserByToken(token);
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid or expired authentication token"
         });
       }
 
