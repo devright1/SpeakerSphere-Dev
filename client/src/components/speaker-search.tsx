@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
-import type { Category } from "@shared/schema";
 
 interface SpeakerSearchProps {
   onSearch: (searchTerm: string) => void;
@@ -12,19 +10,8 @@ interface SpeakerSearchProps {
 
 export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [category, setCategory] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-
-  // Fetch categories from API
-  const { data: categories } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
-    queryFn: async () => {
-      const response = await fetch("/api/categories");
-      if (!response.ok) throw new Error("Failed to fetch categories");
-      return response.json();
-    },
-  });
 
   const { data: suggestionData } = useQuery<string[]>({
     queryKey: ["/api/search/suggestions", { q: searchTerm }],
@@ -45,11 +32,7 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
   }, [suggestionData]);
 
   const handleSearch = () => {
-    let finalSearchTerm = searchTerm;
-    if (category && category !== "all") {
-      finalSearchTerm = category;
-    }
-    onSearch(finalSearchTerm);
+    onSearch(searchTerm);
     setShowSuggestions(false);
   };
 
@@ -67,7 +50,7 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl p-6 shadow-2xl">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2 relative">
           <Input 
             type="text" 
@@ -94,22 +77,6 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
               ))}
             </div>
           )}
-        </div>
-        
-        <div>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-full h-12 text-gray-900">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories?.sort((a, b) => a.name.localeCompare(b.name)).map((cat) => (
-                <SelectItem key={cat.id} value={cat.name}>
-                  {cat.name} ({cat.speakerCount})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
         
         <div>
