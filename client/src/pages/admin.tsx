@@ -1975,6 +1975,19 @@ export default function AdminDashboard() {
                                   <Edit className="h-4 w-4 mr-1" />
                                   Edit
                                 </Button>
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingSpeaker(speaker);
+                                    setIsDeleteDialogOpen(true);
+                                    setDeletePassword("");
+                                    setDeleteError("");
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Delete
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -2594,6 +2607,19 @@ export default function AdminDashboard() {
                                     >
                                       <ExternalLink className="h-4 w-4 mr-1" />
                                       View
+                                    </Button>
+                                    <Button 
+                                      variant="destructive" 
+                                      size="sm"
+                                      onClick={() => {
+                                        setEditingSpeaker(speaker);
+                                        setIsDeleteDialogOpen(true);
+                                        setDeletePassword("");
+                                        setDeleteError("");
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Delete
                                     </Button>
                                     <Button 
                                       variant="outline" 
