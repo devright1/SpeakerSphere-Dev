@@ -443,12 +443,7 @@ export class MemStorage implements IStorage {
 
     // Filter hidden speakers (only show visible speakers by default)
     if (!filters?.includeHidden) {
-      const beforeFilter = speakers.length;
-      const hiddenSpeakers = speakers.filter(s => s.hideProfile);
       speakers = speakers.filter(speaker => !speaker.hideProfile);
-      console.log(`🔍 MemStorage filter: ${beforeFilter} total speakers -> ${speakers.length} visible speakers`);
-      console.log(`🔍 Hidden speakers (${hiddenSpeakers.length}):`, hiddenSpeakers.map(s => `${s.name} (hideProfile: ${s.hideProfile})`));
-      console.log(`🔍 Sample visible speakers:`, speakers.slice(0, 3).map(s => `${s.name} (hideProfile: ${s.hideProfile})`));
     }
 
     return speakers.sort((a, b) => parseFloat(b.overallRating) - parseFloat(a.overallRating));

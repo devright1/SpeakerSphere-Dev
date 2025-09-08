@@ -433,12 +433,6 @@ export function registerRoutes(app: Express): Express {
         includeHidden: false // Explicitly exclude hidden speakers from public view
       });
       
-      console.log(`📊 Public speakers endpoint: Found ${speakers.length} visible speakers`);
-      console.log(`📊 First few speakers hideProfile status:`, speakers.slice(0, 3).map(s => ({
-        name: s.name,
-        hideProfile: s.hideProfile
-      })));
-      
       res.json(speakers);
     } catch (error) {
       console.error("Error fetching speakers:", error);
