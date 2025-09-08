@@ -951,9 +951,10 @@ export default function AdminDashboard() {
         description: `Speaker is now ${status} across all domains`,
         variant: data.speaker.hideProfile ? "destructive" : "default"
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/speakers" });
       queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker visibility", variant: "destructive" });
@@ -981,7 +982,7 @@ export default function AdminDashboard() {
         description: `Contact information is now ${data.speaker.hideContact ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideContact ? "default" : "default"
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/speakers" });
       queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
@@ -1007,7 +1008,7 @@ export default function AdminDashboard() {
         description: `Ratings are now ${data.speaker.hideRatings ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideRatings ? "default" : "default"
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/speakers" });
       queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
