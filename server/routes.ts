@@ -428,7 +428,8 @@ export function registerRoutes(app: Express): Express {
       
       const speakers = await storage.getSpeakers({
         search,
-        category: categories ? categories[0] as string : category,
+        category: category,
+        categories: categories as string[],
         location
       });
       
