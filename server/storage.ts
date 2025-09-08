@@ -441,6 +441,11 @@ export class MemStorage implements IStorage {
       );
     }
 
+    // Filter hidden speakers (only show visible speakers by default)
+    if (!filters?.includeHidden) {
+      speakers = speakers.filter(speaker => !speaker.hideProfile);
+    }
+
     return speakers.sort((a, b) => parseFloat(b.overallRating) - parseFloat(a.overallRating));
   }
 
