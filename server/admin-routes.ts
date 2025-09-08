@@ -492,6 +492,14 @@ export function registerAdminRoutes(app: Express) {
   app.delete("/api/admin/speakers/:id", async (req, res) => {
     try {
       const speakerId = parseInt(req.params.id);
+      const { adminPassword } = req.body;
+      console.log("Attempting to delete speaker:", speakerId);
+      
+      // Verify admin password (use same password as admin login)
+      if (!adminPassword || adminPassword !== "Doneright123!") {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
+      
       const speaker = await storage.getSpeaker(speakerId);
       
       if (!speaker) {
