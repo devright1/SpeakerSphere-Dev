@@ -564,28 +564,8 @@ export function registerRoutes(app: Express): Express {
   // Submit inquiry
   app.post("/api/inquiries", async (req, res) => {
     try {
-      // Check if user is authenticated via token
-      const token = req.headers['x-user-id'] as string;
-      if (!token) {
-        return res.status(401).json({
-          success: false,
-          message: "Authentication required to submit inquiry"
-        });
-      }
-
-      const user = await storage.getUserByToken(token);
-      if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: "Invalid or expired authentication token"
-        });
-      }
-
-      // Ensure the inquiry is linked to the authenticated user's email
-      const inquiryData = {
-        ...req.body,
-        clientEmail: user.email || req.body.clientEmail, // Use authenticated user's email
-      };
+      // Use the inquiry data directly from the request
+      const inquiryData = req.body;
 
       const inquiry = await storage.createInquiry(inquiryData);
       
@@ -676,18 +656,9 @@ export function registerRoutes(app: Express): Express {
   }, async (req, res) => {
     try {
       const speakerId = parseInt(req.params.speakerId);
-      const user = (req as any).session?.user;
-      const userIdHeader = req.headers['x-user-id'] as string;
       
-      // Try to get user from session first, then from header
-      let userId;
-      if (user?.id) {
-        userId = user.id;
-      } else if (userIdHeader) {
-        userId = userIdHeader;
-      } else {
-        return res.status(401).json({ message: "Authentication required" });
-      }
+      // Use a default user ID for now - simplified authentication
+      const userId = req.headers['x-user-id'] || 'anonymous-user';
 
       const reviewData = {
         speakerId,

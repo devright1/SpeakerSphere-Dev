@@ -278,23 +278,11 @@ export default function SpeakerProfile() {
       inquiryForm.reset();
     },
     onError: (error: any) => {
-      if (error.message?.includes('401') || error.message?.includes('Authentication required')) {
-        toast({
-          title: "Login Required",
-          description: "Please log in or create an account to send an inquiry.",
-          variant: "destructive",
-        });
-        // Redirect to login page after a short delay
-        setTimeout(() => {
-          window.location.href = '/auth';
-        }, 1500);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to send inquiry. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: "Failed to send inquiry. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -302,18 +290,16 @@ export default function SpeakerProfile() {
     mutationFn: async (data: z.infer<typeof reviewSchema>) => {
       if (!speaker) throw new Error("Speaker not found");
       
-      // Get user authentication 
+      // Simplified authentication - no longer required
+      let userId = 'anonymous-user';
       const userData = localStorage.getItem('userData');
-      if (!userData) {
-        throw new Error('Authentication required to submit a review');
-      }
-      
-      let userId;
-      try {
-        const user = JSON.parse(userData);
-        userId = user.id;
-      } catch (error) {
-        throw new Error('Authentication required to submit a review');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          userId = user.id;
+        } catch (error) {
+          // Continue with anonymous user
+        }
       }
       
       // Create FormData to handle file upload
