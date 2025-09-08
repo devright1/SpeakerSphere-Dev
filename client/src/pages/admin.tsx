@@ -951,10 +951,25 @@ export default function AdminDashboard() {
         description: `Speaker is now ${status} across all domains`,
         variant: data.speaker.hideProfile ? "destructive" : "default"
       });
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/speakers" });
-      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      
+      console.log("🔄 Invalidating all speaker queries after visibility toggle");
+      
+      // Clear all queries that start with /api/speakers
+      queryClient.removeQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey?.[0];
+          return typeof key === 'string' && key.startsWith('/api/speakers');
+        }
+      });
+      
+      // Clear categories too
+      queryClient.removeQueries({ queryKey: ["/api/categories"] });
+      
+      // Force immediate refetch
+      setTimeout(() => {
+        console.log("🔄 Forcing refetch of all data");
+        window.location.reload();
+      }, 100);
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker visibility", variant: "destructive" });
@@ -982,9 +997,14 @@ export default function AdminDashboard() {
         description: `Contact information is now ${data.speaker.hideContact ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideContact ? "default" : "default"
       });
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/speakers" });
-      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      // Force refetch all speaker-related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] }); 
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      // Also remove cached queries to force fresh fetch
+      queryClient.removeQueries({ queryKey: ["/api/speakers"] });
+      queryClient.refetchQueries({ queryKey: ["/api/speakers"] });
+      queryClient.refetchQueries({ queryKey: ["/api/speakers/featured"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update contact visibility", variant: "destructive" });
@@ -1008,9 +1028,14 @@ export default function AdminDashboard() {
         description: `Ratings are now ${data.speaker.hideRatings ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideRatings ? "default" : "default"
       });
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/speakers" });
-      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      // Force refetch all speaker-related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] }); 
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      // Also remove cached queries to force fresh fetch
+      queryClient.removeQueries({ queryKey: ["/api/speakers"] });
+      queryClient.refetchQueries({ queryKey: ["/api/speakers"] });
+      queryClient.refetchQueries({ queryKey: ["/api/speakers/featured"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update ratings visibility", variant: "destructive" });
