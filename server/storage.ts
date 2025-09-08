@@ -873,9 +873,9 @@ export class MemStorage implements IStorage {
     });
   }
 
-  async getUserInquiries(userId: string): Promise<Inquiry[]> {
+  async getUserInquiries(userEmail: string): Promise<Inquiry[]> {
     return Array.from(this.inquiries.values())
-      .filter(inquiry => inquiry.clientEmail === userId) // Match by user email for now
+      .filter(inquiry => inquiry.clientEmail === userEmail) // Match by user email
       .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
   }
 

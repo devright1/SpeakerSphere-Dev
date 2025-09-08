@@ -642,13 +642,10 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getUserInquiries(userId: string): Promise<Inquiry[]> {
-    // For now, match by email since we don't have user ID in inquiries table
-    const user = await this.getUserById(userId);
-    if (!user) return [];
-    
+  async getUserInquiries(userEmail: string): Promise<Inquiry[]> {
+    // Match directly by email since the parameter is an email address
     const result = await db.select().from(inquiries)
-      .where(eq(inquiries.clientEmail, user.email))
+      .where(eq(inquiries.clientEmail, userEmail))
       .orderBy(desc(inquiries.createdAt));
     return result;
   }
