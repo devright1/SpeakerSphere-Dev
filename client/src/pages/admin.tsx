@@ -951,15 +951,9 @@ export default function AdminDashboard() {
         description: `Speaker is now ${status} across all domains`,
         variant: data.speaker.hideProfile ? "destructive" : "default"
       });
-      
-      // Clear ALL cached queries and force fresh fetch
-      queryClient.clear();
-      
-      // Force refetch the key queries that homepage and speakers page use
-      setTimeout(() => {
-        queryClient.prefetchQuery({ queryKey: ["/api/speakers/featured"] });
-        queryClient.prefetchQuery({ queryKey: ["/api/speakers", {}] });
-      }, 50);
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker visibility", variant: "destructive" });
@@ -987,12 +981,9 @@ export default function AdminDashboard() {
         description: `Contact information is now ${data.speaker.hideContact ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideContact ? "default" : "default"
       });
-      // Clear cache and refresh key queries
-      queryClient.clear();
-      setTimeout(() => {
-        queryClient.prefetchQuery({ queryKey: ["/api/speakers/featured"] });
-        queryClient.prefetchQuery({ queryKey: ["/api/speakers", {}] });
-      }, 50);
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update contact visibility", variant: "destructive" });
@@ -1016,12 +1007,9 @@ export default function AdminDashboard() {
         description: `Ratings are now ${data.speaker.hideRatings ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideRatings ? "default" : "default"
       });
-      // Clear cache and refresh key queries
-      queryClient.clear();
-      setTimeout(() => {
-        queryClient.prefetchQuery({ queryKey: ["/api/speakers/featured"] });
-        queryClient.prefetchQuery({ queryKey: ["/api/speakers", {}] });
-      }, 50);
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update ratings visibility", variant: "destructive" });
