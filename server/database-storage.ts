@@ -642,11 +642,30 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getUserInquiries(userEmail: string): Promise<Inquiry[]> {
-    // Match directly by email since the parameter is an email address
-    const result = await db.select().from(inquiries)
-      .where(eq(inquiries.clientEmail, userEmail))
-      .orderBy(desc(inquiries.createdAt));
+  async getUserInquiries(userEmail: string): Promise<any[]> {
+    // Match directly by email and include speaker information
+    const result = await db.select({
+      id: inquiries.id,
+      speakerId: inquiries.speakerId,
+      clientName: inquiries.clientName,
+      clientEmail: inquiries.clientEmail,
+      clientCompany: inquiries.clientCompany,
+      eventType: inquiries.eventType,
+      eventDate: inquiries.eventDate,
+      eventLocation: inquiries.eventLocation,
+      budget: inquiries.budget,
+      message: inquiries.message,
+      status: inquiries.status,
+      createdAt: inquiries.createdAt,
+      // Include speaker information
+      speakerName: speakers.name,
+      speakerSlug: speakers.slug,
+      speakerImageUrl: speakers.imageUrl
+    })
+    .from(inquiries)
+    .leftJoin(speakers, eq(inquiries.speakerId, speakers.id))
+    .where(eq(inquiries.clientEmail, userEmail))
+    .orderBy(desc(inquiries.createdAt));
     return result;
   }
 

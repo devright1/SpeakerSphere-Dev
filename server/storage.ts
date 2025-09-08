@@ -873,10 +873,21 @@ export class MemStorage implements IStorage {
     });
   }
 
-  async getUserInquiries(userEmail: string): Promise<Inquiry[]> {
-    return Array.from(this.inquiries.values())
+  async getUserInquiries(userEmail: string): Promise<any[]> {
+    const userInquiries = Array.from(this.inquiries.values())
       .filter(inquiry => inquiry.clientEmail === userEmail) // Match by user email
       .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+      
+    // Add speaker information to each inquiry
+    return userInquiries.map(inquiry => {
+      const speaker = Array.from(this.speakers.values()).find(s => s.id === inquiry.speakerId);
+      return {
+        ...inquiry,
+        speakerName: speaker?.name || 'Unknown Speaker',
+        speakerSlug: speaker?.slug || '',
+        speakerImageUrl: speaker?.imageUrl || ''
+      };
+    });
   }
 
   async getAllUsers(): Promise<User[]> {
