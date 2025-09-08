@@ -1605,6 +1605,20 @@ export default function AdminDashboard() {
                               View Details
                             </Button>
                             
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setEditingSpeaker({ id: application.id, name: `${application.firstName} ${application.lastName}`, isApplication: true });
+                                setIsDeleteDialogOpen(true);
+                                setDeletePassword("");
+                                setDeleteError("");
+                              }}
+                              className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete App
+                            </Button>
+                            
                             {application.status === 'pending' && (
                               <>
                                 <Button
