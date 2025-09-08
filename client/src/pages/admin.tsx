@@ -952,16 +952,16 @@ export default function AdminDashboard() {
         variant: data.speaker.hideProfile ? "destructive" : "default"
       });
       
-      // Properly invalidate all speaker queries (including filtered ones)
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey?.[0];
-          return typeof key === 'string' && key.startsWith('/api/speakers');
-        }
-      });
-      
-      // Also invalidate admin speakers query
+      // Directly invalidate all speaker-related queries  
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      
+      // Force a complete refetch of the data after a small delay
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/speakers"] });
+        queryClient.refetchQueries({ queryKey: ["/api/speakers/featured"] });
+      }, 50);
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker visibility", variant: "destructive" });
@@ -989,13 +989,9 @@ export default function AdminDashboard() {
         description: `Contact information is now ${data.speaker.hideContact ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideContact ? "default" : "default"
       });
-      // Properly invalidate all speaker queries
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey?.[0];
-          return typeof key === 'string' && key.startsWith('/api/speakers');
-        }
-      });
+      // Directly invalidate all speaker-related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: () => {
@@ -1020,13 +1016,9 @@ export default function AdminDashboard() {
         description: `Ratings are now ${data.speaker.hideRatings ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideRatings ? "default" : "default"
       });
-      // Properly invalidate all speaker queries
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey?.[0];
-          return typeof key === 'string' && key.startsWith('/api/speakers');
-        }
-      });
+      // Directly invalidate all speaker-related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: () => {
