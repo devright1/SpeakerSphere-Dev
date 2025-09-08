@@ -73,6 +73,9 @@ export class DatabaseStorage implements IStorage {
     if (!filters?.includeHidden) {
       // Show speakers where hideProfile is false OR hideProfile is null (not set)
       conditions.push(or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)));
+      console.log(`🔍 DatabaseStorage: Applying hideProfile filter (excluding hidden speakers)`);
+    } else {
+      console.log(`🔍 DatabaseStorage: Including ALL speakers (includeHidden: true)`);
     }
 
     // Handle both single category (for backward compatibility) and multiple categories
@@ -148,6 +151,14 @@ export class DatabaseStorage implements IStorage {
     }
     
     const result = await query;
+    
+    console.log(`🔍 DatabaseStorage: Query returned ${result.length} speakers`);
+    console.log(`🔍 Sample speakers hideProfile status:`, result.slice(0, 3).map(s => ({
+      name: s.name,
+      hideProfile: s.hideProfile
+    })));
+    console.log(`🔍 Total hidden speakers in result:`, result.filter(s => s.hideProfile === true).length);
+    
     return result;
   }
 
