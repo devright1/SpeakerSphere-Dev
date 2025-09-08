@@ -529,6 +529,37 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Delete speaker application (for organization, keeps speaker profile if approved)
+  app.delete("/api/admin/speaker-applications/:id", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const { adminPassword } = req.body;
+      console.log("Attempting to delete application:", applicationId);
+      
+      // Verify admin password (use same password as admin login)
+      if (!adminPassword || adminPassword !== "Doneright123!") {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
+      
+      // Delete the application record (this is just for organization)
+      const result = await db.delete(speakerApplications).where(eq(speakerApplications.id, applicationId));
+      
+      if (result.rowCount === 0) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Application deleted successfully" 
+      });
+      
+      console.log(`🗑️ Speaker application ${applicationId} has been deleted for organizational purposes`);
+    } catch (error) {
+      console.error("Failed to delete speaker application:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Get all speaker inquiries for admin review
   app.get("/api/admin/inquiries", async (req, res) => {
     try {

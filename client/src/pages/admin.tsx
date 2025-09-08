@@ -4766,55 +4766,60 @@ export default function AdminDashboard() {
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete Speaker Profile</DialogTitle>
+              <DialogTitle>{editingSpeaker?.isApplication ? "Delete Application" : "Delete Speaker Profile"}</DialogTitle>
               <DialogDescription>
-                Choose how you want to delete {editingSpeaker?.name || editingSpeaker?.email}'s profile.
+                {editingSpeaker?.isApplication 
+                  ? `Are you sure you want to delete ${editingSpeaker?.name}'s application? This will permanently remove the application record for organizational purposes. If this was an approved application, the speaker profile will remain intact.`
+                  : `Choose how you want to delete ${editingSpeaker?.name || editingSpeaker?.email}'s profile.`
+                }
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Deletion Options</Label>
+              {!editingSpeaker?.isApplication && (
                 <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <input
-                      type="radio"
-                      id="retention"
-                      name="deletionType"
-                      value="retention"
-                      checked={deletionType === "retention"}
-                      onChange={(e) => setDeletionType(e.target.value as "retention")}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <label htmlFor="retention" className="text-sm font-medium cursor-pointer">
-                        14-Day Retention (Recommended)
-                      </label>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Hide profile immediately but keep data for 14 days in case you need to restore it. Profile will be permanently deleted after 14 days.
-                      </p>
+                  <Label className="text-sm font-medium">Deletion Options</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="radio"
+                        id="retention"
+                        name="deletionType"
+                        value="retention"
+                        checked={deletionType === "retention"}
+                        onChange={(e) => setDeletionType(e.target.value as "retention")}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <label htmlFor="retention" className="text-sm font-medium cursor-pointer">
+                          14-Day Retention (Recommended)
+                        </label>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Hide profile immediately but keep data for 14 days in case you need to restore it. Profile will be permanently deleted after 14 days.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <input
-                      type="radio"
-                      id="immediate"
-                      name="deletionType"
-                      value="immediate"
-                      checked={deletionType === "immediate"}
-                      onChange={(e) => setDeletionType(e.target.value as "immediate")}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <label htmlFor="immediate" className="text-sm font-medium cursor-pointer text-red-600">
-                        Immediate Delete
-                      </label>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Permanently delete the profile and all associated data immediately. This action cannot be undone.
-                      </p>
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="radio"
+                        id="immediate"
+                        name="deletionType"
+                        value="immediate"
+                        checked={deletionType === "immediate"}
+                        onChange={(e) => setDeletionType(e.target.value as "immediate")}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <label htmlFor="immediate" className="text-sm font-medium cursor-pointer text-red-600">
+                          Immediate Delete
+                        </label>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Permanently delete the profile and all associated data immediately. This action cannot be undone.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
               <div>
                 <Label htmlFor="deletePassword">Admin Password</Label>
                 <Input
@@ -4847,11 +4852,14 @@ export default function AdminDashboard() {
               <Button
                 variant="destructive"
                 onClick={handleDeleteConfirm}
-                disabled={deleteUserMutation.isPending || deleteSpeakerMutation.isPending}
+                disabled={deleteUserMutation.isPending || deleteSpeakerMutation.isPending || deleteApplicationMutation.isPending}
               >
-                {(deleteUserMutation.isPending || deleteSpeakerMutation.isPending) 
+                {(deleteUserMutation.isPending || deleteSpeakerMutation.isPending || deleteApplicationMutation.isPending)
                   ? "Deleting..." 
-                  : (deletionType === "immediate" ? "Delete Immediately" : "Delete with 14-Day Retention")
+                  : (editingSpeaker?.isApplication 
+                      ? "Delete Application" 
+                      : (deletionType === "immediate" ? "Delete Immediately" : "Delete with 14-Day Retention")
+                    )
                 }
               </Button>
             </div>
