@@ -71,7 +71,7 @@ export class DatabaseStorage implements IStorage {
     
     // Only apply hideProfile filter if not explicitly requesting hidden speakers
     if (!filters?.includeHidden) {
-      conditions.push(or(eq(speakers.hideProfile, false), sql`${speakers.hideProfile} IS NULL`));
+      conditions.push(or(eq(speakers.hideProfile, false), eq(speakers.hideProfile, null)));
     }
 
     // Handle both single category (for backward compatibility) and multiple categories
