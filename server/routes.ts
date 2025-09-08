@@ -564,8 +564,22 @@ export function registerRoutes(app: Express): Express {
   // Submit inquiry
   app.post("/api/inquiries", async (req, res) => {
     try {
-      // Use the inquiry data directly from the request
-      const inquiryData = req.body;
+      // Get user info from token to link inquiry properly
+      const token = req.headers['x-user-id'] as string;
+      let userEmail = req.body.clientEmail; // Default to form email
+      
+      if (token) {
+        const user = await storage.getUserByToken(token);
+        if (user) {
+          userEmail = user.email; // Use authenticated user's email
+        }
+      }
+
+      // Ensure the inquiry is linked to the user's account
+      const inquiryData = {
+        ...req.body,
+        clientEmail: userEmail
+      };
 
       const inquiry = await storage.createInquiry(inquiryData);
       
