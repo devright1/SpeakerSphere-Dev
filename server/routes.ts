@@ -433,6 +433,8 @@ export function registerRoutes(app: Express): Express {
         includeHidden: false // Explicitly exclude hidden speakers from public view
       });
       
+      console.log(`📊 PUBLIC ENDPOINT: Returning ${speakers.length} speakers to frontend`);
+      console.log(`📊 First 3 speakers:`, speakers.slice(0, 3).map(s => ({ name: s.name, id: s.id })));
       res.json(speakers);
     } catch (error) {
       console.error("Error fetching speakers:", error);
