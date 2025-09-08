@@ -1233,12 +1233,10 @@ export default function AdminDashboard() {
       const matchesCategory = selectedCategories.size === 0 || 
         selectedCategories.has(speaker.category || '');
       
-      // Status filter (verified/featured) - if no statuses selected, show all
+      // Status filter (verified/featured only) - visibility toggle works independently
       const matchesStatus = selectedStatuses.size === 0 || 
         (selectedStatuses.has('verified') && speaker.verified) ||
-        (selectedStatuses.has('featured') && speaker.featured) ||
-        (selectedStatuses.has('visible') && !speaker.hideProfile) ||
-        (selectedStatuses.has('hidden') && speaker.hideProfile);
+        (selectedStatuses.has('featured') && speaker.featured);
       
       return matchesSearch && matchesCategory && matchesStatus;
     });
