@@ -49,7 +49,7 @@ import {
   type InsertContentDownload
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, like, gte, lte, sql, isNotNull } from "drizzle-orm";
+import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -71,7 +71,8 @@ export class DatabaseStorage implements IStorage {
     
     // Only apply hideProfile filter if not explicitly requesting hidden speakers
     if (!filters?.includeHidden) {
-      conditions.push(or(eq(speakers.hideProfile, false), eq(speakers.hideProfile, null)));
+      // Show speakers where hideProfile is false OR hideProfile is null (not set)
+      conditions.push(or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)));
     }
 
     // Handle both single category (for backward compatibility) and multiple categories
