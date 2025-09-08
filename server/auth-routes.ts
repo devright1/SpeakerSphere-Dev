@@ -60,7 +60,7 @@ router.post("/register",
       // Hash the password
       const passwordHash = await bcrypt.hash(password, 12);
 
-      // Create user with unverified email
+      // Create user with verified email (verification temporarily disabled)
       const newUser = await storage.createUser({
         email,
         passwordHash,
@@ -68,7 +68,7 @@ router.post("/register",
         lastName,
         title: title || '',
         company: company || '',
-        emailVerified: false
+        emailVerified: true
       });
 
       // Generate verification token and send email
@@ -88,7 +88,7 @@ router.post("/register",
       }
 
       res.status(201).json({
-        message: "Account created successfully! Please check your email to verify your account.",
+        message: "Account created successfully! You can now log in.",
         userId: newUser.id,
         emailSent
       });
@@ -350,14 +350,14 @@ router.post("/login",
         });
       }
 
-      // Check if email is verified
-      if (!user.emailVerified) {
-        return res.status(403).json({
-          message: "Please verify your email address before logging in. Check your inbox for a verification email.",
-          emailVerified: false,
-          userId: user.id
-        });
-      }
+      // Email verification temporarily disabled
+      // if (!user.emailVerified) {
+      //   return res.status(403).json({
+      //     message: "Please verify your email address before logging in. Check your inbox for a verification email.",
+      //     emailVerified: false,
+      //     userId: user.id
+      //   });
+      // }
 
       // Generate session token
       const sessionToken = generateVerificationToken();
