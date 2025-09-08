@@ -952,10 +952,14 @@ export default function AdminDashboard() {
         variant: data.speaker.hideProfile ? "destructive" : "default"
       });
       
-      // Simple page reload to avoid cache issues
+      // Clear ALL cached queries and force fresh fetch
+      queryClient.clear();
+      
+      // Force refetch the key queries that homepage and speakers page use
       setTimeout(() => {
-        window.location.reload();
-      }, 100);
+        queryClient.prefetchQuery({ queryKey: ["/api/speakers/featured"] });
+        queryClient.prefetchQuery({ queryKey: ["/api/speakers", {}] });
+      }, 50);
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker visibility", variant: "destructive" });
@@ -983,10 +987,12 @@ export default function AdminDashboard() {
         description: `Contact information is now ${data.speaker.hideContact ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideContact ? "default" : "default"
       });
-      // Simple page reload to avoid cache issues
+      // Clear cache and refresh key queries
+      queryClient.clear();
       setTimeout(() => {
-        window.location.reload();
-      }, 100);
+        queryClient.prefetchQuery({ queryKey: ["/api/speakers/featured"] });
+        queryClient.prefetchQuery({ queryKey: ["/api/speakers", {}] });
+      }, 50);
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update contact visibility", variant: "destructive" });
@@ -1010,10 +1016,12 @@ export default function AdminDashboard() {
         description: `Ratings are now ${data.speaker.hideRatings ? 'hidden' : 'visible'}`,
         variant: data.speaker.hideRatings ? "default" : "default"
       });
-      // Simple page reload to avoid cache issues
+      // Clear cache and refresh key queries
+      queryClient.clear();
       setTimeout(() => {
-        window.location.reload();
-      }, 100);
+        queryClient.prefetchQuery({ queryKey: ["/api/speakers/featured"] });
+        queryClient.prefetchQuery({ queryKey: ["/api/speakers", {}] });
+      }, 50);
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update ratings visibility", variant: "destructive" });
