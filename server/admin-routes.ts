@@ -563,9 +563,14 @@ export function registerAdminRoutes(app: Express) {
         return res.status(404).json({ message: "Speaker not found" });
       }
 
+      console.log(`🔧 Toggle visibility for speaker ${speaker.name}: Current hideProfile = ${speaker.hideProfile}`);
+      
       // Toggle the hideProfile flag
+      const newHideProfile = !speaker.hideProfile;
+      console.log(`🔧 Setting hideProfile to: ${newHideProfile}`);
+      
       const updatedSpeaker = await storage.updateSpeaker(speakerId, {
-        hideProfile: !speaker.hideProfile
+        hideProfile: newHideProfile
       });
 
       if (!updatedSpeaker) {
@@ -573,6 +578,8 @@ export function registerAdminRoutes(app: Express) {
       }
 
       const status = updatedSpeaker.hideProfile ? "hidden" : "visible";
+      console.log(`🔧 After update: hideProfile = ${updatedSpeaker.hideProfile}, status = ${status}`);
+      
       res.json({ 
         success: true, 
         message: `Speaker ${status} successfully`,
