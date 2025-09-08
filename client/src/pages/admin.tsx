@@ -951,9 +951,11 @@ export default function AdminDashboard() {
         description: `Speaker is now ${status} across all domains`,
         variant: data.speaker.hideProfile ? "destructive" : "default"
       });
+      // Only invalidate admin speakers query to prevent interference with filtering
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      // Optionally invalidate public speakers if needed
       queryClient.invalidateQueries({ queryKey: ["/api/speakers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/speakers/featured"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update speaker visibility", variant: "destructive" });
@@ -1231,10 +1233,12 @@ export default function AdminDashboard() {
       const matchesCategory = selectedCategories.size === 0 || 
         selectedCategories.has(speaker.category || '');
       
-      // Status filter (verified/featured)
+      // Status filter (verified/featured) - if no statuses selected, show all
       const matchesStatus = selectedStatuses.size === 0 || 
         (selectedStatuses.has('verified') && speaker.verified) ||
-        (selectedStatuses.has('featured') && speaker.featured);
+        (selectedStatuses.has('featured') && speaker.featured) ||
+        (selectedStatuses.has('visible') && !speaker.hideProfile) ||
+        (selectedStatuses.has('hidden') && speaker.hideProfile);
       
       return matchesSearch && matchesCategory && matchesStatus;
     });
