@@ -66,7 +66,7 @@ export interface IStorage {
   getSpeakerByUserId(userId: string): Promise<Speaker | undefined>;
   createSpeaker(speaker: InsertSpeaker): Promise<Speaker>;
   updateSpeaker(id: number, speaker: Partial<InsertSpeaker>): Promise<Speaker | undefined>;
-  deleteSpeaker(id: number): Promise<boolean>;
+  deleteSpeaker(id: number, deletionType?: "immediate" | "retention"): Promise<boolean>;
   getFeaturedSpeakers(): Promise<Speaker[]>;
   
   // Reviews
@@ -494,22 +494,31 @@ export class MemStorage implements IStorage {
     return updatedSpeaker;
   }
 
-  async deleteSpeaker(id: number): Promise<boolean> {
+  async deleteSpeaker(id: number, deletionType: "immediate" | "retention" = "retention"): Promise<boolean> {
     const speaker = this.speakers.get(id);
     if (!speaker) return false;
 
-    // In a real implementation, we would move to a recently deleted collection
-    // with a 14-day retention period. For this demo, we'll just remove from active speakers
-    this.speakers.delete(id);
-    
-    // Also remove associated reviews and videos for cleanup
-    const reviews = Array.from(this.reviews.values())
-      .filter(review => review.speakerId === id);
-    reviews.forEach(review => this.reviews.delete(review.id));
-    
-    const videos = Array.from(this.videos.values())
-      .filter(video => video.speakerId === id);
-    videos.forEach(video => this.videos.delete(video.id));
+    if (deletionType === "immediate") {
+      // Permanently delete speaker and associated data
+      this.speakers.delete(id);
+      
+      // Remove associated reviews and videos for cleanup
+      const reviews = Array.from(this.reviews.values())
+        .filter(review => review.speakerId === id);
+      reviews.forEach(review => this.reviews.delete(review.id));
+      
+      const videos = Array.from(this.videos.values())
+        .filter(video => video.speakerId === id);
+      videos.forEach(video => this.videos.delete(video.id));
+    } else {
+      // 14-day retention: hide profile and set deletion timestamp
+      const updatedSpeaker = { 
+        ...speaker, 
+        hideProfile: true,
+        deletedAt: new Date()
+      };
+      this.speakers.set(id, updatedSpeaker);
+    }
     
     return true;
   }

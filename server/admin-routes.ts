@@ -488,12 +488,12 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Delete speaker (soft delete by hiding profile)
+  // Delete speaker (immediate or 14-day retention)
   app.delete("/api/admin/speakers/:id", async (req, res) => {
     try {
       const speakerId = parseInt(req.params.id);
-      const { adminPassword } = req.body;
-      console.log("Attempting to delete speaker:", speakerId);
+      const { adminPassword, deletionType } = req.body;
+      console.log("Attempting to delete speaker:", speakerId, "Type:", deletionType);
       
       // Verify admin password (use same password as admin login)
       if (!adminPassword || adminPassword !== "Doneright123!") {
@@ -506,19 +506,23 @@ export function registerAdminRoutes(app: Express) {
         return res.status(404).json({ message: "Speaker not found" });
       }
 
-      // Delete speaker (this sets hideProfile: true)
-      const deleted = await storage.deleteSpeaker(speakerId);
+      // Delete speaker with specified type
+      const deleted = await storage.deleteSpeaker(speakerId, deletionType || "retention");
 
       if (!deleted) {
         return res.status(500).json({ message: "Failed to delete speaker" });
       }
 
+      const message = deletionType === "immediate" 
+        ? "Speaker permanently deleted" 
+        : "Speaker deleted with 14-day retention";
+
       res.json({ 
         success: true, 
-        message: "Speaker deleted successfully" 
+        message: message
       });
       
-      console.log(`🗑️ Speaker ${speaker.name} has been deleted (hidden) from all domains`);
+      console.log(`🗑️ Speaker ${speaker.name} has been deleted (${deletionType === "immediate" ? "permanently" : "with 14-day retention"})`);
     } catch (error) {
       console.error("Failed to delete speaker:", error);
       res.status(500).json({ message: "Internal server error" });

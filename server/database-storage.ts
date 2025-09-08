@@ -190,10 +190,20 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async deleteSpeaker(id: number): Promise<boolean> {
-    // Instead of deleting, hide the profile
-    const result = await db.update(speakers).set({ hideProfile: true }).where(eq(speakers.id, id));
-    return result.rowCount ? result.rowCount > 0 : false;
+  async deleteSpeaker(id: number, deletionType: "immediate" | "retention" = "retention"): Promise<boolean> {
+    if (deletionType === "immediate") {
+      // Permanently delete the speaker record
+      const result = await db.delete(speakers).where(eq(speakers.id, id));
+      return result.rowCount ? result.rowCount > 0 : false;
+    } else {
+      // Hide profile and set deletion timestamp for 14-day retention
+      const deletedAt = new Date();
+      const result = await db.update(speakers).set({ 
+        hideProfile: true,
+        deletedAt: deletedAt
+      }).where(eq(speakers.id, id));
+      return result.rowCount ? result.rowCount > 0 : false;
+    }
   }
 
   async getFeaturedSpeakers(): Promise<Speaker[]> {

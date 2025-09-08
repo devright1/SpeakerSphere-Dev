@@ -363,11 +363,11 @@ export default function AdminDashboard() {
 
   // Delete speaker mutation
   const deleteSpeakerMutation = useMutation({
-    mutationFn: async ({ speakerId, password }: { speakerId: number; password: string }) => {
+    mutationFn: async ({ speakerId, password, deletionType }: { speakerId: number; password: string; deletionType: "immediate" | "retention" }) => {
       const response = await fetch(`/api/admin/speakers/${speakerId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminPassword: password }),
+        body: JSON.stringify({ adminPassword: password, deletionType }),
       });
       if (!response.ok) {
         const error = await response.json();
@@ -375,10 +375,13 @@ export default function AdminDashboard() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      const message = variables.deletionType === "immediate" 
+        ? "Speaker permanently deleted" 
+        : "Speaker deleted with 14-day retention";
       toast({ 
         title: "Speaker Deleted", 
-        description: "Speaker has been moved to recently deleted (14 days retention)" 
+        description: message
       });
       setIsDeleteDialogOpen(false);
       setIsEditDialogOpen(false);
