@@ -42,6 +42,8 @@ export const speakers = pgTable("speakers", {
   hideRatings: boolean("hide_ratings").default(false),
   hideSocial: boolean("hide_social").default(false),
   hideContact: boolean("hide_contact").default(false),
+  // Deletion tracking
+  deletedAt: timestamp("deleted_at"), // When marked for deletion (14-day retention)
 });
 
 export const reviews = pgTable("reviews", {
