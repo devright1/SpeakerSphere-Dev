@@ -90,8 +90,8 @@ export const createRateLimit = (windowMs: number, max: number, message?: string)
 
 // Specific rate limiters
 export const rateLimiters = {
-  // General API rate limit: 100 requests per 15 minutes
-  general: createRateLimit(15 * 60 * 1000, 100),
+  // General API rate limit: 1000 requests per 15 minutes (increased for normal browsing)
+  general: createRateLimit(15 * 60 * 1000, 1000),
   
   // Auth endpoints: 10 attempts per 15 minutes
   auth: createRateLimit(15 * 60 * 1000, 10, 'Too many authentication attempts'),
@@ -102,8 +102,8 @@ export const rateLimiters = {
   // File uploads: 10 uploads per hour
   uploads: createRateLimit(60 * 60 * 1000, 10, 'Too many file uploads'),
   
-  // Search: 30 searches per minute
-  search: createRateLimit(60 * 1000, 30, 'Too many search requests'),
+  // Search: 100 searches per minute (increased for better UX)
+  search: createRateLimit(60 * 1000, 100, 'Too many search requests'),
   
   // Contact/inquiry: 5 messages per hour
   contact: createRateLimit(60 * 60 * 1000, 5, 'Too many contact attempts')

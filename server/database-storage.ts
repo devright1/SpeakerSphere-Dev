@@ -186,9 +186,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateSpeaker(id: number, updates: Partial<InsertSpeaker>): Promise<Speaker | undefined> {
-    console.log(`🔧 DatabaseStorage.updateSpeaker: Updating speaker ID ${id} with:`, updates);
     const result = await db.update(speakers).set(updates).where(eq(speakers.id, id)).returning();
-    console.log(`🔧 DatabaseStorage.updateSpeaker: Update result:`, result[0] ? { name: result[0].name, hideProfile: result[0].hideProfile } : 'No result');
     return result[0];
   }
 
