@@ -393,14 +393,49 @@ export default function AdminDashboard() {
     },
   });
 
+  // Delete application mutation  
+  const deleteApplicationMutation = useMutation({
+    mutationFn: async ({ applicationId, adminPassword }: { applicationId: number; adminPassword: string }) => {
+      const response = await fetch(`/api/admin/speaker-applications/${applicationId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete application');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ 
+        title: "Application Deleted", 
+        description: "Speaker application has been permanently deleted" 
+      });
+      setIsDeleteDialogOpen(false);
+      setIsEditDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-applications"] });
+    },
+    onError: (error: any) => {
+      setDeleteError(error.message);
+    },
+  });
+
   const handleDeleteConfirm = () => {
     if (!deletePassword.trim()) {
       setDeleteError("Password is required");
       return;
     }
     
+    // Check if we're deleting an application
+    if (editingSpeaker.isApplication) {
+      deleteApplicationMutation.mutate({ 
+        applicationId: editingSpeaker.id, 
+        adminPassword: deletePassword 
+      });
+    }
     // Check if we're deleting a user (users have email property, speakers have title/name)
-    if (editingSpeaker.email && typeof editingSpeaker.id === 'string') {
+    else if (editingSpeaker.email && typeof editingSpeaker.id === 'string') {
       deleteUserMutation.mutate({ 
         userId: editingSpeaker.id, 
         adminPassword: deletePassword 
@@ -2301,6 +2336,19 @@ export default function AdminDashboard() {
                             >
                               <Mail className="h-4 w-4 mr-2" />
                               Contact Applicant
+                            </Button>
+                            <Button 
+                              variant="destructive"
+                              onClick={() => {
+                                setEditingSpeaker({ id: application.id, name: `${application.firstName} ${application.lastName}`, isApplication: true });
+                                setIsDeleteDialogOpen(true);
+                                setDeletePassword("");
+                                setDeleteError("");
+                              }}
+                              size="sm"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete Application
                             </Button>
                             {application.status === 'approved' && application.createdSpeakerId && (
                               <Button 
