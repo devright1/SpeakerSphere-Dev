@@ -795,7 +795,7 @@ export default function ProfilePage() {
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
                                   <h4 className="font-semibold text-gray-900">
-                                    Inquiry #{inquiry.id}
+                                    {inquiry.speakerName}
                                   </h4>
                                   <Badge 
                                     variant={
@@ -811,8 +811,8 @@ export default function ProfilePage() {
                                     {inquiry.status === 'completed' && '🎉 Completed'}
                                   </Badge>
                                 </div>
-                                <p className="text-sm text-blue-600 font-medium mb-1">
-                                  Speaker: {inquiry.speakerName}
+                                <p className="text-sm text-gray-500 font-medium mb-1">
+                                  Inquiry #{inquiry.id}
                                 </p>
                                 <p className="text-sm text-gray-600 mb-2">
                                   Event: {inquiry.eventType}
