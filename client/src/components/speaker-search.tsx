@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import type { Category } from "@shared/schema";
 
 interface SpeakerSearchProps {
   onSearch: (searchTerm: string) => void;
@@ -14,6 +15,16 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
   const [category, setCategory] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Fetch categories from API
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+    queryFn: async () => {
+      const response = await fetch("/api/categories");
+      if (!response.ok) throw new Error("Failed to fetch categories");
+      return response.json();
+    },
+  });
 
   const { data: suggestionData } = useQuery<string[]>({
     queryKey: ["/api/search/suggestions", { q: searchTerm }],
@@ -92,12 +103,11 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="Keynote Speakers">Keynote Speakers</SelectItem>
-              <SelectItem value="Technology">Technology</SelectItem>
-              <SelectItem value="Leadership">Leadership</SelectItem>
-              <SelectItem value="Healthcare">Healthcare</SelectItem>
-              <SelectItem value="Motivational">Motivational</SelectItem>
-              <SelectItem value="Business Strategy">Business Strategy</SelectItem>
+              {categories?.sort((a, b) => a.name.localeCompare(b.name)).map((cat) => (
+                <SelectItem key={cat.id} value={cat.name}>
+                  {cat.name} ({cat.speakerCount})
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
