@@ -1682,9 +1682,12 @@ export default function AdminDashboard() {
                                 <Button
                                   size="sm"
                                   onClick={() => {
+                                    console.log("🚨 APPROVE & CREATE BUTTON CLICKED - Application:", application);
                                     setCurrentApplication(application);
                                     setActionType('create_new');
-                                    setDuplicateCheckDialogOpen(true);
+                                    console.log("🔍 About to check for duplicates - Opening dialog");
+                                    setIsCheckingDuplicates(true);
+                                    checkDuplicatesMutation.mutate(application.id);
                                   }}
                                   className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1"
                                 >
