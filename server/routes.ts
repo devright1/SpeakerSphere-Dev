@@ -139,7 +139,6 @@ export function registerRoutes(app: Express): Express {
         credentials: SecurityUtils.sanitizeText(req.body.credentials),
         selectedCategories: req.body.selectedCategories?.map((category: string) => SecurityUtils.sanitizeText(category)),
         specificTopics: SecurityUtils.sanitizeText(req.body.specificTopics),
-        speakingTopics: SecurityUtils.sanitizeText(req.body.speakingTopics),
         previousExperience: SecurityUtils.sanitizeText(req.body.previousExperience),
         availableFormats: req.body.availableFormats?.map((format: string) => SecurityUtils.sanitizeText(format)),
         travelWillingness: SecurityUtils.sanitizeText(req.body.travelWillingness),

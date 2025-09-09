@@ -63,7 +63,6 @@ const speakerApplicationSchema = z.object({
   // Speaking Information
   selectedCategories: z.array(z.string()).min(1, "Please select at least one category"),
   specificTopics: z.string().min(10, "Please provide specific topics (at least 10 characters)"),
-  speakingTopics: z.string().min(1, "Speaking topics are required"),
   previousExperience: z.string().min(1, "Previous speaking experience is required"),
   availableFormats: z.array(z.string()).min(1, "Please select at least one format"),
   travelWillingness: z.string().min(1, "Please specify travel willingness"),
@@ -132,7 +131,6 @@ export default function SpeakerApplicationPage() {
       credentials: "",
       selectedCategories: [],
       specificTopics: "",
-      speakingTopics: "",
       previousExperience: "",
       availableFormats: [],
       travelWillingness: "",
@@ -506,18 +504,6 @@ export default function SpeakerApplicationPage() {
                         </p>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="speakingTopics">General Speaking Topics *</Label>
-                        <Textarea
-                          id="speakingTopics"
-                          {...form.register("speakingTopics")}
-                          placeholder="List the topics you can speak about (separated by commas)"
-                          className="min-h-[80px]"
-                        />
-                        {form.formState.errors.speakingTopics && (
-                          <p className="text-sm text-red-600">{form.formState.errors.speakingTopics.message}</p>
-                        )}
-                      </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="previousExperience">Previous Speaking Experience *</Label>

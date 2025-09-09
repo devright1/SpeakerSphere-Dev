@@ -167,7 +167,6 @@ export const validators = {
     body('selectedCategories').isArray({ min: 1, max: 10 }),
     body('selectedCategories.*').trim().isLength({ max: 100 }).escape(),
     body('specificTopics').trim().isLength({ min: 1, max: 1000 }).escape(),
-    body('speakingTopics').trim().isLength({ min: 1, max: 1000 }).escape(),
     body('previousExperience').trim().isLength({ min: 1, max: 2000 }).escape(),
     body('availableFormats').isArray({ min: 1, max: 10 }),
     body('availableFormats.*').trim().isLength({ max: 100 }).escape(),
