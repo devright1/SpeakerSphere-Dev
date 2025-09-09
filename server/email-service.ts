@@ -7,7 +7,7 @@ if (!process.env.SENDGRID_API_KEY) {
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Email templates and service configuration
-const FROM_EMAIL = 'noreply@thespeakersphere.com';
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@thespeakersphere.com';
 const ADMIN_EMAIL = 'admin@thespeakersphere.com';
 
 export interface EmailTemplate {
@@ -382,6 +382,61 @@ The SpeakerSphere Team`
           <p>Best regards,<br>The SpeakerSphere Team</p>
         </div>
       `
+    };
+
+    return await this.sendEmail(template);
+  }
+
+  // Test email functionality
+  async sendTestEmail(toEmail: string, testMessage: string = "This is a test email to verify your SendGrid configuration is working properly."): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: toEmail,
+      from: FROM_EMAIL,
+      subject: 'SpeakerSphere Email Test - Configuration Check',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">📧 Email System Test</h2>
+          
+          <p>Hello!</p>
+          
+          <p>${testMessage}</p>
+          
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #2563eb; margin-top: 0;">✅ Test Details</h3>
+            <p><strong>From:</strong> ${FROM_EMAIL}</p>
+            <p><strong>To:</strong> ${toEmail}</p>
+            <p><strong>Service:</strong> SendGrid</p>
+            <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+          </div>
+          
+          <p>If you receive this email, your email configuration is working correctly! 🎉</p>
+          
+          <p>Best regards,<br>The SpeakerSphere Team</p>
+          
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+          <p style="font-size: 12px; color: #94a3b8;">
+            This is a test email from SpeakerSphere's email system verification.
+          </p>
+        </div>
+      `,
+      text: `Email System Test
+      
+Hello!
+
+${testMessage}
+
+Test Details:
+- From: ${FROM_EMAIL}
+- To: ${toEmail}  
+- Service: SendGrid
+- Time: ${new Date().toISOString()}
+
+If you receive this email, your email configuration is working correctly!
+
+Best regards,
+The SpeakerSphere Team
+
+This is a test email from SpeakerSphere's email system verification.`
     };
 
     return await this.sendEmail(template);

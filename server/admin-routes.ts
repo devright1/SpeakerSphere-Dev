@@ -1645,4 +1645,32 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: "Failed to fetch topics by category" });
     }
   });
+
+  // Test email endpoint
+  app.post("/api/admin/send-test-email", async (req, res) => {
+    try {
+      const { email, message } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email address is required" });
+      }
+
+      const emailService = EmailService.getInstance();
+      const emailSent = await emailService.sendTestEmail(email, message);
+
+      if (emailSent) {
+        console.log(`📧 Test email sent successfully to ${email}`);
+        res.json({ 
+          message: "Test email sent successfully!", 
+          recipient: email,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(500).json({ message: "Failed to send test email" });
+      }
+    } catch (error) {
+      console.error('Test email error:', error);
+      res.status(500).json({ message: "Test email failed", error: error.message });
+    }
+  });
 }
