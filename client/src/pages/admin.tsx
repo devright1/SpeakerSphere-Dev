@@ -829,7 +829,8 @@ export default function AdminDashboard() {
       setDuplicateCheckDialogOpen(true);
       setIsCheckingDuplicates(false);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Duplicate check failed:", error);
       toast({ title: "Error", description: "Failed to check for duplicates", variant: "destructive" });
       setIsCheckingDuplicates(false);
     },
@@ -4760,7 +4761,10 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Potential Matches */}
-                {console.log("In dialog, potentialDuplicates:", potentialDuplicates, "actionType:", actionType)}
+                {(() => {
+                  console.log("In dialog, potentialDuplicates:", potentialDuplicates, "actionType:", actionType);
+                  return null;
+                })()}
                 {potentialDuplicates.length > 0 && (
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3">Potential Matches Found ({potentialDuplicates.length} matches)</h4>
