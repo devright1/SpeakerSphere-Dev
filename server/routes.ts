@@ -118,6 +118,39 @@ export function registerRoutes(app: Express): Express {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // Test verification email endpoint (for testing purposes)
+  app.post("/api/test/verification-email", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      // Generate a test verification token
+      const { generateVerificationToken, createVerificationEmail, sendEmail } = await import("./email");
+      const testToken = generateVerificationToken();
+      const testName = email.split('@')[0]; // Use email prefix as name
+      
+      // Create and send test verification email
+      const emailData = createVerificationEmail(email, testName, testToken);
+      const emailSent = await sendEmail(emailData);
+      
+      if (emailSent) {
+        res.json({ 
+          success: true, 
+          message: "Test verification email sent successfully",
+          testUrl: `${req.protocol}://${req.get('host')}/verify-email?token=${testToken}`
+        });
+      } else {
+        res.status(500).json({ error: "Failed to send test email" });
+      }
+    } catch (error) {
+      console.error('Test email error:', error);
+      res.status(500).json({ error: "Failed to send test email" });
+    }
+  });
+
   // Speaker application submission with rate limiting and validation
   app.post("/api/auth/speaker-application", 
     rateLimiters.contact,
