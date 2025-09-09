@@ -720,7 +720,8 @@ export function registerRoutes(app: Express): Express {
       const speakerId = parseInt(req.params.speakerId);
       
       // Use a default user ID for now - simplified authentication
-      const userId = req.headers['x-user-id'] || 'anonymous-user';
+      const userIdHeader = req.headers['x-user-id'];
+      const userId = Array.isArray(userIdHeader) ? userIdHeader[0] : userIdHeader || 'anonymous-user';
 
       const reviewData = {
         speakerId,
@@ -1059,7 +1060,7 @@ export function registerRoutes(app: Express): Express {
     validators.id,
     upload.single('file'), 
     validateFileUpload,
-    async (req: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res: Response) => {
     try {
       const speakerId = parseInt(req.params.speakerId);
       const { description, category, isPublic } = req.body;
