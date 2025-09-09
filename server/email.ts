@@ -47,7 +47,7 @@ export function createVerificationEmail(
   verificationToken: string
 ) {
   
-  const verificationUrl = `${getDomain()}/verify-email?token=${verificationToken}`;
+  const verificationUrl = `${getDomain()}/api/auth/verify-email/${verificationToken}`;
   
   return {
     to: userEmail,
