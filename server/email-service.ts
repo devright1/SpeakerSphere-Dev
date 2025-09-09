@@ -441,4 +441,111 @@ This is a test email from SpeakerSphere's email system verification.`
 
     return await this.sendEmail(template);
   }
+
+  // Speaker application approval with email verification
+  async sendSpeakerApprovalWithVerification(email: string, firstName: string, credentials: { email: string; password: string }, verificationToken: string): Promise<boolean> {
+    const verificationUrl = `${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/api/auth/verify-email/${verificationToken}`;
+    
+    const template: EmailTemplate = {
+      to: email,
+      from: FROM_EMAIL,
+      subject: 'Welcome to SpeakerSphere - Please Verify Your Email',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #059669;">🎉 Congratulations! Your application has been approved</h2>
+          
+          <p>Dear ${firstName},</p>
+          
+          <p>We're excited to welcome you to the SpeakerSphere platform! Your speaker application has been approved and your profile is now live.</p>
+          
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #059669; margin-top: 0;">Your Login Credentials</h3>
+            <p><strong>Email:</strong> ${credentials.email}</p>
+            <p><strong>Password:</strong> ${credentials.password}</p>
+            <p style="color: #dc2626; font-size: 14px;">Please change your password after your first login for security.</p>
+          </div>
+          
+          <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+            <h3 style="color: #d97706; margin-top: 0;">⚠️ Email Verification Required</h3>
+            <p style="color: #92400e;">Before you can log in, please verify your email address by clicking the button below:</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${verificationUrl}" 
+                 style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                ✅ Verify Email Address
+              </a>
+            </div>
+            
+            <p style="color: #92400e; font-size: 14px;">This verification link will expire in 24 hours. You will not be able to log in until your email is verified.</p>
+          </div>
+          
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #475569; margin-top: 0;">After Email Verification</h3>
+            <ul style="color: #64748b;">
+              <li>Log in to your speaker dashboard</li>
+              <li>Complete your profile with additional details</li>
+              <li>Upload professional photos and videos</li>
+              <li>Manage your content visibility settings</li>
+              <li>Respond to booking inquiries</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <p style="color: #64748b; font-size: 14px;">After verifying your email, you can access your dashboard:</p>
+            <a href="${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/for-speakers" 
+               style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Access Your Dashboard
+            </a>
+          </div>
+          
+          <p>If you have any questions or need assistance, please don't hesitate to contact us.</p>
+          
+          <p>Welcome to the SpeakerSphere community!</p>
+          
+          <p>Best regards,<br>The SpeakerSphere Team</p>
+          
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+          <p style="font-size: 12px; color: #94a3b8;">
+            If you can't click the verification button, copy and paste this link into your browser:<br>
+            ${verificationUrl}
+          </p>
+        </div>
+      `,
+      text: `Congratulations! Your application has been approved
+
+Dear ${firstName},
+
+We're excited to welcome you to the SpeakerSphere platform! Your speaker application has been approved and your profile is now live.
+
+Your Login Credentials:
+Email: ${credentials.email}
+Password: ${credentials.password}
+
+Please change your password after your first login for security.
+
+IMPORTANT: Email Verification Required
+Before you can log in, please verify your email address by visiting this link:
+${verificationUrl}
+
+This verification link will expire in 24 hours. You will not be able to log in until your email is verified.
+
+After Email Verification:
+- Log in to your speaker dashboard
+- Complete your profile with additional details
+- Upload professional photos and videos
+- Manage your content visibility settings
+- Respond to booking inquiries
+
+Dashboard URL: ${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/for-speakers
+
+If you have any questions or need assistance, please don't hesitate to contact us.
+
+Welcome to the SpeakerSphere community!
+
+Best regards,
+The SpeakerSphere Team`
+    };
+
+    return await this.sendEmail(template);
+  }
 }

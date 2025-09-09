@@ -4,6 +4,7 @@ import { db } from "./db";
 import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics } from "../shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { EmailService } from "./email-service";
+import { generateVerificationToken, getTokenExpiration } from "./email";
 import bcrypt from "bcryptjs";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
 
@@ -459,12 +460,18 @@ export function registerAdminRoutes(app: Express) {
         passwordHash: hashedPassword 
       });
       
-      // Send welcome email with login credentials
+      // Generate verification token and save it
+      const verificationToken = generateVerificationToken();
+      const tokenExpiration = getTokenExpiration();
+      await storage.setEmailVerificationToken(result.user.id, verificationToken, tokenExpiration);
+      
+      // Send combined approval and verification email
       const emailService = EmailService.getInstance();
-      const emailSent = await emailService.sendSpeakerApproval(
+      const emailSent = await emailService.sendSpeakerApprovalWithVerification(
         application.email,
         application.firstName,
-        { email: application.email, password: temporaryPassword }
+        { email: application.email, password: temporaryPassword },
+        verificationToken
       );
       
       res.json({ 
