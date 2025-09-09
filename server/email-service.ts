@@ -444,7 +444,7 @@ This is a test email from SpeakerSphere's email system verification.`
 
   // Speaker application approval with email verification
   async sendSpeakerApprovalWithVerification(email: string, firstName: string, credentials: { email: string; password: string }, verificationToken: string): Promise<boolean> {
-    const verificationUrl = `${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/api/auth/verify-email/${verificationToken}`;
+    const verificationUrl = `${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/verify-email?token=${verificationToken}`;
     
     const template: EmailTemplate = {
       to: email,
