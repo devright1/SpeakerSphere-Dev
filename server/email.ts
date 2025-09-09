@@ -12,6 +12,22 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || process.env.FROM_EMAIL || 'speakers@devright.com';
 const FROM_NAME = 'SpeakerSphere Reviews';
 
+// Get the correct domain for Replit deployment
+function getDomain(): string {
+  // Try various Replit environment variables
+  if (process.env.REPLIT_DOMAIN) {
+    return `https://${process.env.REPLIT_DOMAIN}`;
+  }
+  if (process.env.REPLIT_DOMAINS) {
+    return `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`;
+  }
+  if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+    return `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`;
+  }
+  // Fallback to localhost for local development
+  return 'http://localhost:5000';
+}
+
 // Generate secure verification token
 export function generateVerificationToken(): string {
   return crypto.randomBytes(32).toString('hex');
@@ -30,7 +46,8 @@ export function createVerificationEmail(
   userName: string, 
   verificationToken: string
 ) {
-  const verificationUrl = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/verify-email?token=${verificationToken}`;
+  
+  const verificationUrl = `${getDomain()}/verify-email?token=${verificationToken}`;
   
   return {
     to: userEmail,
@@ -144,7 +161,7 @@ export function createWelcomeEmail(userEmail: string, userName: string) {
               <li><strong>Manage Favorites:</strong> Bookmark speakers for easy access</li>
             </ul>
             <div style="text-align: center;">
-              <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}" class="button">Start Exploring</a>
+              <a href="${getDomain()}" class="button">Start Exploring</a>
             </div>
             <p>Thank you for joining our community of healthcare professionals. We're excited to help you find the perfect speakers for your events!</p>
           </div>
@@ -162,7 +179,7 @@ export function createWelcomeEmail(userEmail: string, userName: string) {
       
       You now have full access to browse speakers, read reviews, submit inquiries, and manage your favorites.
       
-      Visit https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'} to start exploring.
+      Visit ${getDomain()} to start exploring.
       
       Thank you for joining our community!
       
@@ -178,7 +195,8 @@ export function createPasswordResetEmail(
   userName: string, 
   resetToken: string
 ) {
-  const resetUrl = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/reset-password?token=${resetToken}`;
+  
+  const resetUrl = `${getDomain()}/reset-password?token=${resetToken}`;
   
   return {
     to: userEmail,
