@@ -814,11 +814,16 @@ export default function AdminDashboard() {
       return response.json();
     },
     onSuccess: (data) => {
-      setPotentialDuplicates(data.potentialMatches || []);
+      console.log("Duplicate check response:", data);
+      const matches = data.potentialMatches || [];
+      console.log("Setting potential duplicates:", matches);
+      setPotentialDuplicates(matches);
       // Set action type based on whether duplicates were found
-      if (data.potentialMatches && data.potentialMatches.length > 0) {
+      if (matches.length > 0) {
+        console.log("Found duplicates, setting actionType to add_to_existing");
         setActionType('add_to_existing'); // Show link to existing option
       } else {
+        console.log("No duplicates found, setting actionType to create_new");
         setActionType('create_new'); // Show create new option
       }
       setDuplicateCheckDialogOpen(true);
@@ -4755,9 +4760,10 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Potential Matches */}
+                {console.log("In dialog, potentialDuplicates:", potentialDuplicates, "actionType:", actionType)}
                 {potentialDuplicates.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Potential Matches Found</h4>
+                    <h4 className="font-medium text-gray-900 mb-3">Potential Matches Found ({potentialDuplicates.length} matches)</h4>
                     <div className="space-y-3 max-h-60 overflow-y-auto">
                       {potentialDuplicates.map((match: any) => (
                         <div key={match.id} className="flex items-center justify-between p-3 border rounded-lg">
