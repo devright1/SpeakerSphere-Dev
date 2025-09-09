@@ -108,6 +108,7 @@ export default function AdminDashboard() {
   const [selectedApplicationDetails, setSelectedApplicationDetails] = useState<any>(null);
   const [isEditingApplication, setIsEditingApplication] = useState(false);
   const [editableApplicationData, setEditableApplicationData] = useState<any>(null);
+  const [approvedApplicationCredentials, setApprovedApplicationCredentials] = useState<{[key: number]: {email: string, password: string}}>({});
   
   const { toast } = useToast();
 
@@ -873,6 +874,17 @@ export default function AdminDashboard() {
       setCurrentApplication(null);
       setPotentialDuplicates([]);
       setActionType(null);
+      
+      // Store credentials for display on the application card
+      if (data.loginInstructions && currentApplication) {
+        setApprovedApplicationCredentials(prev => ({
+          ...prev,
+          [currentApplication.id]: {
+            email: data.loginInstructions.email,
+            password: data.loginInstructions.password
+          }
+        }));
+      }
       
       // Show login credentials in toast with copy functionality
       const credentials = `Email: ${data.loginInstructions?.email}\nPassword: ${data.loginInstructions?.password}`;
@@ -1657,6 +1669,16 @@ export default function AdminDashboard() {
                                 <UserCheck className="h-3 w-3 mr-1" />
                                 View Speaker Account
                               </Button>
+                            )}
+                            
+                            {/* Show login credentials for approved applications */}
+                            {application.status === 'approved' && approvedApplicationCredentials[application.id] && (
+                              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm mt-2">
+                                <p className="font-medium text-green-800 mb-2">🔑 Speaker Login Credentials:</p>
+                                <p className="text-green-700"><strong>Email:</strong> {approvedApplicationCredentials[application.id].email}</p>
+                                <p className="text-green-700"><strong>Password:</strong> {approvedApplicationCredentials[application.id].password}</p>
+                                <p className="text-xs text-green-600 mt-1">Please provide these credentials to the speaker manually.</p>
+                              </div>
                             )}
                           </div>
                         </div>
