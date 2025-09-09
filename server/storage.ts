@@ -1024,7 +1024,7 @@ export class MemStorage implements IStorage {
       title: application.title,
       accountType: "speaker",
       speakerId: speaker.id,
-      emailVerified: false,
+      emailVerified: true,
       isActive: true,
       lastLoginAt: null,
       createdAt: new Date(),

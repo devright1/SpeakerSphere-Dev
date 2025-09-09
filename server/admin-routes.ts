@@ -422,23 +422,18 @@ export function registerAdminRoutes(app: Express) {
       const temporaryPassword = generateTemporaryPassword();
       const hashedPassword = await hashPassword(temporaryPassword);
       
-      // Update the created user with the hashed password
+      // Update the created user with the hashed password and verify email immediately
       await storage.updateUser(result.user.id, { 
-        passwordHash: hashedPassword 
+        passwordHash: hashedPassword,
+        emailVerified: true
       });
       
-      // Generate verification token and save it
-      const verificationToken = generateVerificationToken();
-      const tokenExpiration = getTokenExpiration();
-      await storage.setEmailVerificationToken(result.user.id, verificationToken, tokenExpiration);
-      
-      // Send combined approval and verification email
+      // Send approval email with login credentials (no verification needed)
       const emailService = EmailService.getInstance();
-      const emailSent = await emailService.sendSpeakerApprovalWithVerification(
+      const emailSent = await emailService.sendSpeakerApproval(
         application.email,
         application.firstName,
-        { email: application.email, password: temporaryPassword },
-        verificationToken
+        { email: application.email, password: temporaryPassword }
       );
       
       res.json({ 
