@@ -56,7 +56,7 @@ router.post("/register",
       
       if (existingUser || existingSpeaker || existingApplication) {
         return res.status(400).json({
-          message: "This email address is already in use. Please use a different email address or contact us if you believe this is an error."
+          message: "Submission failed. This email address is already in use. Please use a different email address or sign in."
         });
       }
 
