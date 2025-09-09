@@ -480,14 +480,48 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Helper method to generate unique slug
+  private async generateUniqueSlug(firstName: string, lastName: string): Promise<string> {
+    const baseSlug = `${firstName.toLowerCase()}-${lastName.toLowerCase()}`.replace(/\s+/g, '-');
+    
+    // Check if base slug exists
+    const existingSpeaker = await db.select().from(speakers)
+      .where(eq(speakers.slug, baseSlug))
+      .limit(1);
+    
+    if (existingSpeaker.length === 0) {
+      return baseSlug;
+    }
+    
+    // If exists, find next available number suffix
+    let counter = 1;
+    let uniqueSlug = `${baseSlug}-${counter}`;
+    
+    while (true) {
+      const existingWithSuffix = await db.select().from(speakers)
+        .where(eq(speakers.slug, uniqueSlug))
+        .limit(1);
+      
+      if (existingWithSuffix.length === 0) {
+        return uniqueSlug;
+      }
+      
+      counter++;
+      uniqueSlug = `${baseSlug}-${counter}`;
+    }
+  }
+
   async approveSpeakerApplication(applicationId: number, reviewedBy: string): Promise<{ speaker: Speaker; user: User }> {
     const application = await this.getSpeakerApplicationById(applicationId);
     if (!application) throw new Error("Application not found");
 
+    // Generate unique slug
+    const uniqueSlug = await this.generateUniqueSlug(application.firstName, application.lastName);
+
     // Create speaker profile
     const speakerData: InsertSpeaker = {
       name: `${application.firstName} ${application.lastName}`,
-      slug: `${application.firstName.toLowerCase()}-${application.lastName.toLowerCase()}`.replace(/\s+/g, '-'),
+      slug: uniqueSlug,
       title: application.title,
       bio: application.biography,
       expertise: application.specificTopics.split(',').map(s => s.trim()),
