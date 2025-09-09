@@ -159,7 +159,7 @@ export const validators = {
     body('lastName').trim().isLength({ min: 1, max: 50 }).escape(),
     body('email').isEmail().normalizeEmail(),
     body('phone').trim().isLength({ min: 1, max: 20 }).escape(),
-    body('website').optional().isURL({ protocols: ['http', 'https'] }),
+    body('website').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value)),
     body('title').trim().isLength({ min: 1, max: 20 }).escape(),
     body('specialty').trim().isLength({ min: 1, max: 100 }).escape(),
     body('yearsExperience').trim().isLength({ min: 1, max: 20 }).escape(),
@@ -173,13 +173,13 @@ export const validators = {
     body('availableFormats.*').trim().isLength({ max: 100 }).escape(),
     body('travelWillingness').trim().isLength({ min: 1, max: 100 }).escape(),
     body('biography').trim().isLength({ min: 1, max: 2000 }).escape(),
-    body('specialRequirements').optional().trim().isLength({ max: 1000 }).escape(),
-    body('references').optional().trim().isLength({ max: 1000 }).escape(),
+    body('specialRequirements').optional().custom((value) => !value || typeof value === 'string'),
+    body('references').optional().custom((value) => !value || typeof value === 'string'),
     // Social media fields are optional
-    body('instagramUrl').optional().isURL({ protocols: ['http', 'https'] }),
-    body('twitterUrl').optional().isURL({ protocols: ['http', 'https'] }),
-    body('facebookUrl').optional().isURL({ protocols: ['http', 'https'] }),
-    body('linkedinUrl').optional().isURL({ protocols: ['http', 'https'] })
+    body('instagramUrl').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value)),
+    body('twitterUrl').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value)),
+    body('facebookUrl').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value)),
+    body('linkedinUrl').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value))
   ],
 
   // Review validation
