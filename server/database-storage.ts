@@ -490,7 +490,7 @@ export class DatabaseStorage implements IStorage {
       slug: `${application.firstName.toLowerCase()}-${application.lastName.toLowerCase()}`.replace(/\s+/g, '-'),
       title: application.title,
       bio: application.biography,
-      expertise: application.speakingTopics.split(',').map(s => s.trim()),
+      expertise: application.specificTopics.split(',').map(s => s.trim()),
       location: "Location TBD",
       imageUrl: "/api/placeholder/300/300",
       verified: false,
