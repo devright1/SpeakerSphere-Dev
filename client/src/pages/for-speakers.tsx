@@ -85,7 +85,6 @@ const speakerApplicationSchema = z.object({
   // Speaking Information
   selectedCategories: z.array(z.string()).min(1, "Please select at least one category"),
   specificTopics: z.string().min(10, "Please provide specific topics (at least 10 characters)"),
-  speakingTopics: z.string().min(20, "Please describe your speaking topics (minimum 20 characters)"),
   previousExperience: z.string().min(20, "Please describe your previous speaking experience"),
   availableFormats: z.array(z.string()).min(1, "Please select at least one speaking format"),
   travelWillingness: z.string().min(1, "Please specify your travel preferences"),
@@ -131,7 +130,6 @@ export default function ForSpeakers() {
       credentials: "",
       selectedCategories: [],
       specificTopics: "",
-      speakingTopics: "",
       previousExperience: "",
       availableFormats: [],
       travelWillingness: "",
@@ -644,23 +642,6 @@ export default function ForSpeakers() {
                           )}
                         />
                         
-                        <FormField
-                          control={applicationForm.control}
-                          name="speakingTopics"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Speaking Topics & Areas of Expertise *</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Describe the topics you can speak about, your areas of expertise, and what audiences would benefit from your presentations..."
-                                  rows={4}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                         
                         <FormField
                           control={applicationForm.control}
