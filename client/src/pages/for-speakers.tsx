@@ -28,10 +28,7 @@ import {
   Globe,
   MapPin,
   Calendar,
-  MessageCircle,
-  Briefcase,
-  Mic,
-  FileText
+  MessageCircle
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -291,433 +288,68 @@ export default function ForSpeakers() {
               <TabsContent value="signin" className="mt-6">
                 <div className="space-y-6">
                   <div className="text-center">
-                    <h2 className="text-2xl font-bold mb-2">Speaker Application</h2>
-                    <p className="text-gray-600">Join our network of healthcare speaking professionals</p>
+                    <h2 className="text-2xl font-bold mb-2">Welcome Back</h2>
+                    <p className="text-gray-600">Sign in to manage your speaker profile and opportunities</p>
                   </div>
                   
-                  <Form {...applicationForm}>
-                    <form onSubmit={applicationForm.handleSubmit(onApplicationSubmit)} className="space-y-6">
-                      {/* Personal Information Section */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                          <UserPlus className="w-5 h-5" />
-                          Personal Information
-                        </h3>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={applicationForm.control}
-                            name="firstName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>First Name *</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="John" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={applicationForm.control}
-                            name="lastName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Last Name *</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Smith" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={applicationForm.control}
-                            name="email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Email Address *</FormLabel>
-                                <FormControl>
-                                  <Input type="email" placeholder="john.smith@example.com" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={applicationForm.control}
-                            name="phone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Phone Number *</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="+1 (555) 123-4567" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="website"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Professional Website</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://www.yourwebsite.com" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Social Media Links Section */}
-                        <div className="space-y-4">
-                          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Social Media Links (Optional)</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={applicationForm.control}
-                              name="instagramUrl"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Instagram</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="https://instagram.com/yourusername" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={applicationForm.control}
-                              name="twitterUrl"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>X / Twitter</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="https://twitter.com/yourusername" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={applicationForm.control}
-                              name="facebookUrl"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Facebook</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="https://facebook.com/yourusername" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={applicationForm.control}
-                              name="linkedinUrl"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>LinkedIn</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="https://linkedin.com/in/yourusername" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Professional Information Section */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                          <Briefcase className="w-5 h-5" />
-                          Professional Information
-                        </h3>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={applicationForm.control}
-                            name="title"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Professional Title *</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="e.g., DDS, MD, RDH" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={applicationForm.control}
-                            name="specialty"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Primary Specialty *</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="e.g., Oral Surgery, Periodontics" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={applicationForm.control}
-                            name="yearsExperience"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Years of Experience *</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select experience range" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="1-3">1-3 years</SelectItem>
-                                    <SelectItem value="4-7">4-7 years</SelectItem>
-                                    <SelectItem value="8-15">8-15 years</SelectItem>
-                                    <SelectItem value="16-25">16-25 years</SelectItem>
-                                    <SelectItem value="25+">25+ years</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="credentials"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Credentials & Certifications *</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="List your degrees, certifications, and professional credentials..."
-                                  className="min-h-[100px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Speaking Information Section */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                          <Mic className="w-5 h-5" />
-                          Speaking Information
-                        </h3>
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="selectedCategories"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Speaking Categories *</FormLabel>
-                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                                {officialCategories.map((category) => (
-                                  <div key={category} className="flex items-center space-x-2">
-                                    <Checkbox
-                                      id={`category-${category}`}
-                                      checked={field.value?.includes(category) || false}
-                                      onCheckedChange={(checked) => handleCategoryChange(category, !!checked)}
-                                    />
-                                    <Label 
-                                      htmlFor={`category-${category}`}
-                                      className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                      {category}
-                                    </Label>
-                                  </div>
-                                ))}
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="specificTopics"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Specific Topics & Expertise *</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Describe the specific topics, procedures, or areas of expertise you speak about..."
-                                  className="min-h-[120px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="previousExperience"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Previous Speaking Experience *</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Describe your speaking experience, including conferences, webinars, training sessions, etc..."
-                                  className="min-h-[120px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="availableFormats"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Available Speaking Formats *</FormLabel>
-                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                                {speakingFormats.map((format) => (
-                                  <div key={format} className="flex items-center space-x-2">
-                                    <Checkbox
-                                      id={`format-${format}`}
-                                      checked={field.value?.includes(format) || false}
-                                      onCheckedChange={(checked) => handleFormatChange(format, !!checked)}
-                                    />
-                                    <Label 
-                                      htmlFor={`format-${format}`}
-                                      className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                      {format}
-                                    </Label>
-                                  </div>
-                                ))}
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="travelWillingness"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Travel Willingness *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select travel preference" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="local">Local only (within 50 miles)</SelectItem>
-                                  <SelectItem value="regional">Regional (within state)</SelectItem>
-                                  <SelectItem value="national">National (anywhere in country)</SelectItem>
-                                  <SelectItem value="international">International</SelectItem>
-                                  <SelectItem value="virtual">Virtual presentations only</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Additional Information Section */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                          <FileText className="w-5 h-5" />
-                          Additional Information
-                        </h3>
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="biography"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Professional Biography *</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Write a professional biography that highlights your expertise, achievements, and speaking experience. This will be displayed on your speaker profile..."
-                                  className="min-h-[150px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="specialRequirements"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Special Requirements or Equipment Needs</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Any special AV requirements, accessibility needs, or equipment preferences..."
-                                  className="min-h-[100px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={applicationForm.control}
-                          name="references"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Professional References</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Optional: List professional references who can speak to your expertise and speaking ability..."
-                                  className="min-h-[100px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
+                  <Form {...signInForm}>
+                    <form onSubmit={signInForm.handleSubmit(onSignInSubmit)} className="space-y-4 max-w-md mx-auto">
+                      <FormField
+                        control={signInForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email Address</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="email" 
+                                placeholder="your.email@example.com" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signInForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="password" 
+                                placeholder="Enter your password" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
                       <Button 
                         type="submit" 
                         className="w-full" 
-                        disabled={applicationMutation.isPending}
+                        disabled={signInMutation.isPending}
                       >
-                        {applicationMutation.isPending ? "Submitting Application..." : "Submit Application"}
+                        {signInMutation.isPending ? "Signing In..." : "Sign In"}
                       </Button>
+                      
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">
+                          Don't have an account? 
+                          <Button 
+                            variant="link" 
+                            className="p-0 ml-1 h-auto"
+                            onClick={() => setActiveTab("apply")}
+                          >
+                            Apply to become a speaker
+                          </Button>
+                        </p>
+                      </div>
                     </form>
                   </Form>
                 </div>
