@@ -17,9 +17,7 @@ export default function VerifyEmail() {
 
   const verifyEmailMutation = useMutation({
     mutationFn: async (token: string) => {
-      return apiRequest(`/api/auth/verify-email/${token}`, {
-        method: "GET",
-      });
+      return apiRequest("GET", `/api/auth/verify-email/${token}`);
     },
     onSuccess: () => {
       setVerificationStatus("success");

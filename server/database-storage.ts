@@ -1088,4 +1088,38 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return result[0];
   }
+
+  // Review management methods
+  async getPendingReviews(): Promise<Review[]> {
+    const result = await db.select().from(reviews)
+      .where(eq(reviews.approvalStatus, 'pending'))
+      .orderBy(desc(reviews.createdAt));
+    return result;
+  }
+
+  async approveReview(reviewId: number, adminNotes?: string): Promise<Review | undefined> {
+    const result = await db.update(reviews)
+      .set({
+        approvalStatus: 'approved',
+        adminNotes,
+        approvedAt: new Date(),
+        approvedBy: 'admin' // In a real app, this would be the admin user ID
+      })
+      .where(eq(reviews.id, reviewId))
+      .returning();
+    return result[0];
+  }
+
+  async rejectReview(reviewId: number, adminNotes?: string): Promise<Review | undefined> {
+    const result = await db.update(reviews)
+      .set({
+        approvalStatus: 'rejected',
+        adminNotes,
+        approvedAt: new Date(),
+        approvedBy: 'admin' // In a real app, this would be the admin user ID
+      })
+      .where(eq(reviews.id, reviewId))
+      .returning();
+    return result[0];
+  }
 }
