@@ -809,9 +809,13 @@ export default function AdminDashboard() {
   // Check for duplicate speakers mutation
   const checkDuplicatesMutation = useMutation({
     mutationFn: async (applicationId: number) => {
+      console.log("🔥 DUPLICATE CHECK MUTATION STARTED - applicationId:", applicationId);
       const response = await fetch(`/api/admin/speaker-applications/${applicationId}/check-duplicates`);
+      console.log("🔥 DUPLICATE CHECK API RESPONSE:", response);
       if (!response.ok) throw new Error('Failed to check for duplicates');
-      return response.json();
+      const data = await response.json();
+      console.log("🔥 DUPLICATE CHECK DATA:", data);
+      return data;
     },
     onSuccess: (data) => {
       console.log("Duplicate check response:", data);
@@ -2323,6 +2327,8 @@ export default function AdminDashboard() {
                               <>
                                 <Button 
                                   onClick={() => {
+                                    console.log("🚨 APPROVE BUTTON CLICKED (PENDING) - Application:", application);
+                                    console.log("🔍 About to check for duplicates, application.id:", application.id);
                                     setCurrentApplication(application);
                                     setIsCheckingDuplicates(true);
                                     checkDuplicatesMutation.mutate(application.id);
@@ -2367,6 +2373,8 @@ export default function AdminDashboard() {
                               <>
                                 <Button 
                                   onClick={() => {
+                                    console.log("🚨 APPROVE BUTTON CLICKED (UNDER_REVIEW) - Application:", application);
+                                    console.log("🔍 About to check for duplicates, application.id:", application.id);
                                     setCurrentApplication(application);
                                     setIsCheckingDuplicates(true);
                                     checkDuplicatesMutation.mutate(application.id);
