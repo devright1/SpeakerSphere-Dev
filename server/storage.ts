@@ -1109,6 +1109,68 @@ export class MemStorage implements IStorage {
     }
   }
 
+  async updateUserSubscription(userId: string, subscriptionData: Partial<User>): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    const updatedUser = { ...user, ...subscriptionData, updatedAt: new Date() };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async setEmailVerificationToken(userId: string, token: string, expires: Date): Promise<User | undefined> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.verificationToken = token;
+      user.verificationTokenExpires = expires;
+      user.updatedAt = new Date();
+      this.users.set(userId, user);
+      return user;
+    }
+    return undefined;
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => 
+      user.verificationToken === token && 
+      user.verificationTokenExpires && 
+      user.verificationTokenExpires > new Date()
+    );
+  }
+
+  async verifyUserEmail(userId: string): Promise<User | undefined> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.emailVerified = true;
+      user.verificationToken = null;
+      user.verificationTokenExpires = null;
+      user.updatedAt = new Date();
+      this.users.set(userId, user);
+      return user;
+    }
+    return undefined;
+  }
+
+  async clearVerificationToken(userId: string): Promise<User | undefined> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.verificationToken = null;
+      user.verificationTokenExpires = null;
+      user.updatedAt = new Date();
+      this.users.set(userId, user);
+      return user;
+    }
+    return undefined;
+  }
+
+  async clearSpeakerTopics(speakerId: number): Promise<void> {
+    const topicsToDelete = Array.from(this.speakerTopics.values())
+      .filter(st => st.speakerId === speakerId);
+    
+    topicsToDelete.forEach(topic => this.speakerTopics.delete(topic.id));
+  }
+
   async toggleUserBookmark(userId: string, speakerId: number): Promise<{ bookmarked: boolean }> {
     const existingBookmark = Array.from(this.userBookmarks.values())
       .find(b => b.userId === userId && b.speakerId === speakerId);
