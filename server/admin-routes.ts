@@ -341,12 +341,20 @@ export function registerAdminRoutes(app: Express) {
       let user = await storage.getUserByEmail(application.email);
       
       if (!user) {
-        // Create a new user account for this email
+        // Create a new user account for this email and link to existing speaker
         user = await storage.createUser({
           email: application.email,
           firstName: application.firstName,
           lastName: application.lastName,
-          passwordHash: '' // Will be set later
+          passwordHash: '', // Will be set later
+          accountType: 'speaker',
+          speakerId: existingSpeaker.id
+        });
+      } else {
+        // Update existing user to link to the speaker profile
+        await storage.updateUser(user.id, { 
+          accountType: 'speaker',
+          speakerId: existingSpeaker.id
         });
       }
       

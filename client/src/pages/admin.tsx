@@ -815,6 +815,12 @@ export default function AdminDashboard() {
     },
     onSuccess: (data) => {
       setPotentialDuplicates(data.potentialMatches || []);
+      // Set action type based on whether duplicates were found
+      if (data.potentialMatches && data.potentialMatches.length > 0) {
+        setActionType('add_to_existing'); // Show link to existing option
+      } else {
+        setActionType('create_new'); // Show create new option
+      }
       setDuplicateCheckDialogOpen(true);
       setIsCheckingDuplicates(false);
     },
