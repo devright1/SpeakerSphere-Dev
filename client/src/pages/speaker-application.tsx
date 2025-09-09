@@ -75,23 +75,6 @@ const speakerApplicationSchema = z.object({
 
 type SpeakerApplicationForm = z.infer<typeof speakerApplicationSchema>;
 
-const medicalSpecialties = [
-  "Oral Surgery",
-  "Prosthodontics", 
-  "Orthodontics",
-  "Periodontics",
-  "Endodontics",
-  "Pediatric Dentistry",
-  "Oral Pathology",
-  "Maxillofacial Surgery",
-  "Digital Dentistry",
-  "Esthetic Dentistry",
-  "Implant Dentistry",
-  "Practice Management",
-  "Anesthesiology",
-  "Sleep Medicine",
-  "Other"
-];
 
 const speakingFormats = [
   "Keynote Presentation",
@@ -404,19 +387,12 @@ export default function SpeakerApplicationPage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="specialty">Medical Specialty *</Label>
-                          <Select onValueChange={(value) => form.setValue("specialty", value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select your specialty" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {medicalSpecialties.map((specialty) => (
-                                <SelectItem key={specialty} value={specialty}>
-                                  {specialty}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Label htmlFor="specialty">Specialty/Field *</Label>
+                          <Input
+                            id="specialty"
+                            {...form.register("specialty")}
+                            placeholder="e.g., Oral Surgery, Cardiology"
+                          />
                           {form.formState.errors.specialty && (
                             <p className="text-sm text-red-600">{form.formState.errors.specialty.message}</p>
                           )}
