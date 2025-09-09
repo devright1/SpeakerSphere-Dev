@@ -154,6 +154,34 @@ export const validators = {
     body('languages.*').trim().isLength({ max: 30 }).escape()
   ],
 
+  speakerApplication: [
+    body('firstName').trim().isLength({ min: 1, max: 50 }).escape(),
+    body('lastName').trim().isLength({ min: 1, max: 50 }).escape(),
+    body('email').isEmail().normalizeEmail(),
+    body('phone').trim().isLength({ min: 1, max: 20 }).escape(),
+    body('website').optional().isURL({ protocols: ['http', 'https'] }),
+    body('title').trim().isLength({ min: 1, max: 20 }).escape(),
+    body('specialty').trim().isLength({ min: 1, max: 100 }).escape(),
+    body('yearsExperience').trim().isLength({ min: 1, max: 20 }).escape(),
+    body('credentials').trim().isLength({ min: 1, max: 500 }).escape(),
+    body('selectedCategories').isArray({ min: 1, max: 10 }),
+    body('selectedCategories.*').trim().isLength({ max: 100 }).escape(),
+    body('specificTopics').trim().isLength({ min: 1, max: 1000 }).escape(),
+    body('speakingTopics').trim().isLength({ min: 1, max: 1000 }).escape(),
+    body('previousExperience').trim().isLength({ min: 1, max: 2000 }).escape(),
+    body('availableFormats').isArray({ min: 1, max: 10 }),
+    body('availableFormats.*').trim().isLength({ max: 100 }).escape(),
+    body('travelWillingness').trim().isLength({ min: 1, max: 100 }).escape(),
+    body('biography').trim().isLength({ min: 1, max: 2000 }).escape(),
+    body('specialRequirements').optional().trim().isLength({ max: 1000 }).escape(),
+    body('references').optional().trim().isLength({ max: 1000 }).escape(),
+    // Social media fields are optional
+    body('instagramUrl').optional().isURL({ protocols: ['http', 'https'] }),
+    body('twitterUrl').optional().isURL({ protocols: ['http', 'https'] }),
+    body('facebookUrl').optional().isURL({ protocols: ['http', 'https'] }),
+    body('linkedinUrl').optional().isURL({ protocols: ['http', 'https'] })
+  ],
+
   // Review validation
   review: [
     body('overallRating').isFloat({ min: 1, max: 5 }),

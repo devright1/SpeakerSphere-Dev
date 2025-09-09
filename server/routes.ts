@@ -121,19 +121,35 @@ export function registerRoutes(app: Express): Express {
   // Speaker application submission with rate limiting and validation
   app.post("/api/auth/speaker-application", 
     rateLimiters.contact,
-    validators.speakerProfile,
+    validators.speakerApplication,
     validateRequest,
     async (req: any, res: any) => {
     try {
-      // Sanitize input data
+      // Sanitize input data for speaker application
       const sanitizedData = {
         ...req.body,
-        name: SecurityUtils.sanitizeText(req.body.name),
-        bio: SecurityUtils.sanitizeHtml(req.body.bio || ''),
+        firstName: SecurityUtils.sanitizeText(req.body.firstName),
+        lastName: SecurityUtils.sanitizeText(req.body.lastName),
         email: SecurityUtils.sanitizeEmail(req.body.email),
-        location: SecurityUtils.sanitizeText(req.body.location || ''),
-        expertise: req.body.expertise?.map((skill: string) => SecurityUtils.sanitizeText(skill)),
-        languages: req.body.languages?.map((lang: string) => SecurityUtils.sanitizeText(lang))
+        phone: SecurityUtils.sanitizeText(req.body.phone),
+        website: req.body.website ? SecurityUtils.sanitizeText(req.body.website) : undefined,
+        title: SecurityUtils.sanitizeText(req.body.title),
+        specialty: SecurityUtils.sanitizeText(req.body.specialty),
+        yearsExperience: SecurityUtils.sanitizeText(req.body.yearsExperience),
+        credentials: SecurityUtils.sanitizeText(req.body.credentials),
+        selectedCategories: req.body.selectedCategories?.map((category: string) => SecurityUtils.sanitizeText(category)),
+        specificTopics: SecurityUtils.sanitizeText(req.body.specificTopics),
+        speakingTopics: SecurityUtils.sanitizeText(req.body.speakingTopics),
+        previousExperience: SecurityUtils.sanitizeText(req.body.previousExperience),
+        availableFormats: req.body.availableFormats?.map((format: string) => SecurityUtils.sanitizeText(format)),
+        travelWillingness: SecurityUtils.sanitizeText(req.body.travelWillingness),
+        biography: SecurityUtils.sanitizeHtml(req.body.biography),
+        specialRequirements: req.body.specialRequirements ? SecurityUtils.sanitizeText(req.body.specialRequirements) : undefined,
+        references: req.body.references ? SecurityUtils.sanitizeText(req.body.references) : undefined,
+        instagramUrl: req.body.instagramUrl ? SecurityUtils.sanitizeText(req.body.instagramUrl) : undefined,
+        twitterUrl: req.body.twitterUrl ? SecurityUtils.sanitizeText(req.body.twitterUrl) : undefined,
+        facebookUrl: req.body.facebookUrl ? SecurityUtils.sanitizeText(req.body.facebookUrl) : undefined,
+        linkedinUrl: req.body.linkedinUrl ? SecurityUtils.sanitizeText(req.body.linkedinUrl) : undefined
       };
 
       const validatedData = insertSpeakerApplicationSchema.parse(sanitizedData);
