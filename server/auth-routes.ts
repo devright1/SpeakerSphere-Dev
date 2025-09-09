@@ -49,11 +49,14 @@ router.post("/register",
 
       const { email, password, firstName, lastName, title, company } = req.body;
 
-      // Check if user already exists
+      // Check if email already exists in users, speakers, or applications  
       const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
+      const existingSpeaker = await storage.getSpeakerByEmail(email);
+      const existingApplication = await storage.getSpeakerApplicationByEmail(email);
+      
+      if (existingUser || existingSpeaker || existingApplication) {
         return res.status(400).json({
-          message: "An account with this email already exists"
+          message: "This email address is already in use. Please use a different email address or contact us if you believe this is an error."
         });
       }
 

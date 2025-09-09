@@ -186,6 +186,19 @@ export function registerRoutes(app: Express): Express {
 
       const validatedData = insertSpeakerApplicationSchema.parse(sanitizedData);
       
+      // Check if email already exists in users or applications
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      const existingSpeaker = await storage.getSpeakerByEmail(validatedData.email);
+      const existingApplication = await storage.getSpeakerApplicationByEmail(validatedData.email);
+      
+      if (existingUser || existingSpeaker || existingApplication) {
+        return res.status(400).json({
+          success: false,
+          message: "This email address is already in use. Please use a different email address or contact us if you believe this is an error.",
+          field: "email"
+        });
+      }
+      
       // Create speaker application record
       const application = await storage.createSpeakerApplication(validatedData);
       

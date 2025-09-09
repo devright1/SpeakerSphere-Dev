@@ -180,6 +180,11 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getSpeakerByEmail(email: string): Promise<Speaker | undefined> {
+    const result = await db.select().from(speakers).where(eq(speakers.email, email));
+    return result[0];
+  }
+
   async createSpeaker(speaker: InsertSpeaker): Promise<Speaker> {
     const result = await db.insert(speakers).values(speaker).returning();
     return result[0];

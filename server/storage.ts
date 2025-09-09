@@ -64,6 +64,7 @@ export interface IStorage {
   getSpeakerBySlug(slug: string): Promise<Speaker | undefined>;
   getSpeakerByName(name: string): Promise<Speaker | undefined>;
   getSpeakerByUserId(userId: string): Promise<Speaker | undefined>;
+  getSpeakerByEmail(email: string): Promise<Speaker | undefined>;
   createSpeaker(speaker: InsertSpeaker): Promise<Speaker>;
   updateSpeaker(id: number, speaker: Partial<InsertSpeaker>): Promise<Speaker | undefined>;
   deleteSpeaker(id: number, deletionType?: "immediate" | "retention"): Promise<boolean>;
@@ -470,6 +471,10 @@ export class MemStorage implements IStorage {
     
     // Get speaker by speakerId
     return this.speakers.get(user.speakerId);
+  }
+
+  async getSpeakerByEmail(email: string): Promise<Speaker | undefined> {
+    return Array.from(this.speakers.values()).find(speaker => speaker.email === email);
   }
 
   async createSpeaker(insertSpeaker: InsertSpeaker): Promise<Speaker> {

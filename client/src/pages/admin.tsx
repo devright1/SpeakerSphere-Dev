@@ -809,32 +809,23 @@ export default function AdminDashboard() {
   // Check for duplicate speakers mutation
   const checkDuplicatesMutation = useMutation({
     mutationFn: async (applicationId: number) => {
-      console.log("🔥 DUPLICATE CHECK MUTATION STARTED - applicationId:", applicationId);
       const response = await fetch(`/api/admin/speaker-applications/${applicationId}/check-duplicates`);
-      console.log("🔥 DUPLICATE CHECK API RESPONSE:", response);
       if (!response.ok) throw new Error('Failed to check for duplicates');
-      const data = await response.json();
-      console.log("🔥 DUPLICATE CHECK DATA:", data);
-      return data;
+      return response.json();
     },
     onSuccess: (data) => {
-      console.log("Duplicate check response:", data);
       const matches = data.potentialMatches || [];
-      console.log("Setting potential duplicates:", matches);
       setPotentialDuplicates(matches);
       // Set action type based on whether duplicates were found
       if (matches.length > 0) {
-        console.log("Found duplicates, setting actionType to add_to_existing");
         setActionType('add_to_existing'); // Show link to existing option
       } else {
-        console.log("No duplicates found, setting actionType to create_new");
         setActionType('create_new'); // Show create new option
       }
       setDuplicateCheckDialogOpen(true);
       setIsCheckingDuplicates(false);
     },
     onError: (error) => {
-      console.error("Duplicate check failed:", error);
       toast({ title: "Error", description: "Failed to check for duplicates", variant: "destructive" });
       setIsCheckingDuplicates(false);
     },
@@ -1172,7 +1163,6 @@ export default function AdminDashboard() {
 
   const handleCreateNewProfile = () => {
     if (currentApplication) {
-      console.log("🚨 CREATE NEW PROFILE - Checking for duplicates first");
       setIsCheckingDuplicates(true);
       checkDuplicatesMutation.mutate(currentApplication.id);
     }
@@ -1682,10 +1672,8 @@ export default function AdminDashboard() {
                                 <Button
                                   size="sm"
                                   onClick={() => {
-                                    console.log("🚨 APPROVE & CREATE BUTTON CLICKED - Application:", application);
                                     setCurrentApplication(application);
                                     setActionType('create_new');
-                                    console.log("🔍 About to check for duplicates - Opening dialog");
                                     setIsCheckingDuplicates(true);
                                     checkDuplicatesMutation.mutate(application.id);
                                   }}
@@ -2329,8 +2317,6 @@ export default function AdminDashboard() {
                               <>
                                 <Button 
                                   onClick={() => {
-                                    console.log("🚨 APPROVE BUTTON CLICKED (PENDING) - Application:", application);
-                                    console.log("🔍 About to check for duplicates, application.id:", application.id);
                                     setCurrentApplication(application);
                                     setIsCheckingDuplicates(true);
                                     checkDuplicatesMutation.mutate(application.id);
@@ -2375,8 +2361,6 @@ export default function AdminDashboard() {
                               <>
                                 <Button 
                                   onClick={() => {
-                                    console.log("🚨 APPROVE BUTTON CLICKED (UNDER_REVIEW) - Application:", application);
-                                    console.log("🔍 About to check for duplicates, application.id:", application.id);
                                     setCurrentApplication(application);
                                     setIsCheckingDuplicates(true);
                                     checkDuplicatesMutation.mutate(application.id);
@@ -4771,10 +4755,6 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Potential Matches */}
-                {(() => {
-                  console.log("In dialog, potentialDuplicates:", potentialDuplicates, "actionType:", actionType);
-                  return null;
-                })()}
                 {potentialDuplicates.length > 0 && (
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3">Potential Matches Found ({potentialDuplicates.length} matches)</h4>
