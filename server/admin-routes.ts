@@ -488,6 +488,44 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Reset user password (generate temporary password)
+  app.patch("/api/admin/users/:userId/reset-password", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const { adminPassword } = req.body;
+      
+      // Verify admin password
+      if (!adminPassword || adminPassword !== "Doneright123!") {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
+      
+      // Generate temporary password and hash it
+      const temporaryPassword = generateTemporaryPassword();
+      const hashedPassword = await hashPassword(temporaryPassword);
+      
+      // Update user's password
+      await storage.updateUser(userId, { passwordHash: hashedPassword });
+      
+      // Get user details for response
+      const user = await storage.getUserById(userId);
+      
+      res.json({
+        success: true,
+        message: "Temporary password generated",
+        loginInstructions: {
+          email: user?.email,
+          password: temporaryPassword,
+          loginUrl: process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}/for-speakers` : 'http://localhost:5000/for-speakers'
+        }
+      });
+      
+      console.log(`🔑 Temporary password generated for ${user?.email}: ${temporaryPassword}`);
+    } catch (error) {
+      console.error("Failed to reset password:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Delete speaker (immediate or 14-day retention)
   app.delete("/api/admin/speakers/:id", async (req, res) => {
     try {
