@@ -1172,10 +1172,9 @@ export default function AdminDashboard() {
 
   const handleCreateNewProfile = () => {
     if (currentApplication) {
-      approveApplicationMutation.mutate({
-        applicationId: currentApplication.id,
-        reviewedBy: adminEmail || 'Admin User'
-      });
+      console.log("🚨 CREATE NEW PROFILE - Checking for duplicates first");
+      setIsCheckingDuplicates(true);
+      checkDuplicatesMutation.mutate(currentApplication.id);
     }
   };
 
