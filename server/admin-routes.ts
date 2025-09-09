@@ -356,7 +356,7 @@ export function registerAdminRoutes(app: Express) {
         loginInstructions: {
           email: application.email,
           password: temporaryPassword,
-          loginUrl: loginUrl
+          loginUrl: process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}/for-speakers` : 'http://localhost:5000/for-speakers'
         }
       });
       
@@ -477,7 +477,7 @@ export function registerAdminRoutes(app: Express) {
         loginInstructions: {
           email: application.email,
           password: temporaryPassword,
-          loginUrl: loginUrl
+          loginUrl: process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}/for-speakers` : 'http://localhost:5000/for-speakers'
         }
       });
       
