@@ -68,7 +68,7 @@ router.post("/register",
         lastName,
         title: title || '',
         company: company || '',
-        emailVerified: true
+        emailVerified: false
       });
 
       // Generate verification token and send email
@@ -88,7 +88,7 @@ router.post("/register",
       }
 
       res.status(201).json({
-        message: "Account created successfully! You can now log in.",
+        message: "Account created successfully! Please check your email to verify your account before logging in.",
         userId: newUser.id,
         emailSent
       });
@@ -350,14 +350,14 @@ router.post("/login",
         });
       }
 
-      // Email verification temporarily disabled
-      // if (!user.emailVerified) {
-      //   return res.status(403).json({
-      //     message: "Please verify your email address before logging in. Check your inbox for a verification email.",
-      //     emailVerified: false,
-      //     userId: user.id
-      //   });
-      // }
+      // Check email verification
+      if (!user.emailVerified) {
+        return res.status(403).json({
+          message: "Please verify your email address before logging in. Check your inbox for a verification email.",
+          emailVerified: false,
+          userId: user.id
+        });
+      }
 
       // Generate session token
       const sessionToken = generateVerificationToken();
