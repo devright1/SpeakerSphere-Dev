@@ -95,6 +95,7 @@ export default function AdminDashboard() {
   
   // Duplicate checking state
   const [duplicateCheckDialogOpen, setDuplicateCheckDialogOpen] = useState(false);
+  const [overrideConfirmDialogOpen, setOverrideConfirmDialogOpen] = useState(false);
 
   // Inquiry states
   const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(null);
@@ -1168,6 +1169,27 @@ export default function AdminDashboard() {
         applicationId: currentApplication.id,
         existingSpeakerId: selectedExistingSpeaker
       });
+    }
+  };
+
+  const handleOverrideConfirm = () => {
+    if (currentApplication) {
+      approveApplicationMutation.mutate({
+        applicationId: currentApplication.id,
+        reviewedBy: adminEmail || 'Admin User'
+      });
+      setOverrideConfirmDialogOpen(false);
+    }
+  };
+
+  const handleCreateNewWithOverride = () => {
+    if (potentialDuplicates.length > 0) {
+      // Show confirmation dialog if duplicates exist
+      setDuplicateCheckDialogOpen(false);
+      setOverrideConfirmDialogOpen(true);
+    } else {
+      // No duplicates, proceed normally
+      handleCreateNewProfile();
     }
   };
 
@@ -4783,13 +4805,24 @@ export default function AdminDashboard() {
                   </Button>
                   
                   {actionType === 'create_new' && (
-                    <Button 
-                      onClick={handleCreateNewProfile}
-                      disabled={approveApplicationMutation.isPending}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      {approveApplicationMutation.isPending ? "Creating..." : "Create New Profile"}
-                    </Button>
+                    <div className="flex space-x-2">
+                      {potentialDuplicates.length > 0 && (
+                        <Button 
+                          onClick={handleCreateNewWithOverride}
+                          disabled={approveApplicationMutation.isPending}
+                          className="bg-amber-600 hover:bg-amber-700"
+                        >
+                          {approveApplicationMutation.isPending ? "Creating..." : "Create Anyway"}
+                        </Button>
+                      )}
+                      <Button 
+                        onClick={handleCreateNewProfile}
+                        disabled={approveApplicationMutation.isPending || potentialDuplicates.length > 0}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {approveApplicationMutation.isPending ? "Creating..." : "Create New Profile"}
+                      </Button>
+                    </div>
                   )}
                   
                   {actionType === 'add_to_existing' && (
@@ -4804,6 +4837,77 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Override Confirmation Dialog */}
+        <Dialog open={overrideConfirmDialogOpen} onOpenChange={setOverrideConfirmDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>⚠️ Confirm Override</DialogTitle>
+              <DialogDescription>
+                You are about to create a new speaker profile despite finding potential duplicates.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {currentApplication && (
+              <div className="space-y-4">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    <h4 className="font-medium text-amber-800">Similar Profiles Found</h4>
+                  </div>
+                  <p className="text-sm text-amber-700 mb-3">
+                    We found {potentialDuplicates.length} existing speaker(s) with similar names:
+                  </p>
+                  <div className="space-y-1">
+                    {potentialDuplicates.slice(0, 3).map((duplicate: any) => (
+                      <p key={duplicate.id} className="text-sm text-amber-800 font-medium">
+                        • {duplicate.name} - {duplicate.title || "No title"}
+                      </p>
+                    ))}
+                    {potentialDuplicates.length > 3 && (
+                      <p className="text-sm text-amber-700">...and {potentialDuplicates.length - 3} more</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-800 mb-2">New Application Details</h4>
+                  <div className="text-sm text-blue-700">
+                    <p><strong>Name:</strong> {currentApplication.firstName} {currentApplication.lastName}</p>
+                    <p><strong>Email:</strong> {currentApplication.email}</p>
+                    <p><strong>Title:</strong> {currentApplication.title}</p>
+                    <p><strong>Specialty:</strong> {currentApplication.specialty}</p>
+                  </div>
+                </div>
+                
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-700">
+                    <strong>Are you sure this is a different person?</strong> Creating duplicate profiles can confuse users and impact the platform's quality.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-3 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setOverrideConfirmDialogOpen(false);
+                  setDuplicateCheckDialogOpen(true);
+                }}
+              >
+                Go Back
+              </Button>
+              <Button 
+                onClick={handleOverrideConfirm}
+                disabled={approveApplicationMutation.isPending}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {approveApplicationMutation.isPending ? "Creating..." : "Yes, Create New Profile"}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
 

@@ -261,17 +261,45 @@ export function registerAdminRoutes(app: Express) {
       
       // Search for existing speakers with similar names
       const allSpeakers = await storage.getSpeakers({ includeHidden: true });
+      
+      console.log(`🔍 Checking for duplicates of: "${fullName}"`);
+      console.log(`📊 Total speakers in database: ${allSpeakers.length}`);
+      
       const potentialMatches = allSpeakers.filter(speaker => {
-        const speakerName = speaker.name.toLowerCase();
-        const applicationName = fullName.toLowerCase();
+        const speakerName = speaker.name.toLowerCase().trim();
+        const applicationName = fullName.toLowerCase().trim();
         
-        // Check for exact match or very similar names
-        return speakerName === applicationName || 
-               speakerName.includes(applicationName) || 
-               applicationName.includes(speakerName) ||
-               // Check if individual names match (e.g., "Dr. John Smith" vs "John Smith")
-               speakerName.replace(/^(dr\.?|prof\.?|mr\.?|mrs\.?|ms\.?)\s+/i, '') === applicationName ||
-               applicationName.replace(/^(dr\.?|prof\.?|mr\.?|mrs\.?|ms\.?)\s+/i, '') === speakerName;
+        // Normalize names (remove extra spaces, titles, punctuation)
+        const normalizedSpeakerName = speakerName
+          .replace(/^(dr\.?|prof\.?|mr\.?|mrs\.?|ms\.?|dds\.?|dmd\.?|phd\.?)\s+/i, '')
+          .replace(/[^\w\s]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+          
+        const normalizedApplicationName = applicationName
+          .replace(/^(dr\.?|prof\.?|mr\.?|mrs\.?|ms\.?|dds\.?|dmd\.?|phd\.?)\s+/i, '')
+          .replace(/[^\w\s]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        const isMatch = (
+          // Exact match
+          speakerName === applicationName ||
+          normalizedSpeakerName === normalizedApplicationName ||
+          // Contains match
+          speakerName.includes(applicationName) || 
+          applicationName.includes(speakerName) ||
+          normalizedSpeakerName.includes(normalizedApplicationName) ||
+          normalizedApplicationName.includes(normalizedSpeakerName) ||
+          // Email match
+          (speaker.email && application.email && speaker.email.toLowerCase() === application.email.toLowerCase())
+        );
+        
+        if (isMatch) {
+          console.log(`✅ Found match: "${speaker.name}" (ID: ${speaker.id}) matches "${fullName}"`);
+        }
+        
+        return isMatch;
       });
       
       res.json({
