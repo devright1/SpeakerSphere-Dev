@@ -112,6 +112,15 @@ export default function AdminDashboard() {
   
   const { toast } = useToast();
 
+  // Initialize credentials for already approved applications
+  useEffect(() => {
+    // Set known credentials for approved applications
+    setApprovedApplicationCredentials({
+      4: { email: "jane.smith@example.com", password: "18Xqphfgh4cI" }, // Jane Smith
+      9: { email: "rpinzon@devright.com", password: "casfjWM9Apbt" }    // Rafael Pinzon
+    });
+  }, []);
+
   // Fetch all inquiries
   const { data: inquiries = [], isLoading: inquiriesLoading } = useQuery<(Inquiry & { speakerName?: string })[]>({
     queryKey: ["/api/admin/inquiries"],
