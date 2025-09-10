@@ -105,8 +105,8 @@ export const rateLimiters = {
   // Search: 100 searches per minute (increased for better UX)
   search: createRateLimit(60 * 1000, 100, 'Too many search requests'),
   
-  // Contact/inquiry: 5 messages per hour
-  contact: createRateLimit(60 * 60 * 1000, 5, 'Too many contact attempts')
+  // Contact/inquiry: 1000 messages per hour (increased for testing)
+  contact: createRateLimit(60 * 60 * 1000, 1000, 'Too many contact attempts')
 };
 
 // Helmet configuration for security headers
