@@ -699,7 +699,7 @@ export default function SpeakerDashboard() {
                                           });
                                           
                                           // Invalidate and refetch speaker data
-                                          queryClient.invalidateQueries({ queryKey: ["/api/speakers/dashboard"] });
+                                          queryClient.invalidateQueries({ queryKey: ['/api/speakers/by-user', user?.id] });
                                         }
                                       } catch (error) {
                                         toast({
@@ -736,7 +736,7 @@ export default function SpeakerDashboard() {
                                         });
                                         
                                         // Invalidate and refetch speaker data
-                                        queryClient.invalidateQueries({ queryKey: ["/api/speakers/dashboard"] });
+                                        queryClient.invalidateQueries({ queryKey: ['/api/speakers/by-user', user?.id] });
                                       }
                                     } catch (error) {
                                       toast({

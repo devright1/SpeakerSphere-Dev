@@ -1850,20 +1850,12 @@ export function registerRoutes(app: Express): Express {
       // Authentication using same pattern as downloads
       let user = (req as any).session?.user;
       
-      console.log("Headshot upload authentication debug:");
-      console.log("- Session user:", user ? 'exists' : 'missing');
-      console.log("- X-User-ID header:", req.headers['x-user-id']);
-      console.log("- Requested speakerId:", speakerId);
-      
       // Fallback: Check if there's user data from X-User-ID header
       if (!user) {
         const userIdHeader = req.headers['x-user-id'] as string;
         if (userIdHeader) {
-          console.log("- Looking up user by ID:", userIdHeader);
           const userData = await storage.getUserById(userIdHeader);
-          console.log("- User data found:", userData ? 'yes' : 'no');
           if (userData) {
-            console.log("- User speakerId:", userData.speakerId);
             user = userData;
           }
         }
@@ -1871,11 +1863,8 @@ export function registerRoutes(app: Express): Express {
 
       // Verify user has access to update this speaker
       if (!user || (user.speakerId !== speakerId && !user.isAdmin)) {
-        console.log("- Access denied. User speakerId:", user?.speakerId, "isAdmin:", user?.isAdmin);
         return res.status(403).json({ error: "Access denied" });
       }
-      
-      console.log("- Access granted for user speakerId:", user.speakerId);
 
       // Update speaker headshot with base64 data
       const updatedSpeaker = await storage.updateSpeaker(speakerId, {
