@@ -1847,8 +1847,21 @@ export function registerRoutes(app: Express): Express {
         });
       }
 
+      // Authentication using same pattern as downloads
+      let user = (req as any).session?.user;
+      
+      // Fallback: Check if there's user data from X-User-ID header
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData) {
+            user = userData;
+          }
+        }
+      }
+
       // Verify user has access to update this speaker
-      const user = (req as any).session?.user;
       if (!user || (user.speakerId !== speakerId && !user.isAdmin)) {
         return res.status(403).json({ error: "Access denied" });
       }
