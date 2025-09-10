@@ -35,9 +35,10 @@ export async function apiRequest(
 
   // Handle both success and error responses here
   if (!res.ok) {
+    const text = await res.text();
+    console.log('Raw error response:', text);
+    
     try {
-      const text = await res.text();
-      console.log('Raw error response:', text);
       const jsonResponse = JSON.parse(text);
       console.log('Parsed error response:', jsonResponse);
       
@@ -50,10 +51,9 @@ export async function apiRequest(
       }
       
       throw new Error(errorMessage);
-    } catch (parseError) {
-      console.error('Error parsing response:', parseError);
-      // If JSON parsing fails, fall back to status text
-      throw new Error(res.statusText || 'An error occurred');
+    } catch (jsonError) {
+      // If JSON parsing fails, use the raw text or status text
+      throw new Error(text || res.statusText || 'An error occurred');
     }
   }
 
@@ -91,7 +91,21 @@ export const getQueryFn: <T>(options: {
       return null;
     }
 
-    await throwIfResNotOk(res);
+    // Handle error responses  
+    if (!res.ok) {
+      try {
+        const text = await res.text();
+        const jsonResponse = JSON.parse(text);
+        const errorMessage = jsonResponse.message || jsonResponse.error || text || res.statusText;
+        throw new Error(errorMessage);
+      } catch (parseError) {
+        if (parseError instanceof Error && parseError.message && !parseError.message.includes('Unexpected token')) {
+          throw parseError;
+        }
+        throw new Error(res.statusText || 'An error occurred');
+      }
+    }
+    
     return await res.json();
   };
 
