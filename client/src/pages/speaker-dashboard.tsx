@@ -1007,24 +1007,6 @@ export default function SpeakerDashboard() {
                   </CardContent>
                 </Card>
 
-                {/* Expertise */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Award className="h-5 w-5 mr-2" />
-                      Expertise
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {speakerProfile.expertise?.map((skill: string, index: number) => (
-                        <Badge key={index} variant="outline">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
 
                 {/* Languages */}
                 {speakerProfile.languages && speakerProfile.languages.length > 0 && (
