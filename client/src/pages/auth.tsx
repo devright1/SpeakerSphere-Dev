@@ -80,8 +80,8 @@ export default function AuthPage() {
       setSubmitStep("success");
       setIsSuccess(true);
       
-      // Use the auth context login method to properly update state
-      login(data.token, data.user);
+      // Use the auth context login method to properly update state  
+      login(data.user.id, data.user);
       
       setTimeout(() => {
         toast({
@@ -118,8 +118,8 @@ export default function AuthPage() {
       setSubmitStep("success");
       setIsSuccess(true);
       
-      // Use the auth context login method to properly update state
-      login(data.token, data.user);
+      // Use the auth context login method to properly update state  
+      login(data.user.id, data.user);
       
       setTimeout(() => {
         toast({
