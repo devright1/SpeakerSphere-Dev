@@ -3699,6 +3699,24 @@ function InquiriesManagement() {
     },
   });
 
+  // Delete inquiry mutation
+  const deleteInquiryMutation = useMutation({
+    mutationFn: async ({ inquiryId, adminPassword }: { inquiryId: number; adminPassword: string }) => {
+      return await apiRequest(`/api/admin/inquiries/${inquiryId}`, {
+        method: 'DELETE',
+        body: { adminPassword },
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Inquiry deleted successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/inquiries"] });
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.message || "Failed to delete inquiry";
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
+    },
+  });
+
   // Filter inquiries based on search and status
   const filteredInquiries = inquiries.filter((inquiry) => {
     const matchesSearch = inquirySearchQuery === "" || 
@@ -3714,6 +3732,13 @@ function InquiriesManagement() {
 
   const handleStatusUpdate = (inquiryId: number, newStatus: string) => {
     updateInquiryStatusMutation.mutate({ inquiryId, status: newStatus });
+  };
+
+  const handleDeleteInquiry = (inquiryId: number) => {
+    const password = prompt('Enter admin password to delete this inquiry:');
+    if (password) {
+      deleteInquiryMutation.mutate({ inquiryId, adminPassword: password });
+    }
   };
 
   // Status color mapping
@@ -3924,6 +3949,22 @@ function InquiriesManagement() {
                           </Button>
                         </div>
                       </div>
+                      
+                      {/* Delete Action */}
+                      <div className="border-t border-gray-200 pt-3 mt-3">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Admin Actions:</div>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteInquiry(inquiry.id)}
+                          disabled={deleteInquiryMutation.isPending}
+                          className="text-xs w-full"
+                          data-testid={`button-delete-inquiry-${inquiry.id}`}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          {deleteInquiryMutation.isPending ? 'Deleting...' : 'Delete Inquiry'}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -3938,3 +3979,21 @@ function InquiriesManagement() {
 
 // Detailed Application View Dialog Component
 function ApplicationDetailsDialog({ application, isOpen, onClose }: {
+  application: any;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Application Details</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          {/* Application details content would go here */}
+          <p>Application details component is not yet implemented.</p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
