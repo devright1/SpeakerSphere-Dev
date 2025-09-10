@@ -103,13 +103,7 @@ export default function SpeakerVideoPortfolio({ speakerId }: SpeakerVideoPortfol
   }
 
   if (videos.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Play className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Videos Available</h3>
-        <p className="text-gray-600">This speaker hasn't uploaded any demo videos yet.</p>
-      </div>
-    );
+    return null;
   }
 
   const featuredVideo = videos.find(v => v.featured) || videos[0];
