@@ -46,8 +46,6 @@ import {
   EyeOff,
   Camera
 } from "lucide-react";
-import { ObjectUploader } from "@/components/ObjectUploader";
-import type { UploadResult } from '@uppy/core';
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
@@ -665,47 +663,64 @@ export default function SpeakerDashboard() {
                           </Avatar>
                           {isEditing && (
                             <div className="mt-3 space-y-2">
-                              <ObjectUploader
-                                maxNumberOfFiles={1}
-                                maxFileSize={5 * 1024 * 1024} // 5MB limit
-                                onGetUploadParameters={async (file: any) => {
-                                  const data = await apiRequest("POST", "/api/objects/upload", {});
-                                  return {
-                                    method: "PUT" as const,
-                                    url: data.uploadURL,
-                                  };
-                                }}
-                                onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-                                  if (result.successful && result.successful.length > 0) {
-                                    const uploadedFile = result.successful[0];
-                                    try {
-                                      const data = await apiRequest("PUT", `/api/speakers/${speakerProfile.id}/headshot`, {
-                                        headshotURL: uploadedFile.uploadURL,
-                                      });
-                                      
-                                      if (data.success) {
-                                        toast({
-                                          title: "Headshot Updated",
-                                          description: "Your profile headshot has been successfully updated!",
-                                        });
-                                        
-                                        // Invalidate and refetch speaker data
-                                        queryClient.invalidateQueries({ queryKey: ["/api/speakers/dashboard"] });
-                                      }
-                                    } catch (error) {
+                              <div className="space-y-2">
+                                <input
+                                  id="headshot-upload"
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    
+                                    // Check file size (5MB limit)
+                                    if (file.size > 5 * 1024 * 1024) {
                                       toast({
-                                        title: "Upload Failed",
-                                        description: "Failed to update headshot. Please try again.",
+                                        title: "File Too Large",
+                                        description: "Please select an image smaller than 5MB.",
                                         variant: "destructive",
                                       });
+                                      return;
                                     }
-                                  }
-                                }}
-                                buttonClassName="w-full bg-blue-500 text-white hover:bg-blue-600"
-                              >
-                                <Camera className="h-4 w-4 mr-2" />
-                                Upload Photo
-                              </ObjectUploader>
+                                    
+                                    // Convert to base64
+                                    const reader = new FileReader();
+                                    reader.onload = async (event) => {
+                                      const base64 = event.target?.result as string;
+                                      try {
+                                        const data = await apiRequest("PUT", `/api/speakers/${speakerProfile.id}/headshot`, {
+                                          headshotData: base64,
+                                        });
+                                        
+                                        if (data.success) {
+                                          toast({
+                                            title: "Headshot Updated",
+                                            description: "Your profile headshot has been successfully updated!",
+                                          });
+                                          
+                                          // Invalidate and refetch speaker data
+                                          queryClient.invalidateQueries({ queryKey: ["/api/speakers/dashboard"] });
+                                        }
+                                      } catch (error) {
+                                        toast({
+                                          title: "Upload Failed",
+                                          description: "Failed to update headshot. Please try again.",
+                                          variant: "destructive",
+                                        });
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }}
+                                />
+                                <Button
+                                  type="button"
+                                  onClick={() => document.getElementById('headshot-upload')?.click()}
+                                  className="w-full bg-blue-500 text-white hover:bg-blue-600"
+                                >
+                                  <Camera className="h-4 w-4 mr-2" />
+                                  Upload Photo
+                                </Button>
+                              </div>
                               {speakerProfile.imageUrl && (
                                 <Button
                                   variant="ghost"

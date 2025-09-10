@@ -1841,21 +1841,21 @@ export function registerRoutes(app: Express): Express {
         return res.status(400).json({ error: "Invalid speaker ID" });
       }
 
-      if (!req.body.headshotURL) {
+      if (!req.body.headshotData) {
         return res.status(400).json({ 
-          error: "headshotURL is required" 
+          error: "headshotData is required" 
         });
       }
 
-      // Normalize the object path from the uploaded URL
-      const objectStorageService = new ObjectStorageService();
-      const objectPath = objectStorageService.normalizeObjectEntityPath(
-        req.body.headshotURL,
-      );
+      // Verify user has access to update this speaker
+      const user = (req as any).session?.user;
+      if (!user || (user.speakerId !== speakerId && !user.isAdmin)) {
+        return res.status(403).json({ error: "Access denied" });
+      }
 
-      // Update speaker headshot
+      // Update speaker headshot with base64 data
       const updatedSpeaker = await storage.updateSpeaker(speakerId, {
-        imageUrl: objectPath,
+        imageUrl: req.body.headshotData,
       });
 
       if (!updatedSpeaker) {
