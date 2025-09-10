@@ -698,6 +698,9 @@ export default function SpeakerDashboard() {
                                             description: "Your profile headshot has been successfully updated!",
                                           });
                                           
+                                          // Update the editForm to preserve the new imageUrl when saving changes
+                                          setEditForm({...editForm, imageUrl: base64});
+                                          
                                           // Invalidate and refetch speaker data
                                           queryClient.invalidateQueries({ queryKey: ['/api/speakers/by-user', user?.id] });
                                         }
