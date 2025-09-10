@@ -154,8 +154,16 @@ export default function SpeakerProfile() {
   // Check if speaker is bookmarked
   const { data: isBookmarked = false } = useQuery({
     queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker?.id}`],
+    queryFn: async () => {
+      if (!user?.id || !speaker?.id) return false;
+      const response = await fetch(`/api/users/${user.id}/bookmarks/check/${speaker.id}`);
+      if (!response.ok) return false;
+      const data = await response.json();
+      return data.bookmarked || false;
+    },
     enabled: !!user?.id && !!speaker?.id,
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   // Toggle bookmark mutation
