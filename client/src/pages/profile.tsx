@@ -399,9 +399,6 @@ export default function ProfilePage() {
                           return {
                             method: "PUT" as const,
                             url: data.uploadURL,
-                            headers: {
-                              'Content-Type': file.type || 'application/octet-stream'
-                            }
                           };
                         }}
                         onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
