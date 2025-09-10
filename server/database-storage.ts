@@ -197,9 +197,22 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSpeaker(id: number, deletionType: "immediate" | "retention" = "retention"): Promise<boolean> {
     if (deletionType === "immediate") {
-      // Permanently delete the speaker record
-      const result = await db.delete(speakers).where(eq(speakers.id, id));
-      return result.rowCount ? result.rowCount > 0 : false;
+      try {
+        // Clean up associated data first
+        await db.delete(inquiries).where(eq(inquiries.speakerId, id));
+        await db.delete(reviews).where(eq(reviews.speakerId, id));
+        await db.delete(videos).where(eq(videos.speakerId, id));
+        await db.delete(speakerTopics).where(eq(speakerTopics.speakerId, id));
+        await db.delete(speakerContent).where(eq(speakerContent.speakerId, id));
+        await db.delete(speakerInteractions).where(eq(speakerInteractions.speakerId, id));
+        
+        // Permanently delete the speaker record
+        const result = await db.delete(speakers).where(eq(speakers.id, id));
+        return result.rowCount ? result.rowCount > 0 : false;
+      } catch (error) {
+        console.error("Failed to delete speaker:", error);
+        return false;
+      }
     } else {
       // Hide profile and set deletion timestamp for 14-day retention
       const deletedAt = new Date();
@@ -726,10 +739,19 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(userId: string): Promise<boolean> {
     try {
+      // Get user email before deletion to clean up inquiries
+      const user = await db.select().from(users).where(eq(users.id, userId));
+      const userEmail = user[0]?.email;
+      
       // Clean up related data first
       await db.delete(userSessions).where(eq(userSessions.userId, userId));
       await db.delete(userLikes).where(eq(userLikes.userId, userId));
       await db.delete(userBookmarks).where(eq(userBookmarks.userId, userId));
+      
+      // Clean up inquiries made by this user (as a client)
+      if (userEmail) {
+        await db.delete(inquiries).where(eq(inquiries.clientEmail, userEmail));
+      }
       
       // Delete the user
       const result = await db.delete(users).where(eq(users.id, userId));

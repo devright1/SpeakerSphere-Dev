@@ -507,14 +507,30 @@ export class MemStorage implements IStorage {
       // Permanently delete speaker and associated data
       this.speakers.delete(id);
       
-      // Remove associated reviews and videos for cleanup
+      // Remove associated reviews for cleanup
       const reviews = Array.from(this.reviews.values())
         .filter(review => review.speakerId === id);
       reviews.forEach(review => this.reviews.delete(review.id));
       
+      // Remove associated videos for cleanup
       const videos = Array.from(this.videos.values())
         .filter(video => video.speakerId === id);
       videos.forEach(video => this.videos.delete(video.id));
+      
+      // Remove associated inquiries for cleanup
+      const inquiries = Array.from(this.inquiries.values())
+        .filter(inquiry => inquiry.speakerId === id);
+      inquiries.forEach(inquiry => this.inquiries.delete(inquiry.id));
+      
+      // Remove associated speaker topics for cleanup
+      const speakerTopics = Array.from(this.speakerTopics.values())
+        .filter(st => st.speakerId === id);
+      speakerTopics.forEach(st => this.speakerTopics.delete(st.id));
+      
+      // Remove associated content for cleanup
+      const content = Array.from(this.content.values())
+        .filter(c => c.speakerId === id);
+      content.forEach(c => this.content.delete(c.id));
     } else {
       // 14-day retention: hide profile and set deletion timestamp
       const updatedSpeaker = { 
@@ -910,7 +926,8 @@ export class MemStorage implements IStorage {
   }
 
   async deleteUser(userId: string): Promise<boolean> {
-    if (!this.users.has(userId)) return false;
+    const user = this.users.get(userId);
+    if (!user) return false;
     
     // Clean up related data
     const userLikesToDelete = Array.from(this.userLikes.values())
@@ -924,6 +941,11 @@ export class MemStorage implements IStorage {
     const userSessionsToDelete = Array.from(this.userSessions.values())
       .filter(session => session.userId === userId);
     userSessionsToDelete.forEach(session => this.userSessions.delete(session.id));
+    
+    // Clean up inquiries made by this user (as a client)
+    const userInquiriesToDelete = Array.from(this.inquiries.values())
+      .filter(inquiry => inquiry.clientEmail === user.email);
+    userInquiriesToDelete.forEach(inquiry => this.inquiries.delete(inquiry.id));
     
     return this.users.delete(userId);
   }
