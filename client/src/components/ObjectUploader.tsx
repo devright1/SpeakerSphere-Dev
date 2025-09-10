@@ -77,6 +77,14 @@ export function ObjectUploader({
         setShowModal(false);
         onComplete?.(result);
       })
+      .on("upload-error", (file, error, response) => {
+        console.error("Upload error:", error);
+        console.error("Upload response:", response);
+        console.error("File info:", file);
+      })
+      .on("error", (error) => {
+        console.error("Uppy error:", error);
+      })
   );
 
   return (
