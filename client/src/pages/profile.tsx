@@ -394,12 +394,14 @@ export default function ProfilePage() {
                       <ObjectUploader
                         maxNumberOfFiles={1}
                         maxFileSize={5 * 1024 * 1024} // 5MB limit
-                        onGetUploadParameters={async () => {
-                          const response = await apiRequest("POST", "/api/objects/upload", {});
-                          const data = await response.json();
+                        onGetUploadParameters={async (file: any) => {
+                          const data = await apiRequest("POST", "/api/objects/upload", {});
                           return {
                             method: "PUT" as const,
                             url: data.uploadURL,
+                            headers: {
+                              'Content-Type': file.type || 'application/octet-stream'
+                            }
                           };
                         }}
                         onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
