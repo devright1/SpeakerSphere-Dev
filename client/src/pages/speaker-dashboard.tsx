@@ -719,6 +719,107 @@ export default function SpeakerDashboard() {
                       </div>
                     </div>
 
+                    {/* Professional Experience Section */}
+                    <div className="pt-6 border-t">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <Award className="h-5 w-5 mr-2" />
+                        Professional Experience
+                      </h3>
+                      
+                      {/* Achievements */}
+                      <div className="mb-4">
+                        <Label htmlFor="achievements">Professional Achievements</Label>
+                        {isEditing ? (
+                          <Textarea
+                            id="achievements"
+                            rows={3}
+                            value={editForm.achievements?.join('\n') || ''}
+                            onChange={(e) => setEditForm({...editForm, achievements: e.target.value.split('\n').filter(item => item.trim())})}
+                            placeholder="Enter one achievement per line&#10;Example:&#10;Board Certified Prosthodontist&#10;Fellow, American College of Prosthodontists&#10;Top Speaker Award 2023"
+                          />
+                        ) : (
+                          <div className="mt-2">
+                            {speakerProfile.achievements?.length > 0 ? (
+                              <ul className="space-y-1">
+                                {speakerProfile.achievements.map((achievement: string, index: number) => (
+                                  <li key={index} className="flex items-start">
+                                    <Award className="h-4 w-4 text-accent mt-1 mr-2 flex-shrink-0" />
+                                    <span className="text-gray-700">{achievement}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-gray-500 italic">No achievements listed</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Education */}
+                      <div className="mb-4">
+                        <Label htmlFor="education">Education & Credentials</Label>
+                        {isEditing ? (
+                          <Textarea
+                            id="education"
+                            rows={2}
+                            value={editForm.education || ''}
+                            onChange={(e) => setEditForm({...editForm, education: e.target.value})}
+                            placeholder="DDS, University of California San Francisco; Prosthodontic Residency, UCLA"
+                          />
+                        ) : (
+                          <p className="text-gray-700 mt-2">{speakerProfile.education || 'Not specified'}</p>
+                        )}
+                      </div>
+
+                      {/* Certifications */}
+                      <div className="mb-4">
+                        <Label htmlFor="certifications">Certifications & Awards</Label>
+                        {isEditing ? (
+                          <Textarea
+                            id="certifications"
+                            rows={2}
+                            value={editForm.certifications || ''}
+                            onChange={(e) => setEditForm({...editForm, certifications: e.target.value})}
+                            placeholder="Board Certified Prosthodontist; Fellow, American College of Prosthodontists"
+                          />
+                        ) : (
+                          <p className="text-gray-700 mt-2">{speakerProfile.certifications || 'Not specified'}</p>
+                        )}
+                      </div>
+
+                      {/* Professional Affiliations */}
+                      <div className="mb-4">
+                        <Label htmlFor="affiliations">Professional Affiliations</Label>
+                        {isEditing ? (
+                          <Textarea
+                            id="affiliations"
+                            rows={2}
+                            value={editForm.affiliations || ''}
+                            onChange={(e) => setEditForm({...editForm, affiliations: e.target.value})}
+                            placeholder="American Dental Association; International Association of Dental Implantology"
+                          />
+                        ) : (
+                          <p className="text-gray-700 mt-2">{speakerProfile.affiliations || 'Not specified'}</p>
+                        )}
+                      </div>
+
+                      {/* Publications */}
+                      <div className="mb-4">
+                        <Label htmlFor="publications">Publications & Research</Label>
+                        {isEditing ? (
+                          <Textarea
+                            id="publications"
+                            rows={2}
+                            value={editForm.publications || ''}
+                            onChange={(e) => setEditForm({...editForm, publications: e.target.value})}
+                            placeholder="Author of 15+ peer-reviewed articles in Journal of Prosthodontics"
+                          />
+                        ) : (
+                          <p className="text-gray-700 mt-2">{speakerProfile.publications || 'Not specified'}</p>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Save/Cancel Buttons */}
                     {isEditing && (
                       <div className="flex space-x-3 pt-4 border-t">
