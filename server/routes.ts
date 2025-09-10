@@ -1,4 +1,4 @@
-import type { Express, Request } from "express";
+import type { Express, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 // Removed zfd import as it's not needed for current functionality
@@ -1828,6 +1828,76 @@ export function registerRoutes(app: Express): Express {
       });
     } catch (error) {
       console.error("Error updating profile picture:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Speaker headshot update endpoint
+  app.put("/api/speakers/:speakerId/headshot", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      
+      if (isNaN(speakerId)) {
+        return res.status(400).json({ error: "Invalid speaker ID" });
+      }
+
+      if (!req.body.headshotURL) {
+        return res.status(400).json({ 
+          error: "headshotURL is required" 
+        });
+      }
+
+      // Normalize the object path from the uploaded URL
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = objectStorageService.normalizeObjectEntityPath(
+        req.body.headshotURL,
+      );
+
+      // Update speaker headshot
+      const updatedSpeaker = await storage.updateSpeaker(speakerId, {
+        imageUrl: objectPath,
+      });
+
+      if (!updatedSpeaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      res.status(200).json({
+        success: true,
+        speaker: updatedSpeaker,
+        message: "Headshot updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating speaker headshot:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Remove speaker headshot endpoint
+  app.delete("/api/speakers/:speakerId/headshot", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      
+      if (isNaN(speakerId)) {
+        return res.status(400).json({ error: "Invalid speaker ID" });
+      }
+
+      // Set imageUrl to a default placeholder or empty string
+      const updatedSpeaker = await storage.updateSpeaker(speakerId, {
+        imageUrl: "/placeholder-avatar.png", // Default placeholder image
+      });
+
+      if (!updatedSpeaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      res.status(200).json({
+        success: true,
+        speaker: updatedSpeaker,
+        message: "Headshot removed successfully",
+      });
+    } catch (error) {
+      console.error("Error removing speaker headshot:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

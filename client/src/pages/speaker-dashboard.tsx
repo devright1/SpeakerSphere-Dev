@@ -43,8 +43,11 @@ import {
   Download,
   Trash2,
   Plus,
-  EyeOff
+  EyeOff,
+  Camera
 } from "lucide-react";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from '@uppy/core';
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
@@ -644,6 +647,120 @@ export default function SpeakerDashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Headshot Upload Section */}
+                    <div className="border-b pb-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                          <Camera className="h-5 w-5 mr-2" />
+                          Profile Headshot
+                        </h3>
+                      </div>
+                      <div className="flex items-start gap-6">
+                        <div className="flex flex-col items-center">
+                          <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+                            <AvatarImage src={speakerProfile.imageUrl} alt={speakerProfile.name} />
+                            <AvatarFallback className="text-xl font-semibold bg-blue-500 text-white">
+                              {speakerProfile.name?.charAt(0) || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          {isEditing && (
+                            <div className="mt-3 space-y-2">
+                              <ObjectUploader
+                                maxNumberOfFiles={1}
+                                maxFileSize={5 * 1024 * 1024} // 5MB limit
+                                onGetUploadParameters={async () => {
+                                  const response = await apiRequest("POST", "/api/objects/upload", {});
+                                  const data = await response.json();
+                                  return {
+                                    method: "PUT" as const,
+                                    url: data.uploadURL,
+                                  };
+                                }}
+                                onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                                  if (result.successful && result.successful.length > 0) {
+                                    const uploadedFile = result.successful[0];
+                                    try {
+                                      const response = await apiRequest("PUT", `/api/speakers/${speakerProfile.id}/headshot`, {
+                                        headshotURL: uploadedFile.uploadURL,
+                                      });
+                                      const data = await response.json();
+                                      
+                                      if (data.success) {
+                                        toast({
+                                          title: "Headshot Updated",
+                                          description: "Your profile headshot has been successfully updated!",
+                                        });
+                                        
+                                        // Invalidate and refetch speaker data
+                                        queryClient.invalidateQueries({ queryKey: ["/api/speakers/dashboard"] });
+                                      }
+                                    } catch (error) {
+                                      toast({
+                                        title: "Upload Failed",
+                                        description: "Failed to update headshot. Please try again.",
+                                        variant: "destructive",
+                                      });
+                                    }
+                                  }
+                                }}
+                                buttonClassName="w-full bg-blue-500 text-white hover:bg-blue-600"
+                              >
+                                <Camera className="h-4 w-4 mr-2" />
+                                Upload Photo
+                              </ObjectUploader>
+                              {speakerProfile.imageUrl && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={async () => {
+                                    try {
+                                      const response = await apiRequest("DELETE", `/api/speakers/${speakerProfile.id}/headshot`);
+                                      const data = await response.json();
+                                      
+                                      if (data.success) {
+                                        toast({
+                                          title: "Headshot Removed",
+                                          description: "Your profile headshot has been removed.",
+                                        });
+                                        
+                                        // Invalidate and refetch speaker data
+                                        queryClient.invalidateQueries({ queryKey: ["/api/speakers/dashboard"] });
+                                      }
+                                    } catch (error) {
+                                      toast({
+                                        title: "Remove Failed",
+                                        description: "Failed to remove headshot. Please try again.",
+                                        variant: "destructive",
+                                      });
+                                    }
+                                  }}
+                                  className="w-full text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Remove Photo
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm text-gray-600">
+                            <p className="mb-2">
+                              <strong>Photo Guidelines:</strong>
+                            </p>
+                            <ul className="list-disc list-inside space-y-1 text-gray-500">
+                              <li>Professional headshot recommended</li>
+                              <li>High-resolution image (at least 400x400 pixels)</li>
+                              <li>Clear view of face with good lighting</li>
+                              <li>Neutral or professional background</li>
+                              <li>File size limit: 5MB</li>
+                              <li>Supported formats: JPG, PNG, WebP</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Basic Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
