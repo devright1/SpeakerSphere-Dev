@@ -159,7 +159,10 @@ export const validators = {
     body('lastName').trim().isLength({ min: 1, max: 50 }).escape(),
     body('email').isEmail().normalizeEmail(),
     body('phone').trim().isLength({ min: 1, max: 20 }).escape(),
-    body('website').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value)),
+    body('website').optional().custom((value) => {
+      // Allow empty, null, undefined, or valid URLs
+      return !value || value === '' || value.trim() === '' || /^https?:\/\/.+/.test(value);
+    }),
     body('title').trim().isLength({ min: 1, max: 20 }).escape(),
     body('specialty').trim().isLength({ min: 1, max: 100 }).escape(),
     body('yearsExperience').trim().isLength({ min: 1, max: 20 }).escape(),
@@ -174,11 +177,23 @@ export const validators = {
     body('biography').trim().isLength({ min: 1, max: 2000 }).escape(),
     body('specialRequirements').optional().custom((value) => !value || typeof value === 'string'),
     body('references').optional().custom((value) => !value || typeof value === 'string'),
-    // Social media fields are optional
-    body('instagramUrl').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value)),
-    body('twitterUrl').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value)),
-    body('facebookUrl').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value)),
-    body('linkedinUrl').optional().custom((value) => !value || value.trim() === '' || /^https?:\/\/.+/.test(value))
+    // Social media fields are optional - allow empty values
+    body('instagramUrl').optional().custom((value) => {
+      // Allow empty, null, undefined, or valid URLs starting with http/https
+      return !value || value === '' || value.trim() === '' || /^https?:\/\/.+/.test(value);
+    }),
+    body('twitterUrl').optional().custom((value) => {
+      // Allow empty, null, undefined, or valid URLs starting with http/https
+      return !value || value === '' || value.trim() === '' || /^https?:\/\/.+/.test(value);
+    }),
+    body('facebookUrl').optional().custom((value) => {
+      // Allow empty, null, undefined, or valid URLs starting with http/https
+      return !value || value === '' || value.trim() === '' || /^https?:\/\/.+/.test(value);
+    }),
+    body('linkedinUrl').optional().custom((value) => {
+      // Allow empty, null, undefined, or valid URLs starting with http/https
+      return !value || value === '' || value.trim() === '' || /^https?:\/\/.+/.test(value);
+    })
   ],
 
   // Review validation
