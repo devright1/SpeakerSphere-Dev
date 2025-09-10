@@ -4822,7 +4822,15 @@ export default function AdminDashboard() {
                         </Button>
                       )}
                       <Button 
-                        onClick={handleCreateNewProfile}
+                        onClick={() => {
+                          if (currentApplication) {
+                            approveApplicationMutation.mutate({
+                              applicationId: currentApplication.id,
+                              reviewedBy: adminEmail || 'Admin User'
+                            });
+                            setDuplicateCheckDialogOpen(false);
+                          }
+                        }}
                         disabled={approveApplicationMutation.isPending || potentialDuplicates.length > 0}
                         className="bg-green-600 hover:bg-green-700"
                       >
