@@ -67,6 +67,9 @@ export default function SpeakerDashboard() {
   // Topics management state
   const [isEditingTopics, setIsEditingTopics] = useState(false);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
+  
+  // New achievement state
+  const [newAchievement, setNewAchievement] = useState('');
 
   // Helper functions for reviews
   const toggleReviewExpanded = (reviewId: number) => {
@@ -462,6 +465,17 @@ export default function SpeakerDashboard() {
     updateTopicsMutation.mutate(selectedTopics);
   };
 
+  const handleAddAchievement = () => {
+    if (newAchievement.trim()) {
+      const currentAchievements = editForm.achievements || [];
+      setEditForm({
+        ...editForm,
+        achievements: [...currentAchievements, newAchievement.trim()]
+      });
+      setNewAchievement('');
+    }
+  };
+
   const handleSave = () => {
     updateProfileMutation.mutate(editForm);
   };
@@ -722,32 +736,62 @@ export default function SpeakerDashboard() {
                     {/* Professional Achievements Section */}
                     <div className="pt-6 border-t">
                       <div className="mb-4">
-                        <Label htmlFor="achievements" className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                           <Award className="h-5 w-5 mr-2" />
                           Professional Achievements
-                        </Label>
-                        {isEditing ? (
-                          <Textarea
-                            id="achievements"
-                            rows={3}
-                            value={editForm.achievements?.join('\n') || ''}
-                            onChange={(e) => setEditForm({...editForm, achievements: e.target.value.split('\n').filter(item => item.trim())})}
-                            placeholder="Enter one achievement per line&#10;Example:&#10;Board Certified Prosthodontist&#10;Fellow, American College of Prosthodontists&#10;Top Speaker Award 2023"
-                          />
-                        ) : (
-                          <div className="mt-2">
-                            {speakerProfile.achievements?.length > 0 ? (
-                              <ul className="space-y-1">
-                                {speakerProfile.achievements.map((achievement: string, index: number) => (
-                                  <li key={index} className="flex items-start">
-                                    <Award className="h-4 w-4 text-accent mt-1 mr-2 flex-shrink-0" />
-                                    <span className="text-gray-700">{achievement}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-gray-500 italic">No achievements listed</p>
-                            )}
+                        </h3>
+                        
+                        {/* Display achievements */}
+                        <div className="space-y-3 mb-4">
+                          {speakerProfile.achievements?.length > 0 ? (
+                            speakerProfile.achievements.map((achievement: string, index: number) => (
+                              <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg">
+                                <Award className="h-5 w-5 text-accent mt-0.5 mr-3 flex-shrink-0" />
+                                <span className="text-gray-700 flex-1">{achievement}</span>
+                                {isEditing && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      const updatedAchievements = editForm.achievements?.filter((_: string, i: number) => i !== index) || [];
+                                      setEditForm({...editForm, achievements: updatedAchievements});
+                                    }}
+                                    className="text-red-600 hover:text-red-700 ml-2"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-500 italic">No achievements listed</p>
+                          )}
+                        </div>
+
+                        {/* Add achievement form when editing */}
+                        {isEditing && (
+                          <div className="border-t pt-4">
+                            <div className="flex space-x-2">
+                              <Input
+                                placeholder="Enter a new achievement..."
+                                value={newAchievement}
+                                onChange={(e) => setNewAchievement(e.target.value)}
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddAchievement();
+                                  }
+                                }}
+                              />
+                              <Button
+                                onClick={handleAddAchievement}
+                                disabled={!newAchievement.trim()}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </div>
