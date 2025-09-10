@@ -3702,10 +3702,7 @@ function InquiriesManagement() {
   // Delete inquiry mutation
   const deleteInquiryMutation = useMutation({
     mutationFn: async ({ inquiryId, adminPassword }: { inquiryId: number; adminPassword: string }) => {
-      return await apiRequest(`/api/admin/inquiries/${inquiryId}`, {
-        method: 'DELETE',
-        body: { adminPassword },
-      });
+      return await apiRequest('DELETE', `/api/admin/inquiries/${inquiryId}`, { adminPassword });
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Inquiry deleted successfully" });
