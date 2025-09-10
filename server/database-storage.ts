@@ -259,6 +259,16 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getInquiry(inquiryId: number): Promise<Inquiry | undefined> {
+    const result = await db.select().from(inquiries).where(eq(inquiries.id, inquiryId));
+    return result[0];
+  }
+
+  async deleteInquiry(inquiryId: number): Promise<boolean> {
+    const result = await db.delete(inquiries).where(eq(inquiries.id, inquiryId));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
   async getInquiriesBySpeakerId(speakerId: number): Promise<Inquiry[]> {
     const result = await db.select().from(inquiries)
       .where(eq(inquiries.speakerId, speakerId))

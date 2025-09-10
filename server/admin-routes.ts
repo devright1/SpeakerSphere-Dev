@@ -603,6 +603,42 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Delete inquiry (admin only)
+  app.delete("/api/admin/inquiries/:id", async (req, res) => {
+    try {
+      const inquiryId = parseInt(req.params.id);
+      const { adminPassword } = req.body;
+      console.log("Attempting to delete inquiry:", inquiryId);
+      
+      // Verify admin password (use same password as admin login)
+      if (!adminPassword || adminPassword !== "Doneright123!") {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
+      
+      // First check if inquiry exists
+      const existingInquiry = await storage.getInquiry(inquiryId);
+      if (!existingInquiry) {
+        return res.status(404).json({ message: "Inquiry not found" });
+      }
+
+      // Delete the inquiry
+      const deleted = await storage.deleteInquiry(inquiryId);
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete inquiry" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Inquiry deleted successfully" 
+      });
+      
+      console.log(`🗑️ Inquiry ${inquiryId} has been deleted`);
+    } catch (error) {
+      console.error("Failed to delete inquiry:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Toggle speaker visibility (this is the key feature for domain sync)
   app.post("/api/admin/speakers/:id/toggle-visibility", async (req, res) => {
     try {

@@ -76,9 +76,11 @@ export interface IStorage {
   
   // Inquiries
   createInquiry(inquiry: InsertInquiry): Promise<Inquiry>;
+  getInquiry(inquiryId: number): Promise<Inquiry | undefined>;
   getInquiriesBySpeakerId(speakerId: number): Promise<Inquiry[]>;
   getAllInquiries(): Promise<Inquiry[]>;
   updateInquiryStatus(inquiryId: number, status: string, adminNotes?: string): Promise<Inquiry | null>;
+  deleteInquiry(inquiryId: number): Promise<boolean>;
   
   // Categories
   getCategories(): Promise<Category[]>;
@@ -615,6 +617,14 @@ export class MemStorage implements IStorage {
     };
     this.inquiries.set(inquiry.id, inquiry);
     return inquiry;
+  }
+
+  async getInquiry(inquiryId: number): Promise<Inquiry | undefined> {
+    return this.inquiries.get(inquiryId);
+  }
+
+  async deleteInquiry(inquiryId: number): Promise<boolean> {
+    return this.inquiries.delete(inquiryId);
   }
 
   async getInquiriesBySpeakerId(speakerId: number): Promise<Inquiry[]> {
