@@ -669,8 +669,7 @@ export default function SpeakerDashboard() {
                                 maxNumberOfFiles={1}
                                 maxFileSize={5 * 1024 * 1024} // 5MB limit
                                 onGetUploadParameters={async () => {
-                                  const response = await apiRequest("POST", "/api/objects/upload", {});
-                                  const data = await response.json();
+                                  const data = await apiRequest("POST", "/api/objects/upload", {});
                                   return {
                                     method: "PUT" as const,
                                     url: data.uploadURL,
@@ -680,10 +679,9 @@ export default function SpeakerDashboard() {
                                   if (result.successful && result.successful.length > 0) {
                                     const uploadedFile = result.successful[0];
                                     try {
-                                      const response = await apiRequest("PUT", `/api/speakers/${speakerProfile.id}/headshot`, {
+                                      const data = await apiRequest("PUT", `/api/speakers/${speakerProfile.id}/headshot`, {
                                         headshotURL: uploadedFile.uploadURL,
                                       });
-                                      const data = await response.json();
                                       
                                       if (data.success) {
                                         toast({
@@ -714,8 +712,7 @@ export default function SpeakerDashboard() {
                                   size="sm"
                                   onClick={async () => {
                                     try {
-                                      const response = await apiRequest("DELETE", `/api/speakers/${speakerProfile.id}/headshot`);
-                                      const data = await response.json();
+                                      const data = await apiRequest("DELETE", `/api/speakers/${speakerProfile.id}/headshot`);
                                       
                                       if (data.success) {
                                         toast({
