@@ -4,11 +4,21 @@ async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     try {
       const text = await res.text();
+      console.log('Raw error response:', text);
       const jsonResponse = JSON.parse(text);
-      // Extract just the message from the JSON response
-      const errorMessage = jsonResponse.message || text || res.statusText;
+      console.log('Parsed error response:', jsonResponse);
+      
+      // Handle different error response formats
+      let errorMessage = jsonResponse.message || jsonResponse.error || text || res.statusText;
+      
+      // If it's a validation error with details, extract the first error message
+      if (jsonResponse.details && Array.isArray(jsonResponse.details) && jsonResponse.details.length > 0) {
+        errorMessage = jsonResponse.details[0].msg || errorMessage;
+      }
+      
       throw new Error(errorMessage);
     } catch (parseError) {
+      console.error('Error parsing response:', parseError);
       // If JSON parsing fails, fall back to status text
       throw new Error(res.statusText || 'An error occurred');
     }
