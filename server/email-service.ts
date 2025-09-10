@@ -492,7 +492,7 @@ This is a test email from SpeakerSphere's email system verification.`
           
           <div style="text-align: center; margin: 30px 0;">
             <p style="color: #64748b; font-size: 14px;">After verifying your email, you can access your dashboard:</p>
-            <a href="${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/for-speakers" 
+            <a href="https://thespeakersphere.com/auth" 
                style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               Access Your Dashboard
             </a>
@@ -536,7 +536,7 @@ After Email Verification:
 - Manage your content visibility settings
 - Respond to booking inquiries
 
-Dashboard URL: ${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/for-speakers
+Dashboard URL: https://thespeakersphere.com/auth
 
 If you have any questions or need assistance, please don't hesitate to contact us.
 
