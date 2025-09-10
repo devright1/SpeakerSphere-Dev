@@ -879,6 +879,65 @@ export default function SpeakerDashboard() {
                       </div>
                     </div>
 
+                    {/* Social Media Handles */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="instagramHandle">Instagram Handle</Label>
+                        {isEditing ? (
+                          <Input
+                            id="instagramHandle"
+                            value={editForm.instagramHandle || ''}
+                            onChange={(e) => setEditForm({...editForm, instagramHandle: e.target.value})}
+                            placeholder="@username"
+                          />
+                        ) : (
+                          <p className="text-gray-900 font-medium">{speakerProfile.instagramHandle || 'Not provided'}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="linkedinHandle">LinkedIn Handle</Label>
+                        {isEditing ? (
+                          <Input
+                            id="linkedinHandle"
+                            value={editForm.linkedinHandle || ''}
+                            onChange={(e) => setEditForm({...editForm, linkedinHandle: e.target.value})}
+                            placeholder="@username"
+                          />
+                        ) : (
+                          <p className="text-gray-900 font-medium">{speakerProfile.linkedinHandle || 'Not provided'}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="facebookHandle">Facebook Handle</Label>
+                        {isEditing ? (
+                          <Input
+                            id="facebookHandle"
+                            value={editForm.facebookHandle || ''}
+                            onChange={(e) => setEditForm({...editForm, facebookHandle: e.target.value})}
+                            placeholder="@username"
+                          />
+                        ) : (
+                          <p className="text-gray-900 font-medium">{speakerProfile.facebookHandle || 'Not provided'}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="xHandle">X (Twitter) Handle</Label>
+                        {isEditing ? (
+                          <Input
+                            id="xHandle"
+                            value={editForm.xHandle || ''}
+                            onChange={(e) => setEditForm({...editForm, xHandle: e.target.value})}
+                            placeholder="@username"
+                          />
+                        ) : (
+                          <p className="text-gray-900 font-medium">{speakerProfile.xHandle || 'Not provided'}</p>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Professional Achievements Section */}
                     <div className="pt-6 border-t">
                       <div className="mb-4">
