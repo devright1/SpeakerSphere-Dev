@@ -1,35 +1,11 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    try {
-      const text = await res.text();
-      console.log('Raw error response:', text);
-      const jsonResponse = JSON.parse(text);
-      console.log('Parsed error response:', jsonResponse);
-      
-      // Handle different error response formats
-      let errorMessage = jsonResponse.message || jsonResponse.error || text || res.statusText;
-      
-      // If it's a validation error with details, extract the first error message
-      if (jsonResponse.details && Array.isArray(jsonResponse.details) && jsonResponse.details.length > 0) {
-        errorMessage = jsonResponse.details[0].msg || errorMessage;
-      }
-      
-      throw new Error(errorMessage);
-    } catch (parseError) {
-      console.error('Error parsing response:', parseError);
-      // If JSON parsing fails, fall back to status text
-      throw new Error(res.statusText || 'An error occurred');
-    }
-  }
-}
 
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
-): Promise<Response> {
+): Promise<any> {
   // Get user ID from localStorage for authentication header
   const userToken = localStorage.getItem('userToken');
   
@@ -57,8 +33,32 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  await throwIfResNotOk(res);
-  return res;
+  // Handle both success and error responses here
+  if (!res.ok) {
+    try {
+      const text = await res.text();
+      console.log('Raw error response:', text);
+      const jsonResponse = JSON.parse(text);
+      console.log('Parsed error response:', jsonResponse);
+      
+      // Handle different error response formats
+      let errorMessage = jsonResponse.message || jsonResponse.error || text || res.statusText;
+      
+      // If it's a validation error with details, extract the first error message
+      if (jsonResponse.details && Array.isArray(jsonResponse.details) && jsonResponse.details.length > 0) {
+        errorMessage = jsonResponse.details[0].msg || errorMessage;
+      }
+      
+      throw new Error(errorMessage);
+    } catch (parseError) {
+      console.error('Error parsing response:', parseError);
+      // If JSON parsing fails, fall back to status text
+      throw new Error(res.statusText || 'An error occurred');
+    }
+  }
+
+  // For successful responses, return the parsed JSON
+  return await res.json();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

@@ -127,7 +127,7 @@ export default function SpeakerApplicationPage() {
     mutationFn: async (data: SpeakerApplicationForm) => {
       console.log("Submitting speaker application:", data);
       const response = await apiRequest("POST", "/api/auth/speaker-application", data);
-      return response.json();
+      return response;
     },
     onSuccess: (data: any) => {
       setSubmitStep("success");
