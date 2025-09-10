@@ -140,7 +140,8 @@ export default function SpeakerApplicationPage() {
     },
     onError: (error: any) => {
       console.error("Speaker application submission error:", error);
-      const errorMessage = error?.message || error?.toString() || "Application submission failed";
+      // The server error message comes through in error.message
+      const errorMessage = error?.message || "Application submission failed. Please try again.";
       toast({
         title: "Application Failed",
         description: errorMessage,

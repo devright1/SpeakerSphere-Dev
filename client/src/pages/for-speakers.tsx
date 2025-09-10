@@ -174,9 +174,12 @@ export default function ForSpeakers() {
       applicationForm.reset();
     },
     onError: (error: any) => {
+      console.error("Speaker application submission error:", error);
+      // The server error message comes through in error.message
+      const errorMessage = error?.message || "Please check your information and try again.";
       toast({
-        title: "Submission Failed",
-        description: error.message || "Please check your information and try again.",
+        title: "Submission Failed", 
+        description: errorMessage,
         variant: "destructive",
       });
     },
