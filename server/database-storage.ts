@@ -534,7 +534,7 @@ export class DatabaseStorage implements IStorage {
       imageUrl: "/api/placeholder/300/300",
       verified: false,
       featured: false,
-      categories: [application.specialty],
+      categories: application.selectedCategories,
       achievements: [],
       lectures: [],
       eventPhotos: [],

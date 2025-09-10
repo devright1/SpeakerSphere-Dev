@@ -991,7 +991,7 @@ export class MemStorage implements IStorage {
       imageUrl: "/api/placeholder/300/300",
       verified: false,
       featured: false,
-      categories: [application.specialty],
+      categories: application.selectedCategories,
       achievements: [],
       lectures: [],
       eventPhotos: [],
