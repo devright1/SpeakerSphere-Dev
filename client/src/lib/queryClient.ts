@@ -42,18 +42,22 @@ export async function apiRequest(
       const jsonResponse = JSON.parse(text);
       console.log('Parsed error response:', jsonResponse);
       
-      // Handle different error response formats
-      let errorMessage = jsonResponse.message || jsonResponse.error || text || res.statusText;
+      // Handle different error response formats - only use clean message
+      const errorMessage = jsonResponse.message || jsonResponse.error || 'An error occurred';
       
       // If it's a validation error with details, extract the first error message
       if (jsonResponse.details && Array.isArray(jsonResponse.details) && jsonResponse.details.length > 0) {
-        errorMessage = jsonResponse.details[0].msg || errorMessage;
+        throw new Error(jsonResponse.details[0].msg || errorMessage);
       }
       
       throw new Error(errorMessage);
     } catch (jsonError) {
-      // If JSON parsing fails, use the raw text or status text
-      throw new Error(text || res.statusText || 'An error occurred');
+      // Only catch actual JSON parsing errors, not our intentionally thrown errors
+      if (jsonError instanceof Error && jsonError.name !== 'SyntaxError') {
+        throw jsonError; // Re-throw our intentional error
+      }
+      // If JSON parsing fails, use clean fallback
+      throw new Error('An error occurred');
     }
   }
 
