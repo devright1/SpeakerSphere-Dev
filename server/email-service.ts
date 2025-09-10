@@ -203,7 +203,7 @@ View in Admin Panel: https://thespeakersphere.com/admin`
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://thespeakersphere.com/speaker-dashboard" 
+            <a href="https://thespeakersphere.com/auth" 
                style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               Access Your Dashboard
             </a>
@@ -235,7 +235,7 @@ Getting Started:
 - Manage your content visibility settings
 - Respond to booking inquiries
 
-Access Your Dashboard: https://thespeakersphere.com/speaker-dashboard
+Access Your Dashboard: https://thespeakersphere.com/auth
 
 If you have any questions or need assistance, please don't hesitate to contact us.
 
@@ -329,7 +329,7 @@ The SpeakerSphere Team`
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://thespeakersphere.com/speaker-dashboard" 
+            <a href="https://thespeakersphere.com/auth" 
                style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               View Your Dashboard
             </a>
