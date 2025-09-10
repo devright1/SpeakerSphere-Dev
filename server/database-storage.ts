@@ -555,7 +555,7 @@ export class DatabaseStorage implements IStorage {
       expertise: application.specificTopics.split(',').map(s => s.trim()),
       location: "Location TBD",
       imageUrl: "/api/placeholder/300/300",
-      verified: false,
+      verified: true, // Set to true so Speaker Resources tab appears
       featured: false,
       categories: application.selectedCategories,
       achievements: [],
@@ -575,7 +575,7 @@ export class DatabaseStorage implements IStorage {
       hideProfile: false,
       hideRatings: false,
       hideSocial: false,
-      hideContact: false
+      hideContact: true // Hide contact information by default
     };
 
     const speakerResult = await db.insert(speakers).values(speakerData).returning();
