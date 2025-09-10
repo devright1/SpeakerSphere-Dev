@@ -431,7 +431,10 @@ export default function SpeakerDashboard() {
 
   useEffect(() => {
     if (speakerProfile && !editForm.name) {
-      setEditForm(speakerProfile);
+      setEditForm({
+        ...speakerProfile,
+        achievements: speakerProfile.achievements || []
+      });
     }
   }, [speakerProfile]);
 
@@ -478,6 +481,14 @@ export default function SpeakerDashboard() {
 
   const handleSave = () => {
     updateProfileMutation.mutate(editForm);
+  };
+
+  const handleStartEdit = () => {
+    setEditForm({
+      ...speakerProfile,
+      achievements: speakerProfile.achievements || []
+    });
+    setIsEditing(true);
   };
 
   const handleCancel = () => {
@@ -586,7 +597,7 @@ export default function SpeakerDashboard() {
                 View Public Profile
               </Button>
               <Button
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={() => isEditing ? handleCancel() : handleStartEdit()}
                 className={isEditing ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}
               >
                 {isEditing ? (
@@ -743,8 +754,8 @@ export default function SpeakerDashboard() {
                         
                         {/* Display achievements */}
                         <div className="space-y-3 mb-4">
-                          {speakerProfile.achievements?.length > 0 ? (
-                            speakerProfile.achievements.map((achievement: string, index: number) => (
+                          {(isEditing ? editForm.achievements : speakerProfile.achievements)?.length > 0 ? (
+                            (isEditing ? editForm.achievements : speakerProfile.achievements).map((achievement: string, index: number) => (
                               <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg">
                                 <Award className="h-5 w-5 text-accent mt-0.5 mr-3 flex-shrink-0" />
                                 <span className="text-gray-700 flex-1">{achievement}</span>
