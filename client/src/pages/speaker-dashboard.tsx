@@ -735,6 +735,9 @@ export default function SpeakerDashboard() {
                                           description: "Your profile headshot has been removed.",
                                         });
                                         
+                                        // Update editForm to remove imageUrl
+                                        setEditForm({...editForm, imageUrl: null});
+                                        
                                         // Invalidate and refetch speaker data
                                         queryClient.invalidateQueries({ queryKey: ['/api/speakers/by-user', user?.id] });
                                       }
