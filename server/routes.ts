@@ -615,6 +615,17 @@ export function registerRoutes(app: Express): Express {
         await storage.updateTopicSpeakerCount(topic.id);
       }
 
+      // Update speaker categories based on their selected topics
+      const speakerTopics = await storage.getSpeakerTopicsBySpeakerId(speakerId);
+      const uniqueCategories = new Set(speakerTopics
+        .map(topic => topic.category)
+        .filter(category => category !== null && category !== undefined)
+      );
+      const speakerCategories = Array.from(uniqueCategories);
+      
+      // Update the speaker's categories field
+      await storage.updateSpeaker(speakerId, { categories: speakerCategories });
+
       res.json({ success: true, message: "Speaker topics updated successfully" });
     } catch (error) {
       console.error("Error updating speaker topics:", error);
