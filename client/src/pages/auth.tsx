@@ -74,8 +74,7 @@ export default function AuthPage() {
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm) => {
       setSubmitStep("loading");
-      const response = await apiRequest('POST', '/api/auth/login', data);
-      return response.json();
+      return apiRequest('POST', '/api/auth/login', data);
     },
     onSuccess: (data) => {
       setSubmitStep("success");
@@ -113,8 +112,7 @@ export default function AuthPage() {
     mutationFn: async (data: RegisterForm) => {
       setSubmitStep("loading");
       const { confirmPassword, ...userData } = data;
-      const response = await apiRequest('POST', '/api/auth/register', userData);
-      return response.json();
+      return apiRequest('POST', '/api/auth/register', userData);
     },
     onSuccess: (data) => {
       setSubmitStep("success");
