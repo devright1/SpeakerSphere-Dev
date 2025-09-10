@@ -11,7 +11,7 @@ import Categories from "@/pages/categories";
 import Auth from "@/pages/auth";
 import Profile from "@/pages/profile";
 import AdminLogin from "@/pages/admin-login";
-import AdminDashboard from "@/pages/admin_clean";
+import AdminDashboard from "@/pages/admin";
 import ForSpeakers from "@/pages/for-speakers";
 import SpeakerApplication from "@/pages/speaker-application";
 import SpeakerDashboard from "@/pages/speaker-dashboard";
