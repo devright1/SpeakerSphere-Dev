@@ -1221,4 +1221,59 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(images).where(eq(images.id, id));
     return result.rowCount > 0;
   }
+
+  async saveImageFromBase64(base64Data: string, ownerId: string, ownerType: string = 'user', imageType: string = 'profile'): Promise<{ id: number; url: string; }> {
+    // Convert base64 to buffer
+    const base64Content = base64Data.split(',')[1] || base64Data;
+    const imageBuffer = Buffer.from(base64Content, 'base64');
+    
+    // Determine MIME type from base64 header or default to jpeg
+    let mimeType = 'image/jpeg';
+    if (base64Data.startsWith('data:')) {
+      const mimeMatch = base64Data.match(/data:([^;]+);/);
+      if (mimeMatch) {
+        mimeType = mimeMatch[1];
+      }
+    }
+    
+    // Calculate checksum
+    const crypto = await import('crypto');
+    const checksum = crypto.default.createHash('sha256').update(imageBuffer).digest('hex');
+    
+    // Check for existing image
+    const existingImage = await this.getImageByChecksum(checksum);
+    if (existingImage) {
+      return {
+        id: existingImage.id,
+        url: `/api/images/${existingImage.id}`
+      };
+    }
+    
+    // Create new image record
+    const newImage = await this.createImage({
+      filename: `${Date.now()}_profile.${mimeType.split('/')[1]}`,
+      originalName: `profile.${mimeType.split('/')[1]}`,
+      mimeType,
+      size: imageBuffer.length,
+      width: undefined,
+      height: undefined,
+      data: imageBuffer,
+      checksum,
+      ownerId,
+      ownerType,
+      entityId: ownerId,
+      imageType,
+      isPublic: true
+    });
+    
+    return {
+      id: newImage.id,
+      url: `/api/images/${newImage.id}`
+    };
+  }
+
+  async getUserBySpeakerId(speakerId: number): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.speakerId, speakerId));
+    return result[0];
+  }
 }
