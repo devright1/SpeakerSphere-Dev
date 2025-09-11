@@ -1,6 +1,19 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid, customType } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// Custom type for binary data (PostgreSQL bytea)
+const bytea = customType<{ data: Buffer; notNull: false; default: false }>({
+  dataType() {
+    return "bytea";
+  },
+  toDriver(value: Buffer): Buffer {
+    return value;
+  },
+  fromDriver(value: unknown): Buffer {
+    return value as Buffer;
+  },
+});
 
 export const speakers = pgTable("speakers", {
   id: serial("id").primaryKey(),
@@ -409,9 +422,37 @@ export const demandMetrics = pgTable("demand_metrics", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Images table for storing binary image data  
+export const images = pgTable("images", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  originalName: text("original_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: integer("size").notNull(), // File size in bytes
+  width: integer("width"), // Image width in pixels
+  height: integer("height"), // Image height in pixels
+  data: bytea("data").notNull(), // Binary image data
+  checksum: text("checksum").notNull(), // SHA-256 hash for deduplication
+  ownerId: text("owner_id"), // User ID who uploaded the image
+  ownerType: text("owner_type").notNull(), // "user", "speaker", "review", etc.
+  entityId: text("entity_id"), // ID of the related entity (speaker ID, user ID, etc.)
+  imageType: text("image_type").notNull(), // "profile", "headshot", "gallery", "thumbnail", etc.
+  isPublic: boolean("is_public").default(true), // Whether image can be accessed without auth
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertImageSchema = createInsertSchema(images).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Type exports for all tables
 export type Speaker = typeof speakers.$inferSelect;
 export type InsertSpeaker = typeof speakers.$inferInsert;
+export type Image = typeof images.$inferSelect;
+export type InsertImage = z.infer<typeof insertImageSchema>;
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = typeof reviews.$inferInsert;
 export type Inquiry = typeof inquiries.$inferSelect;
