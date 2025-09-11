@@ -79,6 +79,9 @@ export function ObjectUploader({
     setIsUploading(true);
 
     try {
+      // Get user token for authentication
+      const userToken = localStorage.getItem('userToken');
+      
       // Upload the file to our database storage endpoint
       const formData = new FormData();
       formData.append('image', file);
@@ -88,8 +91,14 @@ export function ObjectUploader({
         formData.append('entityId', entityId);
       }
 
+      const headers: Record<string, string> = {};
+      if (userToken) {
+        headers['X-User-ID'] = userToken;
+      }
+
       const uploadResponse = await fetch('/api/images', {
         method: 'POST',
+        headers,
         body: formData,
         credentials: 'include', // Include session cookie
       });
