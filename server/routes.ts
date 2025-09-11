@@ -2010,14 +2010,20 @@ export function registerRoutes(app: Express): Express {
       // Also update the user's profile picture to sync both
       let updatedUser = null;
       try {
+        console.log(`[SYNC DEBUG] Looking for user with speakerId: ${speakerId}`);
         const linkedUser = await storage.getUserBySpeakerId(speakerId);
+        console.log(`[SYNC DEBUG] Found linked user:`, linkedUser ? { id: linkedUser.id, email: linkedUser.email } : null);
         if (linkedUser) {
+          console.log(`[SYNC DEBUG] Updating user profile picture to: ${imageResult.url}`);
           updatedUser = await storage.updateUser(linkedUser.id, {
             profileImageUrl: imageResult.url,
           });
+          console.log(`[SYNC DEBUG] User profile picture updated successfully`);
+        } else {
+          console.log(`[SYNC DEBUG] No linked user found for speakerId: ${speakerId}`);
         }
       } catch (error) {
-        console.warn("Failed to sync user profile picture:", error);
+        console.error("Failed to sync user profile picture:", error);
         // Continue even if user sync fails
       }
 
