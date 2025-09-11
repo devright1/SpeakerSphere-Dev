@@ -421,8 +421,10 @@ export default function ProfilePage() {
                     <div className="relative">
                       <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
                         <AvatarImage 
-                          src={user.profileImageUrl} 
-                          alt={`${user.firstName} ${user.lastName}`} 
+                          src={user.profileImageUrl}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          onError={() => console.log("Profile image failed to load:", user.profileImageUrl)}
+                          onLoad={() => console.log("Profile image loaded successfully:", user.profileImageUrl)}
                         />
                         <AvatarFallback className="text-xl font-semibold bg-blue-500 text-white">
                           {getInitials(user.firstName, user.lastName)}
