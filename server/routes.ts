@@ -1885,7 +1885,7 @@ export function registerRoutes(app: Express): Express {
         'Content-Length': image.size.toString(),
         'Cache-Control': `public, max-age=${maxAge}, immutable`,
         'ETag': `"${image.checksum}"`,
-        'Last-Modified': new Date(image.updatedAt).toUTCString()
+        'Last-Modified': new Date(image.updatedAt || image.createdAt).toUTCString()
       });
 
       // Check if client has cached version

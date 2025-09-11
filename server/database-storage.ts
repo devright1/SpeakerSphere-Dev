@@ -1219,7 +1219,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteImage(id: number): Promise<boolean> {
     const result = await db.delete(images).where(eq(images.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async saveImageFromBase64(base64Data: string, ownerId: string, ownerType: string = 'user', imageType: string = 'profile'): Promise<{ id: number; url: string; }> {
