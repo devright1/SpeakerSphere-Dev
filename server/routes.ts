@@ -1924,9 +1924,31 @@ export function registerRoutes(app: Express): Express {
         });
       }
 
+      // Also sync with speaker headshot if user is a speaker
+      let updatedSpeaker = null;
+      try {
+        if (updatedUser && updatedUser.speakerId) {
+          if (req.body.remove === true) {
+            // Remove speaker headshot
+            updatedSpeaker = await storage.updateSpeaker(updatedUser.speakerId, {
+              imageUrl: "/placeholder-avatar.png",
+            });
+          } else if (req.body.profilePictureURL) {
+            // Update speaker headshot with same image URL
+            updatedSpeaker = await storage.updateSpeaker(updatedUser.speakerId, {
+              imageUrl: req.body.profilePictureURL,
+            });
+          }
+        }
+      } catch (error) {
+        console.warn("Failed to sync speaker headshot:", error);
+        // Continue even if speaker sync fails
+      }
+
       res.status(200).json({
         success: true,
         user: updatedUser,
+        speaker: updatedSpeaker,
         message: req.body.remove ? "Profile picture removed" : "Profile picture updated",
       });
     } catch (error) {
