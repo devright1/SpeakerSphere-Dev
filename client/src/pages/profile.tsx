@@ -103,7 +103,7 @@ export default function ProfilePage() {
   });
 
   // Get user data from localStorage (this would typically come from a global auth context)
-  const getUserData = (): UserProfile | null => {
+  const getUserDataFromLocalStorage = (): UserProfile | null => {
     try {
       const userData = localStorage.getItem('userData');
       return userData ? JSON.parse(userData) : null;
@@ -112,7 +112,27 @@ export default function ProfilePage() {
     }
   };
 
-  const user = getUserData();
+  const localUser = getUserDataFromLocalStorage();
+
+  // Fetch fresh user data from server to get updated profile picture
+  const { data: serverUser, isLoading: userLoading } = useQuery<UserProfile>({
+    queryKey: ['/api/users', localUser?.id],
+    queryFn: async () => {
+      const token = localStorage.getItem('userToken');
+      const response = await fetch(`/api/users/${localUser?.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-User-ID': token || ''
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch user data');
+      return response.json();
+    },
+    enabled: !!localUser?.id,
+  });
+
+  // Use server data when available, fallback to localStorage
+  const user = serverUser || localUser;
 
   // Initialize profile data when user data is available
   useEffect(() => {
@@ -313,7 +333,7 @@ export default function ProfilePage() {
 
 
 
-  if (!user) {
+  if (!localUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -323,6 +343,20 @@ export default function ProfilePage() {
             <Button onClick={() => window.location.href = '/auth'}>
               Go to Sign In
             </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (userLoading || !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold mb-2">Loading Profile</h2>
+            <p className="text-gray-600">Getting your latest profile information...</p>
           </CardContent>
         </Card>
       </div>
