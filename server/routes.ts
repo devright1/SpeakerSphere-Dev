@@ -1784,14 +1784,6 @@ export function registerRoutes(app: Express): Express {
         });
       }
 
-      // Debug session and headers
-      console.log("Image upload debug:", {
-        sessionExists: !!(req as any).session,
-        sessionUser: (req as any).session?.user ? "exists" : "missing",
-        userIdHeader: req.headers['x-user-id'],
-        cookies: req.headers.cookie ? "exists" : "missing"
-      });
-
       // Get user from session or header
       let user = (req as any).session?.user;
       if (!user) {
@@ -1802,10 +1794,6 @@ export function registerRoutes(app: Express): Express {
       }
 
       if (!user) {
-        console.error("Authentication failed for image upload:", {
-          sessionUser: (req as any).session?.user,
-          userIdHeader: req.headers['x-user-id']
-        });
         return res.status(401).json({ error: "Authentication required" });
       }
 
