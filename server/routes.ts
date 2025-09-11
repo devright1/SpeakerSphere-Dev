@@ -1909,14 +1909,9 @@ export function registerRoutes(app: Express): Express {
       let updatedUser;
       
       if (req.body.profilePictureURL) {
-        // Update with new profile picture
-        const objectStorageService = new ObjectStorageService();
-        const objectPath = objectStorageService.normalizeObjectEntityPath(
-          req.body.profilePictureURL,
-        );
-
+        // Update with new profile picture - now supports database image URLs
         updatedUser = await storage.updateUser(req.params.userId, {
-          profileImageUrl: objectPath,
+          profileImageUrl: req.body.profilePictureURL, // Use the database image URL directly
         });
       } else if (req.body.remove === true) {
         // Remove profile picture (set to null)
