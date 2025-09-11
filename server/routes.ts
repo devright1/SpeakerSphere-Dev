@@ -1969,18 +1969,40 @@ export function registerRoutes(app: Express): Express {
         return res.status(403).json({ error: "Access denied" });
       }
 
-      // Update speaker headshot with base64 data
+      // Convert base64 to database image and update speaker headshot
+      const imageResult = await storage.saveImageFromBase64(
+        req.body.headshotData, 
+        user.id, 
+        'speaker', 
+        'headshot'
+      );
+      
       const updatedSpeaker = await storage.updateSpeaker(speakerId, {
-        imageUrl: req.body.headshotData,
+        imageUrl: imageResult.url,
       });
 
       if (!updatedSpeaker) {
         return res.status(404).json({ error: "Speaker not found" });
       }
 
+      // Also update the user's profile picture to sync both
+      let updatedUser = null;
+      try {
+        const linkedUser = await storage.getUserBySpeakerId(speakerId);
+        if (linkedUser) {
+          updatedUser = await storage.updateUser(linkedUser.id, {
+            profileImageUrl: imageResult.url,
+          });
+        }
+      } catch (error) {
+        console.warn("Failed to sync user profile picture:", error);
+        // Continue even if user sync fails
+      }
+
       res.status(200).json({
         success: true,
         speaker: updatedSpeaker,
+        user: updatedUser,
         message: "Headshot updated successfully",
       });
     } catch (error) {
@@ -2007,9 +2029,24 @@ export function registerRoutes(app: Express): Express {
         return res.status(404).json({ error: "Speaker not found" });
       }
 
+      // Also remove the user's profile picture to sync both
+      let updatedUser = null;
+      try {
+        const linkedUser = await storage.getUserBySpeakerId(speakerId);
+        if (linkedUser) {
+          updatedUser = await storage.updateUser(linkedUser.id, {
+            profileImageUrl: null,
+          });
+        }
+      } catch (error) {
+        console.warn("Failed to sync user profile picture removal:", error);
+        // Continue even if user sync fails
+      }
+
       res.status(200).json({
         success: true,
         speaker: updatedSpeaker,
+        user: updatedUser,
         message: "Headshot removed successfully",
       });
     } catch (error) {
