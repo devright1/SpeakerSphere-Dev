@@ -116,7 +116,7 @@ export default function ProfilePage() {
 
   // Fetch fresh user data from server to get updated profile picture
   const { data: serverUser, isLoading: userLoading } = useQuery<UserProfile>({
-    queryKey: ['/api/users', localUser?.id, Date.now()], // Force fresh data with timestamp
+    queryKey: ['/api/users', localUser?.id],
     queryFn: async () => {
       const token = localStorage.getItem('userToken');
       const response = await fetch(`/api/users/${localUser?.id}`, {
@@ -130,7 +130,7 @@ export default function ProfilePage() {
     },
     enabled: !!localUser?.id,
     staleTime: 0, // Force fresh data
-    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch when component mounts
   });
 
   // Use server data when available, fallback to localStorage
@@ -423,7 +423,7 @@ export default function ProfilePage() {
                     <div className="relative">
                       <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
                         <AvatarImage 
-                          src={user.profileImageUrl + `?t=${Date.now()}`} 
+                          src={user.profileImageUrl} 
                           alt={`${user.firstName} ${user.lastName}`} 
                         />
                         <AvatarFallback className="text-xl font-semibold bg-blue-500 text-white">
