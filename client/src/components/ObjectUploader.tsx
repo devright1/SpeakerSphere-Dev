@@ -7,22 +7,21 @@ import { useToast } from "@/hooks/use-toast";
 interface ObjectUploaderProps {
   maxNumberOfFiles?: number;
   maxFileSize?: number;
-  onGetUploadParameters: (file: any) => Promise<{
-    method: "PUT";
-    url: string;
-  }>;
   onComplete?: (result: any) => void;
   buttonClassName?: string;
   children: ReactNode;
+  imageType?: string;
+  entityId?: string;
+  ownerType?: string;
 }
 
 /**
  * A simplified file upload component that renders as a button and handles direct upload
- * to cloud storage.
+ * to database storage.
  * 
  * Features:
  * - Renders as a customizable button that triggers file selection
- * - Handles direct upload to cloud storage (Google Cloud Storage, AWS S3, etc.)
+ * - Handles direct upload to database storage via API
  * - Shows upload progress and status
  * - Validates file size and type
  * 
@@ -30,19 +29,22 @@ interface ObjectUploaderProps {
  * @param props.maxNumberOfFiles - Maximum number of files allowed to be uploaded
  *   (default: 1)
  * @param props.maxFileSize - Maximum file size in bytes (default: 10MB)
- * @param props.onGetUploadParameters - Function to get upload parameters (method and URL).
- *   Typically used to fetch a presigned URL from the backend server for direct upload.
  * @param props.onComplete - Callback function called when upload is complete.
  * @param props.buttonClassName - Optional CSS class name for the button
  * @param props.children - Content to be rendered inside the button
+ * @param props.imageType - Type of image being uploaded (e.g., 'profile', 'headshot')
+ * @param props.entityId - ID of the entity this image belongs to
+ * @param props.ownerType - Type of owner (e.g., 'user', 'speaker')
  */
 export function ObjectUploader({
   maxNumberOfFiles = 1,
   maxFileSize = 10485760, // 10MB default
-  onGetUploadParameters,
   onComplete,
   buttonClassName,
   children,
+  imageType = "profile",
+  entityId,
+  ownerType = "user",
 }: ObjectUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [fileInputId] = useState(() => `file-upload-${Math.random().toString(36).substr(2, 9)}`);
@@ -77,36 +79,43 @@ export function ObjectUploader({
     setIsUploading(true);
 
     try {
-      // Get upload parameters from the backend
-      const uploadParams = await onGetUploadParameters(file);
-      
-      // Upload the file directly to cloud storage
-      const uploadResponse = await fetch(uploadParams.url, {
-        method: uploadParams.method,
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
+      // Upload the file to our database storage endpoint
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('imageType', imageType);
+      formData.append('ownerType', ownerType);
+      if (entityId) {
+        formData.append('entityId', entityId);
+      }
+
+      const uploadResponse = await fetch('/api/images', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include', // Include session cookie
       });
 
       if (uploadResponse.ok) {
+        const result = await uploadResponse.json();
+        
         toast({
           title: "Upload Successful",
-          description: "Your file has been uploaded successfully!",
+          description: result.message || "Your image has been uploaded successfully!",
         });
 
         // Call the onComplete callback with upload result
         onComplete?.({
           successful: [{ 
-            id: `upload-${Date.now()}`,
+            id: result.imageId,
             name: file.name,
             size: file.size,
-            uploadURL: uploadParams.url.split('?')[0], // Remove query params to get clean URL
+            uploadURL: result.imageUrl, // Database image URL
+            imageId: result.imageId,
           }],
           failed: [],
         });
       } else {
-        throw new Error(`Upload failed with status: ${uploadResponse.status}`);
+        const errorData = await uploadResponse.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(errorData.error || `Upload failed with status: ${uploadResponse.status}`);
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -131,6 +140,7 @@ export function ObjectUploader({
         className="hidden"
         id={fileInputId}
         disabled={isUploading}
+        data-testid="file-input-hidden"
       />
       <Button 
         onClick={() => {
@@ -139,6 +149,7 @@ export function ObjectUploader({
         }}
         className={buttonClassName}
         disabled={isUploading}
+        data-testid="button-upload-image"
       >
         {isUploading ? "Uploading..." : children}
       </Button>
