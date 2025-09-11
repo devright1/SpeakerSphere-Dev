@@ -421,7 +421,7 @@ export default function ProfilePage() {
                     <div className="relative">
                       <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
                         <AvatarImage 
-                          src={user.profileImageUrl || "/api/images/2"} 
+                          src={user.profileImageUrl} 
                           alt={`${user.firstName} ${user.lastName}`} 
                         />
                         <AvatarFallback className="text-xl font-semibold bg-blue-500 text-white">
