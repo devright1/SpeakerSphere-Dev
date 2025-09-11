@@ -1240,13 +1240,19 @@ export class DatabaseStorage implements IStorage {
     const crypto = await import('crypto');
     const checksum = crypto.default.createHash('sha256').update(imageBuffer).digest('hex');
     
-    // Check for existing image
-    const existingImage = await this.getImageByChecksum(checksum);
-    if (existingImage) {
-      return {
-        id: existingImage.id,
-        url: `/api/images/${existingImage.id}`
-      };
+    // For profile/headshot images, always create new records to ensure fresh URLs
+    // (skip deduplication to avoid confusion during testing/updates)
+    if (imageType === 'profile' || imageType === 'headshot') {
+      console.log(`[IMAGE DEBUG] Creating new ${imageType} image, skipping deduplication`);
+    } else {
+      // Check for existing image (only for non-profile images)
+      const existingImage = await this.getImageByChecksum(checksum);
+      if (existingImage) {
+        return {
+          id: existingImage.id,
+          url: `/api/images/${existingImage.id}`
+        };
+      }
     }
     
     // Create new image record
