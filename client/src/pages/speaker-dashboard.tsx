@@ -673,11 +673,11 @@ export default function SpeakerDashboard() {
                                     const file = e.target.files?.[0];
                                     if (!file) return;
                                     
-                                    // Check file size (5MB limit)
-                                    if (file.size > 5 * 1024 * 1024) {
+                                    // Check file size (10MB limit)
+                                    if (file.size > 10 * 1024 * 1024) {
                                       toast({
                                         title: "File Too Large",
-                                        description: "Please select an image smaller than 5MB.",
+                                        description: "Please select an image smaller than 10MB.",
                                         variant: "destructive",
                                       });
                                       return;
@@ -772,7 +772,7 @@ export default function SpeakerDashboard() {
                               <li>High-resolution image (at least 400x400 pixels)</li>
                               <li>Clear view of face with good lighting</li>
                               <li>Neutral or professional background</li>
-                              <li>File size limit: 5MB</li>
+                              <li>File size limit: 10MB</li>
                               <li>Supported formats: JPG, PNG, WebP</li>
                             </ul>
                           </div>
