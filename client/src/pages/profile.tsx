@@ -129,8 +129,6 @@ export default function ProfilePage() {
       return response.json();
     },
     enabled: !!localUser?.id,
-    staleTime: 0, // Force fresh data
-    refetchOnMount: true, // Refetch when component mounts
   });
 
   // Use server data when available, fallback to localStorage
