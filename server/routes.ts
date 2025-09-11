@@ -51,38 +51,7 @@ const changePasswordSchema = z.object({
 
 // Multer configuration for file uploads
 const upload = multer({ 
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      // Debug authentication during upload
-      const user = (req as any).session?.user;
-      const speakerId = req.params?.speakerId || user?.speakerId || 'unknown';
-      const uploadDir = `uploads/${speakerId}`;
-      
-      console.log('Multer upload debug:', {
-        sessionUser: user,
-        paramsSpeakerId: req.params?.speakerId,
-        userSpeakerId: user?.speakerId,
-        userIdHeader: req.headers['x-user-id'],
-        finalSpeakerId: speakerId,
-        uploadDir: uploadDir
-      });
-      
-      // Create directory if it doesn't exist
-      if (!fs.existsSync('uploads')) {
-        fs.mkdirSync('uploads', { recursive: true });
-      }
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      const timestamp = Date.now();
-      const filename = `${timestamp}_${file.originalname}`;
-      cb(null, filename);
-    }
-  }),
+  storage: multer.memoryStorage(), // Store in memory instead of disk
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
@@ -1804,6 +1773,134 @@ export function registerRoutes(app: Express): Express {
     const objectStorageService = new ObjectStorageService();
     const uploadURL = await objectStorageService.getObjectEntityUploadURL();
     res.json({ uploadURL });
+  });
+
+  // Database image storage endpoints
+  app.post("/api/images", upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          error: "No image file provided" 
+        });
+      }
+
+      // Get user from session or header
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          user = await storage.getUserById(userIdHeader);
+        }
+      }
+
+      if (!user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Validate file type
+      if (!req.file.mimetype.startsWith('image/')) {
+        return res.status(400).json({ error: "Only image files are allowed" });
+      }
+
+      // Read file data from memory buffer
+      const imageData = req.file.buffer;
+      
+      // Calculate checksum for deduplication
+      const crypto = require('crypto');
+      const checksum = crypto.createHash('sha256').update(imageData).digest('hex');
+      
+      // Check for existing image with same checksum
+      const existingImage = await storage.getImageByChecksum(checksum);
+      if (existingImage) {
+        return res.json({
+          success: true,
+          imageId: existingImage.id,
+          imageUrl: `/api/images/${existingImage.id}`,
+          message: "Image already exists, reusing existing copy"
+        });
+      }
+
+      // Save image to database
+      const imageRecord = await storage.createImage({
+        filename: `${Date.now()}_${req.file.originalname}`,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        width: undefined, // Skip dimensions for now
+        height: undefined,
+        data: imageData,
+        checksum,
+        ownerId: user.id,
+        ownerType: req.body.ownerType || 'user',
+        entityId: req.body.entityId || user.id,
+        imageType: req.body.imageType || 'profile',
+        isPublic: req.body.isPublic !== 'false' // Default to true unless explicitly false
+      });
+
+      res.json({
+        success: true,
+        imageId: imageRecord.id,
+        imageUrl: `/api/images/${imageRecord.id}`,
+        message: "Image uploaded successfully"
+      });
+
+    } catch (error) {
+      console.error("Image upload error:", error);
+      res.status(500).json({ error: "Failed to upload image" });
+    }
+  });
+
+  // Serve images from database
+  app.get("/api/images/:id", async (req, res) => {
+    try {
+      const imageId = parseInt(req.params.id);
+      if (isNaN(imageId)) {
+        return res.status(400).json({ error: "Invalid image ID" });
+      }
+
+      const image = await storage.getImageById(imageId);
+      if (!image) {
+        return res.status(404).json({ error: "Image not found" });
+      }
+
+      // Check if image is public or user has access
+      if (!image.isPublic) {
+        let user = (req as any).session?.user;
+        if (!user) {
+          const userIdHeader = req.headers['x-user-id'] as string;
+          if (userIdHeader) {
+            user = await storage.getUserById(userIdHeader);
+          }
+        }
+
+        if (!user || user.id !== image.ownerId) {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      }
+
+      // Set cache headers for performance
+      const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds
+      res.set({
+        'Content-Type': image.mimeType,
+        'Content-Length': image.size.toString(),
+        'Cache-Control': `public, max-age=${maxAge}, immutable`,
+        'ETag': `"${image.checksum}"`,
+        'Last-Modified': new Date(image.updatedAt).toUTCString()
+      });
+
+      // Check if client has cached version
+      const clientETag = req.headers['if-none-match'];
+      if (clientETag === `"${image.checksum}"`) {
+        return res.status(304).end();
+      }
+
+      // Send image data
+      res.send(image.data);
+
+    } catch (error) {
+      console.error("Image serve error:", error);
+      res.status(500).json({ error: "Failed to serve image" });
+    }
   });
 
   // Profile picture update endpoint

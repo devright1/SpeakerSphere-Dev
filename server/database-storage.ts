@@ -15,6 +15,7 @@ import {
   speakerContent,
   contentAccessCodes,
   contentDownloads,
+  images,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -46,7 +47,9 @@ import {
   type ContentAccessCode,
   type InsertContentAccessCode,
   type ContentDownload,
-  type InsertContentDownload
+  type InsertContentDownload,
+  type Image,
+  type InsertImage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull } from "drizzle-orm";
@@ -1196,5 +1199,26 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reviews.id, reviewId))
       .returning();
     return result[0];
+  }
+
+  // Image methods
+  async createImage(image: InsertImage): Promise<Image> {
+    const result = await db.insert(images).values(image).returning();
+    return result[0];
+  }
+
+  async getImageById(id: number): Promise<Image | undefined> {
+    const result = await db.select().from(images).where(eq(images.id, id));
+    return result[0];
+  }
+
+  async getImageByChecksum(checksum: string): Promise<Image | undefined> {
+    const result = await db.select().from(images).where(eq(images.checksum, checksum));
+    return result[0];
+  }
+
+  async deleteImage(id: number): Promise<boolean> {
+    const result = await db.delete(images).where(eq(images.id, id));
+    return result.rowCount > 0;
   }
 }

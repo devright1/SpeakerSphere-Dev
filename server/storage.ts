@@ -15,6 +15,7 @@ import {
   speakerContent,
   contentAccessCodes,
   contentDownloads,
+  images,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -46,7 +47,9 @@ import {
   type ContentAccessCode,
   type InsertContentAccessCode,
   type ContentDownload,
-  type InsertContentDownload
+  type InsertContentDownload,
+  type Image,
+  type InsertImage
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -194,6 +197,12 @@ export interface IStorage {
   getContentDownloads(contentId: number): Promise<ContentDownload[]>;
   getSpeakerContentDownloads(speakerId: number): Promise<ContentDownload[]>;
   getUserContentDownloads(userId: string): Promise<ContentDownload[]>;
+  
+  // Images
+  createImage(image: InsertImage): Promise<Image>;
+  getImageById(id: number): Promise<Image | undefined>;
+  getImageByChecksum(checksum: string): Promise<Image | undefined>;
+  deleteImage(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -212,6 +221,7 @@ export class MemStorage implements IStorage {
   private speakerContentMap: Map<number, SpeakerContent>;
   private contentAccessCodes: Map<number, ContentAccessCode>;
   private contentDownloads: Map<number, ContentDownload>;
+  private images: Map<number, Image>;
   private currentSpeakerId: number;
   private currentReviewId: number;
   private currentInquiryId: number;
@@ -225,6 +235,7 @@ export class MemStorage implements IStorage {
   private currentContentId: number;
   private currentAccessCodeId: number;
   private currentDownloadId: number;
+  private currentImageId: number;
 
   constructor() {
     this.speakers = new Map();
@@ -242,6 +253,7 @@ export class MemStorage implements IStorage {
     this.speakerContentMap = new Map();
     this.contentAccessCodes = new Map();
     this.contentDownloads = new Map();
+    this.images = new Map();
     this.currentSpeakerId = 1;
     this.currentReviewId = 1;
     this.currentInquiryId = 1;
@@ -255,6 +267,7 @@ export class MemStorage implements IStorage {
     this.currentContentId = 1;
     this.currentAccessCodeId = 1;
     this.currentDownloadId = 1;
+    this.currentImageId = 1;
     
     this.seedData();
     this.seedVideoData();
@@ -1379,6 +1392,30 @@ export class MemStorage implements IStorage {
     return Array.from(this.contentDownloads.values())
       .filter(download => download.userId === userId)
       .sort((a, b) => b.downloadedAt.getTime() - a.downloadedAt.getTime());
+  }
+
+  // Image methods
+  async createImage(image: InsertImage): Promise<Image> {
+    const newImage: Image = {
+      id: this.currentImageId++,
+      ...image,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.images.set(newImage.id, newImage);
+    return newImage;
+  }
+
+  async getImageById(id: number): Promise<Image | undefined> {
+    return this.images.get(id);
+  }
+
+  async getImageByChecksum(checksum: string): Promise<Image | undefined> {
+    return Array.from(this.images.values()).find(image => image.checksum === checksum);
+  }
+
+  async deleteImage(id: number): Promise<boolean> {
+    return this.images.delete(id);
   }
 }
 
