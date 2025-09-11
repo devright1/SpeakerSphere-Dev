@@ -428,46 +428,10 @@ export default function ProfilePage() {
                           {getInitials(user.firstName, user.lastName)}
                         </AvatarFallback>
                       </Avatar>
-                      <ObjectUploader
-                        maxNumberOfFiles={1}
-                        maxFileSize={5 * 1024 * 1024} // 5MB limit
-                        imageType="profile"
-                        ownerType="user"
-                        entityId={user?.id}
-                        onComplete={async (result: any) => {
-                          if (result.successful && result.successful.length > 0) {
-                            const uploadedFile = result.successful[0];
-                            try {
-                              const response = await apiRequest("PUT", `/api/users/${user?.id}/profile-picture`, {
-                                profilePictureURL: uploadedFile.uploadURL,
-                              });
-                              const data = await response.json();
-                              
-                              if (data.success && data.user) {
-                                // Update localStorage with new user data
-                                localStorage.setItem('userData', JSON.stringify(data.user));
-                                
-                                toast({
-                                  title: "Profile Picture Updated",
-                                  description: "Your profile picture has been successfully updated!",
-                                });
-                                
-                                // Refresh the page to show new image
-                                window.location.reload();
-                              }
-                            } catch (error) {
-                              toast({
-                                title: "Upload Failed",
-                                description: "Failed to update profile picture. Please try again.",
-                                variant: "destructive",
-                              });
-                            }
-                          }
-                        }}
-                        buttonClassName="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 bg-blue-500 text-white shadow-md hover:bg-blue-600 hover:shadow-lg transition-all opacity-100"
-                      >
+                      {/* Profile picture is automatically synced from speaker dashboard */}
+                      <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-blue-500 text-white shadow-md flex items-center justify-center">
                         <Camera className="h-4 w-4 text-white" />
-                      </ObjectUploader>
+                      </div>
                     </div>
                     
                     {/* Remove Profile Picture Button - only show when editing and user has a profile picture */}
