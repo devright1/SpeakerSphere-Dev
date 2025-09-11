@@ -699,10 +699,11 @@ export default function SpeakerDashboard() {
                                           });
                                           
                                           // Update the editForm to preserve the new imageUrl when saving changes
-                                          setEditForm({...editForm, imageUrl: base64});
+                                          setEditForm({...editForm, imageUrl: data.speaker.imageUrl});
                                           
-                                          // Invalidate and refetch speaker data
+                                          // Invalidate and refetch speaker data AND user profile data for sync
                                           queryClient.invalidateQueries({ queryKey: ['/api/speakers/by-user', user?.id] });
+                                          queryClient.invalidateQueries({ queryKey: ['/api/users', user?.id] });
                                         }
                                       } catch (error) {
                                         toast({
