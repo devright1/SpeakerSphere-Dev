@@ -1806,8 +1806,8 @@ export function registerRoutes(app: Express): Express {
       const imageData = req.file.buffer;
       
       // Calculate checksum for deduplication
-      const crypto = require('crypto');
-      const checksum = crypto.createHash('sha256').update(imageData).digest('hex');
+      const crypto = await import('crypto');
+      const checksum = crypto.default.createHash('sha256').update(imageData).digest('hex');
       
       // Check for existing image with same checksum
       const existingImage = await storage.getImageByChecksum(checksum);
