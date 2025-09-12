@@ -458,7 +458,8 @@ export function registerRoutes(app: Express): Express {
       
       const speakers = await storage.getSpeakers({
         search,
-        category: categories ? categories[0] as string : category,
+        categories: categories && categories.length > 0 ? categories as string[] : undefined,
+        category: category, // Keep for backward compatibility when no categories array
         location,
         includeHidden: false // Explicitly exclude hidden speakers from public view
       });
