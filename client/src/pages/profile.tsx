@@ -416,65 +416,6 @@ export default function ProfilePage() {
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-32"></div>
               <CardContent className="relative px-6 pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16">
-                  {/* Profile Picture */}
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="relative">
-                      <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
-                        <AvatarImage 
-                          src={user.profileImageUrl}
-                          alt={`${user.firstName} ${user.lastName}`}
-                          onError={() => console.log("Profile image failed to load:", user.profileImageUrl)}
-                          onLoad={() => console.log("Profile image loaded successfully:", user.profileImageUrl)}
-                        />
-                        <AvatarFallback className="text-xl font-semibold bg-blue-500 text-white">
-                          {getInitials(user.firstName, user.lastName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      {/* Profile picture is automatically synced from speaker dashboard */}
-                      <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-blue-500 text-white shadow-md flex items-center justify-center">
-                        <Camera className="h-4 w-4 text-white" />
-                      </div>
-                    </div>
-                    
-                    {/* Remove Profile Picture Button - only show when editing and user has a profile picture */}
-                    {isEditingProfile && user.profileImageUrl && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={async () => {
-                          try {
-                            const response = await apiRequest("PUT", `/api/users/${user?.id}/profile-picture`, {
-                              remove: true,
-                            });
-                            const data = await response.json();
-                            
-                            if (data.success && data.user) {
-                              // Update localStorage with new user data
-                              localStorage.setItem('userData', JSON.stringify(data.user));
-                              
-                              toast({
-                                title: "Profile Picture Removed",
-                                description: "Your profile picture has been removed successfully.",
-                              });
-                              
-                              // Refresh the page to show changes
-                              window.location.reload();
-                            }
-                          } catch (error) {
-                            toast({
-                              title: "Remove Failed",
-                              description: "Failed to remove profile picture. Please try again.",
-                              variant: "destructive",
-                            });
-                          }
-                        }}
-                        className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1"
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Remove Picture
-                      </Button>
-                    )}
-                  </div>
 
                   {/* User Info */}
                   <div className="flex-1 min-w-0">
