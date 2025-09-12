@@ -267,7 +267,7 @@ export default function SpeakerProfile() {
       if (!speaker) throw new Error("Speaker not found");
       const inquiryData = { ...data, speakerId: speaker.id };
       const response = await apiRequest("POST", `/api/inquiries`, inquiryData);
-      return response.json();
+      return response;
     },
     onSuccess: (_, variables) => {
       // Track inquiry submission
