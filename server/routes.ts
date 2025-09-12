@@ -716,6 +716,44 @@ export function registerRoutes(app: Express): Express {
       const userIdHeader = req.headers['x-user-id'];
       const userId = Array.isArray(userIdHeader) ? userIdHeader[0] : userIdHeader || 'anonymous-user';
 
+      // Handle photo upload if present
+      let photoUrl = null;
+      if (req.file) {
+        // Validate file type
+        if (!req.file.mimetype.startsWith('image/')) {
+          return res.status(400).json({ 
+            success: false,
+            message: "Only image files are allowed" 
+          });
+        }
+
+        // Store image in database using the same pattern as profile pictures
+        const imageData = req.file.buffer;
+        
+        // Calculate checksum for deduplication
+        const crypto = await import('crypto');
+        const checksum = crypto.default.createHash('sha256').update(imageData).digest('hex');
+        
+        // Save image to database
+        const imageRecord = await storage.createImage({
+          filename: `${Date.now()}_${req.file.originalname}`,
+          originalName: req.file.originalname,
+          mimeType: req.file.mimetype,
+          size: req.file.size,
+          width: undefined, // Skip dimensions for now
+          height: undefined,
+          data: imageData,
+          checksum,
+          ownerId: userId,
+          ownerType: 'review',
+          entityId: speakerId.toString(),
+          imageType: 'review',
+          isPublic: true
+        });
+
+        photoUrl = `/api/images/${imageRecord.id}`;
+      }
+
       const reviewData = {
         speakerId,
         userId: userId,
@@ -739,7 +777,7 @@ export function registerRoutes(app: Express): Express {
         comment: req.body.comment,
         eventType: req.body.eventType,
         eventDate: req.body.eventDate,
-        photoUrl: req.file ? `/uploads/${speakerId}/${req.file.filename}` : null,
+        photoUrl: photoUrl,
         approvalStatus: 'pending' // Reviews start as pending admin approval
       };
 
