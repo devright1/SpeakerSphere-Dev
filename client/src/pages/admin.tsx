@@ -353,8 +353,8 @@ export default function AdminDashboard() {
   // Update speaker mutation
   const updateSpeakerMutation = useMutation({
     mutationFn: async (updatedSpeaker: any) => {
-      const response = await fetch(`/api/speakers/${updatedSpeaker.id}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/admin/speakers/${updatedSpeaker.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedSpeaker),
       });
@@ -5194,6 +5194,244 @@ export default function AdminDashboard() {
                 }}
               >
                 Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Speaker Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Speaker Profile</DialogTitle>
+              <DialogDescription>
+                Update speaker information and settings.
+              </DialogDescription>
+            </DialogHeader>
+            {editingSpeaker && (
+              <div className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="speakerName">Speaker Name</Label>
+                    <Input
+                      id="speakerName"
+                      value={editingSpeaker.name || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Full name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="speakerTitle">Title</Label>
+                    <Input
+                      id="speakerTitle"
+                      value={editingSpeaker.title || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Professional title"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="speakerEmail">Email</Label>
+                    <Input
+                      id="speakerEmail"
+                      type="email"
+                      value={editingSpeaker.email || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="Email address"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="speakerPhone">Phone</Label>
+                    <Input
+                      id="speakerPhone"
+                      value={editingSpeaker.phone || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="Phone number"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="speakerWebsite">Website</Label>
+                    <Input
+                      id="speakerWebsite"
+                      value={editingSpeaker.website || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, website: e.target.value }))}
+                      placeholder="Website URL"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="speakerLocation">Location</Label>
+                    <Input
+                      id="speakerLocation"
+                      value={editingSpeaker.location || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="City, State/Country"
+                    />
+                  </div>
+                </div>
+
+                {/* Professional Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="speakerSpecialty">Specialty</Label>
+                    <Input
+                      id="speakerSpecialty"
+                      value={editingSpeaker.specialty || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, specialty: e.target.value }))}
+                      placeholder="Medical specialty"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="speakerExperience">Years of Experience</Label>
+                    <Input
+                      id="speakerExperience"
+                      type="number"
+                      value={editingSpeaker.yearsExperience || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, yearsExperience: parseInt(e.target.value) || 0 }))}
+                      placeholder="Years of experience"
+                    />
+                  </div>
+                </div>
+
+                {/* Biography */}
+                <div>
+                  <Label htmlFor="speakerBio">Biography</Label>
+                  <textarea
+                    id="speakerBio"
+                    className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editingSpeaker.bio || ""}
+                    onChange={(e) => setEditingSpeaker(prev => ({ ...prev, bio: e.target.value }))}
+                    placeholder="Professional biography"
+                  />
+                </div>
+
+                {/* Social Media Links */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Social Media Links</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="speakerInstagram">Instagram</Label>
+                      <Input
+                        id="speakerInstagram"
+                        value={editingSpeaker.instagramUrl || ""}
+                        onChange={(e) => setEditingSpeaker(prev => ({ ...prev, instagramUrl: e.target.value }))}
+                        placeholder="Instagram URL"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="speakerTwitter">X (Twitter)</Label>
+                      <Input
+                        id="speakerTwitter"
+                        value={editingSpeaker.twitterUrl || ""}
+                        onChange={(e) => setEditingSpeaker(prev => ({ ...prev, twitterUrl: e.target.value }))}
+                        placeholder="X/Twitter URL"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="speakerLinkedIn">LinkedIn</Label>
+                      <Input
+                        id="speakerLinkedIn"
+                        value={editingSpeaker.linkedinUrl || ""}
+                        onChange={(e) => setEditingSpeaker(prev => ({ ...prev, linkedinUrl: e.target.value }))}
+                        placeholder="LinkedIn URL"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="speakerFacebook">Facebook</Label>
+                      <Input
+                        id="speakerFacebook"
+                        value={editingSpeaker.facebookUrl || ""}
+                        onChange={(e) => setEditingSpeaker(prev => ({ ...prev, facebookUrl: e.target.value }))}
+                        placeholder="Facebook URL"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Speaking Information */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Speaking Information</Label>
+                  <div>
+                    <Label htmlFor="speakerSpeakingExperience">Previous Speaking Experience</Label>
+                    <textarea
+                      id="speakerSpeakingExperience"
+                      className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={editingSpeaker.previousSpeakingExperience || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, previousSpeakingExperience: e.target.value }))}
+                      placeholder="Describe previous speaking engagements"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="speakerTopics">Topics of Expertise</Label>
+                    <textarea
+                      id="speakerTopics"
+                      className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={editingSpeaker.specificTopicsOfExpertise || ""}
+                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, specificTopicsOfExpertise: e.target.value }))}
+                      placeholder="List specific topics you can speak about"
+                    />
+                  </div>
+                </div>
+
+                {/* Visibility Settings */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Visibility Settings</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hideProfile"
+                        checked={!!editingSpeaker.hideProfile}
+                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, hideProfile: checked }))}
+                      />
+                      <Label htmlFor="hideProfile" className="text-sm">Hide Profile</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hideRatings"
+                        checked={!!editingSpeaker.hideRatings}
+                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, hideRatings: checked }))}
+                      />
+                      <Label htmlFor="hideRatings" className="text-sm">Hide Ratings</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hideSocial"
+                        checked={!!editingSpeaker.hideSocial}
+                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, hideSocial: checked }))}
+                      />
+                      <Label htmlFor="hideSocial" className="text-sm">Hide Social Media</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hideContact"
+                        checked={!!editingSpeaker.hideContact}
+                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, hideContact: checked }))}
+                      />
+                      <Label htmlFor="hideContact" className="text-sm">Hide Contact Info</Label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingSpeaker(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (editingSpeaker) {
+                    updateSpeakerMutation.mutate(editingSpeaker);
+                  }
+                }}
+                disabled={updateSpeakerMutation.isPending}
+              >
+                {updateSpeakerMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </DialogContent>
