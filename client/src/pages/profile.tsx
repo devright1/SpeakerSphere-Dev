@@ -26,7 +26,8 @@ import {
   Shield,
   X,
   UserCheck,
-  Trash2
+  Trash2,
+  HeartOff
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -690,6 +691,35 @@ export default function ProfilePage() {
                                     onClick={() => window.location.href = `/speakers/${speaker.slug}`}
                                   >
                                     View Profile
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={async () => {
+                                      try {
+                                        await apiRequest("POST", `/api/users/${user?.id}/bookmarks`, {
+                                          speakerId: speaker.id,
+                                        });
+                                        
+                                        // Refresh the favorites list
+                                        queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks`] });
+                                        
+                                        toast({
+                                          title: "Removed from favorites",
+                                          description: `${speaker.name} has been removed from your favorites.`,
+                                        });
+                                      } catch (error) {
+                                        toast({
+                                          title: "Error",
+                                          description: "Failed to remove from favorites. Please try again.",
+                                          variant: "destructive",
+                                        });
+                                      }
+                                    }}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <HeartOff className="h-4 w-4 mr-1" />
+                                    Unfavorite
                                   </Button>
                                 </div>
                               </div>
