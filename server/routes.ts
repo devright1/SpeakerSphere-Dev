@@ -1154,7 +1154,7 @@ export function registerRoutes(app: Express): Express {
 
       // Generate a unique filename for the uploaded file
       const timestamp = Date.now();
-      const sanitizedOriginalName = SecurityUtils.sanitizeFilename(req.file.originalname);
+      const sanitizedOriginalName = SecurityUtils.sanitizeFileName(req.file.originalname);
       const finalFileName = `${timestamp}_${sanitizedOriginalName}`;
       
       // Use object storage service to save the file
