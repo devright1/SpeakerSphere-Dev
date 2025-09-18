@@ -265,8 +265,6 @@ export default function AuthPage() {
   };
 
   const onResetPasswordSubmit = (data: ResetPasswordForm) => {
-    console.log('Reset password form data:', data);
-    console.log('Form errors:', resetPasswordForm.formState.errors);
     resetPasswordMutation.mutate({
       ...data,
       token: resetToken || data.token,
