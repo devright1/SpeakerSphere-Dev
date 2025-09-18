@@ -130,6 +130,12 @@ export interface IStorage {
   verifyUserEmail(userId: string): Promise<User | undefined>;
   clearVerificationToken(userId: string): Promise<User | undefined>;
   
+  // Password reset operations
+  setPasswordResetToken(userId: string, tokenHash: string, expires: Date): Promise<User | undefined>;
+  getUserByPasswordResetToken(tokenHash: string): Promise<User | undefined>;
+  clearPasswordResetToken(userId: string): Promise<User | undefined>;
+  invalidateAllUserSessions(userId: string): Promise<void>;
+  
   // Speaker Application Methods
   createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;
   getSpeakerApplicationByEmail(email: string): Promise<SpeakerApplication | undefined>;

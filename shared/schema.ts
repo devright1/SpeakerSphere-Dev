@@ -255,6 +255,8 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").default(false),
   verificationToken: varchar("verification_token", { length: 255 }),
   verificationTokenExpires: timestamp("verification_token_expires"),
+  passwordResetToken: varchar("password_reset_token", { length: 255 }),
+  passwordResetExpires: timestamp("password_reset_expires"),
   isActive: boolean("is_active").default(true),
   accountType: varchar("account_type", { length: 20 }).notNull().default("user"), // "user", "speaker", or "both"
   speakerId: integer("speaker_id"), // Links to speaker profile if account_type includes "speaker"
@@ -535,6 +537,10 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   passwordHash: true, // Remove passwordHash from the input schema
   emailVerified: true,
+  verificationToken: true, // System-managed
+  verificationTokenExpires: true, // System-managed
+  passwordResetToken: true, // System-managed
+  passwordResetExpires: true, // System-managed
   isActive: true,
   speakerId: true, // This will be set by the system
   lastLoginAt: true,

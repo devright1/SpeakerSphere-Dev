@@ -1167,6 +1167,45 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Password reset operations
+  async setPasswordResetToken(userId: string, tokenHash: string, expires: Date): Promise<User | undefined> {
+    const result = await db.update(users)
+      .set({ 
+        passwordResetToken: tokenHash,
+        passwordResetExpires: expires,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
+
+  async getUserByPasswordResetToken(tokenHash: string): Promise<User | undefined> {
+    const result = await db.select().from(users)
+      .where(and(
+        eq(users.passwordResetToken, tokenHash),
+        gte(users.passwordResetExpires, new Date()) // Token must not be expired
+      ));
+    return result[0];
+  }
+
+  async clearPasswordResetToken(userId: string): Promise<User | undefined> {
+    const result = await db.update(users)
+      .set({ 
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
+
+  async invalidateAllUserSessions(userId: string): Promise<void> {
+    await db.delete(userSessions)
+      .where(eq(userSessions.userId, userId));
+  }
+
   // Review management methods
   async getPendingReviews(): Promise<Review[]> {
     const result = await db.select().from(reviews)

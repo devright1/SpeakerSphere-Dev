@@ -1,5 +1,6 @@
 import express, { type Request, Response } from "express";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { body, validationResult } from "express-validator";
 import { rateLimiters } from "./security";
 import { storage } from "./storage";
@@ -262,56 +263,6 @@ router.post("/forgot-password",
   }
 );
 
-// Password reset with token
-router.post("/reset-password",
-  rateLimiters.auth,
-  [
-    body('token')
-      .notEmpty()
-      .withMessage('Reset token is required'),
-    body('password')
-      .isLength({ min: 6 })
-      .withMessage('Password must be at least 6 characters long'),
-  ],
-  async (req: Request, res: Response) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          message: "Validation failed",
-          errors: errors.array()
-        });
-      }
-
-      const { token, password } = req.body;
-
-      // Find user by reset token
-      const user = await storage.getUserByVerificationToken(token);
-      if (!user) {
-        return res.status(400).json({
-          message: "Invalid or expired reset token"
-        });
-      }
-
-      // Hash new password
-      const passwordHash = await bcrypt.hash(password, 12);
-
-      // Update password and clear reset token
-      await storage.updateUserPassword(user.id, passwordHash);
-      await storage.clearVerificationToken(user.id);
-
-      res.json({
-        message: "Password reset successfully! You can now log in with your new password."
-      });
-
-    } catch (error) {
-      console.error('Password reset error:', error);
-      res.status(500).json({
-        message: "Password reset failed. Please try again."
-      });
-    }
-  }
-);
 
 // Enhanced login that checks email verification
 router.post("/login",
@@ -390,6 +341,142 @@ router.post("/login",
       console.error('Login error:', error);
       res.status(500).json({
         message: "Login failed. Please try again."
+      });
+    }
+  }
+);
+
+// Forgot password endpoint
+router.post("/forgot-password",
+  rateLimiters.auth, // Rate limit: 10 attempts per 15 minutes
+  [
+    body('email')
+      .isEmail()
+      .normalizeEmail()
+      .withMessage('Please provide a valid email address'),
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: "Please provide a valid email address",
+          errors: errors.array()
+        });
+      }
+
+      const { email } = req.body;
+
+      // Always return success to prevent email enumeration attacks
+      const successMessage = "If an account with this email exists, you will receive a password reset link shortly.";
+
+      try {
+        // Find user by email
+        const user = await storage.getUserByEmail(email);
+        
+        if (user) {
+          // Generate secure 32-byte token
+          const resetToken = crypto.randomBytes(32).toString('hex');
+          
+          // Hash the token before storing (SHA-256)
+          const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+          
+          // Set 1-hour expiration
+          const expires = new Date();
+          expires.setHours(expires.getHours() + 1);
+
+          // Store hashed token in database
+          await storage.setPasswordResetToken(user.id, tokenHash, expires);
+
+          // Send password reset email with raw token
+          const emailData = createPasswordResetEmail(user.email, user.firstName, resetToken);
+          const emailSent = await sendEmail(emailData);
+
+          if (!emailSent) {
+            console.error('Failed to send password reset email to:', email);
+          }
+        }
+      } catch (error) {
+        console.error('Password reset error:', error);
+        // Don't expose error to prevent information disclosure
+      }
+
+      // Always return success message regardless of whether email exists
+      res.json({
+        message: successMessage
+      });
+
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res.status(500).json({
+        message: "Password reset request failed. Please try again."
+      });
+    }
+  }
+);
+
+// Reset password endpoint
+router.post("/reset-password",
+  rateLimiters.auth, // Rate limit: 10 attempts per 15 minutes
+  [
+    body('token')
+      .isLength({ min: 64, max: 64 })
+      .withMessage('Invalid reset token'),
+    body('password')
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters long'),
+    body('confirmPassword')
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error('Password confirmation does not match password');
+        }
+        return true;
+      }),
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: errors.array()
+        });
+      }
+
+      const { token, password } = req.body;
+
+      // Hash the token to match what's stored in database
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+      // Find user by password reset token (includes expiry check)
+      const user = await storage.getUserByPasswordResetToken(tokenHash);
+      
+      if (!user) {
+        return res.status(400).json({
+          message: "Invalid or expired reset token. Please request a new password reset."
+        });
+      }
+
+      // Hash the new password
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      // Update user password
+      await storage.updateUserPassword(user.id, passwordHash);
+
+      // Clear the reset token (one-time use)
+      await storage.clearPasswordResetToken(user.id);
+
+      // Invalidate all existing sessions for security
+      await storage.invalidateAllUserSessions(user.id);
+
+      res.json({
+        message: "Password reset successful. You can now log in with your new password."
+      });
+
+    } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({
+        message: "Password reset failed. Please try again."
       });
     }
   }
