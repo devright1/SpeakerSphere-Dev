@@ -196,7 +196,7 @@ export function createPasswordResetEmail(
   resetToken: string
 ) {
   
-  const resetUrl = `${getDomain()}/reset-password?token=${resetToken}`;
+  const resetUrl = `${getDomain()}/auth?resetToken=${resetToken}`;
   
   return {
     to: userEmail,
