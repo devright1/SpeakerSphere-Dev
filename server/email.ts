@@ -14,24 +14,41 @@ const FROM_NAME = 'SpeakerSphere Reviews';
 
 // Get the correct domain for email links
 function getDomain(): string {
+  console.log('🔍 Domain Debug - Environment variables:', {
+    MAIN_DOMAIN: process.env.MAIN_DOMAIN,
+    REPLIT_DOMAIN: process.env.REPLIT_DOMAIN,
+    REPLIT_DOMAINS: process.env.REPLIT_DOMAINS,
+    REPL_SLUG: process.env.REPL_SLUG,
+    REPL_OWNER: process.env.REPL_OWNER
+  });
+
   // Use custom main domain if provided
   if (process.env.MAIN_DOMAIN) {
-    return process.env.MAIN_DOMAIN.startsWith('http') 
+    const domain = process.env.MAIN_DOMAIN.startsWith('http') 
       ? process.env.MAIN_DOMAIN 
       : `https://${process.env.MAIN_DOMAIN}`;
+    console.log('✅ Using MAIN_DOMAIN:', domain);
+    return domain;
   }
   
   // Try various Replit environment variables as fallback
   if (process.env.REPLIT_DOMAIN) {
-    return `https://${process.env.REPLIT_DOMAIN}`;
+    const domain = `https://${process.env.REPLIT_DOMAIN}`;
+    console.log('⚠️ Using REPLIT_DOMAIN:', domain);
+    return domain;
   }
   if (process.env.REPLIT_DOMAINS) {
-    return `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`;
+    const domain = `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`;
+    console.log('⚠️ Using REPLIT_DOMAINS:', domain);
+    return domain;
   }
   if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-    return `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`;
+    const domain = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`;
+    console.log('⚠️ Using REPL_SLUG/REPL_OWNER:', domain);
+    return domain;
   }
   // Fallback to localhost for local development
+  console.log('⚠️ Using localhost fallback');
   return 'http://localhost:5000';
 }
 
