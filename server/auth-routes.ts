@@ -207,61 +207,6 @@ router.post("/resend-verification",
   }
 );
 
-// Password reset request
-router.post("/forgot-password",
-  rateLimiters.auth,
-  [
-    body('email')
-      .isEmail()
-      .normalizeEmail()
-      .withMessage('Please provide a valid email address'),
-  ],
-  async (req: Request, res: Response) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          message: "Please provide a valid email address",
-          errors: errors.array()
-        });
-      }
-
-      const { email } = req.body;
-
-      // Find user by email
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        // Don't reveal if email exists or not for security
-        return res.json({
-          message: "If an account with this email exists, a password reset email has been sent."
-        });
-      }
-
-      // Generate reset token (shorter expiration - 1 hour)
-      const resetToken = generateVerificationToken();
-      const tokenExpiration = new Date();
-      tokenExpiration.setHours(tokenExpiration.getHours() + 1);
-
-      // Save reset token (reusing verification token field)
-      await storage.setEmailVerificationToken(user.id, resetToken, tokenExpiration);
-
-      // Send password reset email
-      const emailData = createPasswordResetEmail(user.email, user.firstName, resetToken);
-      const emailSent = await sendEmail(emailData);
-
-      res.json({
-        message: "Password reset email sent! Please check your inbox.",
-        emailSent
-      });
-
-    } catch (error) {
-      console.error('Password reset request error:', error);
-      res.status(500).json({
-        message: "Failed to process password reset request. Please try again."
-      });
-    }
-  }
-);
 
 
 // Enhanced login that checks email verification
