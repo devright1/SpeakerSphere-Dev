@@ -288,7 +288,7 @@ export default function ProfilePage() {
       }
       
       const token = localStorage.getItem('userToken');
-      const user = getUserData(); // Get user data to send user ID
+      // Get user data to send user ID
       console.log("Current user data:", user);
       console.log("Token:", token);
       
