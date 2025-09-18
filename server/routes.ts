@@ -1152,42 +1152,35 @@ export function registerRoutes(app: Express): Express {
         return res.status(403).json({ error: "Not authorized to upload content for this speaker" });
       }
 
-      // Handle file location - move to correct directory if uploaded to 'unknown'
-      let finalFileName = req.file.filename;
-      let finalPath = req.file.path;
+      // Generate a unique filename for the uploaded file
+      const timestamp = Date.now();
+      const sanitizedOriginalName = SecurityUtils.sanitizeFilename(req.file.originalname);
+      const finalFileName = `${timestamp}_${sanitizedOriginalName}`;
       
-      if (req.file.path.includes('/unknown/')) {
-        // File was uploaded to unknown directory, move it to correct speaker directory
-        const correctDir = `uploads/${speakerId}`;
-        const correctPath = `${correctDir}/${req.file.filename}`;
-        
-        try {
-          // Create speaker directory if it doesn't exist
-          if (!fs.existsSync(correctDir)) {
-            fs.mkdirSync(correctDir, { recursive: true });
-          }
-          
-          // Move file from unknown to speaker directory
-          fs.renameSync(req.file.path, correctPath);
-          finalPath = correctPath;
-          console.log(`Moved file from ${req.file.path} to ${correctPath}`);
-        } catch (error) {
-          console.error('Failed to move file to correct directory:', error);
-          // Continue with original path if move fails
-        }
+      // Use object storage service to save the file
+      const objectStorage = ObjectStorageService.getInstance();
+      const uploadPath = `private/${speakerId}/${finalFileName}`;
+      
+      try {
+        // Upload file buffer to object storage
+        await objectStorage.uploadFile(uploadPath, req.file.buffer);
+        console.log(`File uploaded to object storage: ${uploadPath}`);
+      } catch (error) {
+        console.error('Failed to upload file to object storage:', error);
+        return res.status(500).json({ error: "Failed to upload file to storage" });
       }
 
-      // Create content record using the actual file path from Multer
+      // Create content record
       const contentData = {
         speakerId,
-        fileName: finalFileName, // Use the actual filename created by Multer
+        fileName: finalFileName,
         originalName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
         category: category || 'document',
         description: description || '',
         isPublic: isPublic === 'true',
-        uploadPath: `/uploads/${speakerId}/${finalFileName}` // Use the actual file path
+        uploadPath: uploadPath // Store the object storage path
       };
 
       const content = await storage.createSpeakerContent(contentData);

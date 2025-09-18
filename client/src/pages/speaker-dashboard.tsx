@@ -282,9 +282,19 @@ export default function SpeakerDashboard() {
   // File upload mutation
   const uploadContentMutation = useMutation({
     mutationFn: async (formData: FormData) => {
+      // Get user token for authentication
+      const userToken = localStorage.getItem('userToken');
+      
+      const headers: Record<string, string> = {};
+      if (userToken) {
+        headers['X-User-ID'] = userToken;
+      }
+      
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/content`, {
         method: 'POST',
+        headers,
         body: formData,
+        credentials: 'include', // Include session cookie
       });
       if (!response.ok) throw new Error('Failed to upload content');
       return response.json();
