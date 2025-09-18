@@ -8,7 +8,7 @@ import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, su
 import { registerAdminRoutes } from "./admin-routes";
 import { EmailService } from "./email-service";
 import multer from "multer";
-import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "./objectStorage";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import path from "path";
@@ -1158,12 +1158,37 @@ export function registerRoutes(app: Express): Express {
       const finalFileName = `${timestamp}_${sanitizedOriginalName}`;
       
       // Use object storage service to save the file
-      const objectStorage = ObjectStorageService.getInstance();
-      const uploadPath = `private/${speakerId}/${finalFileName}`;
+      const objectStorage = new ObjectStorageService();
+      const privateDir = objectStorage.getPrivateObjectDir();
+      const uploadPath = `${privateDir}/${speakerId}/${finalFileName}`;
       
       try {
-        // Upload file buffer to object storage
-        await objectStorage.uploadFile(uploadPath, req.file.buffer);
+        // Parse the object path to get bucket and object names
+        const parseObjectPath = (path: string) => {
+          if (!path.startsWith("/")) {
+            path = `/${path}`;
+          }
+          const pathParts = path.split("/");
+          if (pathParts.length < 3) {
+            throw new Error("Invalid path: must contain at least a bucket name");
+          }
+          const bucketName = pathParts[1];
+          const objectName = pathParts.slice(2).join("/");
+          return { bucketName, objectName };
+        };
+
+        const { bucketName, objectName } = parseObjectPath(uploadPath);
+        
+        // Upload file buffer to object storage using the client directly
+        const bucket = objectStorageClient.bucket(bucketName);
+        const file = bucket.file(objectName);
+        
+        await file.save(req.file.buffer, {
+          metadata: {
+            contentType: req.file.mimetype,
+          },
+        });
+        
         console.log(`File uploaded to object storage: ${uploadPath}`);
       } catch (error) {
         console.error('Failed to upload file to object storage:', error);
