@@ -112,11 +112,18 @@ export default function AuthPage() {
   const resetPasswordForm = useForm<ResetPasswordForm>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      token: resetToken || "",
+      token: "",
       password: "",
       confirmPassword: "",
     },
   });
+
+  // Update the token field when resetToken changes
+  useEffect(() => {
+    if (resetToken) {
+      resetPasswordForm.setValue("token", resetToken);
+    }
+  }, [resetToken, resetPasswordForm]);
 
   // Login mutation
   const loginMutation = useMutation({
@@ -258,6 +265,8 @@ export default function AuthPage() {
   };
 
   const onResetPasswordSubmit = (data: ResetPasswordForm) => {
+    console.log('Reset password form data:', data);
+    console.log('Form errors:', resetPasswordForm.formState.errors);
     resetPasswordMutation.mutate({
       ...data,
       token: resetToken || data.token,

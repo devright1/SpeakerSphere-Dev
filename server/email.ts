@@ -12,9 +12,16 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || process.env.FROM_EMAIL || 'speakers@devright.com';
 const FROM_NAME = 'SpeakerSphere Reviews';
 
-// Get the correct domain for Replit deployment
+// Get the correct domain for email links
 function getDomain(): string {
-  // Try various Replit environment variables
+  // Use custom main domain if provided
+  if (process.env.MAIN_DOMAIN) {
+    return process.env.MAIN_DOMAIN.startsWith('http') 
+      ? process.env.MAIN_DOMAIN 
+      : `https://${process.env.MAIN_DOMAIN}`;
+  }
+  
+  // Try various Replit environment variables as fallback
   if (process.env.REPLIT_DOMAIN) {
     return `https://${process.env.REPLIT_DOMAIN}`;
   }
