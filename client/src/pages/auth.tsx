@@ -383,6 +383,9 @@ export default function AuthPage() {
                 </Alert>
                 
                 <form onSubmit={resetPasswordForm.handleSubmit(onResetPasswordSubmit)} className="space-y-4">
+                  {/* Hidden token field */}
+                  <input type="hidden" {...resetPasswordForm.register("token")} value={resetToken || ""} />
+                  
                   <div className="space-y-2">
                     <Label htmlFor="reset-password">New Password</Label>
                     <div className="relative">
