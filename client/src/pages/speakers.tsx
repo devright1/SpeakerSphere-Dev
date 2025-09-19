@@ -71,42 +71,30 @@ export default function Speakers() {
         
         // Make parallel requests for each category
         const categoryPromises = selectedCategories.map(async (category) => {
-          try {
-            const params = new URLSearchParams();
-            
-            // Add non-category filters to each request
-            Object.entries(filters).forEach(([key, value]) => {
-              if (key !== 'categories' && key !== 'category' && value !== undefined && value !== "") {
-                if (Array.isArray(value)) {
-                  value.forEach(item => params.append(key, item.toString()));
-                } else {
-                  params.append(key, value.toString());
-                }
+          const params = new URLSearchParams();
+          
+          // Add non-category filters to each request
+          Object.entries(filters).forEach(([key, value]) => {
+            if (key !== 'categories' && key !== 'category' && value !== undefined && value !== "") {
+              if (Array.isArray(value)) {
+                value.forEach(item => params.append(key, item.toString()));
+              } else {
+                params.append(key, value.toString());
               }
-            });
-            
-            const url = `/api/categories/${encodeURIComponent(category)}/speakers${params.toString() ? '?' + params.toString() : ''}`;
-            const response = await fetch(url);
-            if (!response.ok) {
-              console.error(`Failed to fetch speakers for category ${category}:`, response.status, response.statusText);
-              return [];
             }
-            const data = await response.json();
-            return Array.isArray(data) ? data : [];
-          } catch (error) {
-            console.error(`Error fetching speakers for category ${category}:`, error);
-            return [];
-          }
+          });
+          
+          const url = `/api/categories/${encodeURIComponent(category)}/speakers${params.toString() ? '?' + params.toString() : ''}`;
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`Failed to fetch speakers for category: ${category}`);
+          return response.json();
         });
         
-        // Wait for all category requests to complete (using allSettled for graceful failure handling)
-        const categoryResults = await Promise.allSettled(categoryPromises);
-        const successfulResults = categoryResults
-          .filter(result => result.status === 'fulfilled')
-          .map(result => (result as PromiseFulfilledResult<any>).value);
+        // Wait for all category requests to complete
+        const categoryResults = await Promise.all(categoryPromises);
         
         // Combine and deduplicate speakers
-        successfulResults.forEach(speakers => {
+        categoryResults.forEach(speakers => {
           speakers.forEach((speaker: Speaker) => {
             if (!speakerIds.has(speaker.id)) {
               speakerIds.add(speaker.id);
