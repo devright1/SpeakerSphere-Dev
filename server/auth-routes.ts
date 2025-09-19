@@ -77,7 +77,14 @@ router.post("/register",
 
       res.status(201).json({
         message: "Account created successfully! You can now log in.",
-        userId: newUser.id
+        user: {
+          id: newUser.id,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          email: newUser.email,
+          accountType: newUser.accountType,
+          emailVerified: newUser.emailVerified
+        }
       });
 
     } catch (error) {
