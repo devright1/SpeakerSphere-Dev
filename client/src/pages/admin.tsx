@@ -3124,7 +3124,6 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-medium">Current Categories</h3>
-                    <Button>Add New Category</Button>
                   </div>
                   
                   <div className="grid gap-4">
