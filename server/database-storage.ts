@@ -411,11 +411,40 @@ export class DatabaseStorage implements IStorage {
 
   // Categories
   async getCategories(): Promise<Category[]> {
+    // Get base categories
     const result = await db.select().from(categories);
     
-    // Return static categories without dynamic recalculation to prevent changes
-    // Speaker counts are updated only when speakers are actually added/removed
-    return result.sort((a, b) => a.name.localeCompare(b.name));
+    // Get speaker counts per category via topic relationships using single aggregated query
+    const speakerCounts = await db
+      .select({
+        categoryName: speakingTopics.category,
+        count: sql<number>`count(distinct ${speakers.id})`
+      })
+      .from(speakingTopics)
+      .innerJoin(speakerTopics, eq(speakerTopics.topicId, speakingTopics.id))
+      .innerJoin(speakers, eq(speakers.id, speakerTopics.speakerId))
+      .where(and(
+        eq(speakingTopics.isActive, true),
+        isNotNull(speakingTopics.category),
+        or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile))
+      ))
+      .groupBy(speakingTopics.category);
+      
+    // Create a map for quick lookup by category name
+    const countMap = new Map<string, number>();
+    speakerCounts.forEach(({ categoryName, count }) => {
+      if (categoryName) {
+        countMap.set(categoryName, parseInt(count as any) || 0);
+      }
+    });
+    
+    // Merge counts into categories by matching category names
+    const categoriesWithCounts = result.map(category => ({
+      ...category,
+      speakerCount: countMap.get(category.name) || 0
+    }));
+    
+    return categoriesWithCounts.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async createCategory(category: InsertCategory): Promise<Category> {
