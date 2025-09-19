@@ -126,6 +126,7 @@ export interface IStorage {
   
   // User Authentication
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByPasswordHash(passwordHash: string): Promise<User | undefined>;
   createUser(user: Omit<InsertUser, 'password'> & { passwordHash: string }): Promise<User>;
   updateUserLastLogin(userId: string): Promise<void>;
   getUserById(id: string): Promise<User | undefined>;
