@@ -3231,11 +3231,7 @@ export default function AdminDashboard() {
                                 variant="outline" 
                                 size="sm"
                                 className="text-red-600 border-red-600 hover:bg-red-50"
-                                onClick={() => {
-                                  if (confirm(`Are you sure you want to delete the category "${category.name}"? This action cannot be undone.`)) {
-                                    deleteCategoryMutation.mutate(category.id);
-                                  }
-                                }}
+                                onClick={() => deleteCategoryMutation.mutate(category.id)}
                               >
                                 Delete
                               </Button>
