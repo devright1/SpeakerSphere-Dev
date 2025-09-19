@@ -565,20 +565,31 @@ export function registerRoutes(app: Express): Express {
     try {
       const categoryName = decodeURIComponent(req.params.categoryName);
       
-      // Get all topics in this category
-      const categoryTopics = await storage.getSpeakingTopics();
-      const topicsInCategory = categoryTopics.filter(topic => topic.category === categoryName);
-      const topicNames = topicsInCategory.map(topic => topic.name);
+      // Parse query parameters for additional filtering
+      const filters: any = {};
       
-      if (topicNames.length === 0) {
-        return res.json([]);
+      if (req.query.search) {
+        filters.search = req.query.search as string;
       }
       
-      // Get speakers who have any of these topics
-      const speakers = await storage.getSpeakers({ 
-        topics: topicNames,
-        includeHidden: false 
-      });
+      if (req.query.verified !== undefined) {
+        filters.verified = req.query.verified === 'true';
+      }
+      
+      if (req.query.featured !== undefined) {
+        filters.featured = req.query.featured === 'true';
+      }
+      
+      if (req.query.minFee) {
+        filters.minFee = parseInt(req.query.minFee as string);
+      }
+      
+      if (req.query.maxFee) {
+        filters.maxFee = parseInt(req.query.maxFee as string);
+      }
+      
+      // Use the new efficient topic-based method
+      const speakers = await storage.getSpeakersByTopicCategory(categoryName, filters);
       
       res.json(speakers);
     } catch (error) {
