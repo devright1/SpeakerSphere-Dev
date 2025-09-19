@@ -610,10 +610,41 @@ export function registerRoutes(app: Express): Express {
         filters.maxFee = parseInt(req.query.maxFee as string);
       }
       
-      // Use the new efficient topic-based method
-      const speakers = await storage.getSpeakersByTopicCategory(categoryName, filters);
+      // Use direct database query like deployed site (bypass storage layer)
+      const { db } = await import('./db');
+      const { speakers } = await import('../shared/schema');
+      const { and, like, sql, gte, lte, eq, or, isNull } = await import('drizzle-orm');
       
-      res.json(speakers);
+      // Build conditions
+      const conditions = [];
+      conditions.push(sql`${speakers.categories} @> ARRAY[${categoryName}]`);
+      
+      if (filters.search) {
+        const searchTerm = `%${filters.search.toLowerCase()}%`;
+        conditions.push(
+          or(
+            like(sql`LOWER(${speakers.name})`, searchTerm),
+            like(sql`LOWER(${speakers.title})`, searchTerm),
+            like(sql`LOWER(${speakers.bio})`, searchTerm)
+          )
+        );
+      }
+      
+      if (filters.verified !== undefined) {
+        conditions.push(eq(speakers.verified, filters.verified));
+      }
+      
+      if (filters.featured !== undefined) {
+        conditions.push(eq(speakers.featured, filters.featured));
+      }
+      
+      const filteredSpeakers = await db
+        .select()
+        .from(speakers)
+        .where(and(...conditions))
+        .orderBy(speakers.name);
+      
+      res.json(filteredSpeakers);
     } catch (error) {
       console.error("Error fetching speakers by category:", error);
       res.status(500).json({ message: "Failed to fetch speakers by category" });
