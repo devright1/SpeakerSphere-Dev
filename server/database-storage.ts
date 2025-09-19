@@ -414,31 +414,23 @@ export class DatabaseStorage implements IStorage {
     // Get base categories
     const result = await db.select().from(categories);
     
-    // Get speaker counts per category via topic relationships using single aggregated query
-    const speakerCounts = await db
-      .select({
-        categoryName: speakingTopics.category,
-        count: sql<number>`count(distinct ${speakers.id})`
-      })
-      .from(speakingTopics)
-      .innerJoin(speakerTopics, eq(speakerTopics.topicId, speakingTopics.id))
-      .innerJoin(speakers, eq(speakers.id, speakerTopics.speakerId))
-      .where(and(
-        eq(speakingTopics.isActive, true),
-        isNotNull(speakingTopics.category),
-        or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile))
-      ))
-      .groupBy(speakingTopics.category);
-      
-    // Create a map for quick lookup by category name
+    // Get speaker counts per category by counting speakers.categories array directly
     const countMap = new Map<string, number>();
-    speakerCounts.forEach(({ categoryName, count }) => {
-      if (categoryName) {
-        countMap.set(categoryName, parseInt(count as any) || 0);
-      }
-    });
     
-    // Merge counts into categories by matching category names
+    // For each category, count speakers that have it in their categories array
+    for (const category of result) {
+      const count = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(speakers)
+        .where(and(
+          sql`${speakers.categories} @> ARRAY[${category.name}]`,
+          or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile))
+        ));
+      
+      countMap.set(category.name, parseInt(count[0].count as any) || 0);
+    }
+    
+    // Merge counts into categories
     const categoriesWithCounts = result.map(category => ({
       ...category,
       speakerCount: countMap.get(category.name) || 0
