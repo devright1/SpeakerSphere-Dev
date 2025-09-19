@@ -533,6 +533,33 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Add new category
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const { name, description } = req.body;
+      
+      if (!name || !description) {
+        return res.status(400).json({ message: "Name and description are required" });
+      }
+
+      // Check if category already exists
+      const existingCategories = await storage.getCategories();
+      const existingCategory = existingCategories.find(cat => 
+        cat.name.toLowerCase() === name.toLowerCase()
+      );
+      
+      if (existingCategory) {
+        return res.status(400).json({ message: "Category with this name already exists" });
+      }
+
+      const newCategory = await storage.createCategory({ name, description });
+      res.status(201).json(newCategory);
+    } catch (error) {
+      console.error("Error adding category:", error);
+      res.status(500).json({ message: "Failed to add category" });
+    }
+  });
+
   // Get all speaking topics
   app.get("/api/topics", async (req, res) => {
     try {
