@@ -61,21 +61,67 @@ export default function Speakers() {
   const { data: speakers, isLoading, error } = useQuery<Speaker[]>({
     queryKey: ["/api/speakers", filters],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== "") {
-          // Handle arrays (like categories) by adding multiple params
-          if (Array.isArray(value)) {
-            value.forEach(item => params.append(key, item.toString()));
-          } else {
-            params.append(key, value.toString());
-          }
-        }
-      });
+      // Normalize single category to array for consistent handling
+      const selectedCategories = filters.categories || (filters.category ? [filters.category] : []);
       
-      const response = await fetch(`/api/speakers?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch speakers");
-      return response.json();
+      // If categories are selected, use the new topic-based category endpoint
+      if (selectedCategories.length > 0) {
+        const allSpeakers: Speaker[] = [];
+        const speakerIds = new Set<number>();
+        
+        // Make parallel requests for each category
+        const categoryPromises = selectedCategories.map(async (category) => {
+          const params = new URLSearchParams();
+          
+          // Add non-category filters to each request
+          Object.entries(filters).forEach(([key, value]) => {
+            if (key !== 'categories' && key !== 'category' && value !== undefined && value !== "") {
+              if (Array.isArray(value)) {
+                value.forEach(item => params.append(key, item.toString()));
+              } else {
+                params.append(key, value.toString());
+              }
+            }
+          });
+          
+          const url = `/api/categories/${encodeURIComponent(category)}/speakers${params.toString() ? '?' + params.toString() : ''}`;
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`Failed to fetch speakers for category: ${category}`);
+          return response.json();
+        });
+        
+        // Wait for all category requests to complete
+        const categoryResults = await Promise.all(categoryPromises);
+        
+        // Combine and deduplicate speakers
+        categoryResults.forEach(speakers => {
+          speakers.forEach((speaker: Speaker) => {
+            if (!speakerIds.has(speaker.id)) {
+              speakerIds.add(speaker.id);
+              allSpeakers.push(speaker);
+            }
+          });
+        });
+        
+        return allSpeakers;
+      } else {
+        // No categories selected, use the traditional speakers endpoint
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== "") {
+            // Handle arrays (like topics) by adding multiple params
+            if (Array.isArray(value)) {
+              value.forEach(item => params.append(key, item.toString()));
+            } else {
+              params.append(key, value.toString());
+            }
+          }
+        });
+        
+        const response = await fetch(`/api/speakers?${params.toString()}`);
+        if (!response.ok) throw new Error("Failed to fetch speakers");
+        return response.json();
+      }
     },
   });
 
