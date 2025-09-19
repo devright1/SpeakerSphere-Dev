@@ -3122,6 +3122,29 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
+                  {/* Add New Category */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-3">Add New Category</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <Input
+                        placeholder="Category Name"
+                        value={newCategory.name}
+                        onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                      />
+                      <Input
+                        placeholder="Description"
+                        value={newCategory.description}
+                        onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                      />
+                      <Button 
+                        onClick={() => addCategoryMutation.mutate(newCategory)}
+                        disabled={!newCategory.name || !newCategory.description || addCategoryMutation.isPending}
+                      >
+                        {addCategoryMutation.isPending ? "Adding..." : "Add Category"}
+                      </Button>
+                    </div>
+                  </div>
+
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-medium">Current Categories</h3>
                   </div>
