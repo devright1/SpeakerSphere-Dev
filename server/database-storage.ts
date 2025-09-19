@@ -422,10 +422,7 @@ export class DatabaseStorage implements IStorage {
       const count = await db
         .select({ count: sql<number>`count(*)` })
         .from(speakers)
-        .where(and(
-          sql`${speakers.categories} @> ARRAY[${category.name}]`,
-          or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile))
-        ));
+        .where(sql`${speakers.categories} @> ARRAY[${category.name}]`);
       
       countMap.set(category.name, parseInt(count[0].count as any) || 0);
     }
