@@ -560,6 +560,28 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Delete category
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+
+      const success = await storage.deleteCategory(categoryId);
+      
+      if (success) {
+        res.json({ message: "Category deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Category not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      res.status(500).json({ message: "Failed to delete category" });
+    }
+  });
+
   // Get speakers by category (through their topics)
   app.get("/api/categories/:categoryName/speakers", async (req, res) => {
     try {
