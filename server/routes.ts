@@ -560,6 +560,33 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Get speakers by category (through their topics)
+  app.get("/api/categories/:categoryName/speakers", async (req, res) => {
+    try {
+      const categoryName = decodeURIComponent(req.params.categoryName);
+      
+      // Get all topics in this category
+      const categoryTopics = await storage.getSpeakingTopics();
+      const topicsInCategory = categoryTopics.filter(topic => topic.category === categoryName);
+      const topicNames = topicsInCategory.map(topic => topic.name);
+      
+      if (topicNames.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get speakers who have any of these topics
+      const speakers = await storage.getSpeakers({ 
+        topics: topicNames,
+        includeHidden: false 
+      });
+      
+      res.json(speakers);
+    } catch (error) {
+      console.error("Error fetching speakers by category:", error);
+      res.status(500).json({ message: "Failed to fetch speakers by category" });
+    }
+  });
+
   // Get all speaking topics
   app.get("/api/topics", async (req, res) => {
     try {

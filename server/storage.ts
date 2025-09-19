@@ -57,6 +57,8 @@ export interface IStorage {
   // Speakers
   getSpeakers(filters?: {
     category?: string;
+    categories?: string[];
+    topics?: string[];
     location?: string;
     minRating?: number;
     expertise?: string;

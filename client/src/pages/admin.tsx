@@ -959,11 +959,31 @@ export default function AdminDashboard() {
     setAssignmentSearchQuery("");
   };
 
-  const getSpeakersInCategory = (categoryName: string) => {
-    return speakersArray.filter((speaker: any) => 
-      speaker.categories && Array.isArray(speaker.categories) && speaker.categories.includes(categoryName)
-    );
+  // Add state to store speakers by category
+  const [speakersByCategory, setSpeakersByCategory] = useState<Record<string, any[]>>({});
+
+  // Function to fetch speakers for a category using the new API endpoint
+  const fetchSpeakersInCategory = async (categoryName: string) => {
+    try {
+      const response = await fetch(`/api/categories/${encodeURIComponent(categoryName)}/speakers`);
+      if (!response.ok) throw new Error('Failed to fetch speakers');
+      const speakers = await response.json();
+      setSpeakersByCategory(prev => ({
+        ...prev,
+        [categoryName]: speakers
+      }));
+      return speakers;
+    } catch (error) {
+      console.error(`Error fetching speakers for category ${categoryName}:`, error);
+      return [];
+    }
   };
+
+  const getSpeakersInCategory = (categoryName: string) => {
+    // Return cached speakers for this category, or empty array if not loaded yet
+    return speakersByCategory[categoryName] || [];
+  };
+
 
   const getUnassignedSpeakers = () => {
     return speakersArray.filter((speaker: any) => 
@@ -1292,6 +1312,18 @@ export default function AdminDashboard() {
 
   const speakersArray = Array.isArray(speakers) ? speakers : [];
   const categoriesArray = Array.isArray(categories) ? categories : [];
+  
+  // Fetch speakers for all categories when categories or topics change
+  useEffect(() => {
+    if (categoriesArray && categoriesArray.length > 0) {
+      categoriesArray.forEach((category: any) => {
+        // Only fetch if we don't already have data for this category
+        if (!speakersByCategory[category.name]) {
+          fetchSpeakersInCategory(category.name);
+        }
+      });
+    }
+  }, [categoriesArray, topics, speakersByCategory]); // Re-run when categories or topics change
   
   // Handler to toggle category selection in application editing
   const toggleApplicationCategory = (categoryName: string) => {
