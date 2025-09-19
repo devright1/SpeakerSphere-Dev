@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,10 +52,30 @@ export default function AdminDashboard() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   
+  // Category deletion confirmation modal state
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<any>(null);
+  
   // Handle opening image modal
   const openImageModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setIsImageModalOpen(true);
+  };
+  
+  // Handle category deletion confirmation
+  const handleDeleteCategory = (category: any) => {
+    setCategoryToDelete(category);
+    setConfirmDeleteOpen(true);
+  };
+  
+  const handleConfirmDelete = () => {
+    if (!categoryToDelete) return;
+    deleteCategoryMutation.mutate(categoryToDelete.id, {
+      onSuccess: () => {
+        setConfirmDeleteOpen(false);
+        setCategoryToDelete(null);
+      }
+    });
   };
   
   // Admin speakers filter states
@@ -3231,11 +3252,7 @@ export default function AdminDashboard() {
                                 variant="outline" 
                                 size="sm"
                                 className="text-red-600 border-red-600 hover:bg-red-50"
-                                onClick={() => {
-                                  if (confirm(`Are you sure you want to delete this category "${category.name}"? This action cannot be undone.`)) {
-                                    deleteCategoryMutation.mutate(category.id);
-                                  }
-                                }}
+                                onClick={() => handleDeleteCategory(category)}
                               >
                                 Delete
                               </Button>
@@ -5479,6 +5496,33 @@ export default function AdminDashboard() {
             </div>
           </DialogContent>
         </Dialog>
+        
+        {/* Category Deletion Confirmation Modal */}
+        <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Category</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete the category "{categoryToDelete?.name}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-cancel-delete-category">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction asChild>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleConfirmDelete}
+                  disabled={deleteCategoryMutation.isPending}
+                  data-testid="button-confirm-delete-category"
+                >
+                  {deleteCategoryMutation.isPending ? 'Deleting...' : 'Delete'}
+                </Button>
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
