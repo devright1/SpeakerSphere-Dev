@@ -826,6 +826,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(user => user.email === email);
   }
 
+  async getUserByPasswordHash(passwordHash: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.passwordHash === passwordHash);
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const user: User = {
       ...insertUser,

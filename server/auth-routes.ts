@@ -64,6 +64,14 @@ router.post("/register",
       // Hash the password
       const passwordHash = await bcrypt.hash(password, 12);
 
+      // Check if password is already in use by another user
+      const existingUserWithPassword = await storage.getUserByPasswordHash(passwordHash);
+      if (existingUserWithPassword) {
+        return res.status(400).json({
+          message: "This password is already in use by another user. Please choose a different password."
+        });
+      }
+
       // Create user with verified email (verification temporarily disabled)
       const newUser = await storage.createUser({
         email,
