@@ -65,6 +65,14 @@ export interface IStorage {
     search?: string;
     includeHidden?: boolean;
   }): Promise<Speaker[]>;
+  getSpeakersByTopicCategory(categoryName: string, filters?: {
+    search?: string;
+    verified?: boolean;
+    featured?: boolean;
+    minFee?: number;
+    maxFee?: number;
+    includeHidden?: boolean;
+  }): Promise<Speaker[]>;
   getSpeaker(id: number): Promise<Speaker | undefined>;
   getSpeakerBySlug(slug: string): Promise<Speaker | undefined>;
   getSpeakerByName(name: string): Promise<Speaker | undefined>;
@@ -473,6 +481,23 @@ export class MemStorage implements IStorage {
     }
 
     return speakers.sort((a, b) => parseFloat(b.overallRating) - parseFloat(a.overallRating));
+  }
+
+  async getSpeakersByTopicCategory(categoryName: string, filters?: {
+    search?: string;
+    verified?: boolean;
+    featured?: boolean;
+    minFee?: number;
+    maxFee?: number;
+    includeHidden?: boolean;
+  }): Promise<Speaker[]> {
+    // Stub implementation for MemStorage - returns all speakers filtered by direct categories
+    // In a real implementation, this would use topic relationships like DatabaseStorage
+    return this.getSpeakers({ 
+      category: categoryName.trim(),
+      search: filters?.search,
+      includeHidden: filters?.includeHidden 
+    });
   }
 
   async getSpeaker(id: number): Promise<Speaker | undefined> {

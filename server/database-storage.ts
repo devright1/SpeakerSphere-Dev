@@ -52,7 +52,7 @@ import {
   type InsertImage
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull } from "drizzle-orm";
+import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull, inArray } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -149,6 +149,107 @@ export class DatabaseStorage implements IStorage {
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as any;
     }
+    
+    const result = await query;
+    return result;
+  }
+
+  async getSpeakersByTopicCategory(categoryName: string, filters?: {
+    search?: string;
+    verified?: boolean;
+    featured?: boolean;
+    minFee?: number;
+    maxFee?: number;
+    includeHidden?: boolean;
+  }): Promise<Speaker[]> {
+    // Normalize category name (trim and case-insensitive)
+    const normalizedCategory = categoryName.trim();
+    
+    // First, get all topic IDs that belong to this category
+    const categoryTopics = await db
+      .select({ topicId: speakingTopics.id })
+      .from(speakingTopics)
+      .where(and(
+        sql`LOWER(TRIM(${speakingTopics.category})) = LOWER(${normalizedCategory})`,
+        eq(speakingTopics.isActive, true)
+      ));
+    
+    const topicIds = categoryTopics.map(t => t.topicId);
+    
+    if (topicIds.length === 0) {
+      return []; // No topics in this category
+    }
+    
+    // Get speaker IDs that have any of these topics
+    const speakersWithTopics = await db
+      .select({ speakerId: speakerTopics.speakerId })
+      .from(speakerTopics)
+      .where(inArray(speakerTopics.topicId, topicIds));
+    
+    const speakerIds = Array.from(new Set(speakersWithTopics.map(s => s.speakerId))); // Deduplicate
+    
+    if (speakerIds.length === 0) {
+      return []; // No speakers have topics in this category
+    }
+    
+    // Build conditions for speaker filtering
+    const conditions = [];
+    
+    // Only hide speakers from public view, not admin view
+    if (!filters?.includeHidden) {
+      conditions.push(or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)));
+    }
+    
+    // Filter by speaker IDs from topic relationships
+    conditions.push(inArray(speakers.id, speakerIds));
+    
+    // Apply additional filters
+    if (filters?.verified !== undefined) {
+      conditions.push(eq(speakers.verified, filters.verified));
+    }
+    
+    if (filters?.featured !== undefined) {
+      conditions.push(eq(speakers.featured, filters.featured));
+    }
+    
+    if (filters?.search) {
+      const searchTerm = `%${filters.search.toLowerCase()}%`;
+      conditions.push(
+        or(
+          like(sql`LOWER(${speakers.name})`, searchTerm),
+          like(sql`LOWER(${speakers.title})`, searchTerm),
+          like(sql`LOWER(${speakers.bio})`, searchTerm),
+          like(sql`LOWER(array_to_string(${speakers.expertise}, ' '))`, searchTerm)
+        )
+      );
+    }
+    
+    if (filters?.maxFee && filters.minFee) {
+      conditions.push(
+        and(
+          gte(sql`CAST(REPLACE(REPLACE(${speakers.fee}, '$', ''), ',', '') AS INTEGER)`, filters.minFee),
+          lte(sql`CAST(REPLACE(REPLACE(${speakers.fee}, '$', ''), ',', '') AS INTEGER)`, filters.maxFee)
+        )
+      );
+    } else if (filters?.maxFee) {
+      conditions.push(
+        lte(sql`CAST(REPLACE(REPLACE(${speakers.fee}, '$', ''), ',', '') AS INTEGER)`, filters.maxFee)
+      );
+    } else if (filters?.minFee) {
+      conditions.push(
+        gte(sql`CAST(REPLACE(REPLACE(${speakers.fee}, '$', ''), ',', '') AS INTEGER)`, filters.minFee)
+      );
+    }
+    
+    // Execute query with all conditions
+    let query = db.select().from(speakers);
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    // Order by featured first, then by name
+    query = query.orderBy(desc(speakers.featured), speakers.name) as any;
     
     const result = await query;
     return result;
