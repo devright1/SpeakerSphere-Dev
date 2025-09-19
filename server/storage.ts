@@ -126,7 +126,6 @@ export interface IStorage {
   
   // User Authentication
   getUserByEmail(email: string): Promise<User | undefined>;
-  getUserByPasswordHash(passwordHash: string): Promise<User | undefined>;
   createUser(user: Omit<InsertUser, 'password'> & { passwordHash: string }): Promise<User>;
   updateUserLastLogin(userId: string): Promise<void>;
   getUserById(id: string): Promise<User | undefined>;
@@ -824,10 +823,6 @@ export class MemStorage implements IStorage {
   // User Authentication Methods
   async getUserByEmail(email: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.email === email);
-  }
-
-  async getUserByPasswordHash(passwordHash: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.passwordHash === passwordHash);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {

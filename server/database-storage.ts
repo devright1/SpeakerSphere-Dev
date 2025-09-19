@@ -585,11 +585,6 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async getUserByPasswordHash(passwordHash: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.passwordHash, passwordHash));
-    return result[0];
-  }
-
   async createUser(user: InsertUser): Promise<User> {
     const result = await db.insert(users).values(user).returning();
     return result[0];
