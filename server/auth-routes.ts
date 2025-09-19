@@ -64,7 +64,7 @@ router.post("/register",
       // Hash the password
       const passwordHash = await bcrypt.hash(password, 12);
 
-      // Create user with verified email (verification temporarily disabled)
+      // Create user with email verification disabled
       const newUser = await storage.createUser({
         email,
         passwordHash,
@@ -72,29 +72,12 @@ router.post("/register",
         lastName,
         title: title || '',
         company: company || '',
-        emailVerified: false
+        emailVerified: true
       });
 
-      // Generate verification token and send email
-      const verificationToken = generateVerificationToken();
-      const tokenExpiration = getTokenExpiration();
-
-      // Save verification token
-      await storage.setEmailVerificationToken(newUser.id, verificationToken, tokenExpiration);
-
-      // Send verification email
-      const emailData = createVerificationEmail(email, firstName, verificationToken);
-      const emailSent = await sendEmail(emailData);
-
-      if (!emailSent) {
-        console.error('Failed to send verification email to:', email);
-        // Continue anyway - user can resend verification
-      }
-
       res.status(201).json({
-        message: "Account created successfully! Please check your email to verify your account before logging in.",
-        userId: newUser.id,
-        emailSent
+        message: "Account created successfully! You can now log in.",
+        userId: newUser.id
       });
 
     } catch (error) {
@@ -246,15 +229,6 @@ router.post("/login",
       if (!passwordValid) {
         return res.status(401).json({
           message: "Invalid email or password"
-        });
-      }
-
-      // Check email verification
-      if (!user.emailVerified) {
-        return res.status(403).json({
-          message: "Please verify your email address before logging in. Check your inbox for a verification email.",
-          emailVerified: false,
-          userId: user.id
         });
       }
 
