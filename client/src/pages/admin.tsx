@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
 import { SpeakerInteractionAnalytics } from "@/components/speaker-interaction-analytics";
 import { DetailedSpeakerAnalytics } from "@/components/detailed-speaker-analytics";
+import { ObjectUploader } from "@/components/ObjectUploader";
 import type { User, Speaker, Category, Inquiry } from "@shared/schema";
 
 export default function AdminDashboard() {
