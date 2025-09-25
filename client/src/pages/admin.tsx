@@ -5330,6 +5330,62 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* Headshot Upload Section */}
+                <div className="space-y-4 border-t pt-6">
+                  <Label className="text-base font-semibold">Profile Headshot</Label>
+                  <div className="flex items-start space-x-6">
+                    {/* Current Headshot Preview */}
+                    <div className="flex flex-col space-y-2">
+                      <Label className="text-sm text-gray-600">Current Photo</Label>
+                      <div className="w-32 h-32 border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                        {editingSpeaker.imageUrl ? (
+                          <img 
+                            src={editingSpeaker.imageUrl} 
+                            alt={editingSpeaker.name || "Speaker"} 
+                            className="w-full h-full object-cover"
+                            data-testid="current-speaker-headshot"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                            No photo
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Upload New Headshot */}
+                    <div className="flex-1">
+                      <Label className="text-sm text-gray-600">Upload New Photo</Label>
+                      <div className="mt-2">
+                        <ObjectUploader
+                          imageType="profile"
+                          entityId={editingSpeaker.id?.toString()}
+                          ownerType="speaker"
+                          maxFileSize={10485760} // 10MB
+                          onComplete={(result) => {
+                            if (result.successful && result.successful.length > 0) {
+                              // Update the speaker's imageUrl with the new uploaded image
+                              const uploadedFile = result.successful[0];
+                              const newImageUrl = `/api/images/${uploadedFile.id}`;
+                              setEditingSpeaker((prev: any) => ({ 
+                                ...prev, 
+                                imageUrl: newImageUrl 
+                              }));
+                            }
+                          }}
+                          buttonClassName="w-full"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload New Headshot
+                        </ObjectUploader>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Recommended: Square image, at least 400x400px, under 10MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Professional Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
