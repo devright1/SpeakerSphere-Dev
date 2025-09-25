@@ -1290,6 +1290,29 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Admin speaker update endpoint
+  app.put("/api/admin/speakers/:id", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      
+      if (isNaN(speakerId)) {
+        return res.status(400).json({ error: "Invalid speaker ID" });
+      }
+
+      const updatedSpeaker = await storage.updateSpeaker(speakerId, req.body);
+      
+      if (!updatedSpeaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      console.log(`✏️ Admin updated speaker ${speakerId}: ${updatedSpeaker.name}`);
+      res.json(updatedSpeaker);
+    } catch (error) {
+      console.error("Error updating speaker:", error);
+      res.status(500).json({ error: "Failed to update speaker" });
+    }
+  });
+
   // Review management endpoints
   // Get all pending reviews for admin approval
   app.get("/api/admin/reviews", async (req, res) => {
