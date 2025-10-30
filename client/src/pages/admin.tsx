@@ -5489,6 +5489,48 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* Profile Status & Tier */}
+                <div className="space-y-3 border-t pt-6">
+                  <Label className="text-base font-semibold">Profile Status & Tier</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="subscriptionTier">Subscription Tier</Label>
+                      <Select 
+                        value={editingSpeaker.subscriptionTier || "basic"}
+                        onValueChange={(value) => setEditingSpeaker(prev => ({ ...prev, subscriptionTier: value }))}
+                      >
+                        <SelectTrigger id="subscriptionTier">
+                          <SelectValue placeholder="Select tier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="basic">Basic (Free)</SelectItem>
+                          <SelectItem value="pro">Pro (Featured)</SelectItem>
+                          <SelectItem value="premier">Premier (Top Placement)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Controls homepage placement and profile features
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="verified"
+                        checked={!!editingSpeaker.verified}
+                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, verified: checked }))}
+                      />
+                      <Label htmlFor="verified" className="text-sm">Verified Speaker</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="featured"
+                        checked={!!editingSpeaker.featured}
+                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, featured: checked }))}
+                      />
+                      <Label htmlFor="featured" className="text-sm">Featured Status</Label>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Visibility Settings */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Visibility Settings</Label>
