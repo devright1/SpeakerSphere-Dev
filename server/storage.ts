@@ -82,6 +82,7 @@ export interface IStorage {
   updateSpeaker(id: number, speaker: Partial<InsertSpeaker>): Promise<Speaker | undefined>;
   deleteSpeaker(id: number, deletionType?: "immediate" | "retention"): Promise<boolean>;
   getFeaturedSpeakers(): Promise<Speaker[]>;
+  getSpeakersByTier(tier: 'basic' | 'pro' | 'premier'): Promise<Speaker[]>;
   
   // Reviews
   getReviewsBySpeakerId(speakerId: number): Promise<Review[]>;

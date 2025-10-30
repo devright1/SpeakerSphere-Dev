@@ -335,6 +335,16 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  async getSpeakersByTier(tier: 'basic' | 'pro' | 'premier'): Promise<Speaker[]> {
+    const result = await db.select().from(speakers).where(
+      and(
+        eq(speakers.subscriptionTier, tier),
+        or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile))
+      )
+    ).orderBy(desc(speakers.overallRating));
+    return result;
+  }
+
   // Reviews
   async getReviewsBySpeakerId(speakerId: number): Promise<Review[]> {
     const result = await db.select().from(reviews)

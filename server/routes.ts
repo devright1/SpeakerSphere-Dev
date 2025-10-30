@@ -482,6 +482,21 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Get speakers by tier
+  app.get("/api/speakers/tier/:tier", async (req, res) => {
+    try {
+      const tier = req.params.tier as 'basic' | 'pro' | 'premier';
+      if (!['basic', 'pro', 'premier'].includes(tier)) {
+        return res.status(400).json({ message: "Invalid tier. Must be 'basic', 'pro', or 'premier'" });
+      }
+      const speakers = await storage.getSpeakersByTier(tier);
+      res.json(speakers);
+    } catch (error) {
+      console.error("Error fetching speakers by tier:", error);
+      res.status(500).json({ message: "Failed to fetch speakers by tier" });
+    }
+  });
+
   // Get single speaker by name
   app.get("/api/speakers/:name", async (req, res) => {
     try {
