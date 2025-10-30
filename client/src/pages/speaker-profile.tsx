@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSpeakerTracking } from "@/hooks/useSpeakerTracking";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import TierBadge from "@/components/TierBadge";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -558,6 +559,7 @@ export default function SpeakerProfile() {
                     <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
                       <h1 className="text-3xl font-bold text-gray-900">{speaker.name}</h1>
                       <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                        <TierBadge tier={speaker.subscriptionTier as "basic" | "pro" | "premier"} />
                         {speaker.verified && (
                           <Badge variant="default" className="bg-success text-white">
                             <CheckCircle className="w-3 h-3 mr-1" />
