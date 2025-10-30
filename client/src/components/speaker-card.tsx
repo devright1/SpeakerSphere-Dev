@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import TierBadge from "@/components/TierBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -150,7 +151,8 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
       
       <CardContent className="card-spacing flex flex-col h-full">
         {/* Badges moved below image */}
-        <div className="flex gap-2 mb-3">
+        <div className="flex gap-2 mb-3 flex-wrap">
+          <TierBadge tier={speaker.subscriptionTier as "basic" | "pro" | "premier"} size="sm" />
           {speaker.verified && (
             <Badge variant="default" className="bg-success text-white">
               <CheckCircle className="w-3 h-3 mr-1" />
