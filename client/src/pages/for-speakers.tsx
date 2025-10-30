@@ -28,7 +28,10 @@ import {
   Globe,
   MapPin,
   Calendar,
-  MessageCircle
+  MessageCircle,
+  Crown,
+  Check,
+  X
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -271,6 +274,167 @@ export default function ForSpeakers() {
               <p className="text-sm text-gray-600">Expand your speaking opportunities and income</p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Tier Comparison Section */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Choose Your Speaker Tier</h2>
+            <p className="text-lg text-gray-600">Select the level that fits your goals and get the visibility you deserve</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Basic Tier */}
+            <Card className="relative">
+              <CardHeader className="text-center pb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3">
+                  <Users className="w-6 h-6 text-gray-600" />
+                </div>
+                <h3 className="text-2xl font-bold">Speaker</h3>
+                <p className="text-sm text-gray-600 mt-1">Get Listed</p>
+                <div className="mt-4">
+                  <span className="text-3xl font-bold">Free</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Basic profile listing</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Name, headshot & specialty</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Up to 3 speaking topics</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">1 video or file upload</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Receive inquiries</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Directory listing</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pro Tier */}
+            <Card className="relative border-2 border-primary shadow-xl">
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <Badge className="bg-primary text-white px-4 py-1">Popular</Badge>
+              </div>
+              <CardHeader className="text-center pb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-3">
+                  <Star className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-2xl font-bold">Featured Speaker</h3>
+                <p className="text-sm text-gray-600 mt-1">Enhanced Visibility</p>
+                <div className="mt-4">
+                  <span className="text-3xl font-bold">Contact Us</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm font-medium">Everything in Basic, plus:</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Homepage rotation (bottom 12 spots)</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Expanded bio & custom sections</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Up to 5 speaking topics</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">5 videos/lectures/research files</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Social media links & website</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Featured speaker badge</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Analytics dashboard</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Premier Tier */}
+            <Card className="relative border-2 border-amber-400">
+              <CardHeader className="text-center pb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-full mx-auto mb-3">
+                  <Crown className="w-6 h-6 text-amber-600" />
+                </div>
+                <h3 className="text-2xl font-bold">Premier Speaker</h3>
+                <p className="text-sm text-gray-600 mt-1">Maximum Exposure</p>
+                <div className="mt-4">
+                  <span className="text-3xl font-bold">Contact Us</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm font-medium">Everything in Pro, plus:</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Top homepage placement (top 12 spots)</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Directory top rotation</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">10 video uploads</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Unlimited notes & publications</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Exclusive "Speaker Vault"</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Password-protected content</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Direct messaging</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Advanced analytics</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Full profile customization</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">Premier badge</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Main Content Tabs */}
