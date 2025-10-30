@@ -50,6 +50,8 @@ export const speakers = pgTable("speakers", {
   certifications: text("certifications"), // certifications and awards
   affiliations: text("affiliations"), // professional affiliations
   publications: text("publications"), // publications and research
+  // Subscription tier
+  subscriptionTier: varchar("subscription_tier", { length: 20 }).notNull().default("basic"), // "basic", "pro", "premier"
   // Visibility controls
   hideProfile: boolean("hide_profile").default(false),
   hideRatings: boolean("hide_ratings").default(false),

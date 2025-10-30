@@ -1,0 +1,106 @@
+SpeakerSphere Implementation Plan (Prompt-Based)
+Phase 0: Foundation & Tier Visibility
+
+Goal: Establish visible differentiation (Basic | Pro | Premier) within the existing SpeakerSphere site.
+Prompts you’ll use for this phase:
+
+“Write the descriptive text for each tier’s public badge so that visitors immediately know what each level offers.”
+
+“Create the exact wording for the homepage section that explains how speakers are featured or rotated by tier.”
+
+“Draft a concise line that appears on every speaker profile describing what tier they are and what that includes.”
+
+“Give me short, value-based blurbs for Basic | Pro | Premier that I can place under a ‘Compare Plans’ header.”
+
+Key deliverables (all written):
+
+Badge wording, hover tooltips, and tier comparison text.
+
+Homepage tagline copy for Premier-featured speakers.
+
+Directory label language (e.g., ‘Featured Speaker’, ‘Premier Spotlight’).
+
+Phase 1: Subscription & Value Communication
+
+Goal: Present clear, conversion-focused language around upgrading tiers and explaining benefits.
+Prompts you’ll use:
+
+“Write a paragraph describing the Pro plan in a persuasive but professional tone for the pricing page.”
+
+“Give me microcopy for the upgrade buttons (action-driven, short).”
+
+“Create email wording for post-signup messages welcoming new subscribers to each tier.”
+
+“Draft the confirmation text users see after purchasing or downgrading.”
+
+Deliverables:
+
+Pricing page copy, CTA language, onboarding email text, and in-app success messages.
+
+Phase 2: The Vault and Exclusive Content
+
+Goal: Establish a branded identity and experience for the “Vault” feature available to Premier speakers.
+Prompts you’ll use:
+
+“Write compelling text introducing ‘The Vault’ as a secure, premium content library.”
+
+“Create the short instruction text for planners explaining how to access password-protected materials.”
+
+“Provide tone-consistent warning/error messages for incorrect passwords or expired links.”
+
+“Write professional confirmation text when a planner successfully unlocks Vault content.”
+
+Deliverables:
+
+Vault description copy, access instructions, and error/success language.
+
+Phase 3: Calendar & Booking Flow
+
+Goal: Create the human-facing text for availability, booking, and communication between planners and speakers.
+Prompts you’ll use:
+
+“Write friendly but professional text for the ‘Check Availability’ button and calendar modal.”
+
+“Give me the short placeholder wording for the booking request form (name, organization, message).”
+
+“Draft the thank-you confirmation that appears after a booking request is submitted.”
+
+“Write the automated email response to a planner confirming their request was received.”
+
+Deliverables:
+
+Booking modal copy, form field guidance, confirmation text, and email responses.
+
+Phase 4: Premier Experience & Analytics
+
+Goal: Communicate exclusivity and insight for Premier speakers and their analytics dashboard.
+Prompts you’ll use:
+
+“Write dashboard section headings that sound professional yet motivating (‘Your Reach This Month’, ‘Top Inquiries’, etc.).”
+
+“Draft a short paragraph explaining how to interpret analytics metrics like views, clicks, and inquiries.”
+
+“Create celebratory or progress-based language for milestones (e.g., ‘You’ve reached 500 profile views!’).”
+
+“Give me concise tooltip wording that explains each analytics metric.”
+
+Deliverables:
+
+Dashboard text set (titles, tooltips, explanations, and milestone language).
+
+Phase 5: Community & Brand Consistency
+
+Goal: Build a unified SpeakerSphere voice across the site, emails, and promotional material.
+Prompts you’ll use:
+
+“Write the SpeakerSphere mission statement in one sentence for the footer.”
+
+“Create the tagline for marketing emails announcing new featured speakers.”
+
+“Draft brand-voice guidelines: tone, vocabulary, emotional energy, and do’s/don’ts.”
+
+“Write a one-paragraph brand story that connects SpeakerSphere to its purpose of elevating speakers.”
+
+Deliverables:
+
+Unified voice guide, marketing tagline, mission statement, and story paragraph.
