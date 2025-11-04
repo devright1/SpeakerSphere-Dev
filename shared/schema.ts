@@ -52,6 +52,11 @@ export const speakers = pgTable("speakers", {
   publications: text("publications"), // publications and research
   // Subscription tier
   subscriptionTier: varchar("subscription_tier", { length: 20 }).notNull().default("basic"), // "basic", "pro", "premier"
+  // Stripe subscription tracking
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionStatus: varchar("subscription_status", { length: 20 }).default("none"), // "none", "active", "past_due", "canceled", "trialing"
+  subscriptionPeriodEnd: timestamp("subscription_period_end"),
   // Visibility controls
   hideProfile: boolean("hide_profile").default(false),
   hideRatings: boolean("hide_ratings").default(false),
