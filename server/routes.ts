@@ -318,16 +318,27 @@ export function registerRoutes(app: Express): Express {
         speakerId: user.speakerId,
       };
 
-      res.json({
-        success: true,
-        message: "Login successful",
-        user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          speakerId: user.speakerId,
+      // Save session explicitly
+      (req as any).session.save((err: any) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({
+            success: false,
+            message: "Login failed - session error"
+          });
         }
+
+        res.json({
+          success: true,
+          message: "Login successful",
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            speakerId: user.speakerId,
+          }
+        });
       });
     } catch (error: any) {
       console.error("Login error:", error);
