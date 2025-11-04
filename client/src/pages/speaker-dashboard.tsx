@@ -1816,30 +1816,30 @@ export default function SpeakerDashboard() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Silver Plan */}
+                {/* Basic Plan - FREE */}
                 <Card className="border-gray-200 hover:border-gray-300 transition-colors">
                   <CardHeader className="text-center pb-4">
                     <div className="flex justify-center mb-4">
                       <div className="p-3 bg-gray-100 rounded-full">
-                        <Award className="h-8 w-8 text-gray-600" />
+                        <User className="h-8 w-8 text-gray-600" />
                       </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold text-gray-900">Silver</CardTitle>
-                    <CardDescription className="text-lg">Essential speaker features</CardDescription>
+                    <CardTitle className="text-2xl font-bold text-gray-900">Basic</CardTitle>
+                    <CardDescription className="text-lg">Get started for free</CardDescription>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold text-gray-900">$29</span>
-                      <span className="text-gray-600">/month</span>
+                      <span className="text-4xl font-bold text-gray-900">Free</span>
+                      <span className="text-gray-600">/forever</span>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Enhanced profile visibility</span>
+                        <span className="text-gray-700">Basic profile listing</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Basic analytics dashboard</span>
+                        <span className="text-gray-700">Standard search visibility</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -1847,102 +1847,106 @@ export default function SpeakerDashboard() {
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Professional badge on profile</span>
+                        <span className="text-gray-700">Basic analytics</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Up to 5 videos in portfolio</span>
+                        <span className="text-gray-700">Portfolio showcase</span>
                       </div>
                     </div>
-                    <Link href="/subscription/upgrade">
-                      <Button className="w-full bg-gray-600 hover:bg-gray-700" data-testid="button-upgrade-pro">
-                        Get Started
-                      </Button>
-                    </Link>
+                    <Button className="w-full bg-gray-400 cursor-not-allowed" disabled data-testid="button-current-plan">
+                      Current Plan
+                    </Button>
                   </CardContent>
                 </Card>
 
-                {/* Gold Plan - Most Popular */}
-                <Card className="border-yellow-300 border-2 relative hover:border-yellow-400 transition-colors">
+                {/* Pro Plan - Most Popular */}
+                <Card className="border-blue-300 border-2 relative hover:border-blue-400 transition-colors">
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-yellow-500 text-white px-4 py-1 text-sm font-medium">
+                    <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-medium">
                       Most Popular
                     </Badge>
                   </div>
                   <CardHeader className="text-center pb-4">
                     <div className="flex justify-center mb-4">
-                      <div className="p-3 bg-yellow-100 rounded-full">
-                        <Star className="h-8 w-8 text-yellow-600" />
+                      <div className="p-3 bg-blue-100 rounded-full">
+                        <Star className="h-8 w-8 text-blue-600" />
                       </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold text-gray-900">Gold</CardTitle>
-                    <CardDescription className="text-lg">Professional speaker toolkit</CardDescription>
+                    <CardTitle className="text-2xl font-bold text-gray-900">Pro</CardTitle>
+                    <CardDescription className="text-lg">Featured speaker status</CardDescription>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold text-gray-900">$59</span>
+                      <span className="text-4xl font-bold text-gray-900">$29</span>
                       <span className="text-gray-600">/month</span>
                     </div>
+                    <p className="text-sm text-gray-500 mt-2">or $290/year (save $58)</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
-                      <div className="text-sm font-medium text-yellow-700 mb-2">Everything in Silver, plus:</div>
-                      <div className="flex items-start space-x-3">
-                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Priority placement in search results</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Advanced analytics & insights</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Direct inquiry management</span>
-                      </div>
+                      <div className="text-sm font-medium text-blue-700 mb-2">Everything in Basic, plus:</div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">Featured speaker badge</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Up to 15 videos in portfolio</span>
+                        <span className="text-gray-700">Enhanced homepage rotation</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Priority phone & email support</span>
+                        <span className="text-gray-700">Priority search placement</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Advanced analytics dashboard</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Direct inquiry management</span>
                       </div>
                     </div>
                     <Link href="/subscription/upgrade">
-                      <Button className="w-full bg-yellow-600 hover:bg-yellow-700" data-testid="button-upgrade-gold">
-                        Upgrade to Gold
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700" data-testid="button-upgrade-pro">
+                        Upgrade to Pro
                       </Button>
                     </Link>
                   </CardContent>
                 </Card>
 
-                {/* Premium Plan */}
-                <Card className="border-purple-300 hover:border-purple-400 transition-colors">
+                {/* Premier Plan */}
+                <Card className="border-yellow-300 hover:border-yellow-400 transition-colors">
                   <CardHeader className="text-center pb-4">
                     <div className="flex justify-center mb-4">
-                      <div className="p-3 bg-purple-100 rounded-full">
-                        <Crown className="h-8 w-8 text-purple-600" />
+                      <div className="p-3 bg-yellow-100 rounded-full">
+                        <Crown className="h-8 w-8 text-yellow-600" />
                       </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold text-gray-900">Premium</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-gray-900">Premier</CardTitle>
                     <CardDescription className="text-lg">Elite speaker experience</CardDescription>
                     <div className="mt-4">
                       <span className="text-4xl font-bold text-gray-900">$99</span>
                       <span className="text-gray-600">/month</span>
                     </div>
+                    <p className="text-sm text-gray-500 mt-2">or $990/year (save $198)</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
-                      <div className="text-sm font-medium text-purple-700 mb-2">Everything in Gold, plus:</div>
+                      <div className="text-sm font-medium text-yellow-700 mb-2">Everything in Pro, plus:</div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Top-tier placement & homepage featuring</span>
+                        <span className="text-gray-700">Premier speaker badge</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Comprehensive analytics suite</span>
+                        <span className="text-gray-700">Top homepage placement</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Maximum search visibility</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">Premium analytics suite</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -1950,24 +1954,12 @@ export default function SpeakerDashboard() {
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Premium speaker badge</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Unlimited videos in portfolio</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">White-glove onboarding</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">24/7 priority support</span>
                       </div>
                     </div>
                     <Link href="/subscription/upgrade">
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700" data-testid="button-upgrade-premier">
-                        Go Premium
+                      <Button className="w-full bg-yellow-600 hover:bg-yellow-700" data-testid="button-upgrade-premier">
+                        Upgrade to Premier
                       </Button>
                     </Link>
                   </CardContent>
