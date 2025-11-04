@@ -1854,9 +1854,11 @@ export default function SpeakerDashboard() {
                         <span className="text-gray-700">Up to 5 videos in portfolio</span>
                       </div>
                     </div>
-                    <Button className="w-full bg-gray-600 hover:bg-gray-700">
-                      Get Started
-                    </Button>
+                    <Link href="/subscription-upgrade">
+                      <Button className="w-full bg-gray-600 hover:bg-gray-700" data-testid="button-upgrade-pro">
+                        Get Started
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
 
@@ -1908,9 +1910,11 @@ export default function SpeakerDashboard() {
                         <span className="text-gray-700">Priority phone & email support</span>
                       </div>
                     </div>
-                    <Button className="w-full bg-yellow-600 hover:bg-yellow-700">
-                      Upgrade to Gold
-                    </Button>
+                    <Link href="/subscription-upgrade">
+                      <Button className="w-full bg-yellow-600 hover:bg-yellow-700" data-testid="button-upgrade-gold">
+                        Upgrade to Gold
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
 
@@ -1961,9 +1965,11 @@ export default function SpeakerDashboard() {
                         <span className="text-gray-700">24/7 priority support</span>
                       </div>
                     </div>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                      Go Premium
-                    </Button>
+                    <Link href="/subscription-upgrade">
+                      <Button className="w-full bg-purple-600 hover:bg-purple-700" data-testid="button-upgrade-premier">
+                        Go Premium
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               </div>
