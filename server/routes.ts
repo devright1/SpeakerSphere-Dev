@@ -2522,8 +2522,11 @@ export function registerRoutes(app: Express): Express {
   // Create subscription checkout session
   app.post("/api/subscriptions/create-checkout", async (req: AuthenticatedRequest, res) => {
     try {
+      console.log("Subscription checkout - Session:", req.session);
+      console.log("Subscription checkout - User:", req.session?.user);
       const user = req.session?.user;
       if (!user?.id) {
+        console.log("No user in session - rejecting");
         return res.status(401).json({ error: "Must be logged in" });
       }
 
