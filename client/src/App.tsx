@@ -18,6 +18,7 @@ import SpeakerDashboard from "@/pages/speaker-dashboard";
 import Register from "@/pages/register";
 import VerifyEmail from "@/pages/verify-email";
 import HowItWorks from "@/pages/how-it-works";
+import SubscriptionUpgrade from "@/pages/subscription-upgrade";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -37,6 +38,8 @@ function Router() {
       <Route path="/for-speakers" component={ForSpeakers} />
       <Route path="/speaker-application" component={SpeakerApplication} />
       <Route path="/speaker-dashboard" component={SpeakerDashboard} />
+      <Route path="/subscription/upgrade" component={SubscriptionUpgrade} />
+      <Route path="/subscription/success" component={SubscriptionUpgrade} />
       <Route path="/how-it-works" component={HowItWorks} />
       <Route component={NotFound} />
     </Switch>

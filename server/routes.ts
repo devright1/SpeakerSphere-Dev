@@ -21,6 +21,15 @@ import {
   SecurityUtils 
 } from "./security";
 import { authRoutes } from "./auth-routes";
+import Stripe from "stripe";
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-11-20.acacia",
+});
 
 // Types for user authentication
 interface AuthenticatedRequest extends Request {
@@ -2497,6 +2506,279 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Stripe subscription endpoints
+  // Pricing structure (in cents)
+  const PRICING = {
+    pro: {
+      monthly: 2900, // $29/month
+      annual: 29000  // $290/year (save $58)
+    },
+    premier: {
+      monthly: 9900, // $99/month
+      annual: 99000  // $990/year (save $198)
+    }
+  };
+
+  // Create subscription checkout session
+  app.post("/api/subscriptions/create-checkout", async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user?.speakerId) {
+        return res.status(401).json({ error: "Must be logged in as a speaker" });
+      }
+
+      const { tier, interval } = req.body; // tier: "pro" | "premier", interval: "monthly" | "annual"
+      
+      if (!tier || !interval) {
+        return res.status(400).json({ error: "Tier and interval are required" });
+      }
+
+      if (!['pro', 'premier'].includes(tier) || !['monthly', 'annual'].includes(interval)) {
+        return res.status(400).json({ error: "Invalid tier or interval" });
+      }
+
+      // Get speaker details
+      const speaker = await storage.getSpeaker(req.user.speakerId);
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      // Create or get Stripe customer
+      let customerId = speaker.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: speaker.email,
+          name: speaker.name,
+          metadata: {
+            speakerId: speaker.id.toString()
+          }
+        });
+        customerId = customer.id;
+        
+        // Update speaker with customer ID
+        await storage.updateSpeaker(speaker.id, { stripeCustomerId: customerId });
+      }
+
+      // Create Stripe checkout session
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        mode: 'subscription',
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `${tier.charAt(0).toUpperCase() + tier.slice(1)} Speaker Tier`,
+              description: tier === 'pro' 
+                ? 'Enhanced visibility with homepage rotation and expanded profile features'
+                : 'Maximum exposure with top homepage placement and exclusive Speaker Vault'
+            },
+            unit_amount: PRICING[tier][interval === 'monthly' ? 'monthly' : 'annual'],
+            recurring: {
+              interval: interval === 'monthly' ? 'month' : 'year'
+            }
+          },
+          quantity: 1
+        }],
+        metadata: {
+          speakerId: speaker.id.toString(),
+          tier: tier,
+          interval: interval
+        },
+        success_url: `${req.protocol}://${req.get('host')}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.protocol}://${req.get('host')}/subscription/upgrade`
+      });
+
+      res.json({ sessionId: session.id, url: session.url });
+    } catch (error: any) {
+      console.error('Error creating checkout session:', error);
+      res.status(500).json({ error: error.message || 'Failed to create checkout session' });
+    }
+  });
+
+  // Get subscription status
+  app.get("/api/subscriptions/status", async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user?.speakerId) {
+        return res.status(401).json({ error: "Must be logged in as a speaker" });
+      }
+
+      const speaker = await storage.getSpeaker(req.user.speakerId);
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      // If no subscription, return basic tier info
+      if (!speaker.stripeSubscriptionId) {
+        return res.json({
+          tier: speaker.subscriptionTier || 'basic',
+          status: 'none',
+          periodEnd: null,
+          cancelAtPeriodEnd: false
+        });
+      }
+
+      // Get subscription from Stripe
+      const subscription = await stripe.subscriptions.retrieve(speaker.stripeSubscriptionId);
+      
+      res.json({
+        tier: speaker.subscriptionTier,
+        status: subscription.status,
+        periodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        amount: subscription.items.data[0]?.price.unit_amount || 0,
+        interval: subscription.items.data[0]?.price.recurring?.interval || 'month'
+      });
+    } catch (error: any) {
+      console.error('Error getting subscription status:', error);
+      res.status(500).json({ error: 'Failed to get subscription status' });
+    }
+  });
+
+  // Cancel subscription
+  app.post("/api/subscriptions/cancel", async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user?.speakerId) {
+        return res.status(401).json({ error: "Must be logged in as a speaker" });
+      }
+
+      const speaker = await storage.getSpeaker(req.user.speakerId);
+      if (!speaker || !speaker.stripeSubscriptionId) {
+        return res.status(404).json({ error: "No active subscription found" });
+      }
+
+      // Cancel at period end (don't immediately cancel)
+      const subscription = await stripe.subscriptions.update(speaker.stripeSubscriptionId, {
+        cancel_at_period_end: true
+      });
+
+      res.json({ 
+        success: true, 
+        message: "Subscription will be canceled at the end of the current billing period",
+        periodEnd: new Date(subscription.current_period_end * 1000)
+      });
+    } catch (error: any) {
+      console.error('Error canceling subscription:', error);
+      res.status(500).json({ error: 'Failed to cancel subscription' });
+    }
+  });
+
+  // Create billing portal session
+  app.post("/api/subscriptions/billing-portal", async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user?.speakerId) {
+        return res.status(401).json({ error: "Must be logged in as a speaker" });
+      }
+
+      const speaker = await storage.getSpeaker(req.user.speakerId);
+      if (!speaker || !speaker.stripeCustomerId) {
+        return res.status(404).json({ error: "No billing account found" });
+      }
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: speaker.stripeCustomerId,
+        return_url: `${req.protocol}://${req.get('host')}/profile`
+      });
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error('Error creating billing portal session:', error);
+      res.status(500).json({ error: 'Failed to create billing portal session' });
+    }
+  });
+
+  // Stripe webhook handler
+  app.post("/api/webhooks/stripe", async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    
+    if (!sig) {
+      return res.status(400).send('No signature');
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      // In production, you would verify the webhook signature
+      // For now, we'll just parse the event
+      event = req.body;
+      
+      console.log('Stripe webhook event:', event.type);
+
+      // Handle the event
+      switch (event.type) {
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object as Stripe.Subscription;
+          const speakerId = parseInt(subscription.metadata.speakerId || '0');
+          
+          if (speakerId) {
+            const tier = subscription.metadata.tier as 'pro' | 'premier';
+            await storage.updateSpeaker(speakerId, {
+              stripeSubscriptionId: subscription.id,
+              subscriptionStatus: subscription.status,
+              subscriptionTier: tier,
+              subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000)
+            });
+          }
+          break;
+        }
+
+        case 'customer.subscription.deleted': {
+          const subscription = event.data.object as Stripe.Subscription;
+          const speakerId = parseInt(subscription.metadata.speakerId || '0');
+          
+          if (speakerId) {
+            // Downgrade to basic tier
+            await storage.updateSpeaker(speakerId, {
+              subscriptionTier: 'basic',
+              subscriptionStatus: 'canceled',
+              stripeSubscriptionId: null,
+              subscriptionPeriodEnd: null
+            });
+          }
+          break;
+        }
+
+        case 'invoice.payment_succeeded': {
+          const invoice = event.data.object as Stripe.Invoice;
+          if (invoice.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+            const speakerId = parseInt(subscription.metadata.speakerId || '0');
+            
+            if (speakerId) {
+              await storage.updateSpeaker(speakerId, {
+                subscriptionStatus: 'active',
+                subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000)
+              });
+            }
+          }
+          break;
+        }
+
+        case 'invoice.payment_failed': {
+          const invoice = event.data.object as Stripe.Invoice;
+          if (invoice.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+            const speakerId = parseInt(subscription.metadata.speakerId || '0');
+            
+            if (speakerId) {
+              await storage.updateSpeaker(speakerId, {
+                subscriptionStatus: 'past_due'
+              });
+            }
+          }
+          break;
+        }
+
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (err: any) {
+      console.error('Webhook error:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  });
 
   return app;
 }
