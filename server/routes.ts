@@ -2522,8 +2522,14 @@ export function registerRoutes(app: Express): Express {
   // Create subscription checkout session
   app.post("/api/subscriptions/create-checkout", async (req: AuthenticatedRequest, res) => {
     try {
-      if (!req.user?.speakerId) {
-        return res.status(401).json({ error: "Must be logged in as a speaker" });
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Must be logged in" });
+      }
+
+      // Get speaker by user ID
+      const speaker = await storage.getSpeakerByUserId(req.user.id);
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker profile not found. Please create a speaker profile first." });
       }
 
       const { tier, interval } = req.body; // tier: "pro" | "premier", interval: "monthly" | "annual"
@@ -2534,12 +2540,6 @@ export function registerRoutes(app: Express): Express {
 
       if (!['pro', 'premier'].includes(tier) || !['monthly', 'annual'].includes(interval)) {
         return res.status(400).json({ error: "Invalid tier or interval" });
-      }
-
-      // Get speaker details
-      const speaker = await storage.getSpeaker(req.user.speakerId);
-      if (!speaker) {
-        return res.status(404).json({ error: "Speaker not found" });
       }
 
       // Create or get Stripe customer
@@ -2598,13 +2598,14 @@ export function registerRoutes(app: Express): Express {
   // Get subscription status
   app.get("/api/subscriptions/status", async (req: AuthenticatedRequest, res) => {
     try {
-      if (!req.user?.speakerId) {
-        return res.status(401).json({ error: "Must be logged in as a speaker" });
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Must be logged in" });
       }
 
-      const speaker = await storage.getSpeaker(req.user.speakerId);
+      // Get speaker by user ID
+      const speaker = await storage.getSpeakerByUserId(req.user.id);
       if (!speaker) {
-        return res.status(404).json({ error: "Speaker not found" });
+        return res.status(404).json({ error: "Speaker profile not found" });
       }
 
       // If no subscription, return basic tier info
@@ -2637,11 +2638,12 @@ export function registerRoutes(app: Express): Express {
   // Cancel subscription
   app.post("/api/subscriptions/cancel", async (req: AuthenticatedRequest, res) => {
     try {
-      if (!req.user?.speakerId) {
-        return res.status(401).json({ error: "Must be logged in as a speaker" });
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Must be logged in" });
       }
 
-      const speaker = await storage.getSpeaker(req.user.speakerId);
+      // Get speaker by user ID
+      const speaker = await storage.getSpeakerByUserId(req.user.id);
       if (!speaker || !speaker.stripeSubscriptionId) {
         return res.status(404).json({ error: "No active subscription found" });
       }
@@ -2665,11 +2667,12 @@ export function registerRoutes(app: Express): Express {
   // Create billing portal session
   app.post("/api/subscriptions/billing-portal", async (req: AuthenticatedRequest, res) => {
     try {
-      if (!req.user?.speakerId) {
-        return res.status(401).json({ error: "Must be logged in as a speaker" });
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "Must be logged in" });
       }
 
-      const speaker = await storage.getSpeaker(req.user.speakerId);
+      // Get speaker by user ID
+      const speaker = await storage.getSpeakerByUserId(req.user.id);
       if (!speaker || !speaker.stripeCustomerId) {
         return res.status(404).json({ error: "No billing account found" });
       }
