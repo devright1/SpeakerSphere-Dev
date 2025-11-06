@@ -37,27 +37,39 @@ export default function SubscriptionUpgrade() {
     const sessionId = urlParams.get('session_id');
     
     // If we have a session_id, the user just completed a Stripe checkout
-    if (sessionId && subscriptionStatus) {
-      const tier = subscriptionStatus.tier;
-      const interval = subscriptionStatus.subscriptionPeriodEnd ? 'annual' : 'monthly';
+    if (sessionId) {
+      // Prevent duplicate tracking by checking if we've already tracked this session
+      const trackedSessions = sessionStorage.getItem('tracked_sessions');
+      const tracked = trackedSessions ? JSON.parse(trackedSessions) : [];
       
-      // Determine price based on tier
-      const price = tier === 'pro' 
-        ? (interval === 'annual' ? pricing.pro.annual : pricing.pro.monthly)
-        : (interval === 'annual' ? pricing.premier.annual : pricing.premier.monthly);
-      
-      // Track purchase completion with Google Analytics
-      GA_EVENTS.completePurchase(tier, interval, price);
-      
-      toast({
-        title: "Subscription Activated!",
-        description: `Your ${tier} subscription is now active. Welcome!`,
-      });
-      
-      // Clean up URL
-      window.history.replaceState({}, '', location);
+      if (!tracked.includes(sessionId)) {
+        // Fetch session metadata from backend to get accurate tier, interval, and price
+        fetch(`/api/subscriptions/session/${sessionId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.tier && data.interval && data.price) {
+              // Track purchase completion with Google Analytics using authoritative data
+              GA_EVENTS.completePurchase(data.tier, data.interval, data.price);
+              
+              toast({
+                title: "Subscription Activated!",
+                description: `Your ${data.tier} subscription is now active. Welcome!`,
+              });
+              
+              // Mark this session as tracked
+              tracked.push(sessionId);
+              sessionStorage.setItem('tracked_sessions', JSON.stringify(tracked));
+              
+              // Clean up URL
+              window.history.replaceState({}, '', location);
+            }
+          })
+          .catch(error => {
+            console.error('Failed to retrieve session metadata:', error);
+          });
+      }
     }
-  }, [subscriptionStatus, location, toast]);
+  }, [location, toast]);
 
   // Subscription checkout mutation
   const checkoutMutation = useMutation({

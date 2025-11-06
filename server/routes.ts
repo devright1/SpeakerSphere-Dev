@@ -2871,6 +2871,38 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Validate Stripe checkout session and return metadata for analytics
+  app.get("/api/subscriptions/session/:sessionId", async (req: AuthenticatedRequest, res) => {
+    try {
+      const { sessionId } = req.params;
+      
+      if (!sessionId) {
+        return res.status(400).json({ error: "Session ID is required" });
+      }
+
+      // Retrieve session from Stripe
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+
+      // Extract metadata
+      const { tier, interval } = session.metadata;
+      const amount = session.amount_total ? session.amount_total / 100 : 0; // Convert from cents to dollars
+
+      res.json({
+        tier,
+        interval,
+        price: amount,
+        status: session.payment_status
+      });
+    } catch (error: any) {
+      console.error('Error retrieving session:', error);
+      res.status(500).json({ error: error.message || 'Failed to retrieve session' });
+    }
+  });
+
   // Get subscription status
   app.get("/api/subscriptions/status", async (req: AuthenticatedRequest, res) => {
     try {
