@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { loadStripe } from "@stripe/stripe-js";
@@ -13,12 +13,13 @@ import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Check, Crown, Star, Users, Loader2, ChevronRight } from "lucide-react";
+import { GA_EVENTS } from "@/lib/analytics";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 export default function SubscriptionUpgrade() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [isAnnual, setIsAnnual] = useState(false);
@@ -29,6 +30,34 @@ export default function SubscriptionUpgrade() {
     queryKey: ["/api/subscriptions/status"],
     enabled: isAuthenticated && !!user?.speakerId,
   });
+
+  // Track successful purchase when returning from Stripe
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    
+    // If we have a session_id, the user just completed a Stripe checkout
+    if (sessionId && subscriptionStatus) {
+      const tier = subscriptionStatus.tier;
+      const interval = subscriptionStatus.subscriptionPeriodEnd ? 'annual' : 'monthly';
+      
+      // Determine price based on tier
+      const price = tier === 'pro' 
+        ? (interval === 'annual' ? pricing.pro.annual : pricing.pro.monthly)
+        : (interval === 'annual' ? pricing.premier.annual : pricing.premier.monthly);
+      
+      // Track purchase completion with Google Analytics
+      GA_EVENTS.completePurchase(tier, interval, price);
+      
+      toast({
+        title: "Subscription Activated!",
+        description: `Your ${tier} subscription is now active. Welcome!`,
+      });
+      
+      // Clean up URL
+      window.history.replaceState({}, '', location);
+    }
+  }, [subscriptionStatus, location, toast]);
 
   // Subscription checkout mutation
   const checkoutMutation = useMutation({
@@ -63,10 +92,16 @@ export default function SubscriptionUpgrade() {
       return;
     }
 
+    const interval = isAnnual ? "annual" : "monthly";
+    const price = isAnnual ? pricing[tier].annual : pricing[tier].monthly;
+    
+    // Track checkout initiation with Google Analytics
+    GA_EVENTS.initiateCheckout(tier, interval, price);
+
     setProcessingTier(tier);
     checkoutMutation.mutate({
       tier,
-      interval: isAnnual ? "annual" : "monthly",
+      interval,
     });
   };
 
