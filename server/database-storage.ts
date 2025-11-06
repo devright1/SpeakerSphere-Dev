@@ -424,11 +424,21 @@ export class DatabaseStorage implements IStorage {
     // Get base categories
     const result = await db.select().from(categories);
     
+    // Deduplicate categories by name (merge duplicates)
+    const categoryMap = new Map<string, Category>();
+    result.forEach(category => {
+      if (!categoryMap.has(category.name)) {
+        categoryMap.set(category.name, category);
+      }
+    });
+    
+    const uniqueCategories = Array.from(categoryMap.values());
+    
     // Get speaker counts per category by counting speakers.categories array directly
     const countMap = new Map<string, number>();
     
-    // For each category, count speakers that have it in their categories array
-    for (const category of result) {
+    // For each unique category, count speakers that have it in their categories array
+    for (const category of uniqueCategories) {
       const count = await db
         .select({ count: sql<number>`count(*)` })
         .from(speakers)
@@ -438,7 +448,7 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Merge counts into categories
-    const categoriesWithCounts = result.map(category => ({
+    const categoriesWithCounts = uniqueCategories.map(category => ({
       ...category,
       speakerCount: countMap.get(category.name) || 0
     }));
