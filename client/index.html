@@ -4,6 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>DevRight's The Speaker Sphere</title>
+    
+    <!-- Google Analytics -->
+    <script>
+      window.GA_MEASUREMENT_ID = '%VITE_GA_MEASUREMENT_ID%';
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"></script>
+    <script>
+      if (window.GA_MEASUREMENT_ID && window.GA_MEASUREMENT_ID !== '%VITE_GA_MEASUREMENT_ID%') {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', window.GA_MEASUREMENT_ID, {
+          send_page_view: false // We'll handle page views manually for SPA
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
