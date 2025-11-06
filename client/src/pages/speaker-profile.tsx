@@ -142,15 +142,8 @@ export default function SpeakerProfile() {
     enabled: !!speaker?.id,
   });
 
-  // Initialize speaker tracking
+  // Initialize speaker tracking (auto-tracks profile view)
   const tracking = useSpeakerTracking(speaker?.id || 0);
-
-  // Track profile view when speaker data loads
-  useEffect(() => {
-    if (speaker?.id) {
-      tracking.trackProfileView();
-    }
-  }, [speaker?.id, tracking]);
 
   // Check if speaker is bookmarked
   const { data: isBookmarked = false } = useQuery({
