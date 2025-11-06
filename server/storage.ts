@@ -707,9 +707,21 @@ export class MemStorage implements IStorage {
   async getCategories(): Promise<Category[]> {
     const categories = Array.from(this.categories.values());
     
-    // Return static categories without dynamic recalculation to prevent changes
-    // Speaker counts are updated only when speakers are actually added/removed
-    return categories.sort((a, b) => a.name.localeCompare(b.name));
+    // Deduplicate categories by name, merging speaker counts
+    const categoryMap = new Map<string, Category>();
+    
+    categories.forEach(category => {
+      const existing = categoryMap.get(category.name);
+      if (existing) {
+        // Merge: keep the first ID, sum the speaker counts
+        existing.speakerCount += category.speakerCount;
+      } else {
+        categoryMap.set(category.name, { ...category });
+      }
+    });
+    
+    // Return deduplicated categories sorted by name
+    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
