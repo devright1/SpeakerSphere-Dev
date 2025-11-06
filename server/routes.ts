@@ -756,6 +756,176 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // VIDEO MANAGEMENT ENDPOINTS (Phase 2)
+  
+  // Get videos for a speaker
+  app.get("/api/speakers/:speakerId/videos", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const videos = await storage.getSpeakerVideos(speakerId);
+      res.json(videos);
+    } catch (error) {
+      console.error("Error fetching speaker videos:", error);
+      res.status(500).json({ message: "Failed to fetch videos" });
+    }
+  });
+
+  // Upload new video (with storage quota enforcement)
+  app.post("/api/speakers/:speakerId/videos", 
+    rateLimiters.general,
+    async (req: any, res: any) => {
+    try {
+      // Check authentication
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ error: "Must be logged in" });
+      }
+
+      const speakerId = parseInt(req.params.speakerId);
+      const userId = req.session.user.id;
+
+      // Verify the user owns this speaker profile
+      const speaker = await storage.getSpeakerByUserId(userId);
+      if (!speaker || speaker.id !== speakerId) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const { title, description, videoUrl, thumbnailUrl, duration, videoType, eventName, eventDate, topics, fileSizeBytes } = req.body;
+
+      // Validate required fields
+      if (!title || !videoUrl || !videoType || !fileSizeBytes) {
+        return res.status(400).json({ error: "Missing required fields: title, videoUrl, videoType, fileSizeBytes" });
+      }
+
+      // Import storage limits
+      const { canUploadVideo } = await import("../shared/storage-limits");
+      
+      // Check storage quota
+      const uploadCheck = canUploadVideo(
+        speaker.storageUsedBytes || 0,
+        speaker.videoCount || 0,
+        fileSizeBytes,
+        speaker.subscriptionTier
+      );
+
+      if (!uploadCheck.allowed) {
+        return res.status(403).json({ 
+          error: "Upload not allowed",
+          reason: uploadCheck.reason 
+        });
+      }
+
+      // Create video
+      const video = await storage.createVideo({
+        speakerId,
+        title,
+        description: description || null,
+        videoUrl,
+        thumbnailUrl: thumbnailUrl || null,
+        duration: duration || null,
+        videoType,
+        eventName: eventName || null,
+        eventDate: eventDate || null,
+        topics: topics || [],
+        fileSizeBytes
+      });
+
+      // Update speaker storage tracking
+      await storage.updateSpeakerStorage(speakerId, fileSizeBytes, 1);
+
+      res.status(201).json(video);
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      res.status(500).json({ error: "Failed to upload video" });
+    }
+  });
+
+  // Delete video
+  app.delete("/api/videos/:videoId",
+    rateLimiters.general,
+    async (req: any, res: any) => {
+    try {
+      // Check authentication
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ error: "Must be logged in" });
+      }
+
+      const videoId = parseInt(req.params.videoId);
+      const userId = req.session.user.id;
+
+      // Get video to verify ownership
+      const video = await storage.getVideo(videoId);
+      if (!video) {
+        return res.status(404).json({ error: "Video not found" });
+      }
+
+      // Verify the user owns this video's speaker profile
+      const speaker = await storage.getSpeakerByUserId(userId);
+      if (!speaker || speaker.id !== video.speakerId) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      // Delete video and update storage
+      await storage.deleteVideo(videoId);
+      await storage.updateSpeakerStorage(speaker.id, -video.fileSizeBytes, -1);
+
+      res.json({ success: true, message: "Video deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      res.status(500).json({ error: "Failed to delete video" });
+    }
+  });
+
+  // Track video view
+  app.post("/api/videos/:videoId/view", async (req, res) => {
+    try {
+      const videoId = parseInt(req.params.videoId);
+      await storage.incrementVideoViewCount(videoId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error tracking video view:", error);
+      res.status(500).json({ error: "Failed to track view" });
+    }
+  });
+
+  // Get speaker storage usage
+  app.get("/api/speakers/:speakerId/storage", async (req: any, res: any) => {
+    try {
+      // Check authentication
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ error: "Must be logged in" });
+      }
+
+      const speakerId = parseInt(req.params.speakerId);
+      const userId = req.session.user.id;
+
+      // Verify the user owns this speaker profile
+      const speaker = await storage.getSpeakerByUserId(userId);
+      if (!speaker || speaker.id !== speakerId) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      // Import storage limits
+      const { getStorageLimits, formatBytes } = await import("../shared/storage-limits");
+      const limits = getStorageLimits(speaker.subscriptionTier);
+
+      res.json({
+        storageUsedBytes: speaker.storageUsedBytes || 0,
+        storageUsedFormatted: formatBytes(speaker.storageUsedBytes || 0),
+        maxStorageBytes: limits.maxStorageBytes,
+        maxStorageFormatted: limits.displayStorage,
+        videoCount: speaker.videoCount || 0,
+        maxVideos: limits.maxVideos,
+        maxVideosFormatted: limits.displayVideos,
+        tier: speaker.subscriptionTier,
+        storagePercentage: ((speaker.storageUsedBytes || 0) / limits.maxStorageBytes) * 100,
+        videosPercentage: limits.maxVideos === -1 ? 0 : ((speaker.videoCount || 0) / limits.maxVideos) * 100
+      });
+    } catch (error) {
+      console.error("Error fetching storage usage:", error);
+      res.status(500).json({ error: "Failed to fetch storage usage" });
+    }
+  });
+
   // Submit inquiry
   app.post("/api/inquiries", async (req, res) => {
     try {

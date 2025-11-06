@@ -1450,4 +1450,32 @@ export class DatabaseStorage implements IStorage {
     const result = await db.select().from(users).where(eq(users.speakerId, speakerId));
     return result[0];
   }
+
+  // Video Management (Phase 2)
+  async getSpeakerVideos(speakerId: number): Promise<Video[]> {
+    return this.getVideosBySpeakerId(speakerId); // Use existing method
+  }
+
+  async getVideo(videoId: number): Promise<Video | undefined> {
+    const result = await db.select().from(videos).where(eq(videos.id, videoId));
+    return result[0];
+  }
+
+  async deleteVideo(videoId: number): Promise<boolean> {
+    await db.delete(videos).where(eq(videos.id, videoId));
+    return true;
+  }
+
+  async incrementVideoViewCount(videoId: number): Promise<void> {
+    await this.updateVideoViewCount(videoId); // Use existing method
+  }
+
+  async updateSpeakerStorage(speakerId: number, bytesChange: number, videoCountChange: number): Promise<void> {
+    await db.update(speakers)
+      .set({
+        storageUsedBytes: sql`GREATEST(0, COALESCE(${speakers.storageUsedBytes}, 0) + ${bytesChange})`,
+        videoCount: sql`GREATEST(0, COALESCE(${speakers.videoCount}, 0) + ${videoCountChange})`
+      })
+      .where(eq(speakers.id, speakerId));
+  }
 }

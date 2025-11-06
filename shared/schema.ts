@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid, customType } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid, customType, bigint } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -64,6 +64,9 @@ export const speakers = pgTable("speakers", {
   hideContact: boolean("hide_contact").default(false),
   // Deletion tracking
   deletedAt: timestamp("deleted_at"), // When marked for deletion (14-day retention)
+  // Storage tracking for tier enforcement (Phase 2) - using bigint for large file support
+  storageUsedBytes: bigint("storage_used_bytes", { mode: "number" }).default(0).notNull(),
+  videoCount: integer("video_count").default(0).notNull(),
 });
 
 export const reviews = pgTable("reviews", {
@@ -128,6 +131,7 @@ export const videos = pgTable("videos", {
   topics: text("topics").array(),
   viewCount: integer("view_count").default(0),
   featured: boolean("featured").default(false),
+  fileSizeBytes: bigint("file_size_bytes", { mode: "number" }).default(0).notNull(), // For storage quota tracking - bigint for large files
   createdAt: timestamp("created_at").defaultNow(),
 });
 

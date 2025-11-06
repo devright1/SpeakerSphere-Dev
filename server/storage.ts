@@ -222,6 +222,14 @@ export interface IStorage {
   deleteImage(id: number): Promise<boolean>;
   saveImageFromBase64(base64Data: string, ownerId: string, ownerType?: string, imageType?: string): Promise<{ id: number; url: string; }>;
   getUserBySpeakerId(speakerId: number): Promise<User | undefined>;
+  
+  // Video Management (Phase 2)
+  getSpeakerVideos(speakerId: number): Promise<Video[]>;
+  getVideo(videoId: number): Promise<Video | undefined>;
+  createVideo(video: InsertVideo): Promise<Video>;
+  deleteVideo(videoId: number): Promise<boolean>;
+  incrementVideoViewCount(videoId: number): Promise<void>;
+  updateSpeakerStorage(speakerId: number, bytesChange: number, videoCountChange: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -1506,6 +1514,49 @@ export class MemStorage implements IStorage {
 
   async getUserBySpeakerId(speakerId: number): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.speakerId === speakerId);
+  }
+
+  // Video Management (Phase 2)
+  async getSpeakerVideos(speakerId: number): Promise<Video[]> {
+    return Array.from(this.videos.values())
+      .filter(video => video.speakerId === speakerId)
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }
+
+  async getVideo(videoId: number): Promise<Video | undefined> {
+    return this.videos.get(videoId);
+  }
+
+  async createVideo(video: InsertVideo): Promise<Video> {
+    const newVideo: Video = {
+      id: this.currentVideoId++,
+      ...video,
+      viewCount: 0,
+      featured: false,
+      createdAt: new Date()
+    } as Video;
+    
+    this.videos.set(newVideo.id, newVideo);
+    return newVideo;
+  }
+
+  async deleteVideo(videoId: number): Promise<boolean> {
+    return this.videos.delete(videoId);
+  }
+
+  async incrementVideoViewCount(videoId: number): Promise<void> {
+    const video = this.videos.get(videoId);
+    if (video) {
+      video.viewCount = (video.viewCount || 0) + 1;
+    }
+  }
+
+  async updateSpeakerStorage(speakerId: number, bytesChange: number, videoCountChange: number): Promise<void> {
+    const speaker = this.speakers.get(speakerId);
+    if (speaker) {
+      speaker.storageUsedBytes = (speaker.storageUsedBytes || 0) + bytesChange;
+      speaker.videoCount = (speaker.videoCount || 0) + videoCountChange;
+    }
   }
 }
 

@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import StorageUsage from "@/components/StorageUsage";
 // import { useAuth } from "@/providers/AuthProvider";
 import { 
   User, 
@@ -212,6 +213,17 @@ export default function SpeakerDashboard() {
     queryFn: async () => {
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/content/all`);
       if (!response.ok) throw new Error('Failed to fetch speaker content');
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id,
+  });
+
+  // Fetch storage usage (Phase 2)
+  const { data: storageUsage } = useQuery({
+    queryKey: ['/api/speakers/storage', speakerProfile?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/storage`);
+      if (!response.ok) throw new Error('Failed to fetch storage usage');
       return response.json();
     },
     enabled: !!speakerProfile?.id,
@@ -1808,6 +1820,11 @@ export default function SpeakerDashboard() {
           {/* Subscription Tab */}
           <TabsContent value="subscription">
             <div className="space-y-6">
+              {/* Storage Usage Card (Phase 2) */}
+              {storageUsage && (
+                <StorageUsage {...storageUsage} />
+              )}
+
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Speaker Plan</h2>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
