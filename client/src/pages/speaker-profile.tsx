@@ -53,6 +53,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import type { Speaker, Review } from "@shared/schema";
 import { SEOHead, generateSpeakerStructuredData, generateBreadcrumbStructuredData } from "@/components/seo-head";
 import { SocialShare } from "@/components/social-share";
+import { GA_EVENTS } from "@/lib/analytics";
 
 const inquirySchema = z.object({
   clientName: z.string().min(1, "Name is required"),
@@ -146,6 +147,13 @@ export default function SpeakerProfile() {
 
   // Initialize speaker tracking (auto-tracks profile view)
   const tracking = useSpeakerTracking(speaker?.id || 0);
+
+  // Track speaker view with Google Analytics
+  useEffect(() => {
+    if (speaker?.id && speaker?.name) {
+      GA_EVENTS.viewSpeaker(speaker.id, speaker.name);
+    }
+  }, [speaker?.id, speaker?.name]);
 
   // Check if speaker is bookmarked
   const { data: isBookmarked = false } = useQuery({
@@ -266,13 +274,18 @@ export default function SpeakerProfile() {
       return response;
     },
     onSuccess: (_, variables) => {
-      // Track inquiry submission
+      // Track inquiry submission (custom analytics)
       tracking.trackInquirySubmit({
         eventType: variables.eventType,
         eventLocation: variables.eventLocation,
         expectedAttendees: variables.expectedAttendees,
         budget: variables.budget
       });
+      
+      // Track inquiry submission (Google Analytics)
+      if (speaker) {
+        GA_EVENTS.contactSpeaker(speaker.id, speaker.name);
+      }
       
       toast({
         title: "Inquiry Sent",

@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { GA_EVENTS } from "@/lib/analytics";
 
 interface SocialShareProps {
   url: string;
@@ -31,6 +32,8 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(url);
+      // Track copy link event with Google Analytics
+      GA_EVENTS.share("copy_link", "speaker_profile", url);
       toast({
         title: "Link copied!",
         description: "Speaker profile link copied to clipboard",
@@ -47,6 +50,8 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
   const handleShare = (platform: string) => {
     const link = shareLinks[platform as keyof typeof shareLinks];
     if (link) {
+      // Track share event with Google Analytics
+      GA_EVENTS.share(platform, "speaker_profile", url);
       window.open(link, "_blank", "width=600,height=400");
     }
   };
@@ -57,6 +62,8 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
   const handleNativeShare = async () => {
     if (canUseWebShare) {
       try {
+        // Track share event with Google Analytics
+        GA_EVENTS.share("native", "speaker_profile", url);
         await navigator.share({
           title,
           text: description,

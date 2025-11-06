@@ -36,6 +36,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { SEOHead } from "@/components/seo-head";
+import { GA_EVENTS } from "@/lib/analytics";
 
 // Official categories from your CSV mapping
 const officialCategories = [
@@ -171,6 +172,9 @@ export default function ForSpeakers() {
       return apiRequest("POST", "/api/auth/speaker-application", data);
     },
     onSuccess: () => {
+      // Track successful application submission with Google Analytics
+      GA_EVENTS.submitApplication(true);
+      
       toast({
         title: "Application Submitted!",
         description: "Thank you for your application. We'll review it and get back to you within 5 business days.",
@@ -179,6 +183,10 @@ export default function ForSpeakers() {
     },
     onError: (error: any) => {
       console.error("Speaker application submission error:", error);
+      
+      // Track failed application submission with Google Analytics
+      GA_EVENTS.submitApplication(false);
+      
       // The server error message comes through in error.message
       const errorMessage = error?.message || "Please check your information and try again.";
       toast({

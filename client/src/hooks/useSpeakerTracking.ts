@@ -1,5 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { apiRequest } from '@/lib/queryClient';
+import { GA_EVENTS } from '@/lib/analytics';
 
 interface TrackingData {
   interactionType: string;
