@@ -1180,6 +1180,97 @@ export function registerRoutes(app: Express): Express {
     }
   });
 
+  // Get overall analytics dashboard (admin only)
+  app.get("/api/analytics/dashboard", async (req, res) => {
+    try {
+      const user = (req as any).session?.user;
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const speakers = await storage.getSpeakers({});
+      const inquiries = await storage.getInquiries();
+      
+      // Calculate aggregate stats
+      const totalSpeakers = speakers.length;
+      let totalViews = 0;
+      let totalClicks = 0;
+      let totalInquiries = inquiries.length;
+
+      // Get analytics for all speakers
+      for (const speaker of speakers) {
+        try {
+          const analytics = await storage.getSpeakerAnalytics(speaker.id);
+          totalViews += analytics.profileViews || 0;
+          totalClicks += (analytics.emailClicks || 0) + (analytics.phoneClicks || 0) + (analytics.websiteClicks || 0);
+        } catch (error) {
+          // Continue if speaker analytics fails
+          console.error(`Failed to get analytics for speaker ${speaker.id}:`, error);
+        }
+      }
+
+      res.json({
+        overview: {
+          totalSpeakers,
+          totalViews,
+          totalClicks,
+          totalInquiries
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard analytics:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard analytics" });
+    }
+  });
+
+  // Get top performing speakers (admin only)
+  app.get("/api/analytics/top-performers", async (req, res) => {
+    try {
+      const user = (req as any).session?.user;
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const speakers = await storage.getSpeakers({});
+      
+      // Get analytics for each speaker
+      const speakersWithAnalytics = await Promise.all(
+        speakers.map(async (speaker) => {
+          try {
+            const analytics = await storage.getSpeakerAnalytics(speaker.id);
+            return {
+              speakerId: speaker.id,
+              name: speaker.name,
+              profileViews: analytics.profileViews || 0,
+              totalClicks: (analytics.emailClicks || 0) + (analytics.phoneClicks || 0) + (analytics.websiteClicks || 0),
+              inquiryClicks: analytics.inquiryClicks || 0,
+              videoViews: analytics.videoViews || 0
+            };
+          } catch (error) {
+            return {
+              speakerId: speaker.id,
+              name: speaker.name,
+              profileViews: 0,
+              totalClicks: 0,
+              inquiryClicks: 0,
+              videoViews: 0
+            };
+          }
+        })
+      );
+
+      // Sort by profile views descending
+      const topPerformers = speakersWithAnalytics
+        .sort((a, b) => b.profileViews - a.profileViews)
+        .slice(0, 10); // Top 10 performers
+
+      res.json(topPerformers);
+    } catch (error) {
+      console.error("Error fetching top performers:", error);
+      res.status(500).json({ message: "Failed to fetch top performers" });
+    }
+  });
+
   // Search speakers with advanced filters - simplified to use getSpeakers
   app.get("/api/search", 
     rateLimiters.search,

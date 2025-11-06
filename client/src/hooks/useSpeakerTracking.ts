@@ -56,7 +56,16 @@ export function useSpeakerTracking(speakerId: number) {
         scrollDepth: maxScrollDepth.current
       };
 
-      await apiRequest('POST', `/api/speakers/${speakerId}/track`, trackingData);
+      await apiRequest('POST', '/api/analytics/track', {
+        speakerId,
+        eventType: interactionType,
+        metadata: {
+          ...metadata,
+          elementClicked,
+          timeOnPage: trackingData.timeOnPage,
+          scrollDepth: trackingData.scrollDepth
+        }
+      });
     } catch (error) {
       // Silent fail for tracking - don't disrupt user experience
       console.debug('Tracking failed:', error);
