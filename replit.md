@@ -4,6 +4,9 @@
 This project, "SpeakerSphere Reviews," is a full-stack healthcare speaker review platform connecting healthcare professionals with medical speakers. Its primary purpose is to facilitate speaker discovery, evaluation, and booking. Key capabilities include advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform uses real speaking topics extracted from CSV data with 942 unique topics linked to 508 speakers, replacing generic categories with actual topic-based organization. The platform aims to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
+- **November 6, 2025**: Completed Phase 4 - Google Analytics integration for general traffic tracking with automatic page view tracking and event tracking for key user actions
+- **November 6, 2025**: Implemented GA conversion tracking for subscription upgrades, speaker inquiries, applications, and social sharing
+- **November 6, 2025**: Created hybrid analytics approach: custom speaker-specific tracking for individual speaker performance + Google Analytics for platform-wide traffic insights
 - **January 10, 2025**: Completed Phase 1 - Stripe subscription system integration with Pro ($29/mo or $290/yr) and Premier ($99/mo or $990/yr) tiers
 - **January 10, 2025**: Implemented subscription checkout, billing portal, webhook handler, and automatic tier updates based on payment status
 - **January 10, 2025**: Created subscription upgrade page with pricing comparison and monthly/annual billing toggle
@@ -73,3 +76,55 @@ Preferred communication style: Simple, everyday language.
 ### External APIs
 - **Perplexity AI**: Used for enhanced search functionality.
 - **Multer**: Used for file upload handling.
+- **Google Analytics**: Used for platform-wide traffic and conversion tracking.
+- **Stripe**: Payment processing for subscription tiers.
+
+## Analytics & Tracking
+
+### Hybrid Analytics Approach
+The platform uses a dual analytics system:
+
+1. **Custom Analytics** (Speaker-Specific Metrics)
+   - Tracks individual speaker performance metrics
+   - Stored in PostgreSQL database
+   - Visible to individual speakers in their dashboard
+   - Includes: profile views, video plays, contact clicks, inquiry submissions, social shares
+   - Located in: `client/src/lib/analytics.ts` (custom tracking functions)
+
+2. **Google Analytics** (Platform-Wide Traffic)
+   - Tracks general platform traffic and user behavior
+   - Provides aggregate insights for platform performance
+   - Conversion tracking for subscriptions and key events
+   - Visible through Google Analytics dashboard
+   - Located in: `client/src/lib/analytics.ts` (GA tracking functions)
+
+### Google Analytics Setup
+
+**Configuration:**
+1. Add your GA4 Measurement ID to your Replit Secrets:
+   - Secret name: `VITE_GA_MEASUREMENT_ID`
+   - Value: Your GA4 Measurement ID (format: `G-XXXXXXXXXX`)
+
+2. The GA script automatically loads in `client/index.html` when the environment variable is set
+
+**Tracked Events:**
+- **Page Views**: Automatic tracking on all route changes
+- **Speaker Interactions**: Profile views, contact clicks, inquiry submissions
+- **Search & Discovery**: Search queries, category filtering, location filtering
+- **Applications**: Speaker application submissions (success/failure)
+- **Social Sharing**: LinkedIn, Twitter, Facebook, native share, copy link
+- **Subscriptions**: Checkout initiation, purchase completion, tier upgrades
+- **Video Engagement**: Video plays with speaker and video IDs
+- **Reviews**: Review submissions with ratings
+
+**Implementation Details:**
+- GA tracking is optional and gracefully degrades if not configured
+- All tracking functions check `isGAEnabled()` before sending events
+- Event parameters follow GA4 recommended event structure
+- Conversion events use consistent naming for e-commerce tracking
+
+**Files:**
+- `client/index.html`: GA script loader
+- `client/src/lib/analytics.ts`: GA helper functions and event definitions
+- `client/src/App.tsx`: Automatic page view tracking
+- Integration points: speaker-profile.tsx, for-speakers.tsx, social-share.tsx, subscription-upgrade.tsx
