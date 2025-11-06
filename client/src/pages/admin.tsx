@@ -3854,11 +3854,26 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
+            {/* Analytics Overview Banner */}
+            <Alert className="bg-blue-50 border-blue-200">
+              <BarChart3 className="h-4 w-4" />
+              <AlertDescription>
+                <div className="space-y-2">
+                  <p className="font-semibold">Admin Platform Analytics</p>
+                  <p className="text-sm">You're viewing platform-wide analytics for all speakers. This includes total views, engagement metrics, and top performers. Individual speakers can only see their own analytics in their dashboard.</p>
+                </div>
+              </AlertDescription>
+            </Alert>
+
+            {/* Platform Overview */}
             <Card>
               <CardHeader>
-                <CardTitle>Advanced Speaker Analytics</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Platform Overview
+                </CardTitle>
                 <CardDescription>
-                  Comprehensive performance metrics, demand forecasting, and engagement analytics
+                  Total speakers, profile views, contact clicks, and inquiries across the entire platform
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -3866,12 +3881,15 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
             
-            {/* Detailed Speaker Interaction Analytics */}
+            {/* Individual Speaker Performance */}
             <Card>
               <CardHeader>
-                <CardTitle>Detailed Speaker Interaction Analytics</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <MousePointer className="h-5 w-5" />
+                  Individual Speaker Performance
+                </CardTitle>
                 <CardDescription>
-                  Click-by-click tracking for individual speakers. Search and filter all speakers to view their detailed interaction metrics, engagement patterns, and user behavior data.
+                  View detailed analytics for each speaker including profile views, contact clicks, video plays, and engagement metrics
                 </CardDescription>
               </CardHeader>
               <CardContent>
