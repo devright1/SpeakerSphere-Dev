@@ -51,6 +51,8 @@ import {
 import { FaInstagram, FaLinkedin, FaFacebook } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import type { Speaker, Review } from "@shared/schema";
+import { SEOHead, generateSpeakerStructuredData, generateBreadcrumbStructuredData } from "@/components/seo-head";
+import { SocialShare } from "@/components/social-share";
 
 const inquirySchema = z.object({
   clientName: z.string().min(1, "Name is required"),
@@ -512,6 +514,52 @@ export default function SpeakerProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {speaker && (
+        <SEOHead
+          title={`${speaker.name} - ${speaker.title}`}
+          description={`${speaker.bio.substring(0, 155)}... Book ${speaker.name} for your next healthcare event. ${speaker.expertise.slice(0, 3).join(", ")}.`}
+          keywords={`${speaker.name}, ${speaker.expertise.join(", ")}, healthcare speaker, medical speaker, ${speaker.location}`}
+          ogImage={speaker.imageUrl}
+          ogType="profile"
+          author={speaker.name}
+          canonicalUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/speaker/${speaker.slug}`}
+          structuredData={{
+            ...generateSpeakerStructuredData({
+              name: speaker.name,
+              title: speaker.title,
+              bio: speaker.bio,
+              imageUrl: speaker.imageUrl,
+              location: speaker.location,
+              email: speaker.email,
+              phone: speaker.phone || undefined,
+              website: speaker.website || undefined,
+              expertise: speaker.expertise,
+              overallRating: speaker.overallRating || undefined,
+              reviewCount: speaker.reviewCount || undefined,
+            }),
+            "@graph": [
+              generateSpeakerStructuredData({
+                name: speaker.name,
+                title: speaker.title,
+                bio: speaker.bio,
+                imageUrl: speaker.imageUrl,
+                location: speaker.location,
+                email: speaker.email,
+                phone: speaker.phone || undefined,
+                website: speaker.website || undefined,
+                expertise: speaker.expertise,
+                overallRating: speaker.overallRating || undefined,
+                reviewCount: speaker.reviewCount || undefined,
+              }),
+              generateBreadcrumbStructuredData([
+                { name: "Home", url: typeof window !== "undefined" ? window.location.origin : "" },
+                { name: "Speakers", url: `${typeof window !== "undefined" ? window.location.origin : ""}/speakers` },
+                { name: speaker.name, url: `${typeof window !== "undefined" ? window.location.origin : ""}/speaker/${speaker.slug}` },
+              ]),
+            ],
+          }}
+        />
+      )}
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -637,22 +685,13 @@ export default function SpeakerProfile() {
                         />
                         {isBookmarked ? "Saved" : "Save"}
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => {
-                          tracking.trackShareClick();
-                          // Copy current URL to clipboard
-                          navigator.clipboard.writeText(window.location.href);
-                          toast({
-                            title: "Link copied",
-                            description: "Speaker profile link copied to clipboard",
-                          });
-                        }}
-                      >
-                        <Share2 className="w-4 h-4 mr-2" />
-                        Share
-                      </Button>
+                      <div onClick={() => tracking.trackShareClick()}>
+                        <SocialShare
+                          url={window.location.href}
+                          title={`${speaker.name} - ${speaker.title}`}
+                          description={`Book ${speaker.name} for your next healthcare event. ${speaker.expertise.slice(0, 3).join(", ")}.`}
+                        />
+                      </div>
                       
                       {/* Social Media Icons */}
                       {!speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (

@@ -64,7 +64,7 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-export function registerRoutes(app: Express): Express {
+export async function registerRoutes(app: Express): Promise<Express> {
   // Configure session middleware
   app.use(session({
     secret: process.env.SESSION_SECRET || 'fallback-secret-key-for-development',
@@ -3061,6 +3061,10 @@ export function registerRoutes(app: Express): Express {
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
   });
+
+  // Register sitemap and robots.txt routes  
+  const sitemapModule = await import("./routes/sitemap");
+  app.use("/", sitemapModule.createSitemapRouter(storage));
 
   return app;
 }

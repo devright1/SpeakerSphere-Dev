@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { SEOHead } from "@/components/seo-head";
 
 // Official categories from your CSV mapping
 const officialCategories = [
@@ -228,6 +229,12 @@ export default function ForSpeakers() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead
+        title="Join Our Healthcare Speaker Network | Grow Your Speaking Career"
+        description="Become a featured healthcare speaker. Connect with medical events and conferences seeking expert speakers. Showcase your expertise, manage bookings, and expand your reach in the healthcare industry."
+        keywords="become a healthcare speaker, medical speaker opportunities, healthcare conference speakers, speaker registration, join speaker network, speaking opportunities"
+        ogType="website"
+      />
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

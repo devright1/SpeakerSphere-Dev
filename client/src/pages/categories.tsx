@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FolderOpen, Users, ArrowRight, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { SEOHead } from "@/components/seo-head";
 
 interface Category {
   id: number;
@@ -83,6 +84,12 @@ export default function Categories() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Browse Healthcare Speakers by Specialty"
+        description="Explore healthcare speakers organized by medical specialty. Find expert speakers in implant dentistry, periodontics, oral surgery, digital dentistry, and 14 more specialties for your healthcare events."
+        keywords="healthcare speaker categories, medical specialties, dental speakers, medical conference speakers, healthcare event speakers, speaker specialties"
+        ogType="website"
+      />
       <Header />
       
       {/* Hero Section */}
