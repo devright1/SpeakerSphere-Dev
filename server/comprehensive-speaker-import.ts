@@ -145,7 +145,7 @@ export async function importSpeakersFromCSV() {
   try {
     console.log('🚀 Starting comprehensive speaker import...');
     
-    const csvPath = path.join(process.cwd(), 'attached_assets', 'speakers_without_profiles_1754935063537.csv');
+    const csvPath = path.join(process.cwd(), 'attached_assets', 'speakers_export_updated.csv');
     const csvContent = fs.readFileSync(csvPath, 'utf-8');
     const lines = csvContent.split('\n').filter(line => line.trim());
     
