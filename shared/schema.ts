@@ -270,7 +270,7 @@ export const users = pgTable("users", {
   passwordResetExpires: timestamp("password_reset_expires"),
   isActive: boolean("is_active").default(true),
   accountType: varchar("account_type", { length: 20 }).notNull().default("user"), // "user", "speaker", or "both"
-  speakerId: integer("speaker_id"), // Links to speaker profile if account_type includes "speaker"
+  speakerId: integer("speaker_id").references(() => speakers.id), // Links to speaker profile if account_type includes "speaker"
   subscriptionTier: varchar("subscription_tier", { length: 20 }).notNull().default("free"), // "free", "premium", "pro"
   subscriptionStatus: varchar("subscription_status", { length: 20 }).notNull().default("active"), // "active", "canceled", "expired", "trial"
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
