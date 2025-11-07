@@ -141,13 +141,24 @@ export default function Speakers() {
   const sortedSpeakers = useMemo(() => {
     if (!speakers) return [];
     return [...speakers].sort((a, b) => {
+      // First, prioritize by subscription tier (featured speakers first)
+      const tierOrder = { premier: 0, pro: 1, basic: 2 };
+      const tierA = tierOrder[a.subscriptionTier as keyof typeof tierOrder] ?? 2;
+      const tierB = tierOrder[b.subscriptionTier as keyof typeof tierOrder] ?? 2;
+      
+      if (tierA !== tierB) {
+        return tierA - tierB; // Lower number = higher priority
+      }
+      
+      // Within the same tier, apply user-selected sorting
       switch (sortBy) {
         case "rating":
           return parseFloat(b.overallRating || "0") - parseFloat(a.overallRating || "0");
         case "reviews":
           return (b.reviewCount || 0) - (a.reviewCount || 0);
         default:
-          return 0;
+          // For "relevance", featured speakers are already prioritized by tier
+          return parseFloat(b.overallRating || "0") - parseFloat(a.overallRating || "0");
       }
     });
   }, [speakers, sortBy]);
