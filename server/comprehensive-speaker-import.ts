@@ -167,30 +167,34 @@ export async function importSpeakersFromCSV() {
       
       try {
         const columns = parseCSVLine(line);
-        if (columns.length < 18) {
-          console.warn(`⚠️ Skipping line with insufficient columns: ${line.substring(0, 100)}...`);
+        
+        // Require at minimum: name, profession, specialty (columns 0-3)
+        if (columns.length < 4) {
+          console.warn(`⚠️ Skipping line with insufficient essential columns (need at least 4): ${line.substring(0, 100)}...`);
+          errors++;
           continue;
         }
         
+        // Use empty string as default for missing columns
         const speaker: CSVSpeaker = {
-          id: columns[0],
-          name: columns[1],
-          profession: columns[2],
-          specialty: columns[3],
-          lecture_title: columns[4],
-          email: columns[5],
-          profile_url: columns[6],
-          event_id: columns[7],
-          time_slot: columns[8],
-          session_date: columns[9],
-          session_location: columns[10],
-          is_featured: columns[11],
-          social_visible: columns[12],
-          hide_abstract: columns[13],
-          social_links: columns[14],
-          event_title: columns[15],
-          event_date: columns[16],
-          event_location: columns[17]
+          id: columns[0] || '',
+          name: columns[1] || '',
+          profession: columns[2] || '',
+          specialty: columns[3] || '',
+          lecture_title: columns[4] || '',
+          email: columns[5] || '',
+          profile_url: columns[6] || '',
+          event_id: columns[7] || '',
+          time_slot: columns[8] || '',
+          session_date: columns[9] || '',
+          session_location: columns[10] || '',
+          is_featured: columns[11] || 'f',
+          social_visible: columns[12] || 't',
+          hide_abstract: columns[13] || 'f',
+          social_links: columns[14] || '{}',
+          event_title: columns[15] || '',
+          event_date: columns[16] || '',
+          event_location: columns[17] || ''
         };
         
         // Skip if name is empty or invalid
