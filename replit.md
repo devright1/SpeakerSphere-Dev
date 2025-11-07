@@ -4,8 +4,9 @@
 This project, "SpeakerSphere Reviews," is a full-stack healthcare speaker review platform connecting healthcare professionals with medical speakers. Its primary purpose is to facilitate speaker discovery, evaluation, and booking. Key capabilities include advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform uses real speaking topics extracted from CSV data with 942 unique topics linked to 562 speakers, replacing generic categories with actual topic-based organization. The platform aims to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
-- **November 7, 2025**: Completed category reorganization - consolidated platform to exactly 18 core categories with proper distribution of all 562 speakers
-- **November 7, 2025**: Fixed 942 speaking topics using keyword-based categorization across 18 core categories (Practice Management: 327 topics, Implant Dentistry: 119 topics, etc.)
+- **November 7, 2025**: Removed Sleep Medicine category (reassigned 5 speakers and 6 topics to Anesthesia & Sedation) - now 17 core categories
+- **November 7, 2025**: Completed category reorganization - consolidated platform to core categories with proper distribution of all 562 speakers
+- **November 7, 2025**: Fixed 942 speaking topics using keyword-based categorization (Practice Management: 327 topics, Implant Dentistry: 119 topics, etc.)
 - **November 7, 2025**: Rebuilt 4,496 speaker-topic relationships using textual analysis of speaker bio, lectures, and expertise (average 8 topics per speaker)
 - **November 7, 2025**: Updated all speaker categories based on their speaking topics for accurate categorization (top categories: Practice Management: 366, Education & Training: 336, Implant Dentistry: 235)
 - **November 7, 2025**: Fixed CSV parser to accept rows with missing trailing columns (relaxed from requiring 18 to just 4 essential columns)
