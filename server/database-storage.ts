@@ -1709,11 +1709,11 @@ export class DatabaseStorage implements IStorage {
             }
           }
           
-          // For speakers without Stripe subscription, use tier-based amounts
+          // For speakers without Stripe subscription ID but with active subscription, use tier-based amounts
           return {
             ...speaker,
-            subscriptionInterval: undefined,
-            subscriptionAmount: 0,
+            subscriptionInterval: speaker.subscriptionStatus === 'active' ? 'monthly' : undefined,
+            subscriptionAmount: speaker.subscriptionTier === 'premier' ? 9900 : speaker.subscriptionTier === 'pro' ? 2900 : 0,
           };
         })
       );
