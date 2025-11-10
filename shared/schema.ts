@@ -543,6 +543,24 @@ export const contentDownloads = pgTable("content_downloads", {
   userAgent: text("user_agent"), // Browser/device info
 });
 
+// Subscription features that can be assigned to tiers
+export const subscriptionFeatures = pgTable("subscription_features", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(), // URL-friendly identifier
+  name: text("name").notNull(), // Display name of the feature
+  description: text("description"), // Optional description
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Maps features to subscription tiers with ordering and highlighting
+export const subscriptionTierFeatures = pgTable("subscription_tier_features", {
+  id: serial("id").primaryKey(),
+  tier: varchar("tier", { length: 20 }).notNull(), // "basic", "pro", "premier"
+  featureId: integer("feature_id").notNull(), // FK to subscription_features
+  sortOrder: integer("sort_order").default(0), // Display order within tier
+  isHighlighted: boolean("is_highlighted").default(false), // Whether to emphasize this feature
+});
+
 // Enhanced reviews - add userId field for registered user reviews
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -637,3 +655,19 @@ export type ContentAccessCode = typeof contentAccessCodes.$inferSelect;
 export type InsertContentAccessCode = z.infer<typeof insertContentAccessCodeSchema>;
 export type ContentDownload = typeof contentDownloads.$inferSelect;
 export type InsertContentDownload = z.infer<typeof insertContentDownloadSchema>;
+
+// Subscription features schemas
+export const insertSubscriptionFeatureSchema = createInsertSchema(subscriptionFeatures).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSubscriptionTierFeatureSchema = createInsertSchema(subscriptionTierFeatures).omit({
+  id: true,
+});
+
+// Subscription features types
+export type SubscriptionFeature = typeof subscriptionFeatures.$inferSelect;
+export type InsertSubscriptionFeature = z.infer<typeof insertSubscriptionFeatureSchema>;
+export type SubscriptionTierFeature = typeof subscriptionTierFeatures.$inferSelect;
+export type InsertSubscriptionTierFeature = z.infer<typeof insertSubscriptionTierFeatureSchema>;
