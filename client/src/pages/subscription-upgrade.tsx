@@ -26,9 +26,25 @@ export default function SubscriptionUpgrade() {
   const [processingTier, setProcessingTier] = useState<string | null>(null);
 
   // Get current subscription status
-  const { data: subscriptionStatus, isLoading: statusLoading } = useQuery({
+  const { data: subscriptionStatus, isLoading: statusLoading } = useQuery<{
+    tier: string;
+    status: string;
+    periodEnd: Date | null;
+    cancelAtPeriodEnd: boolean;
+    amount?: number;
+    interval?: string;
+  }>({
     queryKey: ["/api/subscriptions/status"],
     enabled: isAuthenticated && !!user?.speakerId,
+  });
+
+  // Get subscription features
+  const { data: subscriptionFeatures, isLoading: featuresLoading } = useQuery<{
+    basic: Array<{ id: number; name: string; description: string | null; sortOrder: number; isHighlighted: boolean }>;
+    pro: Array<{ id: number; name: string; description: string | null; sortOrder: number; isHighlighted: boolean }>;
+    premier: Array<{ id: number; name: string; description: string | null; sortOrder: number; isHighlighted: boolean }>;
+  }>({
+    queryKey: ["/api/subscriptions/features"],
   });
 
   // Track successful purchase when returning from Stripe
@@ -242,30 +258,18 @@ export default function SubscriptionUpgrade() {
               <CardDescription>Get Listed</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Basic profile listing</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Name, headshot & specialty</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Up to 3 speaking topics</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">1 video or file upload</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Receive inquiries</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Directory listing</span>
-              </div>
+              {featuresLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                </div>
+              ) : (
+                subscriptionFeatures?.basic?.map((feature) => (
+                  <div key={feature.id} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">{feature.name}</span>
+                  </div>
+                ))
+              )}
               <Button className="w-full mt-6" variant="outline" disabled>
                 Current Plan
               </Button>
@@ -302,38 +306,24 @@ export default function SubscriptionUpgrade() {
               <CardDescription>Enhanced Visibility</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-medium">Everything in Basic, plus:</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Homepage rotation (bottom 12 spots)</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Expanded bio & custom sections</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Up to 5 speaking topics</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">5 videos/lectures/research files</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Social media links & website</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Featured speaker badge</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Analytics dashboard</span>
-              </div>
+              {featuresLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-medium">Everything in Basic, plus:</span>
+                  </div>
+                  {subscriptionFeatures?.pro?.map((feature) => (
+                    <div key={feature.id} className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{feature.name}</span>
+                    </div>
+                  ))}
+                </>
+              )}
               <Button 
                 className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => handleUpgrade("pro")}
@@ -381,50 +371,24 @@ export default function SubscriptionUpgrade() {
               <CardDescription>Maximum Exposure</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-medium">Everything in Pro, plus:</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Top homepage placement (top 12 spots)</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Directory top rotation</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">10 video uploads</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Unlimited notes & publications</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Exclusive "Speaker Vault"</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Password-protected content</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Direct messaging</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Advanced analytics</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Full profile customization</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Premier badge</span>
-              </div>
+              {featuresLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-medium">Everything in Pro, plus:</span>
+                  </div>
+                  {subscriptionFeatures?.premier?.map((feature) => (
+                    <div key={feature.id} className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{feature.name}</span>
+                    </div>
+                  ))}
+                </>
+              )}
               <Button 
                 className="w-full mt-6 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white"
                 onClick={() => handleUpgrade("premier")}

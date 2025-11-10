@@ -2902,6 +2902,42 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Get subscription features (public endpoint)
+  app.get("/api/subscriptions/features", async (req, res) => {
+    try {
+      const features = await storage.listSubscriptionFeatures();
+      
+      // Group features by tier
+      const featuresByTier = {
+        basic: [] as any[],
+        pro: [] as any[],
+        premier: [] as any[]
+      };
+      
+      features.forEach(feature => {
+        feature.tiers.forEach(tierAssociation => {
+          if (featuresByTier[tierAssociation.tier as keyof typeof featuresByTier]) {
+            featuresByTier[tierAssociation.tier as keyof typeof featuresByTier].push({
+              ...feature,
+              sortOrder: tierAssociation.sortOrder,
+              isHighlighted: tierAssociation.isHighlighted
+            });
+          }
+        });
+      });
+      
+      // Sort features by sortOrder within each tier
+      Object.keys(featuresByTier).forEach(tier => {
+        featuresByTier[tier as keyof typeof featuresByTier].sort((a, b) => a.sortOrder - b.sortOrder);
+      });
+      
+      res.json(featuresByTier);
+    } catch (error: any) {
+      console.error('Error fetching subscription features:', error);
+      res.status(500).json({ error: 'Failed to fetch subscription features' });
+    }
+  });
+
   // Get subscription status
   app.get("/api/subscriptions/status", async (req: AuthenticatedRequest, res) => {
     try {
