@@ -2794,16 +2794,22 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Create subscription checkout session
   app.post("/api/subscriptions/create-checkout", async (req: AuthenticatedRequest, res) => {
     try {
-      console.log("Subscription checkout - Session:", req.session);
-      console.log("Subscription checkout - User:", req.session?.user);
-      const user = req.session?.user;
-      if (!user?.id) {
-        console.log("No user in session - rejecting");
+      // Get user from X-User-ID header or session
+      const userIdHeader = req.headers['x-user-id'] as string;
+      let userId: string | undefined;
+      
+      if (userIdHeader) {
+        userId = userIdHeader;
+      } else if (req.session?.user?.id) {
+        userId = req.session.user.id;
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Must be logged in" });
       }
 
       // Get speaker by user ID
-      const speaker = await storage.getSpeakerByUserId(user.id);
+      const speaker = await storage.getSpeakerByUserId(userId);
       if (!speaker) {
         return res.status(404).json({ error: "Speaker profile not found. Please create a speaker profile first." });
       }
@@ -2899,13 +2905,22 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Get subscription status
   app.get("/api/subscriptions/status", async (req: AuthenticatedRequest, res) => {
     try {
-      const user = req.session?.user;
-      if (!user?.id) {
+      // Get user from X-User-ID header or session
+      const userIdHeader = req.headers['x-user-id'] as string;
+      let userId: string | undefined;
+      
+      if (userIdHeader) {
+        userId = userIdHeader;
+      } else if (req.session?.user?.id) {
+        userId = req.session.user.id;
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Must be logged in" });
       }
 
       // Get speaker by user ID
-      const speaker = await storage.getSpeakerByUserId(user.id);
+      const speaker = await storage.getSpeakerByUserId(userId);
       if (!speaker) {
         return res.status(404).json({ error: "Speaker profile not found" });
       }
@@ -2941,13 +2956,22 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Cancel subscription
   app.post("/api/subscriptions/cancel", async (req: AuthenticatedRequest, res) => {
     try {
-      const user = req.session?.user;
-      if (!user?.id) {
+      // Get user from X-User-ID header or session
+      const userIdHeader = req.headers['x-user-id'] as string;
+      let userId: string | undefined;
+      
+      if (userIdHeader) {
+        userId = userIdHeader;
+      } else if (req.session?.user?.id) {
+        userId = req.session.user.id;
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Must be logged in" });
       }
 
       // Get speaker by user ID
-      const speaker = await storage.getSpeakerByUserId(user.id);
+      const speaker = await storage.getSpeakerByUserId(userId);
       if (!speaker || !speaker.stripeSubscriptionId) {
         return res.status(404).json({ error: "No active subscription found" });
       }
@@ -2976,13 +3000,22 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Create billing portal session
   app.post("/api/subscriptions/billing-portal", async (req: AuthenticatedRequest, res) => {
     try {
-      const user = req.session?.user;
-      if (!user?.id) {
+      // Get user from X-User-ID header or session
+      const userIdHeader = req.headers['x-user-id'] as string;
+      let userId: string | undefined;
+      
+      if (userIdHeader) {
+        userId = userIdHeader;
+      } else if (req.session?.user?.id) {
+        userId = req.session.user.id;
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Must be logged in" });
       }
 
       // Get speaker by user ID
-      const speaker = await storage.getSpeakerByUserId(user.id);
+      const speaker = await storage.getSpeakerByUserId(userId);
       if (!speaker || !speaker.stripeCustomerId) {
         return res.status(404).json({ error: "No billing account found" });
       }
