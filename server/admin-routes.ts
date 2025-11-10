@@ -1701,4 +1701,128 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: "Test email failed", error: error.message });
     }
   });
+
+  // Subscription Features Management
+  app.get("/api/admin/subscription-features", async (req, res) => {
+    try {
+      const features = await storage.listSubscriptionFeatures();
+      res.json(features);
+    } catch (error) {
+      console.error("Failed to list subscription features:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/subscription-features/:tier", async (req, res) => {
+    try {
+      const tier = req.params.tier;
+      const features = await storage.listSubscriptionFeaturesByTier(tier);
+      res.json(features);
+    } catch (error) {
+      console.error(`Failed to list subscription features for tier ${req.params.tier}:`, error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/subscription-features", async (req, res) => {
+    try {
+      const { slug, name, description } = req.body;
+      
+      if (!slug || !name) {
+        return res.status(400).json({ message: "Slug and name are required" });
+      }
+      
+      const feature = await storage.createSubscriptionFeature({ slug, name, description });
+      res.json(feature);
+    } catch (error) {
+      console.error("Failed to create subscription feature:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/admin/subscription-features/:id", async (req, res) => {
+    try {
+      const featureId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const updatedFeature = await storage.updateSubscriptionFeature(featureId, updates);
+      res.json(updatedFeature);
+    } catch (error) {
+      console.error(`Failed to update subscription feature ${req.params.id}:`, error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/subscription-features/:id", async (req, res) => {
+    try {
+      const featureId = parseInt(req.params.id);
+      await storage.deleteSubscriptionFeature(featureId);
+      res.json({ success: true, message: "Feature deleted successfully" });
+    } catch (error) {
+      console.error(`Failed to delete subscription feature ${req.params.id}:`, error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/subscription-features/:id/assign-tier", async (req, res) => {
+    try {
+      const featureId = parseInt(req.params.id);
+      const { tier, sortOrder, isHighlighted } = req.body;
+      
+      if (!tier) {
+        return res.status(400).json({ message: "Tier is required" });
+      }
+      
+      const tierFeature = await storage.assignFeatureToTier({
+        featureId,
+        tier,
+        sortOrder: sortOrder || 0,
+        isHighlighted: isHighlighted || false,
+      });
+      
+      res.json(tierFeature);
+    } catch (error) {
+      console.error(`Failed to assign feature ${req.params.id} to tier:`, error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/admin/tier-features/:id", async (req, res) => {
+    try {
+      const tierFeatureId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const updatedTierFeature = await storage.updateTierFeature(tierFeatureId, updates);
+      res.json(updatedTierFeature);
+    } catch (error) {
+      console.error(`Failed to update tier feature ${req.params.id}:`, error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/tier-features/:id", async (req, res) => {
+    try {
+      const tierFeatureId = parseInt(req.params.id);
+      await storage.removeTierFeature(tierFeatureId);
+      res.json({ success: true, message: "Tier feature removed successfully" });
+    } catch (error) {
+      console.error(`Failed to remove tier feature ${req.params.id}:`, error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Speaker Subscriptions for Admin View
+  app.get("/api/admin/speaker-subscriptions", async (req, res) => {
+    try {
+      const { tier, status } = req.query;
+      const speakers = await storage.listSpeakerSubscriptions({
+        tier: tier as string,
+        status: status as string,
+      });
+      res.json(speakers);
+    } catch (error) {
+      console.error("Failed to list speaker subscriptions:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 }
