@@ -1681,12 +1681,44 @@ export class DatabaseStorage implements IStorage {
       
       const result = await query;
       
-      // Map to include subscription interval and amount (placeholder fields for future Stripe integration)
-      return result.map(speaker => ({
-        ...speaker,
-        subscriptionInterval: speaker.subscriptionStatus === 'active' ? 'monthly' : undefined,
-        subscriptionAmount: speaker.subscriptionTier === 'premier' ? 99 : speaker.subscriptionTier === 'pro' ? 49 : 0,
-      }));
+      // Fetch real subscription data from Stripe for speakers with active subscriptions
+      const speakersWithSubscriptionData = await Promise.all(
+        result.map(async (speaker) => {
+          if (speaker.stripeSubscriptionId) {
+            try {
+              const stripe = (await import('stripe')).default;
+              const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY!, {
+                apiVersion: '2025-10-29.clover' as any,
+              });
+              const subscription = await stripeClient.subscriptions.retrieve(speaker.stripeSubscriptionId);
+              const price = subscription.items.data[0]?.price;
+              
+              return {
+                ...speaker,
+                subscriptionInterval: price?.recurring?.interval,
+                subscriptionAmount: price?.unit_amount || 0,
+              };
+            } catch (error) {
+              console.error(`Error fetching Stripe subscription for speaker ${speaker.id}:`, error);
+              // Fallback to tier-based amounts if Stripe fetch fails
+              return {
+                ...speaker,
+                subscriptionInterval: speaker.subscriptionStatus === 'active' ? 'monthly' : undefined,
+                subscriptionAmount: speaker.subscriptionTier === 'premier' ? 9900 : speaker.subscriptionTier === 'pro' ? 2900 : 0,
+              };
+            }
+          }
+          
+          // For speakers without Stripe subscription, use tier-based amounts
+          return {
+            ...speaker,
+            subscriptionInterval: undefined,
+            subscriptionAmount: 0,
+          };
+        })
+      );
+      
+      return speakersWithSubscriptionData;
     } catch (error) {
       console.error('Error listing speaker subscriptions:', error);
       throw error;
