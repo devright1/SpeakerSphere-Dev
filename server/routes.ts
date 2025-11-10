@@ -3090,10 +3090,29 @@ export async function registerRoutes(app: Express): Promise<Express> {
         case 'customer.subscription.created':
         case 'customer.subscription.updated': {
           const subscription = event.data.object as Stripe.Subscription;
-          const speakerId = parseInt(subscription.metadata.speakerId || '0');
+          let speakerId = parseInt(subscription.metadata.speakerId || '0');
+          let tier = subscription.metadata.tier as 'pro' | 'premier';
           
-          if (speakerId) {
-            const tier = subscription.metadata.tier as 'pro' | 'premier';
+          // If no metadata (e.g., subscription created in Stripe Dashboard), lookup by customer ID
+          if (!speakerId && subscription.customer) {
+            const customerId = typeof subscription.customer === 'string' 
+              ? subscription.customer 
+              : subscription.customer.id;
+            const speakers = await storage.getSpeakers();
+            const speaker = speakers.find(s => s.stripeCustomerId === customerId);
+            if (speaker) {
+              speakerId = speaker.id;
+              // Determine tier from subscription price
+              const priceId = subscription.items.data[0]?.price.id;
+              if (priceId === STRIPE_PRICE_IDS.pro.monthly || priceId === STRIPE_PRICE_IDS.pro.annual) {
+                tier = 'pro';
+              } else if (priceId === STRIPE_PRICE_IDS.premier.monthly || priceId === STRIPE_PRICE_IDS.premier.annual) {
+                tier = 'premier';
+              }
+            }
+          }
+          
+          if (speakerId && tier) {
             const subscriptionItem = subscription.items.data[0];
             const periodEnd = subscriptionItem?.current_period_end 
               ? new Date(subscriptionItem.current_period_end * 1000) 
@@ -3105,13 +3124,29 @@ export async function registerRoutes(app: Express): Promise<Express> {
               subscriptionTier: tier,
               subscriptionPeriodEnd: periodEnd
             });
+            
+            console.log(`Updated speaker ${speakerId} to ${tier} tier (${subscription.status})`);
+          } else {
+            console.log(`Could not find speaker for subscription ${subscription.id}`);
           }
           break;
         }
 
         case 'customer.subscription.deleted': {
           const subscription = event.data.object as Stripe.Subscription;
-          const speakerId = parseInt(subscription.metadata.speakerId || '0');
+          let speakerId = parseInt(subscription.metadata.speakerId || '0');
+          
+          // If no metadata, lookup by customer ID
+          if (!speakerId && subscription.customer) {
+            const customerId = typeof subscription.customer === 'string' 
+              ? subscription.customer 
+              : subscription.customer.id;
+            const speakers = await storage.getSpeakers();
+            const speaker = speakers.find(s => s.stripeCustomerId === customerId);
+            if (speaker) {
+              speakerId = speaker.id;
+            }
+          }
           
           if (speakerId) {
             // Downgrade to basic tier
@@ -3121,6 +3156,10 @@ export async function registerRoutes(app: Express): Promise<Express> {
               stripeSubscriptionId: null,
               subscriptionPeriodEnd: null
             });
+            
+            console.log(`Canceled subscription for speaker ${speakerId}`);
+          } else {
+            console.log(`Could not find speaker for deleted subscription ${subscription.id}`);
           }
           break;
         }
@@ -3131,7 +3170,19 @@ export async function registerRoutes(app: Express): Promise<Express> {
           
           if (subscriptionId && typeof subscriptionId === 'string') {
             const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-            const speakerId = parseInt(subscription.metadata.speakerId || '0');
+            let speakerId = parseInt(subscription.metadata.speakerId || '0');
+            
+            // If no metadata, lookup by customer ID
+            if (!speakerId && subscription.customer) {
+              const customerId = typeof subscription.customer === 'string' 
+                ? subscription.customer 
+                : subscription.customer.id;
+              const speakers = await storage.getSpeakers();
+              const speaker = speakers.find(s => s.stripeCustomerId === customerId);
+              if (speaker) {
+                speakerId = speaker.id;
+              }
+            }
             
             if (speakerId) {
               const subscriptionItem = subscription.items.data[0];
@@ -3143,6 +3194,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
                 subscriptionStatus: 'active',
                 subscriptionPeriodEnd: periodEnd
               });
+              
+              console.log(`Payment succeeded for speaker ${speakerId}`);
             }
           }
           break;
@@ -3154,12 +3207,26 @@ export async function registerRoutes(app: Express): Promise<Express> {
           
           if (subscriptionId && typeof subscriptionId === 'string') {
             const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-            const speakerId = parseInt(subscription.metadata.speakerId || '0');
+            let speakerId = parseInt(subscription.metadata.speakerId || '0');
+            
+            // If no metadata, lookup by customer ID
+            if (!speakerId && subscription.customer) {
+              const customerId = typeof subscription.customer === 'string' 
+                ? subscription.customer 
+                : subscription.customer.id;
+              const speakers = await storage.getSpeakers();
+              const speaker = speakers.find(s => s.stripeCustomerId === customerId);
+              if (speaker) {
+                speakerId = speaker.id;
+              }
+            }
             
             if (speakerId) {
               await storage.updateSpeaker(speakerId, {
                 subscriptionStatus: 'past_due'
               });
+              
+              console.log(`Payment failed for speaker ${speakerId}`);
             }
           }
           break;
