@@ -239,9 +239,38 @@ export default function SubscriptionUpgrade() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {/* Basic Tier */}
-          <Card className={`relative ${isBasic ? "border-2 border-primary" : ""}`}>
+        <div className={`grid gap-8 mb-12 ${
+          isPremier ? "md:grid-cols-1 max-w-2xl mx-auto" : 
+          isPro ? "md:grid-cols-1 max-w-2xl mx-auto" : 
+          "md:grid-cols-3"
+        }`}>
+          {/* Show message if already at highest tier */}
+          {isPremier && (
+            <Card className="text-center py-12">
+              <CardHeader>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-full mx-auto mb-4">
+                  <Crown className="w-8 h-8 text-amber-600" />
+                </div>
+                <CardTitle className="text-2xl mb-2">You're at the Top!</CardTitle>
+                <CardDescription className="text-base">
+                  You're currently on the Premier tier with maximum visibility and all premium features.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setLocation("/speaker-dashboard")}
+                  className="mt-4"
+                >
+                  Go to Dashboard
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Basic Tier - Only show if user is on Basic */}
+          {isBasic && (
+            <Card className={`relative ${isBasic ? "border-2 border-primary" : ""}`}>
             {isBasic && (
               <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                 <Badge className="bg-primary text-white">Current Plan</Badge>
@@ -275,18 +304,14 @@ export default function SubscriptionUpgrade() {
               </Button>
             </CardContent>
           </Card>
+          )}
 
-          {/* Pro Tier */}
-          <Card className={`relative border-2 ${isPro ? "border-primary" : "border-blue-600"} shadow-xl`}>
-            {isPro ? (
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <Badge className="bg-primary text-white">Current Plan</Badge>
-              </div>
-            ) : (
+          {/* Pro Tier - Only show if user is Basic (upgrade option) */}
+          {isBasic && (
+            <Card className={`relative border-2 border-blue-600 shadow-xl`}>
               <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                 <Badge className="bg-blue-600 text-white">Popular</Badge>
               </div>
-            )}
             <CardHeader className="text-center pb-4">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-3">
                 <Star className="w-6 h-6 text-blue-600" />
@@ -327,31 +352,24 @@ export default function SubscriptionUpgrade() {
               <Button 
                 className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => handleUpgrade("pro")}
-                disabled={isPro || isPremier || processingTier !== null}
+                disabled={processingTier !== null}
               >
                 {processingTier === "pro" ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Processing...
                   </>
-                ) : isPro ? (
-                  "Current Plan"
-                ) : isPremier ? (
-                  "Downgrade Not Available"
                 ) : (
                   `Upgrade to Pro`
                 )}
               </Button>
             </CardContent>
           </Card>
+          )}
 
-          {/* Premier Tier */}
-          <Card className={`relative border-2 ${isPremier ? "border-primary" : "border-amber-400"}`}>
-            {isPremier && (
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <Badge className="bg-primary text-white">Current Plan</Badge>
-              </div>
-            )}
+          {/* Premier Tier - Show for Basic and Pro users as upgrade option */}
+          {!isPremier && (
+            <Card className={`relative border-2 border-amber-400`}>
             <CardHeader className="text-center pb-4">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-full mx-auto mb-3">
                 <Crown className="w-6 h-6 text-amber-600" />
@@ -392,21 +410,20 @@ export default function SubscriptionUpgrade() {
               <Button 
                 className="w-full mt-6 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white"
                 onClick={() => handleUpgrade("premier")}
-                disabled={isPremier || processingTier !== null}
+                disabled={processingTier !== null}
               >
                 {processingTier === "premier" ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Processing...
                   </>
-                ) : isPremier ? (
-                  "Current Plan"
                 ) : (
                   `Upgrade to Premier`
                 )}
               </Button>
             </CardContent>
           </Card>
+          )}
         </div>
 
         {/* FAQ or additional information */}
