@@ -16,6 +16,8 @@ import {
   contentAccessCodes,
   contentDownloads,
   images,
+  subscriptionFeatures,
+  subscriptionTierFeatures,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -49,7 +51,11 @@ import {
   type ContentDownload,
   type InsertContentDownload,
   type Image,
-  type InsertImage
+  type InsertImage,
+  type SubscriptionFeature,
+  type InsertSubscriptionFeature,
+  type SubscriptionTierFeature,
+  type InsertSubscriptionTierFeature
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -230,6 +236,18 @@ export interface IStorage {
   deleteVideo(videoId: number): Promise<boolean>;
   incrementVideoViewCount(videoId: number): Promise<void>;
   updateSpeakerStorage(speakerId: number, bytesChange: number, videoCountChange: number): Promise<void>;
+
+  // Subscription features management
+  listSubscriptionFeatures(): Promise<(SubscriptionFeature & { tiers: Array<{ tier: string; sortOrder: number; isHighlighted: boolean }> })[]>;
+  listSubscriptionFeaturesByTier(tier: string): Promise<SubscriptionFeature[]>;
+  createSubscriptionFeature(feature: InsertSubscriptionFeature): Promise<SubscriptionFeature>;
+  updateSubscriptionFeature(id: number, feature: Partial<InsertSubscriptionFeature>): Promise<SubscriptionFeature>;
+  deleteSubscriptionFeature(id: number): Promise<void>;
+  assignFeatureToTier(tierFeature: InsertSubscriptionTierFeature): Promise<SubscriptionTierFeature>;
+  updateTierFeature(id: number, updates: Partial<Omit<SubscriptionTierFeature, 'id'>>): Promise<SubscriptionTierFeature>;
+  removeTierFeature(id: number): Promise<void>;
+  // Speaker subscriptions for admin view
+  listSpeakerSubscriptions(filter?: { tier?: string; status?: string }): Promise<Array<Speaker & { subscriptionInterval?: string; subscriptionAmount?: number }>>;
 }
 
 export class MemStorage implements IStorage {

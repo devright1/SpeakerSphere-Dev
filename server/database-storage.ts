@@ -16,6 +16,8 @@ import {
   contentAccessCodes,
   contentDownloads,
   images,
+  subscriptionFeatures,
+  subscriptionTierFeatures,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -49,7 +51,11 @@ import {
   type ContentDownload,
   type InsertContentDownload,
   type Image,
-  type InsertImage
+  type InsertImage,
+  type SubscriptionFeature,
+  type InsertSubscriptionFeature,
+  type SubscriptionTierFeature,
+  type InsertSubscriptionTierFeature
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull, inArray } from "drizzle-orm";
@@ -1487,5 +1493,203 @@ export class DatabaseStorage implements IStorage {
         videoCount: sql`GREATEST(0, COALESCE(${speakers.videoCount}, 0) + ${videoCountChange})`
       })
       .where(eq(speakers.id, speakerId));
+  }
+
+  // Subscription features management
+  async listSubscriptionFeatures(): Promise<(SubscriptionFeature & { tiers: Array<{ tier: string; sortOrder: number; isHighlighted: boolean }> })[]> {
+    try {
+      // Get all subscription features
+      const features = await db.select().from(subscriptionFeatures).orderBy(subscriptionFeatures.name);
+      
+      // For each feature, get its tier associations
+      const featuresWithTiers = await Promise.all(
+        features.map(async (feature) => {
+          const tierAssociations = await db
+            .select({
+              tier: subscriptionTierFeatures.tier,
+              sortOrder: subscriptionTierFeatures.sortOrder,
+              isHighlighted: subscriptionTierFeatures.isHighlighted,
+            })
+            .from(subscriptionTierFeatures)
+            .where(eq(subscriptionTierFeatures.featureId, feature.id))
+            .orderBy(subscriptionTierFeatures.sortOrder);
+          
+          // Map tier associations to ensure non-null values
+          const tiersWithDefaults = tierAssociations.map(tier => ({
+            tier: tier.tier,
+            sortOrder: tier.sortOrder ?? 0,
+            isHighlighted: tier.isHighlighted ?? false,
+          }));
+          
+          return {
+            ...feature,
+            tiers: tiersWithDefaults,
+          };
+        })
+      );
+      
+      return featuresWithTiers;
+    } catch (error) {
+      console.error('Error listing subscription features:', error);
+      throw error;
+    }
+  }
+
+  async listSubscriptionFeaturesByTier(tier: string): Promise<SubscriptionFeature[]> {
+    try {
+      const result = await db
+        .select({
+          id: subscriptionFeatures.id,
+          slug: subscriptionFeatures.slug,
+          name: subscriptionFeatures.name,
+          description: subscriptionFeatures.description,
+          createdAt: subscriptionFeatures.createdAt,
+        })
+        .from(subscriptionFeatures)
+        .innerJoin(
+          subscriptionTierFeatures,
+          eq(subscriptionFeatures.id, subscriptionTierFeatures.featureId)
+        )
+        .where(eq(subscriptionTierFeatures.tier, tier))
+        .orderBy(subscriptionTierFeatures.sortOrder);
+      
+      return result;
+    } catch (error) {
+      console.error(`Error listing subscription features for tier ${tier}:`, error);
+      throw error;
+    }
+  }
+
+  async createSubscriptionFeature(feature: InsertSubscriptionFeature): Promise<SubscriptionFeature> {
+    try {
+      const result = await db.insert(subscriptionFeatures).values(feature).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating subscription feature:', error);
+      throw error;
+    }
+  }
+
+  async updateSubscriptionFeature(id: number, feature: Partial<InsertSubscriptionFeature>): Promise<SubscriptionFeature> {
+    try {
+      const result = await db
+        .update(subscriptionFeatures)
+        .set(feature)
+        .where(eq(subscriptionFeatures.id, id))
+        .returning();
+      
+      if (!result[0]) {
+        throw new Error(`Subscription feature with id ${id} not found`);
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error(`Error updating subscription feature ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteSubscriptionFeature(id: number): Promise<void> {
+    try {
+      // First, delete all tier associations
+      await db.delete(subscriptionTierFeatures).where(eq(subscriptionTierFeatures.featureId, id));
+      
+      // Then delete the feature itself
+      const result = await db.delete(subscriptionFeatures).where(eq(subscriptionFeatures.id, id));
+      
+      if (result.rowCount === 0) {
+        throw new Error(`Subscription feature with id ${id} not found`);
+      }
+    } catch (error) {
+      console.error(`Error deleting subscription feature ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async assignFeatureToTier(tierFeature: InsertSubscriptionTierFeature): Promise<SubscriptionTierFeature> {
+    try {
+      const result = await db.insert(subscriptionTierFeatures).values(tierFeature).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error assigning feature to tier:', error);
+      throw error;
+    }
+  }
+
+  async updateTierFeature(id: number, updates: Partial<Omit<SubscriptionTierFeature, 'id'>>): Promise<SubscriptionTierFeature> {
+    try {
+      const result = await db
+        .update(subscriptionTierFeatures)
+        .set(updates)
+        .where(eq(subscriptionTierFeatures.id, id))
+        .returning();
+      
+      if (!result[0]) {
+        throw new Error(`Tier feature with id ${id} not found`);
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error(`Error updating tier feature ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async removeTierFeature(id: number): Promise<void> {
+    try {
+      const result = await db.delete(subscriptionTierFeatures).where(eq(subscriptionTierFeatures.id, id));
+      
+      if (result.rowCount === 0) {
+        throw new Error(`Tier feature with id ${id} not found`);
+      }
+    } catch (error) {
+      console.error(`Error removing tier feature ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async listSpeakerSubscriptions(filter?: { tier?: string; status?: string }): Promise<Array<Speaker & { subscriptionInterval?: string; subscriptionAmount?: number }>> {
+    try {
+      const conditions = [];
+      
+      // Filter by subscription tier if provided
+      if (filter?.tier) {
+        conditions.push(eq(speakers.subscriptionTier, filter.tier));
+      }
+      
+      // Filter by subscription status if provided
+      if (filter?.status) {
+        conditions.push(eq(speakers.subscriptionStatus, filter.status));
+      }
+      
+      let query = db.select().from(speakers);
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions)) as any;
+      }
+      
+      // Order by subscription tier (premier > pro > basic) and then by name
+      query = query.orderBy(
+        sql`CASE ${speakers.subscriptionTier} 
+          WHEN 'premier' THEN 1 
+          WHEN 'pro' THEN 2 
+          WHEN 'basic' THEN 3 
+          ELSE 4 
+        END`,
+        speakers.name
+      ) as any;
+      
+      const result = await query;
+      
+      // Map to include subscription interval and amount (placeholder fields for future Stripe integration)
+      return result.map(speaker => ({
+        ...speaker,
+        subscriptionInterval: speaker.subscriptionStatus === 'active' ? 'monthly' : undefined,
+        subscriptionAmount: speaker.subscriptionTier === 'premier' ? 99 : speaker.subscriptionTier === 'pro' ? 49 : 0,
+      }));
+    } catch (error) {
+      console.error('Error listing speaker subscriptions:', error);
+      throw error;
+    }
   }
 }
