@@ -28,7 +28,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-11-20.acacia",
+  apiVersion: "2025-10-29.clover",
 });
 
 // Types for user authentication
@@ -2779,15 +2779,15 @@ export async function registerRoutes(app: Express): Promise<Express> {
   });
 
   // Stripe subscription endpoints
-  // Pricing structure (in cents)
-  const PRICING = {
+  // Stripe Price IDs from Stripe Dashboard
+  const STRIPE_PRICE_IDS: Record<string, Record<string, string>> = {
     pro: {
-      monthly: 2900, // $29/month
-      annual: 29000  // $290/year (save $58)
+      monthly: 'price_1SQWeD2KfWIY1BOyGKNeaLLF',
+      annual: 'price_1SRwRA2KfWIY1BOyCgczlidp'
     },
     premier: {
-      monthly: 9900, // $99/month
-      annual: 99000  // $990/year (save $198)
+      monthly: 'price_1SRwQh2KfWIY1BOydMaxI2Tm',
+      annual: 'price_1SRwRe2KfWIY1BOySdq1lQON'
     }
   };
 
@@ -2834,25 +2834,16 @@ export async function registerRoutes(app: Express): Promise<Express> {
         await storage.updateSpeaker(speaker.id, { stripeCustomerId: customerId });
       }
 
+      // Get the correct Stripe Price ID
+      const priceId = STRIPE_PRICE_IDS[tier as 'pro' | 'premier'][interval as 'monthly' | 'annual'];
+
       // Create Stripe checkout session
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ['card'],
         mode: 'subscription',
         line_items: [{
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `${tier.charAt(0).toUpperCase() + tier.slice(1)} Speaker Tier`,
-              description: tier === 'pro' 
-                ? 'Enhanced visibility with homepage rotation and expanded profile features'
-                : 'Maximum exposure with top homepage placement and exclusive Speaker Vault'
-            },
-            unit_amount: PRICING[tier][interval === 'monthly' ? 'monthly' : 'annual'],
-            recurring: {
-              interval: interval === 'monthly' ? 'month' : 'year'
-            }
-          },
+          price: priceId,
           quantity: 1
         }],
         metadata: {
@@ -2888,7 +2879,9 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       // Extract metadata
-      const { tier, interval } = session.metadata;
+      const metadata = session.metadata || {};
+      const tier = metadata.tier;
+      const interval = metadata.interval;
       const amount = session.amount_total ? session.amount_total / 100 : 0; // Convert from cents to dollars
 
       res.json({
@@ -2929,14 +2922,15 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       // Get subscription from Stripe
       const subscription = await stripe.subscriptions.retrieve(speaker.stripeSubscriptionId);
+      const subscriptionItem = subscription.items.data[0];
       
       res.json({
         tier: speaker.subscriptionTier,
         status: subscription.status,
-        periodEnd: new Date(subscription.current_period_end * 1000),
+        periodEnd: subscriptionItem?.current_period_end ? new Date(subscriptionItem.current_period_end * 1000) : null,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        amount: subscription.items.data[0]?.price.unit_amount || 0,
-        interval: subscription.items.data[0]?.price.recurring?.interval || 'month'
+        amount: subscriptionItem?.price.unit_amount || 0,
+        interval: subscriptionItem?.price.recurring?.interval || 'month'
       });
     } catch (error: any) {
       console.error('Error getting subscription status:', error);
@@ -2963,10 +2957,15 @@ export async function registerRoutes(app: Express): Promise<Express> {
         cancel_at_period_end: true
       });
 
+      const subscriptionItem = subscription.items.data[0];
+      const periodEnd = subscriptionItem?.current_period_end 
+        ? new Date(subscriptionItem.current_period_end * 1000) 
+        : null;
+
       res.json({ 
         success: true, 
         message: "Subscription will be canceled at the end of the current billing period",
-        periodEnd: new Date(subscription.current_period_end * 1000)
+        periodEnd
       });
     } catch (error: any) {
       console.error('Error canceling subscription:', error);
@@ -3026,11 +3025,16 @@ export async function registerRoutes(app: Express): Promise<Express> {
           
           if (speakerId) {
             const tier = subscription.metadata.tier as 'pro' | 'premier';
+            const subscriptionItem = subscription.items.data[0];
+            const periodEnd = subscriptionItem?.current_period_end 
+              ? new Date(subscriptionItem.current_period_end * 1000) 
+              : null;
+            
             await storage.updateSpeaker(speakerId, {
               stripeSubscriptionId: subscription.id,
               subscriptionStatus: subscription.status,
               subscriptionTier: tier,
-              subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000)
+              subscriptionPeriodEnd: periodEnd
             });
           }
           break;
@@ -3054,14 +3058,21 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
         case 'invoice.payment_succeeded': {
           const invoice = event.data.object as Stripe.Invoice;
-          if (invoice.subscription) {
-            const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+          const subscriptionId = (invoice as any).subscription;
+          
+          if (subscriptionId && typeof subscriptionId === 'string') {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
             const speakerId = parseInt(subscription.metadata.speakerId || '0');
             
             if (speakerId) {
+              const subscriptionItem = subscription.items.data[0];
+              const periodEnd = subscriptionItem?.current_period_end 
+                ? new Date(subscriptionItem.current_period_end * 1000) 
+                : null;
+              
               await storage.updateSpeaker(speakerId, {
                 subscriptionStatus: 'active',
-                subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000)
+                subscriptionPeriodEnd: periodEnd
               });
             }
           }
@@ -3070,8 +3081,10 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
         case 'invoice.payment_failed': {
           const invoice = event.data.object as Stripe.Invoice;
-          if (invoice.subscription) {
-            const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+          const subscriptionId = (invoice as any).subscription;
+          
+          if (subscriptionId && typeof subscriptionId === 'string') {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
             const speakerId = parseInt(subscription.metadata.speakerId || '0');
             
             if (speakerId) {
