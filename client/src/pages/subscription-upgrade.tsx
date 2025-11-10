@@ -78,6 +78,7 @@ export default function SubscriptionUpgrade() {
       return response;
     },
     onSuccess: async (data) => {
+      console.log('Checkout response:', data);
       const stripe = await stripePromise;
       if (!stripe) {
         throw new Error("Stripe failed to load");
@@ -85,7 +86,16 @@ export default function SubscriptionUpgrade() {
       
       // Redirect to Stripe Checkout
       if (data.url) {
+        console.log('Redirecting to Stripe URL:', data.url);
         window.location.href = data.url;
+      } else {
+        console.error('No URL in response:', data);
+        toast({
+          title: "Error",
+          description: "Failed to get checkout URL from server",
+          variant: "destructive",
+        });
+        setProcessingTier(null);
       }
     },
     onError: (error: any) => {
