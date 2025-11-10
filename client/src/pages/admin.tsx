@@ -21,6 +21,8 @@ import AnalyticsDashboard from "@/components/analytics-dashboard";
 import { SpeakerInteractionAnalytics } from "@/components/speaker-interaction-analytics";
 import { DetailedSpeakerAnalytics } from "@/components/detailed-speaker-analytics";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import { SubscriptionFeaturesManager } from "@/components/subscription-features-manager";
+import { SpeakerSubscriptionsView } from "@/components/speaker-subscriptions-view";
 import type { User, Speaker, Category, Inquiry } from "@shared/schema";
 
 export default function AdminDashboard() {
@@ -1492,7 +1494,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 bg-gray-100 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-8 bg-gray-100 p-1 rounded-lg">
             <TabsTrigger 
               value="analytics"
               className="data-[state=active]:bg-blue-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
@@ -1522,6 +1524,13 @@ export default function AdminDashboard() {
               className="data-[state=active]:bg-purple-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
             >
               Users
+            </TabsTrigger>
+            <TabsTrigger 
+              value="subscriptions"
+              className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+              data-testid="tab-subscriptions"
+            >
+              Subscriptions
             </TabsTrigger>
             <TabsTrigger 
               value="categories"
@@ -4106,6 +4115,39 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Subscriptions Tab */}
+          <TabsContent value="subscriptions" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-6 w-6" />
+                  Subscription Management
+                </CardTitle>
+                <CardDescription>
+                  Manage subscription tier features and view speaker subscription status
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="features" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="features" data-testid="subtab-features">
+                      Tier Features
+                    </TabsTrigger>
+                    <TabsTrigger value="speakers" data-testid="subtab-speaker-subscriptions">
+                      Speaker Subscriptions
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="features" className="mt-6">
+                    <SubscriptionFeaturesManager />
+                  </TabsContent>
+                  <TabsContent value="speakers" className="mt-6">
+                    <SpeakerSubscriptionsView />
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
