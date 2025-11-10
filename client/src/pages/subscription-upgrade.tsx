@@ -84,10 +84,10 @@ export default function SubscriptionUpgrade() {
         throw new Error("Stripe failed to load");
       }
       
-      // Redirect to Stripe Checkout - use window.top to break out of Replit iframe
+      // Open Stripe Checkout in a new tab (avoids cross-origin issues in Replit iframe)
       if (data.url) {
-        console.log('Redirecting to Stripe URL:', data.url);
-        window.top!.location.href = data.url;
+        console.log('Opening Stripe URL:', data.url);
+        window.open(data.url, '_blank');
       } else {
         console.error('No URL in response:', data);
         toast({
