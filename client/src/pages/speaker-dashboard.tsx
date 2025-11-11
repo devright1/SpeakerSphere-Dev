@@ -261,6 +261,17 @@ export default function SpeakerDashboard() {
     enabled: !!speakerProfile?.id,
   });
 
+  // Fetch subscription status
+  const { data: subscriptionStatus } = useQuery<{
+    tier: string;
+    status: string;
+    periodEnd: Date | null;
+    cancelAtPeriodEnd: boolean;
+  }>({
+    queryKey: ["/api/subscriptions/status"],
+    enabled: !!speakerProfile?.id,
+  });
+
   // Update speaker profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -1826,14 +1837,64 @@ export default function SpeakerDashboard() {
               )}
 
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Speaker Plan</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  {subscriptionStatus?.tier === 'premier' 
+                    ? 'Your Premier Plan' 
+                    : subscriptionStatus?.tier === 'pro'
+                    ? 'Upgrade Your Plan'
+                    : 'Choose Your Speaker Plan'}
+                </h2>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Unlock premium features and boost your visibility with our professional speaker subscription plans
+                  {subscriptionStatus?.tier === 'premier'
+                    ? "You're on our top tier with maximum visibility and all premium features"
+                    : subscriptionStatus?.tier === 'pro'
+                    ? "Upgrade to Premier for maximum exposure and elite speaker benefits"
+                    : "Unlock premium features and boost your visibility with our professional speaker subscription plans"}
                 </p>
+                {subscriptionStatus && subscriptionStatus.tier !== 'basic' && (
+                  <div className="mt-4">
+                    <Badge className={
+                      subscriptionStatus.tier === 'premier'
+                        ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-lg px-6 py-2"
+                        : "bg-blue-600 text-white text-lg px-6 py-2"
+                    }>
+                      Current: {subscriptionStatus.tier.charAt(0).toUpperCase() + subscriptionStatus.tier.slice(1)}
+                    </Badge>
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Basic Plan - FREE */}
+              {/* Show message if on Premier (highest tier) */}
+              {subscriptionStatus?.tier === 'premier' && (
+                <Card className="text-center py-12">
+                  <CardHeader>
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-full mx-auto mb-4">
+                      <Crown className="w-8 h-8 text-amber-600" />
+                    </div>
+                    <CardTitle className="text-2xl mb-2">You're at the Top!</CardTitle>
+                    <CardDescription className="text-base">
+                      You're currently on the Premier tier with maximum visibility and all premium features.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Link href="/speaker-dashboard">
+                      <Button variant="outline" className="mt-4">
+                        Manage Your Profile
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className={`grid gap-8 ${
+                subscriptionStatus?.tier === 'premier' 
+                  ? 'hidden' // Hide grid if on premier
+                  : subscriptionStatus?.tier === 'pro'
+                  ? 'grid-cols-1 max-w-2xl mx-auto' // Show only Premier for pro users
+                  : 'grid-cols-1 lg:grid-cols-3' // Show all three for basic users
+              }`}>
+                {/* Basic Plan - FREE - Only show for basic users */}
+                {(!subscriptionStatus || subscriptionStatus.tier === 'basic') && (
                 <Card className="border-gray-200 hover:border-gray-300 transition-colors">
                   <CardHeader className="text-center pb-4">
                     <div className="flex justify-center mb-4">
@@ -1876,8 +1937,10 @@ export default function SpeakerDashboard() {
                     </Button>
                   </CardContent>
                 </Card>
+                )}
 
-                {/* Pro Plan - Most Popular */}
+                {/* Pro Plan - Most Popular - Only show for basic users */}
+                {(!subscriptionStatus || subscriptionStatus.tier === 'basic') && (
                 <Card className="border-blue-300 border-2 relative hover:border-blue-400 transition-colors">
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-medium">
@@ -1929,8 +1992,10 @@ export default function SpeakerDashboard() {
                     </Link>
                   </CardContent>
                 </Card>
+                )}
 
-                {/* Premier Plan */}
+                {/* Premier Plan - Show for basic and pro users */}
+                {subscriptionStatus?.tier !== 'premier' && (
                 <Card className="border-yellow-300 hover:border-yellow-400 transition-colors">
                   <CardHeader className="text-center pb-4">
                     <div className="flex justify-center mb-4">
@@ -1981,6 +2046,7 @@ export default function SpeakerDashboard() {
                     </Link>
                   </CardContent>
                 </Card>
+                )}
               </div>
 
               {/* Additional Info Section */}
