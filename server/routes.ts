@@ -2992,23 +2992,32 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Cancel subscription with reason
   app.post("/api/subscriptions/cancel", async (req: AuthenticatedRequest, res) => {
     try {
-      // Validate cancellation reason
-      const reasonSchema = z.object({
-        reason: z.string()
-          .trim()
-          .min(10, "Reason must be at least 10 characters")
-          .max(500, "Reason must be less than 500 characters")
+      // Validate cancellation feedback (structured data)
+      const cancellationSchema = z.object({
+        primaryReason: z.enum([
+          'too_expensive',
+          'not_using_enough',
+          'missing_features',
+          'found_alternative',
+          'technical_issues',
+          'other'
+        ], { required_error: "Please select a reason for canceling" }),
+        wouldRecommend: z.enum(['yes', 'no', 'maybe']).optional(),
+        missingFeatures: z.string().max(200).optional(),
+        additionalFeedback: z.string().max(500).optional()
       });
       
-      const validation = reasonSchema.safeParse(req.body);
+      const validation = cancellationSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ 
-          error: "Invalid cancellation reason", 
+          error: "Invalid cancellation feedback", 
           details: validation.error.errors 
         });
       }
       
-      const { reason } = validation.data;
+      const cancellationData = validation.data;
+      // Store as JSON string in the reason field
+      const reason = JSON.stringify(cancellationData);
       
       // Get user from X-User-ID header or session
       const userIdHeader = req.headers['x-user-id'] as string;

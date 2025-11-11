@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import StorageUsage from "@/components/StorageUsage";
@@ -75,7 +77,12 @@ export default function SpeakerDashboard() {
   
   // Cancel subscription state
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [cancellationReason, setCancellationReason] = useState('');
+  const [cancellationData, setCancellationData] = useState({
+    primaryReason: '',
+    wouldRecommend: '',
+    missingFeatures: '',
+    additionalFeedback: ''
+  });
 
   // Helper functions for reviews
   const toggleReviewExpanded = (reviewId: number) => {
@@ -433,13 +440,18 @@ export default function SpeakerDashboard() {
 
   // Cancel subscription mutation
   const cancelSubscriptionMutation = useMutation({
-    mutationFn: async (reason: string) => {
-      return await apiRequest("POST", "/api/subscriptions/cancel", { reason });
+    mutationFn: async (data: typeof cancellationData) => {
+      return await apiRequest("POST", "/api/subscriptions/cancel", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/subscriptions/status"] });
       setShowCancelDialog(false);
-      setCancellationReason('');
+      setCancellationData({
+        primaryReason: '',
+        wouldRecommend: '',
+        missingFeatures: '',
+        additionalFeedback: ''
+      });
       toast({
         title: "Subscription Canceled",
         description: "Your subscription will be canceled at the end of the current billing period.",
@@ -1927,35 +1939,105 @@ export default function SpeakerDashboard() {
 
               {/* Cancel Subscription Dialog */}
               <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-                <DialogContent>
+                <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Cancel Your Subscription</DialogTitle>
+                    <DialogTitle>We're Sorry to See You Go</DialogTitle>
                     <DialogDescription>
-                      We're sorry to see you go! Please tell us why you're canceling so we can improve our service.
+                      Your feedback helps us improve. Please take a moment to answer a few quick questions.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <div>
-                      <Label htmlFor="cancellation-reason">Reason for cancellation</Label>
+                  <div className="space-y-6 mt-4">
+                    {/* Question 1: Primary Reason */}
+                    <div className="space-y-2">
+                      <Label htmlFor="primary-reason">What's your main reason for canceling? *</Label>
+                      <Select
+                        value={cancellationData.primaryReason}
+                        onValueChange={(value) => setCancellationData({...cancellationData, primaryReason: value})}
+                      >
+                        <SelectTrigger id="primary-reason" data-testid="select-primary-reason">
+                          <SelectValue placeholder="Select a reason..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="too_expensive">Too expensive</SelectItem>
+                          <SelectItem value="not_using_enough">Not using it enough</SelectItem>
+                          <SelectItem value="missing_features">Missing features I need</SelectItem>
+                          <SelectItem value="found_alternative">Found a better alternative</SelectItem>
+                          <SelectItem value="technical_issues">Technical issues</SelectItem>
+                          <SelectItem value="other">Other reason</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Question 2: Missing Features (conditional) */}
+                    {cancellationData.primaryReason === 'missing_features' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="missing-features">What features are you looking for?</Label>
+                        <Textarea
+                          id="missing-features"
+                          placeholder="Tell us what features would make you stay..."
+                          value={cancellationData.missingFeatures}
+                          onChange={(e) => setCancellationData({...cancellationData, missingFeatures: e.target.value})}
+                          rows={3}
+                          maxLength={200}
+                          data-testid="textarea-missing-features"
+                        />
+                        <p className="text-xs text-gray-500">
+                          {cancellationData.missingFeatures.length} / 200 characters
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Question 3: Would Recommend */}
+                    <div className="space-y-3">
+                      <Label>Would you recommend SpeakerSphere to a colleague?</Label>
+                      <RadioGroup
+                        value={cancellationData.wouldRecommend}
+                        onValueChange={(value) => setCancellationData({...cancellationData, wouldRecommend: value})}
+                        className="flex flex-col space-y-2"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="yes" id="recommend-yes" data-testid="radio-recommend-yes" />
+                          <Label htmlFor="recommend-yes" className="font-normal cursor-pointer">Yes, I would recommend it</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="maybe" id="recommend-maybe" data-testid="radio-recommend-maybe" />
+                          <Label htmlFor="recommend-maybe" className="font-normal cursor-pointer">Maybe, it depends</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="no" id="recommend-no" data-testid="radio-recommend-no" />
+                          <Label htmlFor="recommend-no" className="font-normal cursor-pointer">No, I wouldn't recommend it</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    {/* Question 4: Additional Feedback (Optional) */}
+                    <div className="space-y-2">
+                      <Label htmlFor="additional-feedback">Any other feedback? (Optional)</Label>
                       <Textarea
-                        id="cancellation-reason"
-                        placeholder="Please provide at least 10 characters explaining why you're canceling..."
-                        value={cancellationReason}
-                        onChange={(e) => setCancellationReason(e.target.value)}
-                        rows={5}
-                        className="mt-2"
-                        data-testid="textarea-cancellation-reason"
+                        id="additional-feedback"
+                        placeholder="Share any additional thoughts or suggestions..."
+                        value={cancellationData.additionalFeedback}
+                        onChange={(e) => setCancellationData({...cancellationData, additionalFeedback: e.target.value})}
+                        rows={4}
+                        maxLength={500}
+                        data-testid="textarea-additional-feedback"
                       />
-                      <p className="text-sm text-gray-500 mt-1">
-                        {cancellationReason.trim().length} / 500 characters (minimum 10)
+                      <p className="text-xs text-gray-500">
+                        {cancellationData.additionalFeedback.length} / 500 characters
                       </p>
                     </div>
-                    <div className="flex justify-end gap-3">
+
+                    <div className="flex justify-end gap-3 pt-4 border-t">
                       <Button
                         variant="outline"
                         onClick={() => {
                           setShowCancelDialog(false);
-                          setCancellationReason('');
+                          setCancellationData({
+                            primaryReason: '',
+                            wouldRecommend: '',
+                            missingFeatures: '',
+                            additionalFeedback: ''
+                          });
                         }}
                         disabled={cancelSubscriptionMutation.isPending}
                       >
@@ -1963,11 +2045,11 @@ export default function SpeakerDashboard() {
                       </Button>
                       <Button
                         variant="destructive"
-                        onClick={() => cancelSubscriptionMutation.mutate(cancellationReason)}
-                        disabled={cancellationReason.trim().length < 10 || cancelSubscriptionMutation.isPending}
+                        onClick={() => cancelSubscriptionMutation.mutate(cancellationData)}
+                        disabled={!cancellationData.primaryReason || cancelSubscriptionMutation.isPending}
                         data-testid="button-confirm-cancel"
                       >
-                        {cancelSubscriptionMutation.isPending ? "Canceling..." : "Cancel Subscription"}
+                        {cancelSubscriptionMutation.isPending ? "Processing..." : "Cancel Subscription"}
                       </Button>
                     </div>
                   </div>
