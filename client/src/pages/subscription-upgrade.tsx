@@ -48,6 +48,31 @@ export default function SubscriptionUpgrade() {
     queryKey: ["/api/subscriptions/features"],
   });
 
+  // Get tier limits for display
+  const { data: tierLimits, isLoading: tierLimitsLoading } = useTierLimits();
+  
+  // Helper to get limit value for a specific tier and limit type
+  const getLimit = (tier: string, limitType: 'bioWordLimit' | 'topicLimit' | 'uploadLimit'): string => {
+    if (!tierLimits) return '';
+    const tierData = tierLimits.find(t => t.tier === tier);
+    if (!tierData) return '';
+    
+    const value = tierData[limitType];
+    if (limitType === 'topicLimit') {
+      if (value === null) return 'Unlimited topics';
+      return `Up to ${value} topics`;
+    }
+    if (limitType === 'bioWordLimit') {
+      if (value === null) return '';
+      return `${value}-word bio`;
+    }
+    if (limitType === 'uploadLimit') {
+      if (value === null) return '';
+      return value === 1 ? '1 upload' : `${value} uploads`;
+    }
+    return '';
+  };
+
   // Track successful purchase when returning from Stripe
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -288,17 +313,32 @@ export default function SubscriptionUpgrade() {
               <CardDescription>Get Listed</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {featuresLoading ? (
+              {featuresLoading || tierLimitsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                 </div>
               ) : (
-                subscriptionFeatures?.basic?.map((feature) => (
-                  <div key={feature.id} className="flex items-start gap-2">
+                <>
+                  {/* Profile Limits */}
+                  <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{feature.name}</span>
+                    <span className="text-sm font-semibold">{getLimit('basic', 'bioWordLimit')}</span>
                   </div>
-                ))
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('basic', 'topicLimit')}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('basic', 'uploadLimit')}</span>
+                  </div>
+                  {subscriptionFeatures?.basic?.map((feature) => (
+                    <div key={feature.id} className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{feature.name}</span>
+                    </div>
+                  ))}
+                </>
               )}
               <Button className="w-full mt-6" variant="outline" disabled>
                 Current Plan
@@ -332,12 +372,25 @@ export default function SubscriptionUpgrade() {
               <CardDescription>Enhanced Visibility</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {featuresLoading ? (
+              {featuresLoading || tierLimitsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                 </div>
               ) : (
                 <>
+                  {/* Profile Limits */}
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('pro', 'bioWordLimit')}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('pro', 'topicLimit')}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('pro', 'uploadLimit')}</span>
+                  </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-sm font-medium">Everything in Basic, plus:</span>
@@ -390,12 +443,25 @@ export default function SubscriptionUpgrade() {
               <CardDescription>Maximum Exposure</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {featuresLoading ? (
+              {featuresLoading || tierLimitsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                 </div>
               ) : (
                 <>
+                  {/* Profile Limits */}
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('premier', 'bioWordLimit')}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('premier', 'topicLimit')}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('premier', 'uploadLimit')}</span>
+                  </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-sm font-medium">Everything in Pro, plus:</span>
