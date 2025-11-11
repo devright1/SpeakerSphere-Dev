@@ -13,9 +13,12 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import StorageUsage from "@/components/StorageUsage";
+import { useTierLimit, getTierLimitValue, isWithinLimit, isNearLimit, getUsagePercentage } from "@/hooks/useTierLimits";
+import { cn } from "@/lib/utils";
 // import { useAuth } from "@/providers/AuthProvider";
 import { 
   User, 
@@ -176,6 +179,27 @@ export default function SpeakerDashboard() {
     enabled: !!user?.id,
   });
 
+  // Fetch tier limits for current speaker's tier
+  const { data: tierLimits } = useTierLimit(speakerProfile?.subscriptionTier || 'basic');
+
+  // Helper to count words in bio
+  const countWords = (text: string) => {
+    if (!text) return 0;
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  };
+
+  // Get current bio word count and limit
+  const bioWordCount = countWords(editForm.bio || speakerProfile?.bio || '');
+  const bioWordLimit = getTierLimitValue(tierLimits, 'bioWordLimit');
+  const bioOverLimit = bioWordLimit !== null && !isWithinLimit(bioWordCount, bioWordLimit);
+  const bioNearLimit = bioWordLimit !== null && isNearLimit(bioWordCount, bioWordLimit, 0.9);
+
+  // Get topic count and limit
+  const topicLimit = getTierLimitValue(tierLimits, 'topicLimit');
+  
+  // Get upload limit (count calculated after speakerContent query)
+  const uploadLimit = getTierLimitValue(tierLimits, 'uploadLimit');
+
   // Fetch user stats and reviews
   const { data: userStats } = useQuery({
     queryKey: ['/api/users/stats', user?.id],
@@ -228,6 +252,9 @@ export default function SpeakerDashboard() {
     },
     enabled: !!speakerProfile?.id,
   });
+
+  // Calculate upload count after speakerContent is defined
+  const currentUploadCount = speakerContent?.length || 0;
 
   // Fetch storage usage (Phase 2)
   const { data: storageUsage } = useQuery({
@@ -525,11 +552,27 @@ export default function SpeakerDashboard() {
   };
 
   const handleTopicToggle = (topicId: number) => {
-    setSelectedTopics(prev => 
-      prev.includes(topicId) 
-        ? prev.filter(id => id !== topicId)
-        : [...prev, topicId]
-    );
+    setSelectedTopics(prev => {
+      const isRemoving = prev.includes(topicId);
+      
+      // Allow removal
+      if (isRemoving) {
+        return prev.filter(id => id !== topicId);
+      }
+      
+      // Check limit when adding
+      const currentCount = prev.length;
+      if (topicLimit !== null && currentCount >= topicLimit) {
+        toast({
+          title: "Topic Limit Reached",
+          description: `You've reached the ${topicLimit}-topic limit for your ${speakerProfile?.subscriptionTier || 'Basic'} tier. Remove a topic or upgrade to add more.`,
+          variant: "destructive",
+        });
+        return prev;
+      }
+      
+      return [...prev, topicId];
+    });
   };
 
   const handleCancelTopicsEdit = () => {
@@ -538,6 +581,15 @@ export default function SpeakerDashboard() {
   };
 
   const handleSaveTopics = () => {
+    // Defensive check: prevent saving when over limit
+    if (topicLimit !== null && selectedTopics.length > topicLimit) {
+      toast({
+        title: "Too Many Topics",
+        description: `You have ${selectedTopics.length} topics selected, but your ${speakerProfile?.subscriptionTier || 'Basic'} tier allows only ${topicLimit}. Please remove ${selectedTopics.length - topicLimit} topic(s) before saving.`,
+        variant: "destructive",
+      });
+      return;
+    }
     updateTopicsMutation.mutate(selectedTopics);
   };
 
@@ -552,7 +604,99 @@ export default function SpeakerDashboard() {
     }
   };
 
+  // Render upload usage status with color-coded feedback
+  const renderUploadUsage = () => {
+    const uploadCount = currentUploadCount;
+    const limit = uploadLimit;
+    const approachingLimit = limit !== null && uploadCount >= Math.max(1, limit - 1);
+    const atLimit = limit !== null && uploadCount >= limit;
+    const statusColor = limit === null
+      ? 'text-emerald-600'
+      : atLimit
+        ? 'text-red-600'
+        : approachingLimit
+          ? 'text-amber-500'
+          : 'text-emerald-600';
+    const label = limit === null
+      ? `${uploadCount} files uploaded`
+      : `${uploadCount} / ${limit} files`;
+
+    return (
+      <div className="space-y-2">
+        <p className={cn('text-sm font-medium', statusColor)} data-testid="text-upload-usage">
+          {label}
+        </p>
+        {(approachingLimit || atLimit) && (
+          <Alert variant={atLimit ? 'destructive' : 'default'} data-testid="alert-upload-limit">
+            <AlertTitle>{atLimit ? 'Upload limit reached' : 'Approaching your upload limit'}</AlertTitle>
+            <AlertDescription>
+              {atLimit
+                ? `Your ${speakerProfile?.subscriptionTier ?? 'current'} plan allows ${limit} files. Delete a file or `
+                : 'You have one upload slot left. '} 
+              {speakerProfile?.subscriptionTier !== 'premier' && (
+                <Link href="/subscription-upgrade" className="underline font-medium" data-testid="link-upgrade-uploads">
+                  Upgrade your plan
+                </Link>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
+    );
+  };
+
+  // Render topic usage status with color-coded feedback
+  const renderTopicUsage = (variant: 'edit' | 'view') => {
+    const topicCount = variant === 'edit' ? selectedTopics.length : (speakerTopics?.length || 0);
+    const limit = topicLimit;
+    const approachingLimit = limit !== null && topicCount >= Math.max(1, limit - 1);
+    const overLimit = limit !== null && topicCount > limit;
+    const statusColor = limit === null
+      ? 'text-emerald-600'
+      : overLimit
+        ? 'text-red-600'
+        : approachingLimit
+          ? 'text-amber-500'
+          : 'text-emerald-600';
+    const label = limit === null
+      ? `${topicCount} topics`
+      : `${topicCount} / ${limit} topics`;
+
+    return (
+      <div className="space-y-2">
+        <p className={cn('text-sm font-medium', statusColor)} data-testid={`text-topic-usage-${variant}`}>
+          {label}
+          {limit !== null && overLimit && ` — over by ${topicCount - limit}`}
+        </p>
+        {variant === 'edit' && (approachingLimit || overLimit) && (
+          <Alert variant={overLimit ? 'destructive' : 'default'} data-testid="alert-topic-limit">
+            <AlertTitle>{overLimit ? 'Topic limit exceeded' : 'Approaching your topic limit'}</AlertTitle>
+            <AlertDescription>
+              {overLimit
+                ? `Your ${speakerProfile?.subscriptionTier ?? 'current'} plan allows ${limit} topics. Remove ${topicCount - limit} topic${topicCount - limit > 1 ? 's' : ''} or `
+                : 'You have one slot left. '} 
+              {speakerProfile?.subscriptionTier !== 'premier' && (
+                <Link href="/subscription-upgrade" className="underline font-medium" data-testid="link-upgrade-plan">
+                  Upgrade your plan
+                </Link>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
+    );
+  };
+
   const handleSave = () => {
+    // Validate bio word count before saving
+    if (bioOverLimit) {
+      toast({
+        title: "Bio Too Long",
+        description: `Your bio exceeds the ${bioWordLimit}-word limit for your ${speakerProfile?.subscriptionTier || 'Basic'} tier. Please shorten it before saving.`,
+        variant: "destructive",
+      });
+      return;
+    }
     updateProfileMutation.mutate(editForm);
   };
 
@@ -574,6 +718,18 @@ export default function SpeakerDashboard() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Check upload limit before proceeding
+    if (uploadLimit !== null && currentUploadCount >= uploadLimit) {
+      toast({
+        title: "Upload Limit Reached",
+        description: `You've reached the ${uploadLimit}-file limit for your ${speakerProfile?.subscriptionTier || 'Basic'} tier. Delete a file or upgrade to upload more.`,
+        variant: "destructive",
+      });
+      // Reset file input
+      event.target.value = '';
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('description', `${file.name}`);
@@ -581,6 +737,8 @@ export default function SpeakerDashboard() {
     formData.append('isPublic', 'true'); // Default to public so files appear on speaker profile
 
     uploadContentMutation.mutate(formData);
+    // Reset file input
+    event.target.value = '';
   };
 
   const getFileCategory = (mimeType: string) => {
@@ -693,10 +851,12 @@ export default function SpeakerDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews ({speakerReviews?.length || 0})</TabsTrigger>
-            <TabsTrigger value="stats">Analytics</TabsTrigger>
+            {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' && (
+              <TabsTrigger value="stats">Analytics</TabsTrigger>
+            )}
             <TabsTrigger value="content">My Content</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
@@ -882,15 +1042,56 @@ export default function SpeakerDashboard() {
 
                     {/* Biography */}
                     <div>
-                      <Label htmlFor="bio">Biography</Label>
+                      <div className="flex justify-between items-center mb-1">
+                        <Label htmlFor="bio">Biography</Label>
+                        {isEditing && bioWordLimit !== null && (
+                          <span
+                            className={`text-sm ${
+                              bioOverLimit
+                                ? 'text-red-600 font-semibold'
+                                : bioNearLimit
+                                ? 'text-yellow-600'
+                                : 'text-gray-500'
+                            }`}
+                            data-testid="bio-word-count"
+                          >
+                            {bioWordCount} / {bioWordLimit} words
+                            {bioOverLimit && ' (exceeds limit)'}
+                          </span>
+                        )}
+                      </div>
                       {isEditing ? (
-                        <Textarea
-                          id="bio"
-                          rows={4}
-                          value={editForm.bio || ''}
-                          onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
-                          placeholder="Tell people about your experience and expertise..."
-                        />
+                        <div>
+                          <Textarea
+                            id="bio"
+                            data-testid="textarea-bio"
+                            rows={4}
+                            value={editForm.bio || ''}
+                            onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                            placeholder="Tell people about your experience and expertise..."
+                            className={bioOverLimit ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                          />
+                          {bioOverLimit && (
+                            <p className="text-sm text-red-600 mt-1">
+                              Your bio exceeds the {bioWordLimit}-word limit for the {speakerProfile?.subscriptionTier || 'Basic'} tier. 
+                              {speakerProfile?.subscriptionTier === 'basic' && (
+                                <Link href="/subscription-upgrade" className="underline ml-1">
+                                  Upgrade to Pro
+                                </Link>
+                              )}
+                              {speakerProfile?.subscriptionTier === 'pro' && (
+                                <Link href="/subscription-upgrade" className="underline ml-1">
+                                  Upgrade to Premier
+                                </Link>
+                              )}
+                            </p>
+                          )}
+                          {bioNearLimit && !bioOverLimit && (
+                            <p className="text-sm text-yellow-600 mt-1">
+                              You're approaching the word limit ({Math.round(getUsagePercentage(bioWordCount, bioWordLimit) || 0)}% used)
+                            </p>
+                          )}
+                        </div>
                       ) : (
                         <p className="text-gray-700 mt-2">{speakerProfile.bio}</p>
                       )}
@@ -926,18 +1127,20 @@ export default function SpeakerDashboard() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="website">Website</Label>
-                        {isEditing ? (
-                          <Input
-                            id="website"
-                            value={editForm.website || ''}
-                            onChange={(e) => setEditForm({...editForm, website: e.target.value})}
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium">{speakerProfile.website}</p>
-                        )}
-                      </div>
+                      {((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' || (speakerProfile?.subscriptionTier ?? 'basic') === 'premier') && (
+                        <div>
+                          <Label htmlFor="website">Website</Label>
+                          {isEditing ? (
+                            <Input
+                              id="website"
+                              value={editForm.website || ''}
+                              onChange={(e) => setEditForm({...editForm, website: e.target.value})}
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium">{speakerProfile.website}</p>
+                          )}
+                        </div>
+                      )}
                       <div>
                         <Label htmlFor="location">Location</Label>
                         {isEditing ? (
@@ -952,64 +1155,68 @@ export default function SpeakerDashboard() {
                       </div>
                     </div>
 
-                    {/* Social Media Handles */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="instagramHandle">Instagram Handle</Label>
-                        {isEditing ? (
-                          <Input
-                            id="instagramHandle"
-                            value={editForm.instagramHandle || ''}
-                            onChange={(e) => setEditForm({...editForm, instagramHandle: e.target.value})}
-                            placeholder="@username"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium">{speakerProfile.instagramHandle || 'Not provided'}</p>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="linkedinHandle">LinkedIn Handle</Label>
-                        {isEditing ? (
-                          <Input
-                            id="linkedinHandle"
-                            value={editForm.linkedinHandle || ''}
-                            onChange={(e) => setEditForm({...editForm, linkedinHandle: e.target.value})}
-                            placeholder="@username"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium">{speakerProfile.linkedinHandle || 'Not provided'}</p>
-                        )}
-                      </div>
-                    </div>
+                    {/* Social Media Handles (Pro/Premier only) */}
+                    {((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' || (speakerProfile?.subscriptionTier ?? 'basic') === 'premier') && (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="instagramHandle">Instagram Handle</Label>
+                            {isEditing ? (
+                              <Input
+                                id="instagramHandle"
+                                value={editForm.instagramHandle || ''}
+                                onChange={(e) => setEditForm({...editForm, instagramHandle: e.target.value})}
+                                placeholder="@username"
+                              />
+                            ) : (
+                              <p className="text-gray-900 font-medium">{speakerProfile.instagramHandle || 'Not provided'}</p>
+                            )}
+                          </div>
+                          <div>
+                            <Label htmlFor="linkedinHandle">LinkedIn Handle</Label>
+                            {isEditing ? (
+                              <Input
+                                id="linkedinHandle"
+                                value={editForm.linkedinHandle || ''}
+                                onChange={(e) => setEditForm({...editForm, linkedinHandle: e.target.value})}
+                                placeholder="@username"
+                              />
+                            ) : (
+                              <p className="text-gray-900 font-medium">{speakerProfile.linkedinHandle || 'Not provided'}</p>
+                            )}
+                          </div>
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="facebookHandle">Facebook Handle</Label>
-                        {isEditing ? (
-                          <Input
-                            id="facebookHandle"
-                            value={editForm.facebookHandle || ''}
-                            onChange={(e) => setEditForm({...editForm, facebookHandle: e.target.value})}
-                            placeholder="@username"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium">{speakerProfile.facebookHandle || 'Not provided'}</p>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="xHandle">X (Twitter) Handle</Label>
-                        {isEditing ? (
-                          <Input
-                            id="xHandle"
-                            value={editForm.xHandle || ''}
-                            onChange={(e) => setEditForm({...editForm, xHandle: e.target.value})}
-                            placeholder="@username"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium">{speakerProfile.xHandle || 'Not provided'}</p>
-                        )}
-                      </div>
-                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="facebookHandle">Facebook Handle</Label>
+                            {isEditing ? (
+                              <Input
+                                id="facebookHandle"
+                                value={editForm.facebookHandle || ''}
+                                onChange={(e) => setEditForm({...editForm, facebookHandle: e.target.value})}
+                                placeholder="@username"
+                              />
+                            ) : (
+                              <p className="text-gray-900 font-medium">{speakerProfile.facebookHandle || 'Not provided'}</p>
+                            )}
+                          </div>
+                          <div>
+                            <Label htmlFor="xHandle">X (Twitter) Handle</Label>
+                            {isEditing ? (
+                              <Input
+                                id="xHandle"
+                                value={editForm.xHandle || ''}
+                                onChange={(e) => setEditForm({...editForm, xHandle: e.target.value})}
+                                placeholder="@username"
+                              />
+                            ) : (
+                              <p className="text-gray-900 font-medium">{speakerProfile.xHandle || 'Not provided'}</p>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
 
                     {/* Professional Achievements Section */}
                     <div className="pt-6 border-t">
@@ -1204,12 +1411,26 @@ export default function SpeakerDashboard() {
                             </div>
                           ))}
                         </div>
+                        {/* Near-limit warning for topics */}
+                        {topicLimit !== null && isNearLimit(tierLimits, 'topicLimit', selectedTopics.length) && selectedTopics.length < topicLimit && (
+                          <Alert className="border-amber-500 bg-amber-50">
+                            <AlertTriangle className="h-4 w-4 text-amber-600" />
+                            <AlertTitle className="text-amber-900">Approaching Topic Limit</AlertTitle>
+                            <AlertDescription className="text-amber-800">
+                              You have {topicLimit - selectedTopics.length} topic{topicLimit - selectedTopics.length !== 1 ? 's' : ''} remaining on your {speakerProfile?.subscriptionTier || 'Basic'} plan.
+                              {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                                <> <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to add more topics</Link>.</>
+                              )}
+                            </AlertDescription>
+                          </Alert>
+                        )}
                         <div className="flex space-x-2">
                           <Button
                             size="sm"
                             onClick={handleSaveTopics}
                             disabled={updateTopicsMutation.isPending}
                             className="bg-green-600 hover:bg-green-700"
+                            data-testid="button-save-topics"
                           >
                             {updateTopicsMutation.isPending ? (
                               <>
@@ -1227,9 +1448,7 @@ export default function SpeakerDashboard() {
                             Cancel
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-500">
-                          Selected {selectedTopics.length} topic{selectedTopics.length !== 1 ? 's' : ''}
-                        </p>
+                        {renderTopicUsage('edit')}
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -1244,9 +1463,7 @@ export default function SpeakerDashboard() {
                         ) : (
                           <p className="text-sm text-gray-500">No speaking topics selected</p>
                         )}
-                        <div className="text-xs text-gray-400">
-                          {speakerTopics?.length || 0} topic{speakerTopics?.length !== 1 ? 's' : ''} selected
-                        </div>
+                        {renderTopicUsage('view')}
                       </div>
                     )}
                   </CardContent>
@@ -1520,9 +1737,10 @@ export default function SpeakerDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Analytics Tab */}
-          <TabsContent value="stats">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Analytics Tab (Premier only) */}
+          {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' && (
+            <TabsContent value="stats">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardContent className="p-6 text-center">
                   <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
@@ -1556,6 +1774,7 @@ export default function SpeakerDashboard() {
               </Card>
             </div>
           </TabsContent>
+          )}
 
           {/* My Content Tab */}
           <TabsContent value="content">
@@ -1577,18 +1796,21 @@ export default function SpeakerDashboard() {
                   />
                   <Button
                     onClick={() => document.getElementById('fileUpload')?.click()}
-                    disabled={uploadContentMutation.isPending}
+                    disabled={uploadContentMutation.isPending || (uploadLimit !== null && currentUploadCount >= uploadLimit)}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    {uploadContentMutation.isPending ? 'Uploading...' : 'Upload File'}
+                    {uploadContentMutation.isPending ? 'Uploading...' : uploadLimit !== null && currentUploadCount >= uploadLimit ? 'Upload Limit Reached' : 'Upload File'}
                   </Button>
                 </div>
               </div>
 
               {/* File Upload Buttons */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('pdfUpload')?.click()}>
+                <Card 
+                  className={uploadLimit !== null && currentUploadCount >= uploadLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-md transition-shadow cursor-pointer"} 
+                  onClick={uploadLimit !== null && currentUploadCount >= uploadLimit ? undefined : () => document.getElementById('pdfUpload')?.click()}
+                >
                   <CardContent className="p-6 text-center">
                     <FileText className="h-12 w-12 text-red-500 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload PDF</h3>
@@ -1599,11 +1821,15 @@ export default function SpeakerDashboard() {
                       className="hidden"
                       onChange={handleFileUpload}
                       accept=".pdf"
+                      disabled={uploadLimit !== null && currentUploadCount >= uploadLimit}
                     />
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('imageUpload')?.click()}>
+                <Card 
+                  className={uploadLimit !== null && currentUploadCount >= uploadLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-md transition-shadow cursor-pointer"} 
+                  onClick={uploadLimit !== null && currentUploadCount >= uploadLimit ? undefined : () => document.getElementById('imageUpload')?.click()}
+                >
                   <CardContent className="p-6 text-center">
                     <Image className="h-12 w-12 text-blue-500 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Images</h3>
@@ -1614,11 +1840,15 @@ export default function SpeakerDashboard() {
                       className="hidden"
                       onChange={handleFileUpload}
                       accept=".jpg,.jpeg,.png,.gif"
+                      disabled={uploadLimit !== null && currentUploadCount >= uploadLimit}
                     />
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => document.getElementById('documentUpload')?.click()}>
+                <Card 
+                  className={uploadLimit !== null && currentUploadCount >= uploadLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-md transition-shadow cursor-pointer"} 
+                  onClick={uploadLimit !== null && currentUploadCount >= uploadLimit ? undefined : () => document.getElementById('documentUpload')?.click()}
+                >
                   <CardContent className="p-6 text-center">
                     <FileText className="h-12 w-12 text-orange-500 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Documents</h3>
@@ -1629,9 +1859,29 @@ export default function SpeakerDashboard() {
                       className="hidden"
                       onChange={handleFileUpload}
                       accept=".doc,.docx,.ppt,.pptx"
+                      disabled={uploadLimit !== null && currentUploadCount >= uploadLimit}
                     />
                   </CardContent>
                 </Card>
+              </div>
+
+              {/* Near-limit warning for uploads */}
+              {uploadLimit !== null && isNearLimit(tierLimits, 'uploadLimit', currentUploadCount) && currentUploadCount < uploadLimit && (
+                <Alert className="mt-4 border-amber-500 bg-amber-50">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <AlertTitle className="text-amber-900">Approaching Upload Limit</AlertTitle>
+                  <AlertDescription className="text-amber-800">
+                    You have {uploadLimit - currentUploadCount} upload{uploadLimit - currentUploadCount !== 1 ? 's' : ''} remaining on your {speakerProfile?.subscriptionTier || 'Basic'} plan.
+                    {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                      <> <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to get more uploads</Link>.</>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Upload Usage Status */}
+              <div className="mt-6">
+                {renderUploadUsage()}
               </div>
 
               {/* Uploaded Content Section */}

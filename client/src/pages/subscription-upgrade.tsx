@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useTierLimits } from "@/hooks/useTierLimits";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Check, Crown, Star, Users, Loader2, ChevronRight } from "lucide-react";

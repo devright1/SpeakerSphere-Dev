@@ -706,8 +706,8 @@ export default function SpeakerProfile() {
                         />
                       </div>
                       
-                      {/* Social Media Icons */}
-                      {!speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
+                      {/* Social Media Icons (Pro/Premier only) */}
+                      {((speaker.subscriptionTier ?? 'basic') === 'pro' || (speaker.subscriptionTier ?? 'basic') === 'premier') && !speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
                         <div className="flex items-center gap-2 ml-4">
                           {speaker.instagramHandle && (
                             <a 
@@ -1312,7 +1312,7 @@ export default function SpeakerProfile() {
                       </a>
                     </div>
                   )}
-                  {speaker.website && (
+                  {((speaker.subscriptionTier ?? 'basic') === 'pro' || (speaker.subscriptionTier ?? 'basic') === 'premier') && speaker.website && (
                     <div className="flex items-center">
                       <Globe className="w-4 h-4 mr-3 text-gray-500" />
                       <a 
