@@ -159,12 +159,14 @@ export function SpeakerSubscriptionsView() {
                   <TableHead>Billing</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Period End</TableHead>
+                  <TableHead>Cancelled At</TableHead>
+                  <TableHead>Cancellation Reason</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredSpeakers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
                       No speakers found
                     </TableCell>
                   </TableRow>
@@ -222,6 +224,26 @@ export function SpeakerSubscriptionsView() {
                         )}
                       </TableCell>
                       <TableCell>{formatDate(speaker.subscriptionPeriodEnd)}</TableCell>
+                      <TableCell>
+                        {speaker.cancelledAt ? (
+                          <div className="text-sm">
+                            {formatDate(speaker.cancelledAt)}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {speaker.cancellationReason ? (
+                          <div className="max-w-xs">
+                            <p className="text-sm truncate" title={speaker.cancellationReason}>
+                              {speaker.cancellationReason}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

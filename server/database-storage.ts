@@ -1724,4 +1724,41 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  async updateSpeakerCancellation(speakerId: number, data: {
+    reason: string;
+    cancelledAt: Date;
+    periodEnd?: Date;
+    status?: string;
+  }): Promise<Speaker> {
+    try {
+      const updateData: any = {
+        cancellationReason: data.reason,
+        cancelledAt: data.cancelledAt,
+      };
+      
+      if (data.periodEnd) {
+        updateData.subscriptionPeriodEnd = data.periodEnd;
+      }
+      
+      if (data.status) {
+        updateData.subscriptionStatus = data.status;
+      }
+      
+      const result = await db
+        .update(speakers)
+        .set(updateData)
+        .where(eq(speakers.id, speakerId))
+        .returning();
+      
+      if (!result || result.length === 0) {
+        throw new Error(`Speaker ${speakerId} not found`);
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error('Error updating speaker cancellation:', error);
+      throw error;
+    }
+  }
 }

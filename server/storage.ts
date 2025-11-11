@@ -248,6 +248,13 @@ export interface IStorage {
   removeTierFeature(id: number): Promise<void>;
   // Speaker subscriptions for admin view
   listSpeakerSubscriptions(filter?: { tier?: string; status?: string }): Promise<Array<Speaker & { subscriptionInterval?: string; subscriptionAmount?: number }>>;
+  // Update speaker cancellation data
+  updateSpeakerCancellation(speakerId: number, data: {
+    reason: string;
+    cancelledAt: Date;
+    periodEnd?: Date;
+    status?: string;
+  }): Promise<Speaker>;
 }
 
 export class MemStorage implements IStorage {
@@ -1587,6 +1594,52 @@ export class MemStorage implements IStorage {
       speaker.storageUsedBytes = (speaker.storageUsedBytes || 0) + bytesChange;
       speaker.videoCount = (speaker.videoCount || 0) + videoCountChange;
     }
+  }
+
+  async listSpeakerSubscriptions(filter?: { tier?: string; status?: string }): Promise<Array<Speaker & { subscriptionInterval?: string; subscriptionAmount?: number }>> {
+    const speakers = Array.from(this.speakers.values());
+    
+    let filtered = speakers;
+    
+    if (filter?.tier) {
+      filtered = filtered.filter(s => s.subscriptionTier === filter.tier);
+    }
+    
+    if (filter?.status) {
+      filtered = filtered.filter(s => s.subscriptionStatus === filter.status);
+    }
+    
+    // Add subscription interval and amount based on tier
+    return filtered.map(speaker => ({
+      ...speaker,
+      subscriptionInterval: speaker.subscriptionStatus === 'active' ? 'monthly' : undefined,
+      subscriptionAmount: speaker.subscriptionTier === 'premier' ? 9900 : speaker.subscriptionTier === 'pro' ? 2900 : 0,
+    }));
+  }
+
+  async updateSpeakerCancellation(speakerId: number, data: {
+    reason: string;
+    cancelledAt: Date;
+    periodEnd?: Date;
+    status?: string;
+  }): Promise<Speaker> {
+    const speaker = this.speakers.get(speakerId);
+    if (!speaker) {
+      throw new Error(`Speaker ${speakerId} not found`);
+    }
+    
+    speaker.cancellationReason = data.reason;
+    speaker.cancelledAt = data.cancelledAt;
+    
+    if (data.periodEnd) {
+      speaker.subscriptionPeriodEnd = data.periodEnd;
+    }
+    
+    if (data.status) {
+      speaker.subscriptionStatus = data.status as any;
+    }
+    
+    return speaker;
   }
 }
 

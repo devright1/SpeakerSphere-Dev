@@ -72,6 +72,10 @@ export default function SpeakerDashboard() {
   
   // New achievement state
   const [newAchievement, setNewAchievement] = useState('');
+  
+  // Cancel subscription state
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
 
   // Helper functions for reviews
   const toggleReviewExpanded = (reviewId: number) => {
@@ -422,6 +426,29 @@ export default function SpeakerDashboard() {
       toast({
         title: "Creation Failed",
         description: "Failed to create access code. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Cancel subscription mutation
+  const cancelSubscriptionMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      return await apiRequest("POST", "/api/subscriptions/cancel", { reason });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscriptions/status"] });
+      setShowCancelDialog(false);
+      setCancellationReason('');
+      toast({
+        title: "Subscription Canceled",
+        description: "Your subscription will be canceled at the end of the current billing period.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Cancellation Failed",
+        description: error.message || "Failed to cancel subscription. Please try again.",
         variant: "destructive",
       });
     },
@@ -1863,6 +1890,89 @@ export default function SpeakerDashboard() {
                   </div>
                 )}
               </div>
+
+              {/* Manage Subscription Card - Show for active Pro/Premier users */}
+              {subscriptionStatus && (subscriptionStatus.tier === 'pro' || subscriptionStatus.tier === 'premier') && subscriptionStatus.status === 'active' && (
+                <Card className="max-w-2xl mx-auto mb-8">
+                  <CardHeader>
+                    <CardTitle className="text-xl">Manage Your Subscription</CardTitle>
+                    <CardDescription>
+                      Your subscription is currently active. You can cancel it at any time.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">
+                          If you cancel, you'll have access until the end of your current billing period.
+                        </p>
+                        {subscriptionStatus.periodEnd && (
+                          <p className="text-sm text-gray-500">
+                            Current period ends: {new Date(subscriptionStatus.periodEnd).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowCancelDialog(true)}
+                        className="ml-4"
+                        data-testid="button-cancel-subscription"
+                      >
+                        Cancel Subscription
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Cancel Subscription Dialog */}
+              <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Cancel Your Subscription</DialogTitle>
+                    <DialogDescription>
+                      We're sorry to see you go! Please tell us why you're canceling so we can improve our service.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <Label htmlFor="cancellation-reason">Reason for cancellation</Label>
+                      <Textarea
+                        id="cancellation-reason"
+                        placeholder="Please provide at least 10 characters explaining why you're canceling..."
+                        value={cancellationReason}
+                        onChange={(e) => setCancellationReason(e.target.value)}
+                        rows={5}
+                        className="mt-2"
+                        data-testid="textarea-cancellation-reason"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        {cancellationReason.trim().length} / 500 characters (minimum 10)
+                      </p>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowCancelDialog(false);
+                          setCancellationReason('');
+                        }}
+                        disabled={cancelSubscriptionMutation.isPending}
+                      >
+                        Keep Subscription
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => cancelSubscriptionMutation.mutate(cancellationReason)}
+                        disabled={cancellationReason.trim().length < 10 || cancelSubscriptionMutation.isPending}
+                        data-testid="button-confirm-cancel"
+                      >
+                        {cancelSubscriptionMutation.isPending ? "Canceling..." : "Cancel Subscription"}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {/* Show message if on Premier (highest tier) */}
               {subscriptionStatus?.tier === 'premier' && (

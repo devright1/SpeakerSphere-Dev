@@ -2989,9 +2989,27 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
-  // Cancel subscription
+  // Cancel subscription with reason
   app.post("/api/subscriptions/cancel", async (req: AuthenticatedRequest, res) => {
     try {
+      // Validate cancellation reason
+      const reasonSchema = z.object({
+        reason: z.string()
+          .trim()
+          .min(10, "Reason must be at least 10 characters")
+          .max(500, "Reason must be less than 500 characters")
+      });
+      
+      const validation = reasonSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          error: "Invalid cancellation reason", 
+          details: validation.error.errors 
+        });
+      }
+      
+      const { reason } = validation.data;
+      
       // Get user from X-User-ID header or session
       const userIdHeader = req.headers['x-user-id'] as string;
       let userId: string | undefined;
@@ -3008,19 +3026,45 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       // Get speaker by user ID
       const speaker = await storage.getSpeakerByUserId(userId);
-      if (!speaker || !speaker.stripeSubscriptionId) {
-        return res.status(404).json({ error: "No active subscription found" });
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker profile not found" });
+      }
+      
+      // Check if speaker has an active premium subscription
+      if (speaker.subscriptionTier === 'basic') {
+        return res.status(400).json({ error: "No active subscription to cancel" });
       }
 
-      // Cancel at period end (don't immediately cancel)
-      const subscription = await stripe.subscriptions.update(speaker.stripeSubscriptionId, {
-        cancel_at_period_end: true
-      });
+      let periodEnd: Date | null = null;
+      let hasStripeSubscription = false;
 
-      const subscriptionItem = subscription.items.data[0];
-      const periodEnd = subscriptionItem?.current_period_end 
-        ? new Date(subscriptionItem.current_period_end * 1000) 
-        : null;
+      // If speaker has Stripe subscription, cancel it via Stripe
+      if (speaker.stripeSubscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.update(speaker.stripeSubscriptionId, {
+            cancel_at_period_end: true
+          });
+
+          const subscriptionItem = subscription.items.data[0];
+          periodEnd = subscriptionItem?.current_period_end 
+            ? new Date(subscriptionItem.current_period_end * 1000) 
+            : null;
+          hasStripeSubscription = true;
+        } catch (error) {
+          console.error('Error canceling Stripe subscription:', error);
+          // Continue with manual cancellation if Stripe fails
+        }
+      }
+      
+      // Store cancellation reason and timestamp
+      await storage.updateSpeakerCancellation(speaker.id, {
+        reason: reason,
+        cancelledAt: new Date(),
+        periodEnd: periodEnd || speaker.subscriptionPeriodEnd || undefined,
+        // Only mark as canceled immediately for non-Stripe subscriptions
+        // Stripe subscriptions stay 'active' until period end
+        status: hasStripeSubscription ? undefined : 'canceled'
+      });
 
       res.json({ 
         success: true, 

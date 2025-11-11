@@ -57,6 +57,8 @@ export const speakers = pgTable("speakers", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStatus: varchar("subscription_status", { length: 20 }).default("none"), // "none", "active", "past_due", "canceled", "trialing"
   subscriptionPeriodEnd: timestamp("subscription_period_end"),
+  cancellationReason: text("cancellation_reason"), // Reason for subscription cancellation
+  cancelledAt: timestamp("cancelled_at"), // When subscription was cancelled
   // Visibility controls
   hideProfile: boolean("hide_profile").default(false),
   hideRatings: boolean("hide_ratings").default(false),
