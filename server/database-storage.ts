@@ -18,6 +18,7 @@ import {
   images,
   subscriptionFeatures,
   subscriptionTierFeatures,
+  tierLimits,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -55,7 +56,9 @@ import {
   type SubscriptionFeature,
   type InsertSubscriptionFeature,
   type SubscriptionTierFeature,
-  type InsertSubscriptionTierFeature
+  type InsertSubscriptionTierFeature,
+  type TierLimit,
+  type InsertTierLimit
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull, inArray } from "drizzle-orm";
@@ -1688,6 +1691,29 @@ export class DatabaseStorage implements IStorage {
       }
     } catch (error) {
       console.error(`Error removing tier feature ${id}:`, error);
+      throw error;
+    }
+  }
+
+  // Tier limits management
+  async getTierLimit(tier: 'basic' | 'pro' | 'premier'): Promise<TierLimit | undefined> {
+    try {
+      const result = await db.select().from(tierLimits).where(eq(tierLimits.tier, tier));
+      return result[0];
+    } catch (error) {
+      console.error(`Error fetching tier limits for ${tier}:`, error);
+      throw error;
+    }
+  }
+
+  async getAllTierLimits(): Promise<TierLimit[]> {
+    try {
+      const result = await db.select().from(tierLimits).orderBy(
+        sql`CASE ${tierLimits.tier} WHEN 'basic' THEN 1 WHEN 'pro' THEN 2 WHEN 'premier' THEN 3 ELSE 4 END`
+      );
+      return result;
+    } catch (error) {
+      console.error('Error fetching all tier limits:', error);
       throw error;
     }
   }

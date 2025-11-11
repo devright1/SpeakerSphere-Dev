@@ -18,6 +18,7 @@ import {
   images,
   subscriptionFeatures,
   subscriptionTierFeatures,
+  tierLimits,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -55,7 +56,9 @@ import {
   type SubscriptionFeature,
   type InsertSubscriptionFeature,
   type SubscriptionTierFeature,
-  type InsertSubscriptionTierFeature
+  type InsertSubscriptionTierFeature,
+  type TierLimit,
+  type InsertTierLimit
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -246,6 +249,11 @@ export interface IStorage {
   assignFeatureToTier(tierFeature: InsertSubscriptionTierFeature): Promise<SubscriptionTierFeature>;
   updateTierFeature(id: number, updates: Partial<Omit<SubscriptionTierFeature, 'id'>>): Promise<SubscriptionTierFeature>;
   removeTierFeature(id: number): Promise<void>;
+  
+  // Tier limits management
+  getTierLimit(tier: 'basic' | 'pro' | 'premier'): Promise<TierLimit | undefined>;
+  getAllTierLimits(): Promise<TierLimit[]>;
+  
   // Speaker subscriptions for admin view
   listSpeakerSubscriptions(filter?: { tier?: string; status?: string }): Promise<Array<Speaker & { subscriptionInterval?: string; subscriptionAmount?: number }>>;
   // Update speaker cancellation data

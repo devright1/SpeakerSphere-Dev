@@ -964,6 +964,19 @@ export async function registerRoutes(app: Express): Promise<Express> {
         // Send notification email to admin
         await emailService.sendInquiryAdminNotification(inquiry, speaker.name);
         
+        // Send direct notification to speaker if they have Pro or Premier tier
+        // Basic tier speakers only receive inquiries through admin
+        if (speaker.subscriptionTier === 'pro' || speaker.subscriptionTier === 'premier') {
+          // Get speaker's user account to retrieve email
+          const speakerUser = await storage.getUserBySpeakerId(speaker.id);
+          if (speakerUser) {
+            await emailService.sendInquirySpeakerNotification(inquiry, speakerUser.email, speaker.name);
+            console.log(`✅ Direct inquiry notification sent to ${speaker.subscriptionTier} tier speaker: ${speaker.name}`);
+          }
+        } else {
+          console.log(`ℹ️  Basic tier speaker ${speaker.name} - inquiry routed through admin only`);
+        }
+        
         console.log(`✅ Email notifications sent for inquiry #${inquiry.id}`);
       }
       
@@ -2935,6 +2948,40 @@ export async function registerRoutes(app: Express): Promise<Express> {
     } catch (error: any) {
       console.error('Error fetching subscription features:', error);
       res.status(500).json({ error: 'Failed to fetch subscription features' });
+    }
+  });
+
+  // Get all tier limits (public endpoint)
+  app.get("/api/tier-limits", async (req, res) => {
+    try {
+      const limits = await storage.getAllTierLimits();
+      res.json(limits);
+    } catch (error: any) {
+      console.error('Error fetching tier limits:', error);
+      res.status(500).json({ error: 'Failed to fetch tier limits' });
+    }
+  });
+
+  // Get tier limits for specific tier (public endpoint)
+  app.get("/api/tier-limits/:tier", async (req, res) => {
+    try {
+      const tier = req.params.tier;
+      
+      // Validate tier parameter
+      if (!['basic', 'pro', 'premier'].includes(tier)) {
+        return res.status(400).json({ error: 'Invalid tier. Must be basic, pro, or premier.' });
+      }
+      
+      const limits = await storage.getTierLimit(tier as 'basic' | 'pro' | 'premier');
+      
+      if (!limits) {
+        return res.status(404).json({ error: `Tier limits not found for ${tier}` });
+      }
+      
+      res.json(limits);
+    } catch (error: any) {
+      console.error(`Error fetching tier limits for ${req.params.tier}:`, error);
+      res.status(500).json({ error: 'Failed to fetch tier limits' });
     }
   });
 
