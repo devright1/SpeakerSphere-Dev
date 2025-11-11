@@ -3046,11 +3046,65 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       let periodEnd: Date | null = null;
       let hasStripeSubscription = false;
+      let subscriptionId = speaker.stripeSubscriptionId;
+
+      // RECONCILIATION: If subscription ID is missing but customer ID exists, try to find it in Stripe
+      if (!subscriptionId && speaker.stripeCustomerId) {
+        console.warn(`⚠️ Speaker ${speaker.id} has Stripe customer but missing subscription ID - attempting reconciliation`);
+        
+        try {
+          // Get ALL non-canceled subscriptions (active, trialing, past_due, etc.)
+          const subscriptions = await stripe.subscriptions.list({
+            customer: speaker.stripeCustomerId,
+            limit: 10
+          });
+
+          // Filter out only canceled/incomplete subscriptions
+          const validSubscriptions = subscriptions.data.filter(sub => 
+            sub.status !== 'canceled' && sub.status !== 'incomplete' && sub.status !== 'incomplete_expired'
+          );
+
+          if (validSubscriptions.length > 0) {
+            // Found subscription(s) - use the first one
+            const foundSubscription = validSubscriptions[0];
+            subscriptionId = foundSubscription.id;
+            
+            // Determine tier from price
+            const priceId = foundSubscription.items.data[0]?.price.id;
+            let tier: 'pro' | 'premier' | undefined;
+            if (priceId === STRIPE_PRICE_IDS.pro.monthly || priceId === STRIPE_PRICE_IDS.pro.annual) {
+              tier = 'pro';
+            } else if (priceId === STRIPE_PRICE_IDS.premier.monthly || priceId === STRIPE_PRICE_IDS.premier.annual) {
+              tier = 'premier';
+            }
+            
+            // Save the subscription ID to database
+            await storage.updateSpeaker(speaker.id, {
+              stripeSubscriptionId: subscriptionId,
+              subscriptionTier: tier || speaker.subscriptionTier,
+              subscriptionStatus: foundSubscription.status
+            });
+            
+            console.log(`✅ Reconciled: saved subscription ${subscriptionId} (status: ${foundSubscription.status}) for speaker ${speaker.id}`);
+          } else {
+            // No valid Stripe subscription found - cannot proceed with cancellation
+            console.error(`❌ CRITICAL: Speaker ${speaker.id} has no valid Stripe subscription but has tier ${speaker.subscriptionTier}`);
+            return res.status(409).json({ 
+              error: "Subscription mismatch detected. Please contact support to resolve your subscription status." 
+            });
+          }
+        } catch (error: any) {
+          console.error(`❌ Failed to reconcile subscription for speaker ${speaker.id}:`, error.message);
+          return res.status(502).json({ 
+            error: "Unable to verify subscription with payment provider. Please try again or contact support." 
+          });
+        }
+      }
 
       // If speaker has Stripe subscription, cancel it via Stripe
-      if (speaker.stripeSubscriptionId) {
+      if (subscriptionId) {
         try {
-          const subscription = await stripe.subscriptions.update(speaker.stripeSubscriptionId, {
+          const subscription = await stripe.subscriptions.update(subscriptionId, {
             cancel_at_period_end: true
           });
 
@@ -3059,9 +3113,13 @@ export async function registerRoutes(app: Express): Promise<Express> {
             ? new Date(subscriptionItem.current_period_end * 1000) 
             : null;
           hasStripeSubscription = true;
-        } catch (error) {
+          
+          console.log(`✅ Stripe subscription ${subscriptionId} set to cancel at period end`);
+        } catch (error: any) {
           console.error('Error canceling Stripe subscription:', error);
-          // Continue with manual cancellation if Stripe fails
+          return res.status(502).json({ 
+            error: "Failed to cancel subscription with payment provider. Please try again or contact support." 
+          });
         }
       }
       
@@ -3140,13 +3198,54 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       // Handle the event
       switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object as Stripe.Checkout.Session;
+          
+          // Get subscription ID from the session
+          const subscriptionId = typeof session.subscription === 'string' 
+            ? session.subscription 
+            : session.subscription?.id;
+          
+          if (!subscriptionId) {
+            console.log('No subscription found in checkout session');
+            break;
+          }
+          
+          // Get speaker info from session metadata (guaranteed to be present)
+          const speakerId = parseInt(session.metadata?.speakerId || '0');
+          const tier = session.metadata?.tier as 'pro' | 'premier';
+          
+          if (!speakerId || !tier) {
+            console.warn(`Missing metadata in checkout session ${session.id}: speakerId=${speakerId}, tier=${tier}`);
+            break;
+          }
+          
+          // Fetch full subscription details from Stripe
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscriptionItem = subscription.items.data[0];
+          const periodEnd = subscriptionItem?.current_period_end 
+            ? new Date(subscriptionItem.current_period_end * 1000) 
+            : null;
+          
+          // Save subscription ID and tier immediately
+          await storage.updateSpeaker(speakerId, {
+            stripeSubscriptionId: subscription.id,
+            subscriptionStatus: subscription.status,
+            subscriptionTier: tier,
+            subscriptionPeriodEnd: periodEnd
+          });
+          
+          console.log(`✅ Checkout completed: speaker ${speakerId} subscribed to ${tier} tier (subscription: ${subscription.id})`);
+          break;
+        }
+
         case 'customer.subscription.created':
         case 'customer.subscription.updated': {
           const subscription = event.data.object as Stripe.Subscription;
           let speakerId = parseInt(subscription.metadata.speakerId || '0');
-          let tier = subscription.metadata.tier as 'pro' | 'premier';
+          let tier = subscription.metadata.tier as 'pro' | 'premier' | undefined;
           
-          // If no metadata (e.g., subscription created in Stripe Dashboard), lookup by customer ID
+          // If no metadata, lookup speaker by customer ID
           if (!speakerId && subscription.customer) {
             const customerId = typeof subscription.customer === 'string' 
               ? subscription.customer 
@@ -3155,32 +3254,50 @@ export async function registerRoutes(app: Express): Promise<Express> {
             const speaker = speakers.find(s => s.stripeCustomerId === customerId);
             if (speaker) {
               speakerId = speaker.id;
-              // Determine tier from subscription price
-              const priceId = subscription.items.data[0]?.price.id;
-              if (priceId === STRIPE_PRICE_IDS.pro.monthly || priceId === STRIPE_PRICE_IDS.pro.annual) {
-                tier = 'pro';
-              } else if (priceId === STRIPE_PRICE_IDS.premier.monthly || priceId === STRIPE_PRICE_IDS.premier.annual) {
-                tier = 'premier';
-              }
+              console.log(`Resolved speaker ${speakerId} by customer ID ${customerId}`);
+            } else {
+              console.warn(`⚠️ Could not find speaker for customer ${customerId} (subscription ${subscription.id})`);
+              break;
             }
           }
           
-          if (speakerId && tier) {
+          // Determine tier from subscription price if not in metadata
+          if (!tier) {
+            const priceId = subscription.items.data[0]?.price.id;
+            if (priceId === STRIPE_PRICE_IDS.pro.monthly || priceId === STRIPE_PRICE_IDS.pro.annual) {
+              tier = 'pro';
+            } else if (priceId === STRIPE_PRICE_IDS.premier.monthly || priceId === STRIPE_PRICE_IDS.premier.annual) {
+              tier = 'premier';
+            }
+            
+            if (!tier) {
+              console.warn(`⚠️ Could not determine tier for subscription ${subscription.id} (price: ${priceId})`);
+            }
+          }
+          
+          if (speakerId) {
             const subscriptionItem = subscription.items.data[0];
             const periodEnd = subscriptionItem?.current_period_end 
               ? new Date(subscriptionItem.current_period_end * 1000) 
               : null;
             
-            await storage.updateSpeaker(speakerId, {
+            // Always save subscription ID, even if tier couldn't be determined
+            const updateData: any = {
               stripeSubscriptionId: subscription.id,
               subscriptionStatus: subscription.status,
-              subscriptionTier: tier,
               subscriptionPeriodEnd: periodEnd
-            });
+            };
             
-            console.log(`Updated speaker ${speakerId} to ${tier} tier (${subscription.status})`);
+            // Only update tier if we successfully determined it
+            if (tier) {
+              updateData.subscriptionTier = tier;
+            }
+            
+            await storage.updateSpeaker(speakerId, updateData);
+            
+            console.log(`✅ Subscription ${event.type}: speaker ${speakerId} → ${tier || 'tier unknown'} (${subscription.status}, ID: ${subscription.id})`);
           } else {
-            console.log(`Could not find speaker for subscription ${subscription.id}`);
+            console.error(`❌ CRITICAL: Could not find speaker for subscription ${subscription.id} - subscription ID not saved!`);
           }
           break;
         }
