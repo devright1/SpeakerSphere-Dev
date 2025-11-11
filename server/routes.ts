@@ -2961,12 +2961,12 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(404).json({ error: "Speaker profile not found" });
       }
 
-      // If no subscription, return basic tier info
+      // If no Stripe subscription ID, check database subscription status
       if (!speaker.stripeSubscriptionId) {
         return res.json({
           tier: speaker.subscriptionTier || 'basic',
-          status: 'none',
-          periodEnd: null,
+          status: speaker.subscriptionStatus || 'none',
+          periodEnd: speaker.subscriptionPeriodEnd,
           cancelAtPeriodEnd: false
         });
       }
