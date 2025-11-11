@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid, customType, bigint } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -563,6 +564,22 @@ export const subscriptionTierFeatures = pgTable("subscription_tier_features", {
   isHighlighted: boolean("is_highlighted").default(false), // Whether to emphasize this feature
 });
 
+// Tier limits defining what each subscription tier allows
+export const tierLimits = pgTable("tier_limits", {
+  id: serial("id").primaryKey(),
+  tier: varchar("tier", { length: 20 }).notNull().unique(), // "basic", "pro", "premier"
+  bioWordLimit: integer("bio_word_limit").notNull(), // Max words for bio (must be > 0)
+  topicLimit: integer("topic_limit"), // Max speaking topics (NULL = unlimited, otherwise > 0)
+  uploadLimit: integer("upload_limit").notNull(), // Max lecture/publication uploads (must be > 0)
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  tierCheck: sql`CHECK (tier IN ('basic', 'pro', 'premier'))`,
+  bioWordLimitCheck: sql`CHECK (bio_word_limit > 0)`,
+  topicLimitCheck: sql`CHECK (topic_limit IS NULL OR topic_limit > 0)`,
+  uploadLimitCheck: sql`CHECK (upload_limit > 0)`,
+}));
+
 // Enhanced reviews - add userId field for registered user reviews
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -673,3 +690,13 @@ export type SubscriptionFeature = typeof subscriptionFeatures.$inferSelect;
 export type InsertSubscriptionFeature = z.infer<typeof insertSubscriptionFeatureSchema>;
 export type SubscriptionTierFeature = typeof subscriptionTierFeatures.$inferSelect;
 export type InsertSubscriptionTierFeature = z.infer<typeof insertSubscriptionTierFeatureSchema>;
+
+// Tier limits schema and types
+export const insertTierLimitSchema = createInsertSchema(tierLimits).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type TierLimit = typeof tierLimits.$inferSelect;
+export type InsertTierLimit = z.infer<typeof insertTierLimitSchema>;

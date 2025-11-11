@@ -61,6 +61,33 @@ import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull, inArray } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
+/**
+ * Helper to build tier-based randomized ordering for speaker queries.
+ * Returns SQL fragments for ordering by tier (Premier > Pro > Basic) with randomization within each tier.
+ * @param seed Optional seed for deterministic randomization (useful for pagination/caching consistency)
+ */
+function buildTierRotationOrder(seed?: string): { seedSql?: any; order: any[] } {
+  if (seed) {
+    // Convert seed string to a number between 0 and 1 for setseed
+    const seedValue = parseInt(seed, 36) % 1_000_000 / 1_000_000;
+    return {
+      seedSql: sql`SELECT setseed(${seedValue})`,
+      order: [
+        sql`CASE ${speakers.subscriptionTier} WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END`,
+        sql`RANDOM()`
+      ]
+    };
+  }
+  
+  // Default: no seed, fresh randomization on each request
+  return {
+    order: [
+      sql`CASE ${speakers.subscriptionTier} WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END`,
+      sql`RANDOM()`
+    ]
+  };
+}
+
 export class DatabaseStorage implements IStorage {
   // Speakers
   async getSpeakers(filters?: {
@@ -74,7 +101,14 @@ export class DatabaseStorage implements IStorage {
     expertise?: string;
     search?: string;
     includeHidden?: boolean; // Add option to include hidden speakers
+    seed?: string; // Optional seed for deterministic randomization
   }): Promise<Speaker[]> {
+    // Apply tier-based rotation ordering with optional seed
+    const { seedSql, order } = buildTierRotationOrder(filters?.seed);
+    if (seedSql) {
+      await db.execute(seedSql);
+    }
+    
     // Only hide speakers from public view, not admin view
     const conditions = [];
     
@@ -156,6 +190,9 @@ export class DatabaseStorage implements IStorage {
       query = query.where(and(...conditions)) as any;
     }
     
+    // Apply tier-based rotation ordering
+    query = query.orderBy(...order) as any;
+    
     const result = await query;
     return result;
   }
@@ -167,7 +204,14 @@ export class DatabaseStorage implements IStorage {
     minFee?: number;
     maxFee?: number;
     includeHidden?: boolean;
+    seed?: string; // Optional seed for deterministic randomization
   }): Promise<Speaker[]> {
+    // Apply tier-based rotation ordering with optional seed
+    const { seedSql, order } = buildTierRotationOrder(filters?.seed);
+    if (seedSql) {
+      await db.execute(seedSql);
+    }
+    
     // Normalize category name (trim and case-insensitive)
     const normalizedCategory = categoryName.trim();
     
@@ -254,8 +298,8 @@ export class DatabaseStorage implements IStorage {
       query = query.where(and(...conditions)) as any;
     }
     
-    // Order by featured first, then by name
-    query = query.orderBy(desc(speakers.featured), speakers.name) as any;
+    // Apply tier-based rotation ordering
+    query = query.orderBy(...order) as any;
     
     const result = await query;
     return result;
