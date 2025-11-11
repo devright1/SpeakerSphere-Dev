@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, DollarSign, Calendar, CreditCard } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Search, DollarSign, Calendar, CreditCard, Info } from "lucide-react";
 import type { Speaker } from "@shared/schema";
 
 interface SpeakerSubscription extends Speaker {
@@ -48,6 +49,38 @@ export function SpeakerSubscriptionsView() {
   const formatDate = (date: Date | null) => {
     if (!date) return "-";
     return new Date(date).toLocaleDateString();
+  };
+
+  const formatCancellationReason = (reason: string | null) => {
+    if (!reason) return null;
+    
+    try {
+      const data = JSON.parse(reason);
+      const reasons: Record<string, string> = {
+        'too_expensive': 'Too expensive',
+        'not_using_enough': 'Not using enough',
+        'missing_features': 'Missing features',
+        'found_alternative': 'Found alternative',
+        'technical_issues': 'Technical issues',
+        'other': 'Other'
+      };
+      
+      const recommend: Record<string, string> = {
+        'yes': 'Yes',
+        'no': 'No',
+        'maybe': 'Maybe'
+      };
+      
+      return {
+        primaryReason: reasons[data.primaryReason] || data.primaryReason,
+        wouldRecommend: data.wouldRecommend ? recommend[data.wouldRecommend] : null,
+        missingFeatures: data.missingFeatures || null,
+        additionalFeedback: data.additionalFeedback || null
+      };
+    } catch (e) {
+      // Fallback for old plain text reasons
+      return { plainText: reason };
+    }
   };
 
   return (
@@ -234,13 +267,61 @@ export function SpeakerSubscriptionsView() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {speaker.cancellationReason ? (
-                          <div className="max-w-xs">
-                            <p className="text-sm truncate" title={speaker.cancellationReason}>
-                              {speaker.cancellationReason}
-                            </p>
-                          </div>
-                        ) : (
+                        {speaker.cancellationReason ? (() => {
+                          const feedback = formatCancellationReason(speaker.cancellationReason);
+                          if (!feedback) return <span className="text-muted-foreground">-</span>;
+                          
+                          if ('plainText' in feedback) {
+                            // Old format - plain text
+                            return (
+                              <div className="max-w-xs">
+                                <p className="text-sm truncate" title={feedback.plainText}>
+                                  {feedback.plainText}
+                                </p>
+                              </div>
+                            );
+                          }
+                          
+                          // New structured format
+                          return (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-muted">
+                                  <div className="flex items-center gap-2 text-left">
+                                    <Info className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                    <span className="text-sm">{feedback.primaryReason}</span>
+                                  </div>
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-80" align="start">
+                                <div className="space-y-3">
+                                  <div>
+                                    <h4 className="font-medium text-sm mb-1">Primary Reason</h4>
+                                    <p className="text-sm text-muted-foreground">{feedback.primaryReason}</p>
+                                  </div>
+                                  {feedback.wouldRecommend && (
+                                    <div>
+                                      <h4 className="font-medium text-sm mb-1">Would Recommend?</h4>
+                                      <p className="text-sm text-muted-foreground">{feedback.wouldRecommend}</p>
+                                    </div>
+                                  )}
+                                  {feedback.missingFeatures && (
+                                    <div>
+                                      <h4 className="font-medium text-sm mb-1">Missing Features</h4>
+                                      <p className="text-sm text-muted-foreground">{feedback.missingFeatures}</p>
+                                    </div>
+                                  )}
+                                  {feedback.additionalFeedback && (
+                                    <div>
+                                      <h4 className="font-medium text-sm mb-1">Additional Feedback</h4>
+                                      <p className="text-sm text-muted-foreground">{feedback.additionalFeedback}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          );
+                        })() : (
                           <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
