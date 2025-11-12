@@ -964,17 +964,17 @@ export async function registerRoutes(app: Express): Promise<Express> {
         // Send notification email to admin
         await emailService.sendInquiryAdminNotification(inquiry, speaker.name);
         
-        // Send direct notification to speaker if they have Pro or Premier tier
-        // Basic tier speakers only receive inquiries through admin
-        if (speaker.subscriptionTier === 'pro' || speaker.subscriptionTier === 'premier') {
+        // Send direct notification to speaker only if they have Premier tier
+        // Basic and Pro tier speakers receive inquiries through admin only
+        if (speaker.subscriptionTier === 'premier') {
           // Get speaker's user account to retrieve email
           const speakerUser = await storage.getUserBySpeakerId(speaker.id);
           if (speakerUser) {
             await emailService.sendInquirySpeakerNotification(inquiry, speakerUser.email, speaker.name);
-            console.log(`✅ Direct inquiry notification sent to ${speaker.subscriptionTier} tier speaker: ${speaker.name}`);
+            console.log(`✅ Direct inquiry notification sent to Premier tier speaker: ${speaker.name}`);
           }
         } else {
-          console.log(`ℹ️  Basic tier speaker ${speaker.name} - inquiry routed through admin only`);
+          console.log(`ℹ️  ${speaker.subscriptionTier} tier speaker ${speaker.name} - inquiry routed through admin only`);
         }
         
         console.log(`✅ Email notifications sent for inquiry #${inquiry.id}`);
