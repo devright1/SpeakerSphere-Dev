@@ -571,6 +571,8 @@ export const tierLimits = pgTable("tier_limits", {
   bioWordLimit: integer("bio_word_limit").notNull(), // Max words for bio (must be > 0)
   topicLimit: integer("topic_limit"), // Max speaking topics (NULL = unlimited, otherwise > 0)
   uploadLimit: integer("upload_limit").notNull(), // Max lecture/publication uploads (must be > 0)
+  storageLimitMb: integer("storage_limit_mb").notNull(), // Total storage limit in MB (must be > 0)
+  maxFileSizeMb: integer("max_file_size_mb").notNull(), // Max file size per upload in MB (must be > 0)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => ({
@@ -578,6 +580,8 @@ export const tierLimits = pgTable("tier_limits", {
   bioWordLimitCheck: sql`CHECK (bio_word_limit > 0)`,
   topicLimitCheck: sql`CHECK (topic_limit IS NULL OR topic_limit > 0)`,
   uploadLimitCheck: sql`CHECK (upload_limit > 0)`,
+  storageLimitCheck: sql`CHECK (storage_limit_mb > 0)`,
+  maxFileSizeCheck: sql`CHECK (max_file_size_mb > 0)`,
 }));
 
 // Enhanced reviews - add userId field for registered user reviews
