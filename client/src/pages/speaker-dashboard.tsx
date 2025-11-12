@@ -2429,11 +2429,7 @@ export default function SpeakerDashboard() {
                       <Button className="w-full bg-gray-400 cursor-not-allowed" disabled data-testid="button-current-plan">
                         Current Plan
                       </Button>
-                    ) : (
-                      <div className="text-center text-sm text-gray-500 py-3">
-                        Your current tier
-                      </div>
-                    )}
+                    ) : null}
                   </CardContent>
                 </Card>
 
@@ -2509,9 +2505,7 @@ export default function SpeakerDashboard() {
                         Current Plan
                       </Button>
                     ) : subscriptionStatus?.tier === 'premier' ? (
-                      <div className="text-center text-sm text-gray-500 py-3">
-                        Lower tier
-                      </div>
+                      null
                     ) : (
                       <Link href="/subscription/upgrade">
                         <Button className="w-full bg-blue-600 hover:bg-blue-700" data-testid="button-upgrade-pro">
