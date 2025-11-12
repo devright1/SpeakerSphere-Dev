@@ -52,7 +52,7 @@ export default function SubscriptionUpgrade() {
   const { data: tierLimits, isLoading: tierLimitsLoading } = useTierLimits();
   
   // Helper to get limit value for a specific tier and limit type
-  const getLimit = (tier: string, limitType: 'bioWordLimit' | 'topicLimit' | 'uploadLimit'): string => {
+  const getLimit = (tier: string, limitType: 'bioWordLimit' | 'topicLimit' | 'uploadLimit' | 'storageLimitMb' | 'maxFileSizeMb'): string => {
     if (!tierLimits) return '';
     const tierData = tierLimits.find(t => t.tier === tier);
     if (!tierData) return '';
@@ -69,6 +69,14 @@ export default function SubscriptionUpgrade() {
     if (limitType === 'uploadLimit') {
       if (value === null) return '';
       return value === 1 ? '1 upload' : `${value} uploads`;
+    }
+    if (limitType === 'storageLimitMb') {
+      if (value === null) return '';
+      return value >= 1000 ? `${value / 1000} GB storage` : `${value} MB storage`;
+    }
+    if (limitType === 'maxFileSizeMb') {
+      if (value === null) return '';
+      return `${value} MB max file size`;
     }
     return '';
   };
@@ -332,6 +340,10 @@ export default function SubscriptionUpgrade() {
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-sm font-semibold">{getLimit('basic', 'uploadLimit')}</span>
                   </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('basic', 'storageLimitMb')}</span>
+                  </div>
                   {subscriptionFeatures?.basic?.map((feature) => (
                     <div key={feature.id} className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -390,6 +402,10 @@ export default function SubscriptionUpgrade() {
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-sm font-semibold">{getLimit('pro', 'uploadLimit')}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('pro', 'storageLimitMb')}</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -461,6 +477,10 @@ export default function SubscriptionUpgrade() {
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-sm font-semibold">{getLimit('premier', 'uploadLimit')}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm font-semibold">{getLimit('premier', 'storageLimitMb')}</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
