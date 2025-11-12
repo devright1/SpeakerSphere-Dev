@@ -2363,37 +2363,9 @@ export default function SpeakerDashboard() {
                 </DialogContent>
               </Dialog>
 
-              {/* Show message if on Premier (highest tier) */}
-              {subscriptionStatus?.tier === 'premier' && (
-                <Card className="text-center py-12">
-                  <CardHeader>
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-full mx-auto mb-4">
-                      <Crown className="w-8 h-8 text-amber-600" />
-                    </div>
-                    <CardTitle className="text-2xl mb-2">You're at the Top!</CardTitle>
-                    <CardDescription className="text-base">
-                      You're currently on the Premier tier with maximum visibility and all premium features.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Link href="/speaker-dashboard">
-                      <Button variant="outline" className="mt-4">
-                        Manage Your Profile
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              )}
-
-              <div className={`grid gap-8 ${
-                subscriptionStatus?.tier === 'premier' 
-                  ? 'hidden' // Hide grid if on premier
-                  : subscriptionStatus?.tier === 'pro'
-                  ? 'grid-cols-1 max-w-2xl mx-auto' // Show only Premier for pro users
-                  : 'grid-cols-1 lg:grid-cols-3' // Show all three for basic users
-              }`}>
-                {/* Basic Plan - FREE - Only show for basic users */}
-                {(!subscriptionStatus || subscriptionStatus.tier === 'basic') && (
+              {/* Always show all three tiers for comparison */}
+              <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
+                {/* Basic Plan - FREE */}
                 <Card className="border-gray-200 hover:border-gray-300 transition-colors">
                   <CardHeader className="text-center pb-4">
                     <div className="flex justify-center mb-4">
@@ -2453,15 +2425,19 @@ export default function SpeakerDashboard() {
                         <span className="text-gray-700">Portfolio showcase</span>
                       </div>
                     </div>
-                    <Button className="w-full bg-gray-400 cursor-not-allowed" disabled data-testid="button-current-plan">
-                      Current Plan
-                    </Button>
+                    {subscriptionStatus?.tier === 'basic' ? (
+                      <Button className="w-full bg-gray-400 cursor-not-allowed" disabled data-testid="button-current-plan">
+                        Current Plan
+                      </Button>
+                    ) : (
+                      <div className="text-center text-sm text-gray-500 py-3">
+                        Your current tier
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
-                )}
 
-                {/* Pro Plan - Most Popular - Only show for basic users */}
-                {(!subscriptionStatus || subscriptionStatus.tier === 'basic') && (
+                {/* Pro Plan - Most Popular */}
                 <Card className="border-blue-300 border-2 relative hover:border-blue-400 transition-colors">
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-medium">
@@ -2528,17 +2504,25 @@ export default function SpeakerDashboard() {
                         <span className="text-gray-700">Admin-managed inquiries</span>
                       </div>
                     </div>
-                    <Link href="/subscription/upgrade">
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700" data-testid="button-upgrade-pro">
-                        Upgrade to Pro
+                    {subscriptionStatus?.tier === 'pro' ? (
+                      <Button className="w-full bg-gray-400 cursor-not-allowed" disabled data-testid="button-current-plan">
+                        Current Plan
                       </Button>
-                    </Link>
+                    ) : subscriptionStatus?.tier === 'premier' ? (
+                      <div className="text-center text-sm text-gray-500 py-3">
+                        Lower tier
+                      </div>
+                    ) : (
+                      <Link href="/subscription/upgrade">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700" data-testid="button-upgrade-pro">
+                          Upgrade to Pro
+                        </Button>
+                      </Link>
+                    )}
                   </CardContent>
                 </Card>
-                )}
 
-                {/* Premier Plan - Show for basic and pro users */}
-                {subscriptionStatus?.tier !== 'premier' && (
+                {/* Premier Plan */}
                 <Card className="border-yellow-300 hover:border-yellow-400 transition-colors">
                   <CardHeader className="text-center pb-4">
                     <div className="flex justify-center mb-4">
@@ -2604,14 +2588,19 @@ export default function SpeakerDashboard() {
                         <span className="text-gray-700">24/7 priority support</span>
                       </div>
                     </div>
-                    <Link href="/subscription/upgrade">
-                      <Button className="w-full bg-yellow-600 hover:bg-yellow-700" data-testid="button-upgrade-premier">
-                        Upgrade to Premier
+                    {subscriptionStatus?.tier === 'premier' ? (
+                      <Button className="w-full bg-gray-400 cursor-not-allowed" disabled data-testid="button-current-plan">
+                        Current Plan
                       </Button>
-                    </Link>
+                    ) : (
+                      <Link href="/subscription/upgrade">
+                        <Button className="w-full bg-yellow-600 hover:bg-yellow-700" data-testid="button-upgrade-premier">
+                          Upgrade to Premier
+                        </Button>
+                      </Link>
+                    )}
                   </CardContent>
                 </Card>
-                )}
               </div>
 
               {/* Additional Info Section */}
