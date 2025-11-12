@@ -305,6 +305,7 @@ export default function SpeakerDashboard() {
     status: string;
     periodEnd: Date | null;
     cancelAtPeriodEnd: boolean;
+    cancelledAt: Date | null;
   }>({
     queryKey: ["/api/subscriptions/status"],
     enabled: !!speakerProfile?.id,
@@ -488,6 +489,27 @@ export default function SpeakerDashboard() {
       toast({
         title: "Cancellation Failed",
         description: error.message || "Failed to cancel subscription. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reactivate subscription mutation
+  const reactivateSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/subscriptions/reactivate", {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscriptions/status"] });
+      toast({
+        title: "Subscription Reactivated",
+        description: "Your subscription has been reactivated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Reactivation Failed",
+        description: error.message || "Failed to reactivate subscription. Please try again.",
         variant: "destructive",
       });
     },
@@ -2153,35 +2175,67 @@ export default function SpeakerDashboard() {
                 )}
               </div>
 
-              {/* Manage Subscription Card - Show for active Pro/Premier users */}
+              {/* Manage Subscription Card - Show for Pro/Premier users */}
               {subscriptionStatus && (subscriptionStatus.tier === 'pro' || subscriptionStatus.tier === 'premier') && subscriptionStatus.status === 'active' && (
                 <Card className="max-w-2xl mx-auto mb-8">
                   <CardHeader>
                     <CardTitle className="text-xl">Manage Your Subscription</CardTitle>
                     <CardDescription>
-                      Your subscription is currently active. You can cancel it at any time.
+                      {subscriptionStatus.cancelledAt 
+                        ? "Your subscription has been cancelled but you still have access until the end of your billing period."
+                        : "Your subscription is currently active. You can cancel it at any time."}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600 mb-1">
-                          If you cancel, you'll have access until the end of your current billing period.
-                        </p>
-                        {subscriptionStatus.periodEnd && (
-                          <p className="text-sm text-gray-500">
-                            Current period ends: {new Date(subscriptionStatus.periodEnd).toLocaleDateString()}
-                          </p>
+                        {subscriptionStatus.cancelledAt ? (
+                          <>
+                            <Alert className="mb-4">
+                              <AlertTitle>Subscription Cancelled</AlertTitle>
+                              <AlertDescription>
+                                Your subscription was cancelled on {new Date(subscriptionStatus.cancelledAt).toLocaleDateString()}.
+                                You'll continue to have access until your current period ends.
+                              </AlertDescription>
+                            </Alert>
+                            {subscriptionStatus.periodEnd && (
+                              <p className="text-sm text-gray-500">
+                                Access until: {new Date(subscriptionStatus.periodEnd).toLocaleDateString()}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm text-gray-600 mb-1">
+                              If you cancel, you'll have access until the end of your current billing period.
+                            </p>
+                            {subscriptionStatus.periodEnd && (
+                              <p className="text-sm text-gray-500">
+                                Current period ends: {new Date(subscriptionStatus.periodEnd).toLocaleDateString()}
+                              </p>
+                            )}
+                          </>
                         )}
                       </div>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowCancelDialog(true)}
-                        className="ml-4"
-                        data-testid="button-cancel-subscription"
-                      >
-                        Cancel Subscription
-                      </Button>
+                      {subscriptionStatus.cancelledAt ? (
+                        <Button
+                          onClick={() => reactivateSubscriptionMutation.mutate()}
+                          disabled={reactivateSubscriptionMutation.isPending}
+                          className="ml-4"
+                          data-testid="button-reactivate-subscription"
+                        >
+                          {reactivateSubscriptionMutation.isPending ? "Processing..." : "Reactivate Subscription"}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowCancelDialog(true)}
+                          className="ml-4"
+                          data-testid="button-cancel-subscription"
+                        >
+                          Cancel Subscription
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

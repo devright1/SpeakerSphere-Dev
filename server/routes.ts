@@ -3014,7 +3014,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
           tier: speaker.subscriptionTier || 'basic',
           status: speaker.subscriptionStatus || 'none',
           periodEnd: speaker.subscriptionPeriodEnd,
-          cancelAtPeriodEnd: false
+          cancelAtPeriodEnd: false,
+          cancelledAt: speaker.cancelledAt
         });
       }
 
@@ -3027,6 +3028,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         status: subscription.status,
         periodEnd: subscriptionItem?.current_period_end ? new Date(subscriptionItem.current_period_end * 1000) : null,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        cancelledAt: speaker.cancelledAt,
         amount: subscriptionItem?.price.unit_amount || 0,
         interval: subscriptionItem?.price.recurring?.interval || 'month'
       });
@@ -3188,6 +3190,85 @@ export async function registerRoutes(app: Express): Promise<Express> {
     } catch (error: any) {
       console.error('Error canceling subscription:', error);
       res.status(500).json({ error: 'Failed to cancel subscription' });
+    }
+  });
+
+  // Reactivate cancelled subscription
+  app.post("/api/subscriptions/reactivate", async (req: AuthenticatedRequest, res) => {
+    try {
+      // Get user from X-User-ID header or session
+      const userIdHeader = req.headers['x-user-id'] as string;
+      let userId: string | undefined;
+      
+      if (userIdHeader) {
+        userId = userIdHeader;
+      } else if (req.session?.user?.id) {
+        userId = req.session.user.id;
+      }
+      
+      if (!userId) {
+        return res.status(401).json({ error: "Must be logged in" });
+      }
+
+      // Get speaker by user ID
+      const speaker = await storage.getSpeakerByUserId(userId);
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker profile not found" });
+      }
+
+      // Check if subscription was cancelled
+      if (!speaker.cancelledAt) {
+        return res.status(400).json({ error: "Subscription is not cancelled" });
+      }
+
+      // If speaker has Stripe subscription, reactivate it via Stripe
+      if (speaker.stripeSubscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.update(speaker.stripeSubscriptionId, {
+            cancel_at_period_end: false
+          });
+
+          const subscriptionItem = subscription.items.data[0];
+          const periodEnd = subscriptionItem?.current_period_end 
+            ? new Date(subscriptionItem.current_period_end * 1000) 
+            : null;
+          
+          console.log(`✅ Stripe subscription ${speaker.stripeSubscriptionId} reactivated`);
+          
+          // Clear cancellation data
+          await storage.updateSpeaker(speaker.id, {
+            cancelledAt: null,
+            cancellationReason: null,
+            subscriptionStatus: 'active',
+            subscriptionPeriodEnd: periodEnd
+          });
+
+          res.json({ 
+            success: true, 
+            message: "Subscription reactivated successfully"
+          });
+        } catch (error: any) {
+          console.error('Error reactivating Stripe subscription:', error);
+          return res.status(502).json({ 
+            error: "Failed to reactivate subscription with payment provider. Please try again or contact support." 
+          });
+        }
+      } else {
+        // For non-Stripe subscriptions, just clear the cancellation
+        await storage.updateSpeaker(speaker.id, {
+          cancelledAt: null,
+          cancellationReason: null,
+          subscriptionStatus: 'active'
+        });
+
+        res.json({ 
+          success: true, 
+          message: "Subscription reactivated successfully"
+        });
+      }
+    } catch (error: any) {
+      console.error('Error reactivating subscription:', error);
+      res.status(500).json({ error: 'Failed to reactivate subscription' });
     }
   });
 
