@@ -17,7 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import StorageUsage from "@/components/StorageUsage";
-import { useTierLimit, getTierLimitValue, isWithinLimit, isNearLimit, getUsagePercentage } from "@/hooks/useTierLimits";
+import { useTierLimit, useTierLimits, getTierLimitValue, isWithinLimit, isNearLimit, getUsagePercentage, formatTierLimit } from "@/hooks/useTierLimits";
 import { cn } from "@/lib/utils";
 // import { useAuth } from "@/providers/AuthProvider";
 import { 
@@ -310,6 +310,9 @@ export default function SpeakerDashboard() {
     queryKey: ["/api/subscriptions/status"],
     enabled: !!speakerProfile?.id,
   });
+
+  // Fetch all tier limits for subscription tab display
+  const { data: allTierLimits, isLoading: allTierLimitsLoading } = useTierLimits();
 
   // Update speaker profile mutation
   const updateProfileMutation = useMutation({
@@ -2407,6 +2410,28 @@ export default function SpeakerDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
+                      {!allTierLimitsLoading && allTierLimits && (
+                        <>
+                          {/* Profile Limits */}
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'basic', 'bioWordLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'basic', 'topicLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'basic', 'uploadLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'basic', 'storageLimitMb')}</span>
+                          </div>
+                        </>
+                      )}
+                      {/* Basic Features */}
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">Basic profile listing</span>
@@ -2459,6 +2484,28 @@ export default function SpeakerDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
+                      {!allTierLimitsLoading && allTierLimits && (
+                        <>
+                          {/* Profile Limits */}
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'pro', 'bioWordLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'pro', 'topicLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'pro', 'uploadLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'pro', 'storageLimitMb')}</span>
+                          </div>
+                        </>
+                      )}
+                      {/* Pro Features */}
                       <div className="text-sm font-medium text-blue-700 mb-2">Everything in Basic, plus:</div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -2478,7 +2525,7 @@ export default function SpeakerDashboard() {
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Direct inquiry management</span>
+                        <span className="text-gray-700">Admin-managed inquiries</span>
                       </div>
                     </div>
                     <Link href="/subscription/upgrade">
@@ -2509,6 +2556,28 @@ export default function SpeakerDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
+                      {!allTierLimitsLoading && allTierLimits && (
+                        <>
+                          {/* Profile Limits */}
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'premier', 'bioWordLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'premier', 'topicLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'premier', 'uploadLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'premier', 'storageLimitMb')}</span>
+                          </div>
+                        </>
+                      )}
+                      {/* Premier Features */}
                       <div className="text-sm font-medium text-yellow-700 mb-2">Everything in Pro, plus:</div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -2528,7 +2597,7 @@ export default function SpeakerDashboard() {
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Personal account manager</span>
+                        <span className="text-gray-700">Direct client inquiries</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />

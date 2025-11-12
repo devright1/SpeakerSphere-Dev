@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useTierLimits } from "@/hooks/useTierLimits";
+import { useTierLimits, formatTierLimit } from "@/hooks/useTierLimits";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Check, Crown, Star, Users, Loader2, ChevronRight } from "lucide-react";
@@ -51,34 +51,9 @@ export default function SubscriptionUpgrade() {
   // Get tier limits for display
   const { data: tierLimits, isLoading: tierLimitsLoading } = useTierLimits();
   
-  // Helper to get limit value for a specific tier and limit type
+  // Helper to get limit value for a specific tier and limit type (delegates to shared formatter)
   const getLimit = (tier: string, limitType: 'bioWordLimit' | 'topicLimit' | 'uploadLimit' | 'storageLimitMb' | 'maxFileSizeMb'): string => {
-    if (!tierLimits) return '';
-    const tierData = tierLimits.find(t => t.tier === tier);
-    if (!tierData) return '';
-    
-    const value = tierData[limitType];
-    if (limitType === 'topicLimit') {
-      if (value === null) return 'Unlimited topics';
-      return `Up to ${value} topics`;
-    }
-    if (limitType === 'bioWordLimit') {
-      if (value === null) return '';
-      return `${value}-word bio`;
-    }
-    if (limitType === 'uploadLimit') {
-      if (value === null) return '';
-      return value === 1 ? '1 upload' : `${value} uploads`;
-    }
-    if (limitType === 'storageLimitMb') {
-      if (value === null) return '';
-      return value >= 1000 ? `${value / 1000} GB storage` : `${value} MB storage`;
-    }
-    if (limitType === 'maxFileSizeMb') {
-      if (value === null) return '';
-      return `${value} MB max file size`;
-    }
-    return '';
+    return formatTierLimit(tierLimits, tier, limitType);
   };
 
   // Track successful purchase when returning from Stripe
