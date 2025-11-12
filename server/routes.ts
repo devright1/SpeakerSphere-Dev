@@ -61,7 +61,7 @@ const changePasswordSchema = z.object({
 // Multer configuration for file uploads
 const upload = multer({ 
   storage: multer.memoryStorage(), // Store in memory instead of disk
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit (matches tier max file size)
 });
 
 export async function registerRoutes(app: Express): Promise<Express> {
@@ -1567,16 +1567,51 @@ export async function registerRoutes(app: Express): Promise<Express> {
         sessionKeys: Object.keys((req as any).session || {})
       });
       
+      // Get speaker to check tier limits and storage
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+      
       // Temporarily allow upload if user is not in session but speaker exists
       if (!user) {
-        // Check if speaker exists in database
-        const speaker = await storage.getSpeaker(speakerId);
-        if (!speaker) {
-          return res.status(404).json({ error: "Speaker not found" });
-        }
         console.log('Allowing upload due to session issue - speaker exists:', speaker.name);
       } else if (user.speakerId !== speakerId) {
         return res.status(403).json({ error: "Not authorized to upload content for this speaker" });
+      }
+      
+      // Check tier limits for file size and storage
+      const tierLimits = await storage.getTierLimit(speaker.subscriptionTier as 'basic' | 'pro' | 'premier');
+      if (!tierLimits) {
+        return res.status(500).json({ error: "Tier limits not found" });
+      }
+      
+      // Check individual file size limit
+      const fileSizeMB = req.file.size / (1024 * 1024);
+      if (fileSizeMB > tierLimits.maxFileSizeMb) {
+        return res.status(400).json({ 
+          error: "File too large", 
+          message: `File size (${fileSizeMB.toFixed(2)}MB) exceeds your tier limit of ${tierLimits.maxFileSizeMb}MB` 
+        });
+      }
+      
+      // Check total storage limit
+      const currentStorageMB = (speaker.storageUsedBytes || 0) / (1024 * 1024);
+      const newTotalMB = currentStorageMB + fileSizeMB;
+      if (newTotalMB > tierLimits.storageLimitMb) {
+        return res.status(400).json({ 
+          error: "Storage limit exceeded", 
+          message: `Upload would exceed your storage limit. Used: ${currentStorageMB.toFixed(2)}MB, Limit: ${tierLimits.storageLimitMb}MB` 
+        });
+      }
+      
+      // Check upload count limit
+      const currentUploads = await storage.getSpeakerContent(speakerId);
+      if (currentUploads.length >= tierLimits.uploadLimit) {
+        return res.status(400).json({ 
+          error: "Upload limit exceeded", 
+          message: `You have reached your upload limit of ${tierLimits.uploadLimit} files for the ${speaker.subscriptionTier} tier` 
+        });
       }
 
       // Generate a unique filename for the uploaded file
@@ -1636,6 +1671,13 @@ export async function registerRoutes(app: Express): Promise<Express> {
       };
 
       const content = await storage.createSpeakerContent(contentData);
+      
+      // Update speaker's storage usage
+      const newStorageUsed = (speaker.storageUsedBytes || 0) + req.file.size;
+      await storage.updateSpeaker(speakerId, {
+        storageUsedBytes: newStorageUsed
+      });
+      
       res.json(content);
     } catch (error) {
       console.error("Content upload error:", error);
@@ -1764,8 +1806,18 @@ export async function registerRoutes(app: Express): Promise<Express> {
         console.log('Allowing deletion due to session issue - content belongs to speaker:', speaker.name);
       }
 
+      // Get speaker to update storage
+      const speaker = await storage.getSpeaker(content.speakerId);
+      
       const deleted = await storage.deleteSpeakerContent(contentId);
       if (deleted) {
+        // Update speaker's storage usage
+        if (speaker) {
+          const newStorageUsed = Math.max(0, (speaker.storageUsedBytes || 0) - content.fileSize);
+          await storage.updateSpeaker(speaker.id, {
+            storageUsedBytes: newStorageUsed
+          });
+        }
         res.json({ success: true });
       } else {
         res.status(500).json({ error: "Failed to delete content" });
