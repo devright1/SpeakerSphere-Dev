@@ -710,6 +710,28 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Get speaking topics grouped by category
+  app.get("/api/topics/grouped", async (req, res) => {
+    try {
+      const topics = await storage.getSpeakingTopics();
+      
+      // Group topics by category
+      const groupedTopics = topics.reduce((acc: Record<string, typeof topics>, topic) => {
+        const category = topic.category || "Uncategorized";
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(topic);
+        return acc;
+      }, {});
+      
+      res.json(groupedTopics);
+    } catch (error) {
+      console.error("Error fetching grouped topics:", error);
+      res.status(500).json({ message: "Failed to fetch grouped topics" });
+    }
+  });
+
   // Get topics by speaker ID
   app.get("/api/speakers/:id/topics", async (req, res) => {
     try {
