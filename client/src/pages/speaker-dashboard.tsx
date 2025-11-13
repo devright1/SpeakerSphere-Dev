@@ -635,6 +635,11 @@ export default function SpeakerDashboard() {
     const limit = uploadLimit;
     const approachingLimit = limit !== null && uploadCount >= Math.max(1, limit - 1);
     const atLimit = limit !== null && uploadCount >= limit;
+    
+    // Calculate total storage used in bytes from all uploaded files
+    const totalStorageBytes = speakerContent?.reduce((sum: number, content: any) => sum + (content.fileSize || 0), 0) || 0;
+    const totalStorageMB = (totalStorageBytes / (1024 * 1024)).toFixed(2);
+    
     const statusColor = limit === null
       ? 'text-emerald-600'
       : atLimit
@@ -648,9 +653,14 @@ export default function SpeakerDashboard() {
 
     return (
       <div className="space-y-2">
-        <p className={cn('text-sm font-medium', statusColor)} data-testid="text-upload-usage">
-          {label}
-        </p>
+        <div className="flex items-center gap-4">
+          <p className={cn('text-sm font-medium', statusColor)} data-testid="text-upload-usage">
+            {label}
+          </p>
+          <p className="text-sm font-medium text-gray-600" data-testid="text-storage-usage">
+            {totalStorageMB} MB uploaded
+          </p>
+        </div>
         {(approachingLimit || atLimit) && (
           <Alert variant={atLimit ? 'destructive' : 'default'} data-testid="alert-upload-limit">
             <AlertTitle>{atLimit ? 'Upload limit reached' : 'Approaching your upload limit'}</AlertTitle>
