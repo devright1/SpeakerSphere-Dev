@@ -780,6 +780,29 @@ export class DatabaseStorage implements IStorage {
     const speakerResult = await db.insert(speakers).values(speakerData).returning();
     const speaker = speakerResult[0];
 
+    // Assign selected topics to the speaker if provided
+    if (application.selectedTopicIds && application.selectedTopicIds.length > 0) {
+      await this.bulkAddSpeakerTopics(speaker.id, application.selectedTopicIds);
+      
+      // Update speaker counts for the selected topics
+      for (const topicId of application.selectedTopicIds) {
+        await this.updateTopicSpeakerCount(topicId);
+      }
+      
+      // Update speaker categories based on their selected topics
+      const speakerTopics = await this.getSpeakerTopicsBySpeakerId(speaker.id);
+      const uniqueCategories = new Set(speakerTopics
+        .map(topic => topic.category)
+        .filter(category => category !== null && category !== undefined)
+      );
+      
+      if (uniqueCategories.size > 0) {
+        await db.update(speakers)
+          .set({ categories: Array.from(uniqueCategories) as string[] })
+          .where(eq(speakers.id, speaker.id));
+      }
+    }
+
     // Create user account with temporary password hash
     const userData: InsertUser = {
       email: application.email,
