@@ -1,51 +1,5 @@
-# replit.md
-
 ## Overview
-This project, "SpeakerSphere Reviews," is a full-stack healthcare speaker review platform connecting healthcare professionals with medical speakers. Its primary purpose is to facilitate speaker discovery, evaluation, and booking. Key capabilities include advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform uses real speaking topics extracted from CSV data with 942 unique topics linked to 562 speakers, replacing generic categories with actual topic-based organization. The platform aims to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
-
-## Recent Changes
-- **November 13, 2025**: Fixed speaker dashboard profile update - removed timestamp fields (subscriptionPeriodEnd, cancelledAt, etc.) from update requests to prevent database errors when saving changes
-- **November 13, 2025**: Fixed tier limit fetching bug - corrected useTierLimit hook to properly build URL path (/api/tier-limits/pro) so Pro tier speakers see correct 150-word bio limit instead of 9 words
-- **November 13, 2025**: Cleared all verified badges from database - only speakers who sign up through application form and get admin approval receive verified badge (563 speakers cleared, legitimate applicants like Rafael Pinzon restored)
-- **November 13, 2025**: Removed Featured Speaker badge system - speakers now display only their subscription tier badge (Basic/Pro/Premier), admin panel updated to control isFeaturedOverride field for manual featured status
-- **November 12, 2025**: Implemented subscription reactivation feature - cancelled subscriptions now show "Subscription Cancelled" alert with cancellation date and "Reactivate Subscription" button in dashboard, /api/subscriptions/reactivate endpoint removes Stripe cancel_at_period_end flag and clears cancellation data, speakers maintain access until period end and can reactivate anytime before expiration
-- **November 12, 2025**: Fixed subscription cancellation UI display - dashboard now correctly detects cancelled subscriptions via cancelledAt field from /api/subscriptions/status endpoint and shows appropriate UI state instead of showing cancel button for already-cancelled subscriptions
-- **November 11, 2025**: Enhanced subscription cancellation with structured feedback collection - replaced free-text field with guided questions (primary reason dropdown, conditional missing features field, would-recommend radio group, optional additional feedback), admin panel displays structured data in interactive popover, backwards compatible with old plain-text cancellations
-- **November 11, 2025**: Completed comprehensive subscription cancellation system - speakers can cancel subscriptions with required reason (10-500 chars), Stripe subscriptions preserve access until period end while storing cancellation data, non-Stripe subscriptions canceled immediately, admin panel displays all cancellation reasons and timestamps
-- **November 10, 2025**: Completed dynamic subscription features management system - subscription tier features now stored in database for admin editing, added 16 seeded default features, created complete CRUD storage methods and admin UI (SubscriptionFeaturesManager and SpeakerSubscriptionsView), updated subscription-upgrade page to load features dynamically from `/api/subscriptions/features` endpoint
-- **November 10, 2025**: Fixed critical authentication mismatch in subscription endpoints - updated all 4 endpoints to use X-User-ID header authentication with session fallback, matching existing authenticated endpoint patterns
-- **November 10, 2025**: Completed Stripe subscription integration - configured actual Price IDs from Stripe Dashboard, upgraded to API version 2025-10-29.clover, fixed TypeScript errors, created comprehensive webhook setup documentation (STRIPE_SETUP.md)
-- **November 10, 2025**: Fixed speaker login authentication issue - created speaker profile for orphaned user account and added foreign key constraint to prevent future data integrity issues
-- **November 10, 2025**: Restored 558 of 562 speaker headshots by matching original CSV data with current database using speaker names
-- **November 7, 2025**: Implemented featured speaker priority sorting - Premier and Pro speakers now appear first on Find Speakers page and within category filters
-- **November 7, 2025**: Assigned 30 Premier tier and 60 Pro tier speakers based on ratings and review count for homepage featured rotation
-- **November 7, 2025**: Fixed Badge component console errors by implementing React.forwardRef for proper ref handling
-- **November 7, 2025**: Removed Sleep Medicine category (reassigned 5 speakers and 6 topics to Anesthesia & Sedation) - now 17 core categories
-- **November 7, 2025**: Completed category reorganization - consolidated platform to core categories with proper distribution of all 562 speakers
-- **November 7, 2025**: Fixed 942 speaking topics using keyword-based categorization (Practice Management: 327 topics, Implant Dentistry: 119 topics, etc.)
-- **November 7, 2025**: Rebuilt 4,496 speaker-topic relationships using textual analysis of speaker bio, lectures, and expertise (average 8 topics per speaker)
-- **November 7, 2025**: Updated all speaker categories based on their speaking topics for accurate categorization (top categories: Practice Management: 366, Education & Training: 336, Implant Dentistry: 235)
-- **November 7, 2025**: Fixed CSV parser to accept rows with missing trailing columns (relaxed from requiring 18 to just 4 essential columns)
-- **November 7, 2025**: Successfully expanded speaker database from 62 to 562 speakers (exceeded 508 target) through comprehensive CSV import and event-specific imports
-- **November 7, 2025**: Fixed category deduplication in database query to merge duplicate category names and combine speaker counts
-- **November 6, 2025**: Completed Phase 4 - Google Analytics integration for general traffic tracking with automatic page view tracking and event tracking for key user actions
-- **November 6, 2025**: Implemented GA conversion tracking for subscription upgrades, speaker inquiries, applications, and social sharing
-- **November 6, 2025**: Created hybrid analytics approach: custom speaker-specific tracking for individual speaker performance + Google Analytics for platform-wide traffic insights
-- **January 10, 2025**: Completed Phase 1 - Stripe subscription system integration with Pro ($29/mo or $290/yr) and Premier ($99/mo or $990/yr) tiers
-- **January 10, 2025**: Implemented subscription checkout, billing portal, webhook handler, and automatic tier updates based on payment status
-- **January 10, 2025**: Created subscription upgrade page with pricing comparison and monthly/annual billing toggle
-- **January 10, 2025**: Added subscription tracking fields to database (stripeCustomerId, stripeSubscriptionId, subscriptionStatus, subscriptionPeriodEnd)
-- **January 10, 2025**: Completed Phase 0 - Added subscription tier system with Basic (free), Pro (featured), Premier (top placement) tiers
-- **January 10, 2025**: Created TierBadge component and updated homepage, speaker profiles, speaker cards, For Speakers page, and admin dashboard with tier management
-- **January 9, 2025**: Fixed email verification workflow - verification links now direct to user-friendly frontend page with loading states, success messages, and automatic redirect to login
-- **January 9, 2025**: Updated speaker application approval to require email verification - approved speakers now receive combined welcome email with temporary password and verification link
-- **January 9, 2025**: Re-enabled email verification requirement for user profile creation
-- **January 8, 2025**: Temporarily disabled email verification requirement to allow immediate user sign-in during domain setup issues
-- **January 8, 2025**: Removed categories dropdown from search bar to prevent redundancy with Filter Speakers sidebar
-- **December 27, 2025**: Updated Categories page to display real speaking topics from CSV data instead of generic categories
-- **December 27, 2025**: Added speaking_topics and speaker_topics database tables with 942 unique topics from speaker database
-- **December 27, 2025**: Implemented topic-based speaker organization system with API endpoints for topics and speaker-topic relationships
-- **December 27, 2025**: Populated database with real speaker topics data linking speakers to their specific speaking subjects
+"SpeakerSphere Reviews" is a full-stack platform connecting healthcare professionals with medical speakers for discovery, evaluation, and booking. It features advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform utilizes real speaking topics extracted from CSV data, replacing generic categories with a topic-based organization. Its goal is to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -53,25 +7,25 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: React 18 with TypeScript, using Vite as the build tool.
-- **Routing**: Wouter for client-side routing.
-- **State Management**: TanStack React Query for efficient server state management.
-- **UI Components**: Built with shadcn/ui on top of Radix UI primitives, styled using Tailwind CSS with custom design tokens.
-- **Forms**: Managed with React Hook Form, integrated with Zod for validation.
-- **UI/UX Decisions**: Employs a monorepo structure for shared schemas, a component-based UI, and a responsive mobile-first design. Focuses on consistent presentation of speaker information, advanced filtering interfaces, and validated form components.
+- **Frameworks**: React 18 with TypeScript, Vite.
+- **Routing**: Wouter.
+- **State Management**: TanStack React Query for server state.
+- **UI Components**: shadcn/ui based on Radix UI, styled with Tailwind CSS.
+- **Forms**: React Hook Form with Zod validation.
+- **UI/UX Decisions**: Monorepo structure, component-based UI, responsive mobile-first design, consistent speaker information presentation, advanced filtering, and validated form components.
 
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript.
 - **Database ORM**: Drizzle ORM for PostgreSQL.
-- **Database Provider**: Neon serverless PostgreSQL, shared for real-time synchronization between development and production environments.
+- **Database Provider**: Neon serverless PostgreSQL.
 - **File Handling**: Multer for media uploads.
-- **Session Management**: Configured for PostgreSQL session storage.
-- **Monorepo Structure**: Shared TypeScript schemas ensure end-to-end type safety between client and server.
+- **Session Management**: PostgreSQL session storage.
+- **Monorepo Structure**: Shared TypeScript schemas for end-to-end type safety.
 
 ### System Design Choices
-- **Key Design Decisions**: Monorepo architecture, end-to-end TypeScript for type safety, modular and reusable component-based UI, and responsive mobile-first design. Performance is optimized through caching and optimistic updates.
-- **Core Features**: Includes comprehensive speaker discovery with search and filtering by category, location, expertise, and ratings. Provides detailed speaker profiles with video portfolios and review sections, a multi-criteria review system, and direct inquiry management for booking requests. Also incorporates an access code system for secure content sharing and download tracking.
-- **Database Schema**: Central entities include Speakers (profile, ratings, expertise, verification), Reviews (multi-criteria), Inquiries (booking requests), Categories, Videos, ContentAccessCodes, and ContentDownloads.
+- **Key Design Decisions**: Monorepo architecture, end-to-end TypeScript, modular and reusable component-based UI, responsive mobile-first design, performance optimization via caching and optimistic updates.
+- **Core Features**: Comprehensive speaker discovery (search, filter by category, location, expertise, ratings), detailed speaker profiles (video portfolios, reviews), multi-criteria review system, direct inquiry management, access code system for content sharing and download tracking.
+- **Database Schema**: Includes Speakers, Reviews, Inquiries, Categories, Videos, ContentAccessCodes, and ContentDownloads.
 
 ## External Dependencies
 
@@ -98,57 +52,7 @@ Preferred communication style: Simple, everyday language.
 - `esbuild`: JavaScript bundler.
 
 ### External APIs
-- **Perplexity AI**: Used for enhanced search functionality.
-- **Multer**: Used for file upload handling.
-- **Google Analytics**: Used for platform-wide traffic and conversion tracking.
+- **Perplexity AI**: Enhanced search functionality.
+- **Multer**: File upload handling.
+- **Google Analytics**: Platform-wide traffic and conversion tracking.
 - **Stripe**: Payment processing for subscription tiers.
-
-## Analytics & Tracking
-
-### Hybrid Analytics Approach
-The platform uses a dual analytics system:
-
-1. **Custom Analytics** (Speaker-Specific Metrics)
-   - Tracks individual speaker performance metrics
-   - Stored in PostgreSQL database
-   - Visible to individual speakers in their dashboard
-   - Includes: profile views, video plays, contact clicks, inquiry submissions, social shares
-   - Located in: `client/src/lib/analytics.ts` (custom tracking functions)
-
-2. **Google Analytics** (Platform-Wide Traffic)
-   - Tracks general platform traffic and user behavior
-   - Provides aggregate insights for platform performance
-   - Conversion tracking for subscriptions and key events
-   - Visible through Google Analytics dashboard
-   - Located in: `client/src/lib/analytics.ts` (GA tracking functions)
-
-### Google Analytics Setup
-
-**Configuration:**
-1. Add your GA4 Measurement ID to your Replit Secrets:
-   - Secret name: `VITE_GA_MEASUREMENT_ID`
-   - Value: Your GA4 Measurement ID (format: `G-XXXXXXXXXX`)
-
-2. The GA script automatically loads in `client/index.html` when the environment variable is set
-
-**Tracked Events:**
-- **Page Views**: Automatic tracking on all route changes
-- **Speaker Interactions**: Profile views, contact clicks, inquiry submissions
-- **Search & Discovery**: Search queries, category filtering, location filtering
-- **Applications**: Speaker application submissions (success/failure)
-- **Social Sharing**: LinkedIn, Twitter, Facebook, native share, copy link
-- **Subscriptions**: Checkout initiation, purchase completion, tier upgrades
-- **Video Engagement**: Video plays with speaker and video IDs
-- **Reviews**: Review submissions with ratings
-
-**Implementation Details:**
-- GA tracking is optional and gracefully degrades if not configured
-- All tracking functions check `isGAEnabled()` before sending events
-- Event parameters follow GA4 recommended event structure
-- Conversion events use consistent naming for e-commerce tracking
-
-**Files:**
-- `client/index.html`: GA script loader
-- `client/src/lib/analytics.ts`: GA helper functions and event definitions
-- `client/src/App.tsx`: Automatic page view tracking
-- Integration points: speaker-profile.tsx, for-speakers.tsx, social-share.tsx, subscription-upgrade.tsx
