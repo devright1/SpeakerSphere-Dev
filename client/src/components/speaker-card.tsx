@@ -159,9 +159,9 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               Verified
             </Badge>
           )}
-          {speaker.featured && (
-            <Badge variant="default" className="bg-accent text-white">
-              Featured
+          {(speaker.subscriptionTier === 'pro' || speaker.isFeaturedOverride) && (
+            <Badge variant="default" className="bg-blue-600 text-white">
+              Featured Speaker
             </Badge>
           )}
         </div>
