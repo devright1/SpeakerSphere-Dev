@@ -2183,11 +2183,7 @@ export default function AdminDashboard() {
                                 <Button 
                                   variant="default" 
                                   size="sm"
-                                  onClick={() => {
-                                    if (confirm(`Send login credentials to ${speaker.name} at ${speaker.email}?`)) {
-                                      sendCredentialsMutation.mutate(speaker.id);
-                                    }
-                                  }}
+                                  onClick={() => sendCredentialsMutation.mutate(speaker.id)}
                                   disabled={!speaker.email || sendCredentialsMutation.isPending}
                                   data-testid={`button-send-credentials-${speaker.id}`}
                                 >
