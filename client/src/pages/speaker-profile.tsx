@@ -1067,7 +1067,7 @@ export default function SpeakerProfile() {
                               <Badge variant="outline">{contents.length} files</Badge>
                             </CardTitle>
                           </CardHeader>
-                          <CardContent>
+                          <CardContent className="p-6">
                             <div className="grid gap-4">
                               {contents.map((content: any) => (
                                 <div key={content.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
