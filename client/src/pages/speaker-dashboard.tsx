@@ -1817,7 +1817,7 @@ export default function SpeakerDashboard() {
                     id="fileUpload"
                     className="hidden"
                     onChange={handleFileUpload}
-                    accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.mov,.mp3,.wav"
+                    accept=".pdf,.jpg,.jpeg,.png,.gif,.mp4,.mov,.mp3,.wav"
                   />
                   <Button
                     onClick={() => document.getElementById('fileUpload')?.click()}
@@ -1831,7 +1831,7 @@ export default function SpeakerDashboard() {
               </div>
 
               {/* File Upload Buttons */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card 
                   className={uploadLimit !== null && currentUploadCount >= uploadLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-md transition-shadow cursor-pointer"} 
                   onClick={uploadLimit !== null && currentUploadCount >= uploadLimit ? undefined : () => document.getElementById('pdfUpload')?.click()}
@@ -1865,25 +1865,6 @@ export default function SpeakerDashboard() {
                       className="hidden"
                       onChange={handleFileUpload}
                       accept=".jpg,.jpeg,.png,.gif"
-                      disabled={uploadLimit !== null && currentUploadCount >= uploadLimit}
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card 
-                  className={uploadLimit !== null && currentUploadCount >= uploadLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-md transition-shadow cursor-pointer"} 
-                  onClick={uploadLimit !== null && currentUploadCount >= uploadLimit ? undefined : () => document.getElementById('documentUpload')?.click()}
-                >
-                  <CardContent className="p-6 text-center">
-                    <FileText className="h-12 w-12 text-orange-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Documents</h3>
-                    <p className="text-sm text-gray-600">Word docs, PowerPoint presentations</p>
-                    <input
-                      type="file"
-                      id="documentUpload"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      accept=".doc,.docx,.ppt,.pptx"
                       disabled={uploadLimit !== null && currentUploadCount >= uploadLimit}
                     />
                   </CardContent>
