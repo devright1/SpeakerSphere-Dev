@@ -152,14 +152,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
       <CardContent className="card-spacing flex flex-col h-full">
         {/* Badges moved below image */}
         <div className="flex gap-2 mb-3 flex-wrap">
-          {/* Show Featured Speaker badge for Pro tier OR manual override, otherwise show tier badge */}
-          {(speaker.subscriptionTier === 'pro' || speaker.isFeaturedOverride) ? (
-            <Badge variant="default" className="bg-blue-600 text-white">
-              Featured Speaker
-            </Badge>
-          ) : (
-            <TierBadge tier={speaker.subscriptionTier as "basic" | "pro" | "premier"} size="sm" />
-          )}
+          <TierBadge tier={speaker.subscriptionTier as "basic" | "pro" | "premier"} size="sm" />
           {speaker.verified && (
             <Badge variant="default" className="bg-success text-white">
               <CheckCircle className="w-3 h-3 mr-1" />
