@@ -182,6 +182,7 @@ export const speakerApplications = pgTable("speaker_applications", {
   
   // Speaking Information
   selectedCategories: text("selected_categories").array().notNull(), // Array of selected official categories
+  selectedTopicIds: integer("selected_topic_ids").array().default([]), // Array of selected speaking topic IDs (max 3)
   specificTopics: text("specific_topics").notNull(), // Detailed list of specific expertise topics
   previousExperience: text("previous_experience").notNull(),
   availableFormats: text("available_formats").array().notNull(),
