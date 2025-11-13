@@ -199,6 +199,9 @@ export default function SpeakerDashboard() {
   
   // Get upload limit (count calculated after speakerContent query)
   const uploadLimit = getTierLimitValue(tierLimits, 'uploadLimit');
+  
+  // Get storage limit in MB
+  const storageLimitMb = tierLimits?.storageLimitMb || null;
 
   // Fetch user stats and reviews
   const { data: userStats } = useQuery({
@@ -658,7 +661,7 @@ export default function SpeakerDashboard() {
             {label}
           </p>
           <p className="text-sm font-medium text-gray-600" data-testid="text-storage-usage">
-            {totalStorageMB} MB uploaded
+            {totalStorageMB} MB{storageLimitMb !== null ? ` / ${storageLimitMb} MB` : ' uploaded'}
           </p>
         </div>
         {(approachingLimit || atLimit) && (
@@ -758,6 +761,23 @@ export default function SpeakerDashboard() {
       toast({
         title: "Upload Limit Reached",
         description: `You've reached the ${uploadLimit}-file limit for your ${speakerProfile?.subscriptionTier || 'Basic'} tier. Delete a file or upgrade to upload more.`,
+        variant: "destructive",
+      });
+      // Reset file input
+      event.target.value = '';
+      return;
+    }
+    
+    // Check storage limit before uploading
+    const totalStorageBytes = speakerContent?.reduce((sum: number, content: any) => sum + (content.fileSize || 0), 0) || 0;
+    const totalStorageMB = totalStorageBytes / (1024 * 1024);
+    const newFileSizeMB = file.size / (1024 * 1024);
+    
+    if (storageLimitMb !== null && (totalStorageMB + newFileSizeMB) > storageLimitMb) {
+      const remainingMB = (storageLimitMb - totalStorageMB).toFixed(2);
+      toast({
+        title: "Storage Limit Exceeded",
+        description: `This file would exceed your ${storageLimitMb} MB storage limit. You have ${remainingMB} MB remaining. Delete some files or upgrade your plan.`,
         variant: "destructive",
       });
       // Reset file input
