@@ -1853,20 +1853,20 @@ export default function AdminDashboard() {
                             Verified
                           </button>
                           
-                          {/* Featured Badge - Always Visible and Clickable */}
+                          {/* Featured Override Badge - Manual Control */}
                           <button
                             onClick={() => updateSpeakerMutation.mutate({
                               ...speaker,
-                              featured: !speaker.featured
+                              isFeaturedOverride: !speaker.isFeaturedOverride
                             })}
                             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                              speaker.featured 
+                              speaker.isFeaturedOverride 
                                 ? 'bg-blue-600 text-white hover:bg-blue-700' 
                                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                             }`}
-                            title={speaker.featured ? "Click to unfeature" : "Click to feature"}
+                            title={speaker.isFeaturedOverride ? "Click to remove manual featured status" : "Click to manually feature"}
                           >
-                            Featured
+                            Featured Override
                           </button>
                           
                           <Button variant="outline" size="sm">Edit</Button>
@@ -2127,20 +2127,20 @@ export default function AdminDashboard() {
                                   Verified
                                 </button>
                                 
-                                {/* Featured Badge - Always Visible and Clickable */}
+                                {/* Featured Override Badge - Manual Control */}
                                 <button
                                   onClick={() => updateSpeakerMutation.mutate({
                                     ...speaker,
-                                    featured: !speaker.featured
+                                    isFeaturedOverride: !speaker.isFeaturedOverride
                                   })}
                                   className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                                    speaker.featured 
+                                    speaker.isFeaturedOverride 
                                       ? 'bg-blue-600 text-white hover:bg-blue-700' 
                                       : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                   }`}
-                                  title={speaker.featured ? "Click to unfeature" : "Click to feature"}
+                                  title={speaker.isFeaturedOverride ? "Click to remove manual featured status" : "Click to manually feature"}
                                 >
-                                  Featured
+                                  Featured Override
                                 </button>
                                 
                                 <Button 
