@@ -9,7 +9,7 @@ export function useTierLimits() {
 
 export function useTierLimit(tier: 'basic' | 'pro' | 'premier') {
   return useQuery<TierLimit>({
-    queryKey: ['/api/tier-limits', tier],
+    queryKey: [`/api/tier-limits/${tier}`],
     enabled: !!tier,
   });
 }
