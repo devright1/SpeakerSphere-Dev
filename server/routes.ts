@@ -549,7 +549,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.put("/api/speakers/:id", async (req, res) => {
     try {
       const speakerId = parseInt(req.params.id);
-      const updatedSpeaker = await storage.updateSpeaker(speakerId, req.body);
+      
+      // Remove timestamp and system fields that shouldn't be manually updated
+      const {
+        subscriptionPeriodEnd,
+        cancelledAt,
+        deletedAt,
+        currentStorageBytes,
+        stripeCustomerId,
+        stripeSubscriptionId,
+        subscriptionStatus,
+        ...updateData
+      } = req.body;
+      
+      const updatedSpeaker = await storage.updateSpeaker(speakerId, updateData);
       res.json(updatedSpeaker);
     } catch (error) {
       console.error("Error updating speaker:", error);
