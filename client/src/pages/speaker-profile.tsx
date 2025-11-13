@@ -1070,14 +1070,14 @@ export default function SpeakerProfile() {
                           <CardContent className="p-6">
                             <div className="grid gap-4">
                               {contents.map((content: any) => (
-                                <div key={content.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                                  <div className="flex items-center space-x-4">
-                                    <div className="p-2 bg-gray-100 rounded-lg">
+                                <div key={content.id} className="flex items-center justify-between gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                  <div className="flex items-center space-x-4 flex-1 min-w-0">
+                                    <div className="p-2 bg-gray-100 rounded-lg flex-shrink-0">
                                       {getFileIcon(content.category)}
                                     </div>
-                                    <div className="flex-1">
-                                      <h4 className="font-semibold text-gray-900">{content.originalName}</h4>
-                                      <p className="text-sm text-gray-600">{content.description}</p>
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-semibold text-gray-900 truncate">{content.originalName}</h4>
+                                      <p className="text-sm text-gray-600 truncate">{content.description}</p>
                                       <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
                                         <span>{formatFileSize(content.fileSize)}</span>
                                         <span>{content.downloadCount} downloads</span>
