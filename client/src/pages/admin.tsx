@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon, FileText, Save, CheckCircle, XCircle, ChevronUp, ChevronDown, CreditCard } from "lucide-react";
+import { Users, MessageSquare, Star, TrendingUp, LogOut, Settings, BarChart3, FolderOpen, MousePointer, Eye, EyeOff, ExternalLink, Mail, Phone, Globe, Share2, Edit, Trash2, AlertTriangle, Home, Download, Plus, UserCheck, Upload, UserPlus, Link as LinkIcon, FileText, Save, CheckCircle, XCircle, ChevronUp, ChevronDown, CreditCard, Send } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -425,6 +425,35 @@ export default function AdminDashboard() {
     },
     onError: (error: any) => {
       setDeleteError(error.message);
+    },
+  });
+
+  // Send credentials mutation
+  const sendCredentialsMutation = useMutation({
+    mutationFn: async (speakerId: number) => {
+      const response = await fetch(`/api/admin/speakers/${speakerId}/send-credentials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to send credentials');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: "Credentials Sent", 
+        description: `Login credentials have been sent to ${data.credentials.email}`,
+        duration: 5000
+      });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to send credentials", 
+        variant: "destructive" 
+      });
     },
   });
 
@@ -2150,6 +2179,20 @@ export default function AdminDashboard() {
                                 >
                                   <Edit className="h-4 w-4 mr-1" />
                                   Edit
+                                </Button>
+                                <Button 
+                                  variant="default" 
+                                  size="sm"
+                                  onClick={() => {
+                                    if (confirm(`Send login credentials to ${speaker.name} at ${speaker.email}?`)) {
+                                      sendCredentialsMutation.mutate(speaker.id);
+                                    }
+                                  }}
+                                  disabled={!speaker.email || sendCredentialsMutation.isPending}
+                                  data-testid={`button-send-credentials-${speaker.id}`}
+                                >
+                                  <Send className="h-4 w-4 mr-1" />
+                                  Send Credentials
                                 </Button>
                                 <Button 
                                   variant="destructive" 
