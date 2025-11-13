@@ -1067,17 +1067,17 @@ export default function SpeakerProfile() {
                               <Badge variant="outline">{contents.length} files</Badge>
                             </CardTitle>
                           </CardHeader>
-                          <CardContent className="p-6">
-                            <div className="grid gap-4">
+                          <CardContent className="px-6 py-4">
+                            <div className="space-y-4">
                               {contents.map((content: any) => (
-                                <div key={content.id} className="flex items-center justify-between gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div key={content.id} className="flex items-center justify-between gap-4 py-4 border-b border-gray-200 last:border-b-0">
                                   <div className="flex items-center space-x-4 flex-1 min-w-0">
                                     <div className="p-2 bg-gray-100 rounded-lg flex-shrink-0">
                                       {getFileIcon(content.category)}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <h4 className="font-semibold text-gray-900 truncate">{content.originalName}</h4>
-                                      <p className="text-sm text-gray-600 truncate">{content.description}</p>
+                                      <h4 className="font-semibold text-gray-900">{content.originalName}</h4>
+                                      <p className="text-sm text-gray-600">{content.description}</p>
                                       <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
                                         <span>{formatFileSize(content.fileSize)}</span>
                                         <span>{content.downloadCount} downloads</span>
