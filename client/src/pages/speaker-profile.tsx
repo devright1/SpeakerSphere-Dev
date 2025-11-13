@@ -1076,8 +1076,8 @@ export default function SpeakerProfile() {
                                       {getFileIcon(content.category)}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <h4 className="font-semibold text-gray-900">{content.originalName}</h4>
-                                      <p className="text-sm text-gray-600">{content.description}</p>
+                                      <h4 className="font-semibold text-gray-900 truncate">{content.originalName}</h4>
+                                      <p className="text-sm text-gray-600 truncate">{content.description}</p>
                                       <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
                                         <span>{formatFileSize(content.fileSize)}</span>
                                         <span>{content.downloadCount} downloads</span>
