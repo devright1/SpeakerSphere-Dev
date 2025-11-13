@@ -329,6 +329,78 @@ The SpeakerSphere Team`
     return await this.sendEmail(template);
   }
 
+  // Resend login credentials to approved speaker
+  async sendLoginCredentials(email: string, speakerName: string, credentials: { email: string; password: string }): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: email,
+      from: FROM_EMAIL,
+      subject: 'Your SpeakerSphere Login Credentials',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Your SpeakerSphere Login Information</h2>
+          
+          <p>Dear ${speakerName},</p>
+          
+          <p>As requested, here are your login credentials for accessing your SpeakerSphere dashboard.</p>
+          
+          <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+            <h3 style="color: #1e40af; margin-top: 0;">Your Login Credentials</h3>
+            <p><strong>Email:</strong> ${credentials.email}</p>
+            <p><strong>Temporary Password:</strong> <span style="font-family: monospace; background: white; padding: 4px 8px; border-radius: 4px;">${credentials.password}</span></p>
+            <p style="color: #dc2626; font-size: 14px; margin-top: 15px;">⚠️ For security, please change your password immediately after logging in.</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://thespeakersphere.com/for-speakers" 
+               style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Access Your Dashboard
+            </a>
+          </div>
+          
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #475569; margin-top: 0;">Quick Access</h3>
+            <ul style="color: #64748b;">
+              <li>Manage your speaker profile</li>
+              <li>Upload photos and videos</li>
+              <li>View and respond to inquiries</li>
+              <li>Update your content settings</li>
+            </ul>
+          </div>
+          
+          <p>If you didn't request these credentials or have any questions, please contact us immediately.</p>
+          
+          <p>Best regards,<br>The SpeakerSphere Team</p>
+        </div>
+      `,
+      text: `Your SpeakerSphere Login Information
+
+Dear ${speakerName},
+
+As requested, here are your login credentials for accessing your SpeakerSphere dashboard.
+
+Your Login Credentials:
+Email: ${credentials.email}
+Temporary Password: ${credentials.password}
+
+⚠️ For security, please change your password immediately after logging in.
+
+Access Your Dashboard: https://thespeakersphere.com/for-speakers
+
+Quick Access:
+- Manage your speaker profile
+- Upload photos and videos
+- View and respond to inquiries
+- Update your content settings
+
+If you didn't request these credentials or have any questions, please contact us immediately.
+
+Best regards,
+The SpeakerSphere Team`
+    };
+
+    return await this.sendEmail(template);
+  }
+
   // Speaker application rejection
   async sendSpeakerRejection(email: string, firstName: string, reason?: string): Promise<boolean> {
     const template: EmailTemplate = {
