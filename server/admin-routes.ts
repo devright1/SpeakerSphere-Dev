@@ -536,6 +536,57 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Send login credentials to approved speaker
+  app.post("/api/admin/speakers/:id/send-credentials", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      
+      // Get speaker details
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      // Get the associated user account
+      const user = await storage.getUserByEmail(speaker.email);
+      if (!user) {
+        return res.status(404).json({ message: "No user account found for this speaker" });
+      }
+
+      // Generate new temporary password
+      const temporaryPassword = generateTemporaryPassword();
+      const hashedPassword = await hashPassword(temporaryPassword);
+      
+      // Update user with new password
+      await storage.updateUser(user.id, { 
+        passwordHash: hashedPassword 
+      });
+
+      // Send credentials email
+      const emailService = EmailService.getInstance();
+      const emailSent = await emailService.sendLoginCredentials(
+        speaker.email,
+        speaker.name,
+        { email: speaker.email, password: temporaryPassword }
+      );
+
+      res.json({ 
+        success: true, 
+        message: emailSent ? "Login credentials sent successfully" : "Failed to send email, but password was reset",
+        emailSent: emailSent,
+        credentials: {
+          email: speaker.email,
+          password: temporaryPassword
+        }
+      });
+      
+      console.log(`📧 Login credentials sent to ${speaker.name} (${speaker.email}): ${temporaryPassword}`);
+    } catch (error) {
+      console.error("Failed to send credentials:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Delete speaker application (for organization, keeps speaker profile if approved)
   app.delete("/api/admin/speaker-applications/:id", async (req, res) => {
     try {
