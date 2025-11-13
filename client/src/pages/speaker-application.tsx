@@ -16,28 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, CheckCircle2, Loader2, Send, User, FileText, Briefcase, Globe } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-
-// Official categories from your CSV mapping
-const officialCategories = [
-  "AI & Innovation",
-  "Anesthesia & Sedation", 
-  "Bone Grafting & Regeneration",
-  "Digital Dentistry",
-  "Education & Training",
-  "Endodontics",
-  "Esthetic Dentistry",
-  "Full Arch Rehabilitation",
-  "Implant Dentistry",
-  "Leadership",
-  "Oral Surgery",
-  "Orthodontics",
-  "Periodontics",
-  "Practice Management",
-  "Prosthodontics",
-  "Research",
-  "Sleep Medicine",
-  "Technology & Innovation"
-];
+import { TopicSelector } from "@/components/topic-selector";
 
 // Validation schema for speaker application
 const speakerApplicationSchema = z.object({
@@ -61,7 +40,8 @@ const speakerApplicationSchema = z.object({
   credentials: z.string().min(1, "Credentials and education are required"),
   
   // Speaking Information
-  selectedCategories: z.array(z.string()).min(1, "Please select at least one category"),
+  selectedCategories: z.array(z.string()).optional().default([]), // Optional for backward compatibility
+  selectedTopicIds: z.array(z.number()).length(3, "Please select exactly 3 speaking topics"),
   specificTopics: z.string().min(10, "Please provide specific topics (at least 10 characters)"),
   previousExperience: z.string().min(1, "Previous speaking experience is required"),
   availableFormats: z.array(z.string()).min(1, "Please select at least one format"),
@@ -113,6 +93,7 @@ export default function SpeakerApplicationPage() {
       yearsExperience: "",
       credentials: "",
       selectedCategories: [],
+      selectedTopicIds: [],
       specificTopics: "",
       previousExperience: "",
       availableFormats: [],
@@ -162,15 +143,6 @@ export default function SpeakerApplicationPage() {
       form.setValue("availableFormats", [...currentFormats, format]);
     } else {
       form.setValue("availableFormats", currentFormats.filter(f => f !== format));
-    }
-  };
-
-  const handleCategoryChange = (category: string, checked: boolean) => {
-    const currentCategories = form.getValues("selectedCategories");
-    if (checked) {
-      form.setValue("selectedCategories", [...currentCategories, category]);
-    } else {
-      form.setValue("selectedCategories", currentCategories.filter(c => c !== category));
     }
   };
 
@@ -440,29 +412,13 @@ export default function SpeakerApplicationPage() {
                         <h3 className="text-lg font-semibold">Speaking Information</h3>
                       </div>
 
-                      {/* Category Selection */}
-                      <div className="space-y-3">
-                        <Label>Speaking Categories * (Select all that apply)</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 border rounded-lg p-4 bg-slate-50 dark:bg-slate-800">
-                          {officialCategories.map((category) => (
-                            <div key={category} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`category-${category}`}
-                                onCheckedChange={(checked) => handleCategoryChange(category, checked as boolean)}
-                              />
-                              <Label 
-                                htmlFor={`category-${category}`} 
-                                className="text-sm cursor-pointer"
-                              >
-                                {category}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                        {form.formState.errors.selectedCategories && (
-                          <p className="text-sm text-red-600">{form.formState.errors.selectedCategories.message}</p>
-                        )}
-                      </div>
+                      {/* Topic Selection */}
+                      <TopicSelector
+                        selectedTopicIds={form.watch("selectedTopicIds")}
+                        onChange={(topicIds) => form.setValue("selectedTopicIds", topicIds)}
+                        maxTopics={3}
+                        error={form.formState.errors.selectedTopicIds?.message}
+                      />
 
                       {/* Specific Topics */}
                       <div className="space-y-2">

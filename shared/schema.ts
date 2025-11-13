@@ -181,7 +181,7 @@ export const speakerApplications = pgTable("speaker_applications", {
   credentials: text("credentials").notNull(),
   
   // Speaking Information
-  selectedCategories: text("selected_categories").array().notNull(), // Array of selected official categories
+  selectedCategories: text("selected_categories").array().default([]), // Array of selected official categories (legacy field)
   selectedTopicIds: integer("selected_topic_ids").array().default([]), // Array of selected speaking topic IDs (max 3)
   specificTopics: text("specific_topics").notNull(), // Detailed list of specific expertise topics
   previousExperience: text("previous_experience").notNull(),
