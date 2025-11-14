@@ -223,22 +223,16 @@ router.post("/login",
 
       const { email, password } = req.body;
 
-      console.log('🔐 Login attempt for email:', email);
-
       // Find user by email
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        console.log('❌ User not found for email:', email);
         return res.status(401).json({
           message: "Invalid email or password"
         });
       }
 
-      console.log('✅ User found:', user.email, 'Has password hash:', !!user.passwordHash);
-
       // Check password
       const passwordValid = await bcrypt.compare(password, user.passwordHash);
-      console.log('🔑 Password valid:', passwordValid);
       if (!passwordValid) {
         return res.status(401).json({
           message: "Invalid email or password"
