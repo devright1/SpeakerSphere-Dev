@@ -117,7 +117,6 @@ export default function SpeakerApplicationPage() {
         description: data.message,
       });
       form.reset();
-      setTimeout(() => setSubmitStep("idle"), 3000);
     },
     onError: (error: any) => {
       console.error("Speaker application submission error:", error);
@@ -192,7 +191,7 @@ export default function SpeakerApplicationPage() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    className="text-center py-8 space-y-4"
+                    className="text-center py-8 space-y-6"
                   >
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
                       <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
@@ -203,6 +202,11 @@ export default function SpeakerApplicationPage() {
                     <p className="text-green-600 dark:text-green-400">
                       We'll review your application and contact you within 5-7 business days.
                     </p>
+                    <Link href="/">
+                      <Button size="lg" className="mt-4" data-testid="button-return-home">
+                        Return Home
+                      </Button>
+                    </Link>
                   </motion.div>
                 ) : (
                   <motion.form
