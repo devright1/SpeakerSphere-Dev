@@ -443,9 +443,9 @@ export default function AdminDashboard() {
     },
     onSuccess: (data) => {
       toast({ 
-        title: "Credentials Sent", 
-        description: `Login credentials have been sent to ${data.credentials.email}`,
-        duration: 5000
+        title: "Credentials Generated", 
+        description: `Email: ${data.credentials.email} | Password: ${data.credentials.password}`,
+        duration: 10000
       });
     },
     onError: (error: any) => {
