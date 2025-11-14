@@ -2,6 +2,9 @@
 "SpeakerSphere Reviews" is a full-stack platform connecting healthcare professionals with medical speakers for discovery, evaluation, and booking. It features advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform utilizes real speaking topics extracted from CSV data, replacing generic categories with a topic-based organization. Its goal is to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
+- **November 14, 2025**: Added success message with "Return Home" button to speaker application page after submission
+- **November 14, 2025**: Implemented "Send Credentials" feature for admins to resend login credentials to approved speakers with 10-second toast notification displaying email and password
+- **November 14, 2025**: Verified complete credential workflow: speaker approval generates password, stores hash in database, sends email, and allows immediate login
 - **November 13, 2025**: Redesigned speaker application to use topic-based selection - applicants now select exactly 3 speaking topics from 942 topics organized by category with search and filter capabilities
 - **November 13, 2025**: Created TopicSelector component with category filtering dropdown and search functionality for easier navigation of the speaking topics database
 - **November 13, 2025**: Updated admin approval workflow to automatically assign selected topics to new speakers via speakerTopics junction table and derive speaker categories from topic metadata
