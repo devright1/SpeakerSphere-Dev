@@ -73,13 +73,7 @@ const travelOptions = [
 ];
 
 export default function SpeakerApplicationPage() {
-  // Check URL parameter to show success state for preview
-  const urlParams = new URLSearchParams(window.location.search);
-  const showSuccess = urlParams.get('success') === 'true';
-  
-  const [submitStep, setSubmitStep] = useState<"idle" | "submitting" | "success">(
-    showSuccess ? "success" : "idle"
-  );
+  const [submitStep, setSubmitStep] = useState<"idle" | "submitting" | "success">("idle");
   const { toast } = useToast();
   
   const form = useForm<SpeakerApplicationForm>({
