@@ -680,7 +680,32 @@ export class MemStorage implements IStorage {
     };
     
     this.reviews.set(reviewId, updatedReview);
+    
+    // Recalculate speaker's review count and average rating
+    await this.updateSpeakerReviewStats(review.speakerId);
+    
     return updatedReview;
+  }
+  
+  private async updateSpeakerReviewStats(speakerId: number): Promise<void> {
+    // Get all approved reviews for this speaker
+    const approvedReviews = Array.from(this.reviews.values())
+      .filter(r => r.speakerId === speakerId && r.approvalStatus === 'approved');
+    
+    const reviewCount = approvedReviews.length;
+    
+    // Calculate average rating from overall ratings
+    let overallRating = "0.00";
+    if (reviewCount > 0) {
+      const totalRating = approvedReviews.reduce((sum, r) => sum + parseFloat(r.overallRating), 0);
+      overallRating = (totalRating / reviewCount).toFixed(2);
+    }
+    
+    // Update speaker record
+    await this.updateSpeaker(speakerId, {
+      reviewCount,
+      overallRating
+    });
   }
 
   async rejectReview(reviewId: number, adminNotes?: string): Promise<Review | undefined> {
