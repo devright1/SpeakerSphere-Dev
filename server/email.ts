@@ -54,13 +54,14 @@ export function getTokenExpiration(): Date {
 }
 
 // Email verification template
-export function createVerificationEmail(
+export async function createVerificationEmail(
   userEmail: string, 
   userName: string, 
   verificationToken: string
 ) {
   
   const verificationUrl = `${getDomain()}/verify-email?token=${verificationToken}`;
+  const logoHeader = await getEmailLogoHeader();
   
   return {
     to: userEmail,
@@ -83,7 +84,7 @@ export function createVerificationEmail(
         </style>
       </head>
       <body>
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div class="container">
           <div class="header">
             <h1>Welcome to SpeakerSphere!</h1>
@@ -136,7 +137,8 @@ export function createVerificationEmail(
 }
 
 // Welcome email after verification
-export function createWelcomeEmail(userEmail: string, userName: string) {
+export async function createWelcomeEmail(userEmail: string, userName: string) {
+  const logoHeader = await getEmailLogoHeader();
   return {
     to: userEmail,
     from: {
@@ -158,7 +160,7 @@ export function createWelcomeEmail(userEmail: string, userName: string) {
         </style>
       </head>
       <body>
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div class="container">
           <div class="header">
             <h1>🎉 Account Verified!</h1>
@@ -205,13 +207,14 @@ export function createWelcomeEmail(userEmail: string, userName: string) {
 }
 
 // Password reset email
-export function createPasswordResetEmail(
+export async function createPasswordResetEmail(
   userEmail: string, 
   userName: string, 
   resetToken: string
 ) {
   
   const resetUrl = `${getDomain()}/auth?resetToken=${resetToken}`;
+  const logoHeader = await getEmailLogoHeader();
   
   return {
     to: userEmail,
@@ -234,7 +237,7 @@ export function createPasswordResetEmail(
         </style>
       </head>
       <body>
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div class="container">
           <div class="header">
             <h1>Password Reset Request</h1>

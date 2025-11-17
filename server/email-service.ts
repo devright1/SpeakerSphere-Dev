@@ -55,12 +55,13 @@ export class EmailService {
 
   // Inquiry confirmation to client
   async sendInquiryConfirmation(clientEmail: string, clientName: string, speakerName: string, inquiryId: number): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const template: EmailTemplate = {
       to: clientEmail,
       from: FROM_EMAIL,
       subject: `Inquiry Confirmation - ${speakerName}`,
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Thank you for your speaker inquiry!</h2>
           
@@ -118,12 +119,13 @@ The SpeakerSphere Team`
 
   // Admin notification for new inquiry
   async sendInquiryAdminNotification(inquiry: any, speakerName: string): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const template: EmailTemplate = {
       to: ADMIN_EMAIL,
       from: FROM_EMAIL,
       subject: `New Speaker Inquiry - ${speakerName}`,
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #dc2626;">New Speaker Inquiry Received</h2>
           
@@ -181,12 +183,13 @@ View in Admin Panel: https://thespeakersphere.com/admin`
 
   // Speaker application approval
   async sendSpeakerApproval(email: string, firstName: string, credentials: { email: string; password: string }): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
       subject: 'Welcome to SpeakerSphere - Application Approved!',
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #059669;">Congratulations! Your application has been approved</h2>
           
@@ -260,12 +263,13 @@ The SpeakerSphere Team`
 
   // Resend login credentials to approved speaker
   async sendLoginCredentials(email: string, speakerName: string, credentials: { email: string; password: string }): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
       subject: 'Your SpeakerSphere Login Credentials',
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Your SpeakerSphere Login Information</h2>
           
@@ -333,12 +337,13 @@ The SpeakerSphere Team`
 
   // Speaker application rejection
   async sendSpeakerRejection(email: string, firstName: string, reason?: string): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
       subject: 'SpeakerSphere Application Update',
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #475569;">Thank you for your interest in SpeakerSphere</h2>
           
@@ -393,12 +398,13 @@ The SpeakerSphere Team`
 
   // Review submission notification
   async sendReviewNotification(speakerEmail: string, speakerName: string, reviewerName: string, rating: number): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const template: EmailTemplate = {
       to: speakerEmail,
       from: FROM_EMAIL,
       subject: `New Review Received - ${rating}/5 Stars`,
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">You've received a new review!</h2>
           
@@ -432,6 +438,7 @@ The SpeakerSphere Team`
 
   // Inquiry status update to client
   async sendInquiryUpdate(clientEmail: string, clientName: string, speakerName: string, status: string, message?: string): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const statusColors: { [key: string]: string } = {
       'responded': '#059669',
       'booked': '#059669',
@@ -449,7 +456,7 @@ The SpeakerSphere Team`
       from: FROM_EMAIL,
       subject: `Inquiry Update - ${speakerName}`,
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: ${statusColors[status] || '#475569'};">Inquiry Status Update</h2>
           
@@ -475,12 +482,13 @@ The SpeakerSphere Team`
 
   // Test email functionality
   async sendTestEmail(toEmail: string, testMessage: string = "This is a test email to verify your SendGrid configuration is working properly."): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const template: EmailTemplate = {
       to: toEmail,
       from: FROM_EMAIL,
       subject: 'SpeakerSphere Email Test - Configuration Check',
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">📧 Email System Test</h2>
           
@@ -531,6 +539,7 @@ This is a test email from SpeakerSphere's email system verification.`
 
   // Speaker application approval with email verification
   async sendSpeakerApprovalWithVerification(email: string, firstName: string, credentials: { email: string; password: string }, verificationToken: string): Promise<boolean> {
+    const logoHeader = await getEmailLogoHeader();
     const verificationUrl = `${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/verify-email?token=${verificationToken}`;
     
     const template: EmailTemplate = {
@@ -538,7 +547,7 @@ This is a test email from SpeakerSphere's email system verification.`
       from: FROM_EMAIL,
       subject: 'Welcome to SpeakerSphere - Please Verify Your Email',
       html: `
-        ${getEmailLogoHeader()}
+        ${logoHeader}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #059669;">🎉 Congratulations! Your application has been approved</h2>
           
