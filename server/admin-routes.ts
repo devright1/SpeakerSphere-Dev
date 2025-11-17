@@ -1877,6 +1877,107 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Send all email templates individually (admin only)
+  app.post("/api/admin/send-all-template-samples", authenticateAdmin, async (req, res) => {
+    try {
+      const { recipientEmail } = req.body;
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!recipientEmail || !emailRegex.test(recipientEmail)) {
+        return res.status(400).json({ message: "Valid recipient email is required" });
+      }
+
+      const emailService = EmailService.getInstance();
+      const { createVerificationEmail, createWelcomeEmail, createPasswordResetEmail, sendEmail } = await import('./email');
+      
+      const results = [];
+      
+      // 1. Email Verification
+      const verificationEmail = createVerificationEmail(recipientEmail, "John", "sample-token-123");
+      await sendEmail(verificationEmail);
+      results.push("1. Email Verification");
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+      
+      // 2. Welcome Email
+      const welcomeEmail = createWelcomeEmail(recipientEmail, "John");
+      await sendEmail(welcomeEmail);
+      results.push("2. Welcome Email");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 3. Password Reset
+      const resetEmail = createPasswordResetEmail(recipientEmail, "John", "reset-token-456");
+      await sendEmail(resetEmail);
+      results.push("3. Password Reset");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 4. Speaker Approval
+      await emailService.sendSpeakerApproval(recipientEmail, "John", { email: recipientEmail, password: "TempPass123!" });
+      results.push("4. Speaker Application Approval");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 5. Login Credentials
+      await emailService.sendLoginCredentials(recipientEmail, "Dr. John Smith", { email: recipientEmail, password: "NewPass456!" });
+      results.push("5. Login Credentials Resend");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 6. Speaker Rejection
+      await emailService.sendSpeakerRejection(recipientEmail, "John", "We appreciate your application, but we're looking for speakers with more experience in the healthcare field.");
+      results.push("6. Speaker Application Rejection");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 7. Inquiry Confirmation
+      await emailService.sendInquiryConfirmation(recipientEmail, "Jane Client", "Dr. Sarah Johnson", 12345);
+      results.push("7. Inquiry Confirmation (Client)");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 8. Speaker Inquiry Notification
+      const sampleInquiry = {
+        id: 12345,
+        clientName: "Jane Client",
+        clientEmail: "jane@healthsystem.com",
+        clientCompany: "Memorial Health System",
+        eventType: "Medical Conference",
+        eventDate: "2025-06-15",
+        eventLocation: "Chicago, IL",
+        budget: 5000,
+        message: "We would like to invite you to speak at our annual medical conference about recent advances in cardiology.",
+        createdAt: new Date()
+      };
+      await emailService.sendInquirySpeakerNotification(sampleInquiry, recipientEmail, "Dr. Sarah Johnson");
+      results.push("8. Inquiry Speaker Notification");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 9. Admin Inquiry Notification
+      await emailService.sendInquiryAdminNotification(sampleInquiry, "Dr. Sarah Johnson");
+      results.push("9. Inquiry Admin Notification");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 10. Inquiry Status Update (Booked)
+      await emailService.sendInquiryUpdate(recipientEmail, "Jane Client", "Dr. Sarah Johnson", "booked", "Dr. Johnson has confirmed and is excited to speak at your event!");
+      results.push("10. Inquiry Status Update");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 11. Review Notification
+      await emailService.sendReviewNotification(recipientEmail, "Dr. Sarah Johnson", "Dr. Michael Chen", 5);
+      results.push("11. Review Notification");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 12. Test Email
+      await emailService.sendTestEmail(recipientEmail, "This is a sample test email to verify SendGrid configuration.");
+      results.push("12. Test Email");
+      
+      res.json({ 
+        success: true, 
+        message: `All 12 email templates sent individually to ${recipientEmail}`,
+        templates: results
+      });
+    } catch (error) {
+      console.error("Failed to send template samples:", error);
+      res.status(500).json({ message: "Internal server error", error: String(error) });
+    }
+  });
+
   // Send email templates reference (admin only)
   app.post("/api/admin/send-template-reference", authenticateAdmin, async (req, res) => {
     try {
