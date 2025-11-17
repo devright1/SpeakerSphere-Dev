@@ -1993,50 +1993,69 @@ export async function registerRoutes(app: Express): Promise<Express> {
       // Increment download count
       await storage.incrementContentDownloadCount(contentId);
 
-      // Serve the actual file
-      
-      // Handle the uploadPath correctly - remove leading slash if present
-      let uploadPath = content.uploadPath;
-      if (uploadPath.startsWith('/')) {
-        uploadPath = uploadPath.substring(1);
-      }
-      const filePath = path.join(process.cwd(), uploadPath);
-      
-      console.log("- Full file path:", filePath);
-      console.log("- File exists:", fs.existsSync(filePath));
-      console.log("- Current working directory:", process.cwd());
-      
-      // Check if file exists
-      if (!fs.existsSync(filePath)) {
-        console.error(`File not found: ${filePath}`);
-        console.error(`Expected file size: ${content.fileSize} bytes`);
-        console.error(`Database record exists but file is missing from server storage`);
+      // Serve the actual file from object storage
+      try {
+        // Parse the object storage path to get bucket and object name
+        const uploadPath = content.uploadPath.startsWith('/') ? content.uploadPath : `/${content.uploadPath}`;
+        const pathParts = uploadPath.split('/').filter(part => part.length > 0);
         
-        return res.status(404).json({ 
-          error: "Content temporarily unavailable",
-          details: "This file needs to be re-uploaded. Please contact the speaker or administrator.",
-          fileInfo: {
-            originalName: content.originalName,
-            expectedSize: content.fileSize,
-            uploadDate: content.createdAt
+        if (pathParts.length < 2) {
+          console.error(`Invalid upload path: ${uploadPath}`);
+          return res.status(404).json({ 
+            error: "Invalid file path",
+            details: "The file path is malformed. Please contact the speaker or administrator."
+          });
+        }
+
+        const bucketName = pathParts[0];
+        const objectName = pathParts.slice(1).join('/');
+        
+        console.log("- Bucket name:", bucketName);
+        console.log("- Object name:", objectName);
+        
+        // Get the file from object storage
+        const bucket = objectStorageClient.bucket(bucketName);
+        const file = bucket.file(objectName);
+        
+        // Check if file exists
+        const [exists] = await file.exists();
+        if (!exists) {
+          console.error(`File not found in object storage: ${uploadPath}`);
+          console.error(`Expected file size: ${content.fileSize} bytes`);
+          
+          return res.status(404).json({ 
+            error: "Content temporarily unavailable",
+            details: "This file needs to be re-uploaded. Please contact the speaker or administrator.",
+            fileInfo: {
+              originalName: content.originalName,
+              expectedSize: content.fileSize,
+              uploadDate: content.createdAt
+            }
+          });
+        }
+
+        // Set appropriate headers for file download
+        res.setHeader('Content-Disposition', `attachment; filename="${content.originalName}"`);
+        res.setHeader('Content-Type', content.fileType || 'application/octet-stream');
+        
+        // Stream the file from object storage
+        const stream = file.createReadStream();
+        
+        stream.on('error', (error: any) => {
+          console.error('Object storage stream error:', error);
+          if (!res.headersSent) {
+            res.status(500).json({ error: "Error reading file from storage" });
           }
         });
+        
+        stream.pipe(res);
+      } catch (storageError) {
+        console.error('Object storage error:', storageError);
+        return res.status(500).json({ 
+          error: "Storage error",
+          details: "Failed to retrieve file from storage. Please try again later."
+        });
       }
-
-      // Set appropriate headers for file download
-      res.setHeader('Content-Disposition', `attachment; filename="${content.originalName}"`);
-      res.setHeader('Content-Type', content.fileType || 'application/octet-stream');
-      
-      // Stream the file
-      const fileStream = fs.createReadStream(filePath);
-      fileStream.pipe(res);
-      
-      fileStream.on('error', (error: any) => {
-        console.error('File stream error:', error);
-        if (!res.headersSent) {
-          res.status(500).json({ error: "Error reading file" });
-        }
-      });
     } catch (error) {
       console.error("Download content error:", error);
       res.status(500).json({ error: "Failed to download content" });
