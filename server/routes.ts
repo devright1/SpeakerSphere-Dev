@@ -2711,6 +2711,36 @@ export async function registerRoutes(app: Express): Promise<Express> {
     res.setHeader("Content-Type", "image/svg+xml");
     res.send(svg);
   });
+
+  // Public DevRight logo endpoint for email templates (no authentication required)
+  app.get("/api/devright-logo.png", async (req, res) => {
+    try {
+      const bucketName = 'replit-objstore-b2538833-2c0e-4f8b-ac68-5d4359557493';
+      const objectName = 'public/devright-icon.png';
+      
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+      
+      // Set proper caching headers for email stability
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      
+      // Override security headers to allow cross-origin access for email clients
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      
+      // Stream the file directly to response
+      file.createReadStream()
+        .on('error', (err) => {
+          console.error('Error streaming DevRight logo:', err);
+          res.status(404).send('Logo not found');
+        })
+        .pipe(res);
+    } catch (error) {
+      console.error('Error serving DevRight logo:', error);
+      res.status(500).send('Error loading logo');
+    }
+  });
   
   // Subscription routes
   
