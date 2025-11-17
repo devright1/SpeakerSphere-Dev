@@ -1126,14 +1126,14 @@ export async function registerRoutes(app: Express): Promise<Express> {
         contentRelevanceRating: parseInt(req.body.contentRelevanceRating),
         easeOfWorkingRating: parseInt(req.body.easeOfWorkingRating),
         visualDesignRating: parseInt(req.body.visualDesignRating),
-        overallRating: Math.round(
+        overallRating: (
           (parseInt(req.body.speakingStyleRating) + 
            parseInt(req.body.podiumPresenceRating) + 
            parseInt(req.body.technicalProficiencyRating) + 
            parseInt(req.body.contentRelevanceRating) + 
            parseInt(req.body.easeOfWorkingRating) + 
            parseInt(req.body.visualDesignRating)) / 6
-        ),
+        ).toFixed(2),
         comment: req.body.comment,
         eventType: req.body.eventType,
         eventDate: req.body.eventDate,

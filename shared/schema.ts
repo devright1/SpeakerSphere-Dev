@@ -80,7 +80,7 @@ export const reviews = pgTable("reviews", {
   reviewerName: text("reviewer_name").notNull(),
   reviewerTitle: text("reviewer_title").notNull(),
   reviewerCompany: text("reviewer_company").notNull(),
-  overallRating: integer("overall_rating").notNull(),
+  overallRating: decimal("overall_rating", { precision: 3, scale: 2 }).notNull(),
   speakingStyleRating: integer("speaking_style_rating").notNull(),
   podiumPresenceRating: integer("podium_presence_rating").notNull(),
   technicalProficiencyRating: integer("technical_proficiency_rating").notNull(),
