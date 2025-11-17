@@ -27,11 +27,12 @@ export default function SubscriptionUpgrade() {
   const [processingTier, setProcessingTier] = useState<string | null>(null);
 
   // Get current subscription status
-  const { data: subscriptionStatus, isLoading: statusLoading } = useQuery<{
+  const { data: subscriptionStatus, isLoading: statusLoading, refetch: refetchStatus } = useQuery<{
     tier: string;
     status: string;
     periodEnd: Date | null;
     cancelAtPeriodEnd: boolean;
+    cancelledAt?: Date | null;
     amount?: number;
     interval?: string;
   }>({
@@ -133,6 +134,28 @@ export default function SubscriptionUpgrade() {
     },
   });
 
+  // Resume subscription mutation
+  const resumeMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/subscriptions/reactivate", {});
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Subscription Resumed",
+        description: "Your subscription has been reactivated. You'll be charged on your next renewal date.",
+      });
+      refetchStatus();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resume subscription",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpgrade = (tier: "pro" | "premier") => {
     if (!isAuthenticated) {
       setLocation("/for-speakers");
@@ -152,7 +175,18 @@ export default function SubscriptionUpgrade() {
     });
   };
 
+  const handleResumeSubscription = () => {
+    resumeMutation.mutate();
+  };
+
   const currentTier = subscriptionStatus?.tier || "basic";
+  
+  // Check if subscription is canceled but still active
+  const isCanceledButActive = !!(
+    subscriptionStatus?.cancelledAt && 
+    subscriptionStatus?.periodEnd && 
+    new Date(subscriptionStatus.periodEnd) > new Date()
+  );
   const isBasic = currentTier === "basic";
   const isPro = currentTier === "pro";
   const isPremier = currentTier === "premier";
@@ -214,17 +248,46 @@ export default function SubscriptionUpgrade() {
           
           {/* Current Tier Badge */}
           {!statusLoading && (
-            <div className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-full shadow-sm">
-              <span className="text-sm text-gray-600">Current tier:</span>
-              <Badge className={
-                currentTier === "premier" 
-                  ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white"
-                  : currentTier === "pro"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-600 text-white"
-              }>
-                {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
-              </Badge>
+            <div className="inline-flex flex-col items-center gap-2">
+              <div className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-full shadow-sm">
+                <span className="text-sm text-gray-600">Current tier:</span>
+                <Badge className={
+                  currentTier === "premier" 
+                    ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white"
+                    : currentTier === "pro"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-600 text-white"
+                }>
+                  {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
+                </Badge>
+              </div>
+              
+              {/* Show expiration notice and Resume button if canceled but still active */}
+              {isCanceledButActive && subscriptionStatus?.periodEnd && (
+                <div className="flex flex-col items-center gap-3 mt-2">
+                  <p className="text-sm text-orange-600 font-medium">
+                    Active until {new Date(subscriptionStatus.periodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                  <Button 
+                    onClick={handleResumeSubscription}
+                    disabled={resumeMutation.isPending}
+                    className="bg-green-600 hover:bg-green-700"
+                    data-testid="button-resume-subscription"
+                  >
+                    {resumeMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Resuming...
+                      </>
+                    ) : (
+                      'Resume Subscription'
+                    )}
+                  </Button>
+                  <p className="text-xs text-gray-500 max-w-md text-center">
+                    Your next charge will be on {new Date(subscriptionStatus.periodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
