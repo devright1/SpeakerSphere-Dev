@@ -1,5 +1,6 @@
 import sgMail from '@sendgrid/mail';
 import crypto from 'crypto';
+import { getEmailLogoHeader } from './email-logo';
 
 // Initialize SendGrid
 if (!process.env.SENDGRID_API_KEY) {
@@ -13,28 +14,7 @@ const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || process.env.FROM_EMAIL || 
 const FROM_NAME = 'SpeakerSphere Reviews';
 
 
-// Array of all DevRight logo variations for rotation
-const DEVRIGHT_LOGOS = [
-  'https://thespeakersphere.org/api/devright-logo-1.png', // Color icon
-  'https://thespeakersphere.org/api/devright-logo-2.png', // White icon
-  'https://thespeakersphere.org/api/devright-logo-3.png', // TM Color
-];
-
-// Get a random logo URL from the rotation
-function getDevRightLogoUrl(): string {
-  const randomIndex = Math.floor(Math.random() * DEVRIGHT_LOGOS.length);
-  return DEVRIGHT_LOGOS[randomIndex];
-}
-
-// Email header with rotating DevRight logo
-function getEmailLogoHeader(): string {
-  const logoUrl = getDevRightLogoUrl();
-  return `
-  <div style="text-align: center; padding: 20px; background: #ffffff; border-bottom: 1px solid #e5e7eb;">
-    <img src="${logoUrl}" alt="DevRight Logo" style="max-width: 100px; height: auto;" />
-  </div>
-`;
-}
+// Logo rotation is now centralized in email-logo.ts
 
 
 
