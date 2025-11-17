@@ -55,7 +55,7 @@ export class EmailService {
 
   // Inquiry confirmation to client
   async sendInquiryConfirmation(clientEmail: string, clientName: string, speakerName: string, inquiryId: number): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: clientEmail,
       from: FROM_EMAIL,
@@ -119,7 +119,7 @@ The SpeakerSphere Team`
 
   // Admin notification for new inquiry
   async sendInquiryAdminNotification(inquiry: any, speakerName: string): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: ADMIN_EMAIL,
       from: FROM_EMAIL,
@@ -183,7 +183,7 @@ View in Admin Panel: https://thespeakersphere.com/admin`
 
   // Speaker application approval
   async sendSpeakerApproval(email: string, firstName: string, credentials: { email: string; password: string }): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
@@ -263,7 +263,7 @@ The SpeakerSphere Team`
 
   // Resend login credentials to approved speaker
   async sendLoginCredentials(email: string, speakerName: string, credentials: { email: string; password: string }): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
@@ -337,7 +337,7 @@ The SpeakerSphere Team`
 
   // Speaker application rejection
   async sendSpeakerRejection(email: string, firstName: string, reason?: string): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
@@ -398,7 +398,7 @@ The SpeakerSphere Team`
 
   // Review submission notification
   async sendReviewNotification(speakerEmail: string, speakerName: string, reviewerName: string, rating: number): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: speakerEmail,
       from: FROM_EMAIL,
@@ -438,7 +438,7 @@ The SpeakerSphere Team`
 
   // Inquiry status update to client
   async sendInquiryUpdate(clientEmail: string, clientName: string, speakerName: string, status: string, message?: string): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const statusColors: { [key: string]: string } = {
       'responded': '#059669',
       'booked': '#059669',
@@ -482,7 +482,7 @@ The SpeakerSphere Team`
 
   // Test email functionality
   async sendTestEmail(toEmail: string, testMessage: string = "This is a test email to verify your SendGrid configuration is working properly."): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: toEmail,
       from: FROM_EMAIL,
@@ -539,7 +539,7 @@ This is a test email from SpeakerSphere's email system verification.`
 
   // Speaker application approval with email verification
   async sendSpeakerApprovalWithVerification(email: string, firstName: string, credentials: { email: string; password: string }, verificationToken: string): Promise<boolean> {
-    const logoHeader = await getEmailLogoHeader();
+    const logoHeader = getEmailLogoHeader();
     const verificationUrl = `${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/verify-email?token=${verificationToken}`;
     
     const template: EmailTemplate = {

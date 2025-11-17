@@ -54,14 +54,14 @@ export function getTokenExpiration(): Date {
 }
 
 // Email verification template
-export async function createVerificationEmail(
+export function createVerificationEmail(
   userEmail: string, 
   userName: string, 
   verificationToken: string
 ) {
   
   const verificationUrl = `${getDomain()}/verify-email?token=${verificationToken}`;
-  const logoHeader = await getEmailLogoHeader();
+  const logoHeader = getEmailLogoHeader();
   
   return {
     to: userEmail,
@@ -137,8 +137,8 @@ export async function createVerificationEmail(
 }
 
 // Welcome email after verification
-export async function createWelcomeEmail(userEmail: string, userName: string) {
-  const logoHeader = await getEmailLogoHeader();
+export function createWelcomeEmail(userEmail: string, userName: string) {
+  const logoHeader = getEmailLogoHeader();
   return {
     to: userEmail,
     from: {
@@ -207,14 +207,14 @@ export async function createWelcomeEmail(userEmail: string, userName: string) {
 }
 
 // Password reset email
-export async function createPasswordResetEmail(
+export function createPasswordResetEmail(
   userEmail: string, 
   userName: string, 
   resetToken: string
 ) {
   
   const resetUrl = `${getDomain()}/auth?resetToken=${resetToken}`;
-  const logoHeader = await getEmailLogoHeader();
+  const logoHeader = getEmailLogoHeader();
   
   return {
     to: userEmail,
