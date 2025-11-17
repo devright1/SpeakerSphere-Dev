@@ -3583,6 +3583,37 @@ export default function AdminDashboard() {
                                 </div>
                               </div>
                               
+                              {/* Individual Ratings Breakdown */}
+                              <div className="mt-4 bg-gray-50 rounded-lg p-3">
+                                <h4 className="font-medium text-sm text-gray-900 mb-3">Rating Breakdown</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                  <div>
+                                    <span className="text-gray-600">Speaking Style:</span>
+                                    <span className="ml-2 font-medium">{review.speakingStyleRating}/5</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Podium Presence:</span>
+                                    <span className="ml-2 font-medium">{review.podiumPresenceRating}/5</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Technical Proficiency:</span>
+                                    <span className="ml-2 font-medium">{review.technicalProficiencyRating}/5</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Content Relevance:</span>
+                                    <span className="ml-2 font-medium">{review.contentRelevanceRating}/5</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Ease of Working:</span>
+                                    <span className="ml-2 font-medium">{review.easeOfWorkingRating}/5</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Visual Design:</span>
+                                    <span className="ml-2 font-medium">{review.visualDesignRating}/5</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
                               {review.photoUrl && (
                                 <div className="mt-4">
                                   <h4 className="font-medium text-sm text-gray-900 mb-2">Submitted Photo:</h4>
@@ -3721,6 +3752,37 @@ export default function AdminDashboard() {
                                     </div>
                                   </div>
                                   
+                                  {/* Individual Ratings Breakdown */}
+                                  <div className="mt-4 bg-gray-50 rounded-lg p-3">
+                                    <h4 className="font-medium text-sm text-gray-900 mb-3">Rating Breakdown</h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                      <div>
+                                        <span className="text-gray-600">Speaking Style:</span>
+                                        <span className="ml-2 font-medium">{review.speakingStyleRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Podium Presence:</span>
+                                        <span className="ml-2 font-medium">{review.podiumPresenceRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Technical Proficiency:</span>
+                                        <span className="ml-2 font-medium">{review.technicalProficiencyRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Content Relevance:</span>
+                                        <span className="ml-2 font-medium">{review.contentRelevanceRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Ease of Working:</span>
+                                        <span className="ml-2 font-medium">{review.easeOfWorkingRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Visual Design:</span>
+                                        <span className="ml-2 font-medium">{review.visualDesignRating}/5</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
                                   {review.photoUrl && (
                                     <div className="mt-4">
                                       <h4 className="font-medium text-sm text-gray-900 mb-2">Submitted Photo:</h4>
@@ -3841,6 +3903,37 @@ export default function AdminDashboard() {
                                       <p className="text-sm text-gray-600 mt-1">
                                         "{review.comment}"
                                       </p>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Individual Ratings Breakdown */}
+                                  <div className="mt-4 bg-gray-50 rounded-lg p-3">
+                                    <h4 className="font-medium text-sm text-gray-900 mb-3">Rating Breakdown</h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                      <div>
+                                        <span className="text-gray-600">Speaking Style:</span>
+                                        <span className="ml-2 font-medium">{review.speakingStyleRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Podium Presence:</span>
+                                        <span className="ml-2 font-medium">{review.podiumPresenceRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Technical Proficiency:</span>
+                                        <span className="ml-2 font-medium">{review.technicalProficiencyRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Content Relevance:</span>
+                                        <span className="ml-2 font-medium">{review.contentRelevanceRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Ease of Working:</span>
+                                        <span className="ml-2 font-medium">{review.easeOfWorkingRating}/5</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Visual Design:</span>
+                                        <span className="ml-2 font-medium">{review.visualDesignRating}/5</span>
+                                      </div>
                                     </div>
                                   </div>
                                   
