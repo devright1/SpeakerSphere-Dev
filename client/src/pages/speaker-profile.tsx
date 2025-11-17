@@ -1681,7 +1681,7 @@ export default function SpeakerProfile() {
                 name="photo"
                 render={({ field: { onChange, ...field } }) => (
                   <FormItem>
-                    <FormLabel>Photo from Audience *</FormLabel>
+                    <FormLabel>Photo from Audience (Optional)</FormLabel>
                     <FormControl>
                       <div className="space-y-2">
                         <Input
@@ -1702,7 +1702,7 @@ export default function SpeakerProfile() {
                           </div>
                         )}
                         <p className="text-xs text-gray-500">
-                          Upload a photo of the speaker presenting to your audience
+                          Upload a photo of the speaker presenting to your audience (optional)
                         </p>
                       </div>
                     </FormControl>
