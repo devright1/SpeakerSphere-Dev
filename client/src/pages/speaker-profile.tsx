@@ -80,7 +80,7 @@ const reviewSchema = z.object({
   comment: z.string().min(10, "Written review is required (minimum 10 characters)"),
   eventType: z.string().min(1, "Event type is required"),
   eventDate: z.string().min(1, "Event date is required"),
-  photo: z.any().refine((file) => file instanceof File, { message: "Photo from audience is required" }),
+  photo: z.any().optional().refine((file) => !file || file instanceof File, { message: "Invalid file format" }),
 });
 
 export default function SpeakerProfile() {
