@@ -1439,6 +1439,12 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(reviews.id, reviewId))
       .returning();
+    
+    // Recalculate speaker's review count and average rating
+    if (result[0]) {
+      await this.updateSpeakerReviewStats(result[0].speakerId);
+    }
+    
     return result[0];
   }
 
@@ -1452,7 +1458,40 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(reviews.id, reviewId))
       .returning();
+    
+    // Recalculate speaker's review count and average rating (in case this was previously approved)
+    if (result[0]) {
+      await this.updateSpeakerReviewStats(result[0].speakerId);
+    }
+    
     return result[0];
+  }
+  
+  private async updateSpeakerReviewStats(speakerId: number): Promise<void> {
+    // Get all approved reviews for this speaker
+    const approvedReviews = await db.select()
+      .from(reviews)
+      .where(and(
+        eq(reviews.speakerId, speakerId),
+        eq(reviews.approvalStatus, 'approved')
+      ));
+    
+    const reviewCount = approvedReviews.length;
+    
+    // Calculate average rating from overall ratings
+    let overallRating = "0.00";
+    if (reviewCount > 0) {
+      const totalRating = approvedReviews.reduce((sum, r) => sum + parseFloat(r.overallRating), 0);
+      overallRating = (totalRating / reviewCount).toFixed(2);
+    }
+    
+    // Update speaker record
+    await db.update(speakers)
+      .set({
+        reviewCount,
+        overallRating
+      })
+      .where(eq(speakers.id, speakerId));
   }
 
   // Image methods

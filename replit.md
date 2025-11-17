@@ -2,6 +2,7 @@
 "SpeakerSphere Reviews" is a full-stack platform connecting healthcare professionals with medical speakers for discovery, evaluation, and booking. It features advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform utilizes real speaking topics extracted from CSV data, replacing generic categories with a topic-based organization. Its goal is to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
+- **November 17, 2025**: Fixed review count bug - implemented automatic recalculation of speaker reviewCount and overallRating when reviews are approved or rejected in both MemStorage and DatabaseStorage classes
 - **November 17, 2025**: Implemented DevRight TM Color logo embedded as base64 in all email templates - logo displays at 200px width, embedded directly in HTML to ensure visibility across all email clients
 - **November 17, 2025**: Created centralized email-logo.ts module to manage logo embedding across email.ts and email-service.ts
 - **November 17, 2025**: Removed speaker inquiry notification email template - all inquiries are admin-managed, speakers do not receive direct notifications regardless of tier
