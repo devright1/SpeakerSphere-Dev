@@ -2712,11 +2712,11 @@ export async function registerRoutes(app: Express): Promise<Express> {
     res.send(svg);
   });
 
-  // Public DevRight logo endpoint for email templates (no authentication required)
-  app.get("/api/devright-logo.png", async (req, res) => {
+  // Helper function to serve logo from object storage
+  const serveLogo = async (logoFileName: string, res: any) => {
     try {
       const bucketName = 'replit-objstore-b2538833-2c0e-4f8b-ac68-5d4359557493';
-      const objectName = 'public/devright-icon.png';
+      const objectName = `public/${logoFileName}`;
       
       const bucket = objectStorageClient.bucket(bucketName);
       const file = bucket.file(objectName);
@@ -2740,6 +2740,27 @@ export async function registerRoutes(app: Express): Promise<Express> {
       console.error('Error serving DevRight logo:', error);
       res.status(500).send('Error loading logo');
     }
+  };
+
+  // Public DevRight logo endpoints for email templates (no authentication required)
+  // Logo 1: Color icon
+  app.get("/api/devright-logo-1.png", async (req, res) => {
+    await serveLogo('devright-logo-color.png', res);
+  });
+
+  // Logo 2: White icon
+  app.get("/api/devright-logo-2.png", async (req, res) => {
+    await serveLogo('devright-logo-white.png', res);
+  });
+
+  // Logo 3: TM Color
+  app.get("/api/devright-logo-3.png", async (req, res) => {
+    await serveLogo('devright-logo-tm-color.png', res);
+  });
+
+  // Backward compatibility - original endpoint
+  app.get("/api/devright-logo.png", async (req, res) => {
+    await serveLogo('devright-icon.png', res);
   });
   
   // Subscription routes

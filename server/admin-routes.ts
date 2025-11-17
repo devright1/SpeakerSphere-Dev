@@ -1877,6 +1877,57 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Upload all DevRight logos to object storage (admin only)
+  app.post("/api/admin/upload-logos", authenticateAdmin, async (req, res) => {
+    try {
+      const fs = await import('fs');
+      const { objectStorageClient } = await import('./objectStorage');
+      
+      const bucketName = 'replit-objstore-b2538833-2c0e-4f8b-ac68-5d4359557493';
+      const bucket = objectStorageClient.bucket(bucketName);
+      
+      const logos = [
+        {
+          local: 'attached_assets/DevRight icon - Color (1)_1763406768677.png',
+          remote: 'public/devright-logo-color.png'
+        },
+        {
+          local: 'attached_assets/DevRight icon - White_1763406768678.png',
+          remote: 'public/devright-logo-white.png'
+        },
+        {
+          local: 'attached_assets/DevRight TM - Color_1763406768678.png',
+          remote: 'public/devright-logo-tm-color.png'
+        }
+      ];
+      
+      const uploaded = [];
+      
+      for (const logo of logos) {
+        const fileBuffer = fs.readFileSync(logo.local);
+        const file = bucket.file(logo.remote);
+        
+        await file.save(fileBuffer, {
+          metadata: {
+            contentType: 'image/png',
+            cacheControl: 'public, max-age=31536000, immutable',
+          },
+        });
+        
+        uploaded.push(logo.remote);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Uploaded ${uploaded.length} logo variations`,
+        logos: uploaded
+      });
+    } catch (error) {
+      console.error('Failed to upload logos:', error);
+      res.status(500).json({ message: "Failed to upload logos" });
+    }
+  });
+
   // Send all email templates individually (admin only)
   app.post("/api/admin/send-all-template-samples", authenticateAdmin, async (req, res) => {
     try {

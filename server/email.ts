@@ -13,14 +13,28 @@ const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || process.env.FROM_EMAIL || 
 const FROM_NAME = 'SpeakerSphere Reviews';
 
 
-const DEVRIGHT_LOGO_DATA = 'https://thespeakersphere.org/api/devright-logo.png';
+// Array of all DevRight logo variations for rotation
+const DEVRIGHT_LOGOS = [
+  'https://thespeakersphere.org/api/devright-logo-1.png', // Color icon
+  'https://thespeakersphere.org/api/devright-logo-2.png', // White icon
+  'https://thespeakersphere.org/api/devright-logo-3.png', // TM Color
+];
 
-// Email header with DevRight logo
-const EMAIL_LOGO_HEADER = `
+// Get a random logo URL from the rotation
+function getDevRightLogoUrl(): string {
+  const randomIndex = Math.floor(Math.random() * DEVRIGHT_LOGOS.length);
+  return DEVRIGHT_LOGOS[randomIndex];
+}
+
+// Email header with rotating DevRight logo
+function getEmailLogoHeader(): string {
+  const logoUrl = getDevRightLogoUrl();
+  return `
   <div style="text-align: center; padding: 20px; background: #ffffff; border-bottom: 1px solid #e5e7eb;">
-    <img src="${DEVRIGHT_LOGO_DATA}" alt="DevRight Logo" style="max-width: 100px; height: auto;" />
+    <img src="${logoUrl}" alt="DevRight Logo" style="max-width: 100px; height: auto;" />
   </div>
 `;
+}
 
 
 
@@ -89,7 +103,7 @@ export function createVerificationEmail(
         </style>
       </head>
       <body>
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div class="container">
           <div class="header">
             <h1>Welcome to SpeakerSphere!</h1>
@@ -164,7 +178,7 @@ export function createWelcomeEmail(userEmail: string, userName: string) {
         </style>
       </head>
       <body>
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div class="container">
           <div class="header">
             <h1>🎉 Account Verified!</h1>
@@ -240,7 +254,7 @@ export function createPasswordResetEmail(
         </style>
       </head>
       <body>
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div class="container">
           <div class="header">
             <h1>Password Reset Request</h1>

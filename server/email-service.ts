@@ -11,14 +11,28 @@ const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@thespeakersphere.
 const ADMIN_EMAIL = 'admin@thespeakersphere.com';
 
 
-const DEVRIGHT_LOGO_DATA = 'https://thespeakersphere.org/api/devright-logo.png';
+// Array of all DevRight logo variations for rotation
+const DEVRIGHT_LOGOS = [
+  'https://thespeakersphere.org/api/devright-logo-1.png', // Color icon
+  'https://thespeakersphere.org/api/devright-logo-2.png', // White icon
+  'https://thespeakersphere.org/api/devright-logo-3.png', // TM Color
+];
 
-// Email header with DevRight logo
-const EMAIL_LOGO_HEADER = `
+// Get a random logo URL from the rotation
+function getDevRightLogoUrl(): string {
+  const randomIndex = Math.floor(Math.random() * DEVRIGHT_LOGOS.length);
+  return DEVRIGHT_LOGOS[randomIndex];
+}
+
+// Email header with rotating DevRight logo
+function getEmailLogoHeader(): string {
+  const logoUrl = getDevRightLogoUrl();
+  return `
   <div style="text-align: center; padding: 20px; background: #ffffff; border-bottom: 1px solid #e5e7eb;">
-    <img src="${DEVRIGHT_LOGO_DATA}" alt="DevRight Logo" style="max-width: 100px; height: auto;" />
+    <img src="${logoUrl}" alt="DevRight Logo" style="max-width: 100px; height: auto;" />
   </div>
 `;
+}
 
 
 
@@ -66,7 +80,7 @@ export class EmailService {
       from: FROM_EMAIL,
       subject: `Inquiry Confirmation - ${speakerName}`,
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Thank you for your speaker inquiry!</h2>
           
@@ -129,7 +143,7 @@ The SpeakerSphere Team`
       from: FROM_EMAIL,
       subject: `New Speaker Inquiry - ${speakerName}`,
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #dc2626;">New Speaker Inquiry Received</h2>
           
@@ -192,7 +206,7 @@ View in Admin Panel: https://thespeakersphere.com/admin`
       from: FROM_EMAIL,
       subject: 'Welcome to SpeakerSphere - Application Approved!',
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #059669;">Congratulations! Your application has been approved</h2>
           
@@ -271,7 +285,7 @@ The SpeakerSphere Team`
       from: FROM_EMAIL,
       subject: 'Your SpeakerSphere Login Credentials',
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Your SpeakerSphere Login Information</h2>
           
@@ -344,7 +358,7 @@ The SpeakerSphere Team`
       from: FROM_EMAIL,
       subject: 'SpeakerSphere Application Update',
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #475569;">Thank you for your interest in SpeakerSphere</h2>
           
@@ -404,7 +418,7 @@ The SpeakerSphere Team`
       from: FROM_EMAIL,
       subject: `New Review Received - ${rating}/5 Stars`,
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">You've received a new review!</h2>
           
@@ -455,7 +469,7 @@ The SpeakerSphere Team`
       from: FROM_EMAIL,
       subject: `Inquiry Update - ${speakerName}`,
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: ${statusColors[status] || '#475569'};">Inquiry Status Update</h2>
           
@@ -486,7 +500,7 @@ The SpeakerSphere Team`
       from: FROM_EMAIL,
       subject: 'SpeakerSphere Email Test - Configuration Check',
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">📧 Email System Test</h2>
           
@@ -544,7 +558,7 @@ This is a test email from SpeakerSphere's email system verification.`
       from: FROM_EMAIL,
       subject: 'Welcome to SpeakerSphere - Please Verify Your Email',
       html: `
-        ${EMAIL_LOGO_HEADER}
+        ${getEmailLogoHeader()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #059669;">🎉 Congratulations! Your application has been approved</h2>
           
