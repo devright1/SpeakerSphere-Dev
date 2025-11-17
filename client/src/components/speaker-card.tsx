@@ -218,11 +218,12 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               <div className="flex items-center gap-2 mt-2">
                 {speaker.instagramHandle && (
                   <a 
-                    href={`https://instagram.com/${speaker.instagramHandle}`} 
+                    href={speaker.instagramHandle.includes('instagram.com') ? speaker.instagramHandle : `https://instagram.com/${speaker.instagramHandle}`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-gray-500 hover:text-pink-600 transition-colors"
                     title={`Follow ${speaker.name} on Instagram`}
+                    data-testid="link-instagram"
                   >
                     <FaInstagram className="w-4 h-4" />
                   </a>
@@ -234,6 +235,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
                     rel="noopener noreferrer"
                     className="text-gray-500 hover:text-blue-600 transition-colors"
                     title={`Connect with ${speaker.name} on LinkedIn`}
+                    data-testid="link-linkedin"
                   >
                     <FaLinkedin className="w-4 h-4" />
                   </a>
@@ -245,6 +247,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
                     rel="noopener noreferrer"
                     className="text-gray-500 hover:text-blue-700 transition-colors"
                     title={`Follow ${speaker.name} on Facebook`}
+                    data-testid="link-facebook"
                   >
                     <FaFacebook className="w-4 h-4" />
                   </a>
@@ -256,6 +259,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
                     rel="noopener noreferrer"
                     className="text-gray-500 hover:text-gray-900 transition-colors"
                     title={`Follow ${speaker.name} on X`}
+                    data-testid="link-x"
                   >
                     <FaXTwitter className="w-4 h-4" />
                   </a>

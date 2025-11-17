@@ -1210,63 +1210,107 @@ export default function SpeakerDashboard() {
                       </div>
                     </div>
 
-                    {/* Social Media Handles (Pro/Premier only) */}
+                    {/* Social Media Links (Pro/Premier only) */}
                     {((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' || (speakerProfile?.subscriptionTier ?? 'basic') === 'premier') && (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="instagramHandle">Instagram Handle</Label>
+                            <Label htmlFor="instagramHandle">
+                              {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'Instagram Profile Link' : 'Instagram Handle'}
+                            </Label>
                             {isEditing ? (
                               <Input
                                 id="instagramHandle"
                                 value={editForm.instagramHandle || ''}
                                 onChange={(e) => setEditForm({...editForm, instagramHandle: e.target.value})}
-                                placeholder="@username"
+                                placeholder={(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'https://instagram.com/yourprofile' : '@username'}
+                                data-testid="input-instagram-handle"
                               />
                             ) : (
-                              <p className="text-gray-900 font-medium">{speakerProfile.instagramHandle || 'Not provided'}</p>
+                              <p className="text-gray-900 font-medium">
+                                {speakerProfile.instagramHandle ? (
+                                  speakerProfile.instagramHandle.includes('instagram.com') ? (
+                                    <a href={speakerProfile.instagramHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                      {speakerProfile.instagramHandle}
+                                    </a>
+                                  ) : speakerProfile.instagramHandle
+                                ) : 'Not provided'}
+                              </p>
                             )}
                           </div>
                           <div>
-                            <Label htmlFor="linkedinHandle">LinkedIn Handle</Label>
+                            <Label htmlFor="linkedinHandle">
+                              {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'LinkedIn Profile Link' : 'LinkedIn Handle'}
+                            </Label>
                             {isEditing ? (
                               <Input
                                 id="linkedinHandle"
                                 value={editForm.linkedinHandle || ''}
                                 onChange={(e) => setEditForm({...editForm, linkedinHandle: e.target.value})}
-                                placeholder="@username"
+                                placeholder={(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'https://linkedin.com/in/yourprofile' : '@username'}
+                                data-testid="input-linkedin-handle"
                               />
                             ) : (
-                              <p className="text-gray-900 font-medium">{speakerProfile.linkedinHandle || 'Not provided'}</p>
+                              <p className="text-gray-900 font-medium">
+                                {speakerProfile.linkedinHandle ? (
+                                  speakerProfile.linkedinHandle.includes('linkedin.com') ? (
+                                    <a href={speakerProfile.linkedinHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                      {speakerProfile.linkedinHandle}
+                                    </a>
+                                  ) : speakerProfile.linkedinHandle
+                                ) : 'Not provided'}
+                              </p>
                             )}
                           </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="facebookHandle">Facebook Handle</Label>
+                            <Label htmlFor="facebookHandle">
+                              {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'Facebook Profile Link' : 'Facebook Handle'}
+                            </Label>
                             {isEditing ? (
                               <Input
                                 id="facebookHandle"
                                 value={editForm.facebookHandle || ''}
                                 onChange={(e) => setEditForm({...editForm, facebookHandle: e.target.value})}
-                                placeholder="@username"
+                                placeholder={(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'https://facebook.com/yourprofile' : '@username'}
+                                data-testid="input-facebook-handle"
                               />
                             ) : (
-                              <p className="text-gray-900 font-medium">{speakerProfile.facebookHandle || 'Not provided'}</p>
+                              <p className="text-gray-900 font-medium">
+                                {speakerProfile.facebookHandle ? (
+                                  speakerProfile.facebookHandle.includes('facebook.com') ? (
+                                    <a href={speakerProfile.facebookHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                      {speakerProfile.facebookHandle}
+                                    </a>
+                                  ) : speakerProfile.facebookHandle
+                                ) : 'Not provided'}
+                              </p>
                             )}
                           </div>
                           <div>
-                            <Label htmlFor="xHandle">X (Twitter) Handle</Label>
+                            <Label htmlFor="xHandle">
+                              {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'X (Twitter) Profile Link' : 'X (Twitter) Handle'}
+                            </Label>
                             {isEditing ? (
                               <Input
                                 id="xHandle"
                                 value={editForm.xHandle || ''}
                                 onChange={(e) => setEditForm({...editForm, xHandle: e.target.value})}
-                                placeholder="@username"
+                                placeholder={(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'https://x.com/yourprofile' : '@username'}
+                                data-testid="input-x-handle"
                               />
                             ) : (
-                              <p className="text-gray-900 font-medium">{speakerProfile.xHandle || 'Not provided'}</p>
+                              <p className="text-gray-900 font-medium">
+                                {speakerProfile.xHandle ? (
+                                  speakerProfile.xHandle.includes('x.com') || speakerProfile.xHandle.includes('twitter.com') ? (
+                                    <a href={speakerProfile.xHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                      {speakerProfile.xHandle}
+                                    </a>
+                                  ) : speakerProfile.xHandle
+                                ) : 'Not provided'}
+                              </p>
                             )}
                           </div>
                         </div>
