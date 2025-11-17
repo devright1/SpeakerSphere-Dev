@@ -1876,4 +1876,165 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  // Send email templates reference (admin only)
+  app.post("/api/admin/send-template-reference", authenticateAdmin, async (req, res) => {
+    try {
+      const { recipientEmail } = req.body;
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!recipientEmail || !emailRegex.test(recipientEmail)) {
+        return res.status(400).json({ message: "Valid recipient email is required" });
+      }
+
+      const fs = await import('fs/promises');
+      const refDoc = await fs.readFile('/tmp/email_templates_reference.md', 'utf8');
+
+      const emailService = EmailService.getInstance();
+      const success = await emailService.sendEmail({
+        to: recipientEmail,
+        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@thespeakersphere.com',
+        subject: 'SpeakerSphere Email Templates - Complete Reference (12 Templates)',
+        text: refDoc,
+        html: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px; margin: -40px -40px 30px -40px; }
+    h2 { color: #2563eb; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-top: 30px; }
+    .template-box { background: #f8fafc; border-left: 4px solid #2563eb; padding: 20px; margin: 20px 0; border-radius: 4px; }
+    .meta { color: #64748b; font-size: 14px; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 3px; font-family: monospace; color: #dc2626; }
+    .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📧 SpeakerSphere Email Templates</h1>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">Complete Reference - 12 Templates</p>
+    </div>
+    
+    <p><strong>Generated:</strong> November 17, 2025</p>
+    <p>Comprehensive reference of all 12 email templates in SpeakerSphere platform.</p>
+    
+    <h2>📊 Template Categories</h2>
+    <div class="template-box">
+      <ul>
+        <li><strong>Authentication &amp; Account:</strong> Email Verification, Welcome Email, Password Reset</li>
+        <li><strong>Speaker Applications:</strong> Approval, Credentials Resend, Rejection</li>
+        <li><strong>Inquiry Management:</strong> Client Confirmation, Speaker Notification, Admin Alert, Status Updates</li>
+        <li><strong>Reviews &amp; Testing:</strong> Review Notification, Test Email</li>
+      </ul>
+    </div>
+    
+    <h2>Templates Summary</h2>
+    
+    <div class="template-box">
+      <h3>1. Email Verification</h3>
+      <p class="meta">server/email.ts | createVerificationEmail()</p>
+      <p><strong>Subject:</strong> "Verify Your SpeakerSphere Account"</p>
+      <p>24-hour secure token, purple gradient design</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>2. Welcome Email</h3>
+      <p class="meta">server/email.ts | createWelcomeEmail()</p>
+      <p><strong>Subject:</strong> "Welcome to SpeakerSphere - Your Account is Active!"</p>
+      <p>Account activation confirmation, green success design</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>3. Password Reset</h3>
+      <p class="meta">server/email.ts | createPasswordResetEmail()</p>
+      <p><strong>Subject:</strong> "Reset Your SpeakerSphere Password"</p>
+      <p>1-hour reset link, orange warning design</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>4. Speaker Approval</h3>
+      <p class="meta">server/email-service.ts | sendSpeakerApproval()</p>
+      <p><strong>Subject:</strong> "Welcome to SpeakerSphere - Application Approved!"</p>
+      <p>Login credentials with getting started checklist</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>5. Login Credentials</h3>
+      <p class="meta">server/email-service.ts | sendLoginCredentials()</p>
+      <p><strong>Subject:</strong> "Your SpeakerSphere Login Credentials"</p>
+      <p>Temporary password with security warning</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>6. Speaker Rejection</h3>
+      <p class="meta">server/email-service.ts | sendSpeakerRejection()</p>
+      <p><strong>Subject:</strong> "SpeakerSphere Application Update"</p>
+      <p>Optional feedback, encouragement to reapply</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>7. Inquiry Confirmation</h3>
+      <p class="meta">server/email-service.ts | sendInquiryConfirmation()</p>
+      <p><strong>Subject:</strong> "Inquiry Confirmation - [Speaker Name]"</p>
+      <p>Reference number with timeline and next steps</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>8. Speaker Notification</h3>
+      <p class="meta">server/email-service.ts | sendInquirySpeakerNotification()</p>
+      <p><strong>Subject:</strong> "New Booking Inquiry from [Client Name]"</p>
+      <p>Complete client/event details with direct reply</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>9. Admin Notification</h3>
+      <p class="meta">server/email-service.ts | sendInquiryAdminNotification()</p>
+      <p><strong>Subject:</strong> "New Speaker Inquiry - [Speaker Name]"</p>
+      <p>Admin panel link with red alert design</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>10. Inquiry Update</h3>
+      <p class="meta">server/email-service.ts | sendInquiryUpdate()</p>
+      <p><strong>Subject:</strong> "Inquiry Update - [Speaker Name]"</p>
+      <p>Color-coded status with dynamic messages</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>11. Review Notification</h3>
+      <p class="meta">server/email-service.ts | sendReviewNotification()</p>
+      <p><strong>Subject:</strong> "New Review Received - [Rating]/5 Stars"</p>
+      <p>Star rating with pending approval notice</p>
+    </div>
+    
+    <div class="template-box">
+      <h3>12. Test Email</h3>
+      <p class="meta">server/email-service.ts | sendTestEmail()</p>
+      <p><strong>Subject:</strong> "SpeakerSphere Email Test - Configuration Check"</p>
+      <p>Configuration details with timestamp</p>
+    </div>
+    
+    <div class="footer">
+      <p><strong>Full markdown documentation in plain text</strong></p>
+      <p>Version 1.0 | November 17, 2025</p>
+      <p><a href="mailto:admin@thespeakersphere.com">admin@thespeakersphere.com</a></p>
+    </div>
+  </div>
+</body>
+</html>`
+      });
+
+      if (success) {
+        res.json({ success: true, message: `Email templates reference sent to ${recipientEmail}` });
+      } else {
+        res.status(500).json({ message: "Failed to send email" });
+      }
+    } catch (error) {
+      console.error("Failed to send template reference email:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 }
