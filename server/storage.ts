@@ -721,6 +721,10 @@ export class MemStorage implements IStorage {
     };
     
     this.reviews.set(reviewId, updatedReview);
+    
+    // Recalculate speaker's review count and average rating (in case this was previously approved)
+    await this.updateSpeakerReviewStats(review.speakerId);
+    
     return updatedReview;
   }
 
