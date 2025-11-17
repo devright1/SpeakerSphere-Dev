@@ -2,8 +2,10 @@
 "SpeakerSphere Reviews" is a full-stack platform connecting healthcare professionals with medical speakers for discovery, evaluation, and booking. It features advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform utilizes real speaking topics extracted from CSV data, replacing generic categories with a topic-based organization. Its goal is to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
+- **November 17, 2025**: Removed social media functionality from Featured (Pro) tier - only Premier speakers can add social media profile links to their profiles
+- **November 17, 2025**: Updated subscription upgrade page to show all three tiers (Basic, Pro, Premier) for easy comparison regardless of current tier
 - **November 17, 2025**: Fixed critical download bug - updated download endpoint to stream files from Replit object storage instead of local filesystem using Google Cloud Storage client
-- **November 17, 2025**: Updated social media fields in speaker dashboard - Premier tier speakers now see "Profile Link" labels with URL placeholders, Pro tier sees "Handle" labels
+- **November 17, 2025**: Updated social media fields in speaker dashboard - Premier tier speakers see "Profile Link" labels with URL placeholders
 - **November 17, 2025**: Enhanced speaker card social media links to support both handles (@username) and full profile URLs
 - **November 17, 2025**: Added "Resume Subscription" feature for canceled subscriptions still within paid period, showing expiration date and allowing reactivation
 - **November 14, 2025**: Added success message with "Return Home" button to speaker application page after submission

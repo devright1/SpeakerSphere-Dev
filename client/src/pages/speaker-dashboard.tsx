@@ -1210,20 +1210,20 @@ export default function SpeakerDashboard() {
                       </div>
                     </div>
 
-                    {/* Social Media Links (Pro/Premier only) */}
-                    {((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' || (speakerProfile?.subscriptionTier ?? 'basic') === 'premier') && (
+                    {/* Social Media Links (Premier only) */}
+                    {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' && (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="instagramHandle">
-                              {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'Instagram Profile Link' : 'Instagram Handle'}
+                              Instagram Profile Link
                             </Label>
                             {isEditing ? (
                               <Input
                                 id="instagramHandle"
                                 value={editForm.instagramHandle || ''}
                                 onChange={(e) => setEditForm({...editForm, instagramHandle: e.target.value})}
-                                placeholder={(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'https://instagram.com/yourprofile' : '@username'}
+                                placeholder="https://instagram.com/yourprofile"
                                 data-testid="input-instagram-handle"
                               />
                             ) : (
@@ -1240,14 +1240,14 @@ export default function SpeakerDashboard() {
                           </div>
                           <div>
                             <Label htmlFor="linkedinHandle">
-                              {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'LinkedIn Profile Link' : 'LinkedIn Handle'}
+                              LinkedIn Profile Link
                             </Label>
                             {isEditing ? (
                               <Input
                                 id="linkedinHandle"
                                 value={editForm.linkedinHandle || ''}
                                 onChange={(e) => setEditForm({...editForm, linkedinHandle: e.target.value})}
-                                placeholder={(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'https://linkedin.com/in/yourprofile' : '@username'}
+                                placeholder="https://linkedin.com/in/yourprofile"
                                 data-testid="input-linkedin-handle"
                               />
                             ) : (
@@ -1267,14 +1267,14 @@ export default function SpeakerDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="facebookHandle">
-                              {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'Facebook Profile Link' : 'Facebook Handle'}
+                              Facebook Profile Link
                             </Label>
                             {isEditing ? (
                               <Input
                                 id="facebookHandle"
                                 value={editForm.facebookHandle || ''}
                                 onChange={(e) => setEditForm({...editForm, facebookHandle: e.target.value})}
-                                placeholder={(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'https://facebook.com/yourprofile' : '@username'}
+                                placeholder="https://facebook.com/yourprofile"
                                 data-testid="input-facebook-handle"
                               />
                             ) : (
@@ -1291,14 +1291,14 @@ export default function SpeakerDashboard() {
                           </div>
                           <div>
                             <Label htmlFor="xHandle">
-                              {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'X (Twitter) Profile Link' : 'X (Twitter) Handle'}
+                              X (Twitter) Profile Link
                             </Label>
                             {isEditing ? (
                               <Input
                                 id="xHandle"
                                 value={editForm.xHandle || ''}
                                 onChange={(e) => setEditForm({...editForm, xHandle: e.target.value})}
-                                placeholder={(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'https://x.com/yourprofile' : '@username'}
+                                placeholder="https://x.com/yourprofile"
                                 data-testid="input-x-handle"
                               />
                             ) : (
