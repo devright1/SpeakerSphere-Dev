@@ -1931,7 +1931,7 @@ export function registerAdminRoutes(app: Express) {
       results.push("7. Inquiry Confirmation (Client)");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 8. Speaker Inquiry Notification
+      // 8. Admin Inquiry Notification
       const sampleInquiry = {
         id: 12345,
         clientName: "Jane Client",
@@ -1944,32 +1944,27 @@ export function registerAdminRoutes(app: Express) {
         message: "We would like to invite you to speak at our annual medical conference about recent advances in cardiology.",
         createdAt: new Date()
       };
-      await emailService.sendInquirySpeakerNotification(sampleInquiry, recipientEmail, "Dr. Sarah Johnson");
-      results.push("8. Inquiry Speaker Notification");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 9. Admin Inquiry Notification
       await emailService.sendInquiryAdminNotification(sampleInquiry, "Dr. Sarah Johnson");
-      results.push("9. Inquiry Admin Notification");
+      results.push("8. Inquiry Admin Notification");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 10. Inquiry Status Update (Booked)
+      // 9. Inquiry Status Update (Booked)
       await emailService.sendInquiryUpdate(recipientEmail, "Jane Client", "Dr. Sarah Johnson", "booked", "Dr. Johnson has confirmed and is excited to speak at your event!");
-      results.push("10. Inquiry Status Update");
+      results.push("9. Inquiry Status Update");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 11. Review Notification
+      // 10. Review Notification
       await emailService.sendReviewNotification(recipientEmail, "Dr. Sarah Johnson", "Dr. Michael Chen", 5);
-      results.push("11. Review Notification");
+      results.push("10. Review Notification");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 12. Test Email
+      // 11. Test Email
       await emailService.sendTestEmail(recipientEmail, "This is a sample test email to verify SendGrid configuration.");
-      results.push("12. Test Email");
+      results.push("11. Test Email");
       
       res.json({ 
         success: true, 
-        message: `All 12 email templates sent individually to ${recipientEmail}`,
+        message: `All 11 email templates sent individually to ${recipientEmail}`,
         templates: results
       });
     } catch (error) {
@@ -1996,7 +1991,7 @@ export function registerAdminRoutes(app: Express) {
       const success = await emailService.sendEmail({
         to: recipientEmail,
         from: process.env.SENDGRID_FROM_EMAIL || 'noreply@thespeakersphere.com',
-        subject: 'SpeakerSphere Email Templates - Complete Reference (12 Templates)',
+        subject: 'SpeakerSphere Email Templates - Complete Reference (11 Templates)',
         text: refDoc,
         html: `<!DOCTYPE html>
 <html>
@@ -2016,18 +2011,18 @@ export function registerAdminRoutes(app: Express) {
   <div class="container">
     <div class="header">
       <h1>📧 SpeakerSphere Email Templates</h1>
-      <p style="margin: 10px 0 0 0; opacity: 0.9;">Complete Reference - 12 Templates</p>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">Complete Reference - 11 Templates</p>
     </div>
     
     <p><strong>Generated:</strong> November 17, 2025</p>
-    <p>Comprehensive reference of all 12 email templates in SpeakerSphere platform.</p>
+    <p>Comprehensive reference of all 11 email templates in SpeakerSphere platform.</p>
     
     <h2>📊 Template Categories</h2>
     <div class="template-box">
       <ul>
         <li><strong>Authentication &amp; Account:</strong> Email Verification, Welcome Email, Password Reset</li>
         <li><strong>Speaker Applications:</strong> Approval, Credentials Resend, Rejection</li>
-        <li><strong>Inquiry Management:</strong> Client Confirmation, Speaker Notification, Admin Alert, Status Updates</li>
+        <li><strong>Inquiry Management:</strong> Client Confirmation, Admin Alert, Status Updates</li>
         <li><strong>Reviews &amp; Testing:</strong> Review Notification, Test Email</li>
       </ul>
     </div>
@@ -2084,35 +2079,28 @@ export function registerAdminRoutes(app: Express) {
     </div>
     
     <div class="template-box">
-      <h3>8. Speaker Notification</h3>
-      <p class="meta">server/email-service.ts | sendInquirySpeakerNotification()</p>
-      <p><strong>Subject:</strong> "New Booking Inquiry from [Client Name]"</p>
-      <p>Complete client/event details with direct reply</p>
-    </div>
-    
-    <div class="template-box">
-      <h3>9. Admin Notification</h3>
+      <h3>8. Admin Inquiry Notification</h3>
       <p class="meta">server/email-service.ts | sendInquiryAdminNotification()</p>
       <p><strong>Subject:</strong> "New Speaker Inquiry - [Speaker Name]"</p>
       <p>Admin panel link with red alert design</p>
     </div>
     
     <div class="template-box">
-      <h3>10. Inquiry Update</h3>
+      <h3>9. Inquiry Status Update</h3>
       <p class="meta">server/email-service.ts | sendInquiryUpdate()</p>
       <p><strong>Subject:</strong> "Inquiry Update - [Speaker Name]"</p>
       <p>Color-coded status with dynamic messages</p>
     </div>
     
     <div class="template-box">
-      <h3>11. Review Notification</h3>
+      <h3>10. Review Notification</h3>
       <p class="meta">server/email-service.ts | sendReviewNotification()</p>
       <p><strong>Subject:</strong> "New Review Received - [Rating]/5 Stars"</p>
       <p>Star rating with pending approval notice</p>
     </div>
     
     <div class="template-box">
-      <h3>12. Test Email</h3>
+      <h3>11. Test Email</h3>
       <p class="meta">server/email-service.ts | sendTestEmail()</p>
       <p><strong>Subject:</strong> "SpeakerSphere Email Test - Configuration Check"</p>
       <p>Configuration details with timestamp</p>
