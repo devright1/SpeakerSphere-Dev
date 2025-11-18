@@ -181,7 +181,7 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
         
         {/* Content area that expands to fill available space */}
         <div className="flex-1 flex flex-col">
-          <p className="text-primary font-semibold mb-2 text-lg">{speaker.title}</p>
+          <p className="text-primary font-semibold mb-2 text-lg line-clamp-2">{speaker.title}</p>
           <p className="text-gray-600 mb-4 leading-relaxed line-clamp-2">
             {speaker.bio}
           </p>
