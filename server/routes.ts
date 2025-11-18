@@ -4,7 +4,7 @@ import { z } from "zod";
 // Removed zfd import as it's not needed for current functionality
 import session from "express-session";
 import { storage } from "./storage";
-import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory } from "../shared/schema";
+import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory, speakers } from "../shared/schema";
 import { registerAdminRoutes } from "./admin-routes";
 import { EmailService } from "./email-service";
 import multer from "multer";
@@ -499,6 +499,64 @@ export async function registerRoutes(app: Express): Promise<Express> {
     } catch (error) {
       console.error("Error fetching featured speakers:", error);
       res.status(500).json({ message: "Failed to fetch featured speakers" });
+    }
+  });
+
+  // Download CSV of speakers missing images
+  app.get("/api/speakers/missing-images/download", async (req, res) => {
+    try {
+      // Query database directly to get all speakers with their image URLs
+      const allSpeakers = await db.select({
+        name: speakers.name,
+        title: speakers.title,
+        imageUrl: speakers.imageUrl,
+      }).from(speakers);
+      
+      // Filter for speakers without migrated images
+      const speakersWithoutMigratedImages = allSpeakers.filter(
+        speaker => !speaker.imageUrl?.startsWith('/api/speaker-images/')
+      );
+      
+      // Helper function to properly escape CSV fields per RFC 4180
+      const escapeCsvField = (field: string): string => {
+        // Quote if field contains: quotes, commas, CR, LF, or leading/trailing whitespace
+        const needsQuoting = 
+          field.includes('"') || 
+          field.includes(',') || 
+          field.includes('\r') || 
+          field.includes('\n') ||
+          field.trim() !== field;
+        
+        if (needsQuoting) {
+          // Escape quotes by doubling them and wrap in quotes
+          return `"${field.replace(/"/g, '""')}"`;
+        }
+        return field;
+      };
+      
+      // Generate CSV content with proper escaping
+      const csvHeader = 'Name,Title\n';
+      const csvRows = speakersWithoutMigratedImages
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(speaker => {
+          const name = escapeCsvField(speaker.name);
+          const title = escapeCsvField(speaker.title || '');
+          return `${name},${title}`;
+        })
+        .join('\n');
+      
+      const csvContent = csvHeader + csvRows;
+      
+      // Log count for verification
+      console.log(`CSV Export: ${speakersWithoutMigratedImages.length} speakers missing migrated images`);
+      
+      // Set headers for file download with UTF-8 charset
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="speakers-missing-images.csv"');
+      res.send(csvContent);
+    } catch (error) {
+      console.error("Error generating CSV:", error);
+      res.status(500).json({ message: "Failed to generate CSV file" });
     }
   });
 
