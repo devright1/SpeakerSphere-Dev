@@ -1280,55 +1280,6 @@ export default function SpeakerProfile() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-
-
-            {/* Contact Information */}
-            {!speaker.hideContact && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contact Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center">
-                    <Mail className="w-4 h-4 mr-3 text-gray-500" />
-                    <a 
-                      href={`mailto:${speaker.email}`}
-                      onClick={() => tracking.trackEmailClick()}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      {speaker.email}
-                    </a>
-                  </div>
-                  {speaker.phone && (
-                    <div className="flex items-center">
-                      <Phone className="w-4 h-4 mr-3 text-gray-500" />
-                      <a 
-                        href={`tel:${speaker.phone}`}
-                        onClick={() => tracking.trackPhoneClick()}
-                        className="text-sm text-primary hover:underline"
-                      >
-                        {speaker.phone}
-                      </a>
-                    </div>
-                  )}
-                  {((speaker.subscriptionTier ?? 'basic') === 'pro' || (speaker.subscriptionTier ?? 'basic') === 'premier') && speaker.website && (
-                    <div className="flex items-center">
-                      <Globe className="w-4 h-4 mr-3 text-gray-500" />
-                      <a 
-                        href={speaker.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        onClick={() => tracking.trackWebsiteClick()}
-                        className="text-sm text-primary hover:underline"
-                      >
-                        Website
-                      </a>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
             {/* Book Speaker */}
             <Card>
               <CardHeader>
