@@ -4,7 +4,8 @@ import { objectStorageClient } from "./objectStorage";
 import { randomUUID } from "crypto";
 import { eq } from "drizzle-orm";
 
-const PRIVATE_OBJECT_DIR = process.env.PRIVATE_OBJECT_DIR || "";
+const PUBLIC_OBJECT_SEARCH_PATHS = process.env.PUBLIC_OBJECT_SEARCH_PATHS || "";
+const publicPath = PUBLIC_OBJECT_SEARCH_PATHS.split(',')[0].trim();
 
 interface MigrationResult {
   total: number;
@@ -61,7 +62,7 @@ async function downloadImage(url: string): Promise<Buffer | null> {
 async function uploadToStorage(imageBuffer: Buffer, fileName: string, contentType: string): Promise<string> {
   const objectId = randomUUID();
   const extension = contentType.split('/')[1] || 'jpg';
-  const fullPath = `${PRIVATE_OBJECT_DIR}/speaker-images/${objectId}.${extension}`;
+  const fullPath = `${publicPath}/speaker-images/${objectId}.${extension}`;
 
   const { bucketName, objectName } = parseObjectPath(fullPath);
   const bucket = objectStorageClient.bucket(bucketName);
@@ -74,18 +75,15 @@ async function uploadToStorage(imageBuffer: Buffer, fileName: string, contentTyp
     },
   });
 
-  // Make the file publicly accessible
-  await file.makePublic();
-
-  // Return the public URL
+  // Return the public URL (files in the public directory are already accessible)
   return `https://storage.googleapis.com/${bucketName}/${objectName}`;
 }
 
 export async function migrateSpeakerImages(limit?: number): Promise<MigrationResult> {
   console.log("Starting speaker image migration...");
   
-  if (!PRIVATE_OBJECT_DIR) {
-    throw new Error("PRIVATE_OBJECT_DIR environment variable is not set");
+  if (!publicPath) {
+    throw new Error("PUBLIC_OBJECT_SEARCH_PATHS environment variable is not set");
   }
 
   const result: MigrationResult = {
@@ -189,7 +187,8 @@ export async function migrateSpeakerImages(limit?: number): Promise<MigrationRes
 }
 
 // Run if called directly
-if (require.main === module) {
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
   migrateSpeakerImages()
     .then(() => {
       console.log("\nMigration completed");
