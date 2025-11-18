@@ -739,7 +739,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const topics = await storage.getSpeakerTopicsBySpeakerId(speakerId);
       
       // Get speaker to check subscription tier
-      const speaker = await storage.getSpeakerById(speakerId);
+      const speaker = await storage.getSpeaker(speakerId);
       
       // Basic tier speakers (or speakers with no subscription) can only show 3 topics
       const tier = speaker?.subscriptionTier || 'basic';
