@@ -737,7 +737,31 @@ export async function registerRoutes(app: Express): Promise<Express> {
     try {
       const speakerId = parseInt(req.params.id);
       const topics = await storage.getSpeakerTopicsBySpeakerId(speakerId);
-      res.json(topics);
+      
+      // Get speaker to check subscription tier
+      const speaker = await storage.getSpeakerById(speakerId);
+      
+      // Basic tier speakers (or speakers with no subscription) can only show 3 topics
+      const tier = speaker?.subscriptionTier || 'basic';
+      if (tier === 'basic' && topics.length > 3) {
+        // Use deterministic random selection based on speaker ID for consistency
+        const seededRandom = (seed: number) => {
+          const x = Math.sin(seed) * 10000;
+          return x - Math.floor(x);
+        };
+        
+        // Shuffle topics using seeded random
+        const shuffled = [...topics].sort((a, b) => {
+          const hashA = seededRandom(speakerId * 1000 + a.id);
+          const hashB = seededRandom(speakerId * 1000 + b.id);
+          return hashA - hashB;
+        });
+        
+        // Return only first 3 topics
+        res.json(shuffled.slice(0, 3));
+      } else {
+        res.json(topics);
+      }
     } catch (error) {
       console.error("Error fetching speaker topics:", error);
       res.status(500).json({ message: "Failed to fetch speaker topics" });
