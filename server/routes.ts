@@ -2786,6 +2786,27 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.get("/api/devright-logo.png", async (req, res) => {
     await serveLogo('devright-icon.png', res);
   });
+
+  // Serve speaker images from object storage
+  app.get("/api/speaker-images/:filename", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const filename = req.params.filename;
+      
+      // Search for the image in the public directory
+      const file = await objectStorageService.searchPublicObject(`speaker-images/${filename}`);
+      
+      if (!file) {
+        return res.status(404).send('Image not found');
+      }
+      
+      // Serve the image with proper caching
+      await objectStorageService.downloadObject(file, res, 86400); // Cache for 1 day
+    } catch (error) {
+      console.error('Error serving speaker image:', error);
+      res.status(500).send('Error loading image');
+    }
+  });
   
   // Subscription routes
   
