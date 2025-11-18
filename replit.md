@@ -2,6 +2,7 @@
 "SpeakerSphere Reviews" is a full-stack platform connecting healthcare professionals with medical speakers for discovery, evaluation, and booking. It features advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform utilizes real speaking topics extracted from CSV data, replacing generic categories with a topic-based organization. Its goal is to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
+- **November 18, 2025**: Reset all speaker ratings - all speakers now have reviewCount set to 0 and overallRating set to 0.00 (previously populated reviews were test data)
 - **November 18, 2025**: Implemented topic limit enforcement for basic tier speakers - basic tier speakers (those without paid subscriptions) now display only 3 randomly selected topics on their profiles, while Pro and Premier tier speakers can display all their topics
 - **November 18, 2025**: Removed contact information card from all speaker profiles - email, phone, and website contact details no longer displayed on public profiles
 - **November 18, 2025**: Removed speakerType badges from all speaker profiles - clinical/non-clinical designation no longer displayed in the UI
