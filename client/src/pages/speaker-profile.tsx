@@ -625,7 +625,6 @@ export default function SpeakerProfile() {
                             Featured
                           </Badge>
                         )}
-                        <Badge variant="outline">{speaker.speakerType}</Badge>
                       </div>
                     </div>
                     
