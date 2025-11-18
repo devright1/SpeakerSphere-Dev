@@ -2,6 +2,7 @@
 "SpeakerSphere Reviews" is a full-stack platform connecting healthcare professionals with medical speakers for discovery, evaluation, and booking. It features advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform utilizes real speaking topics extracted from CSV data, replacing generic categories with a topic-based organization. Its goal is to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
+- **November 18, 2025**: Reset all speaker ratings to 0.00 and review counts to 0 after database migration cleared review data
 - **November 17, 2025**: Fixed review rating calculation bug - changed overallRating from integer to decimal(3,2) and removed Math.round() to preserve precise averages (e.g., 4.67 instead of rounding to 5)
 - **November 17, 2025**: Added individual rating breakdown to admin review panel - admins can now see all 6 rating categories (Speaking Style, Podium Presence, Technical Proficiency, Content Relevance, Ease of Working, Visual Design) in pending, approved, and rejected review tabs
 - **November 17, 2025**: Fixed review submission blocking issue - made photo upload optional in review form validation to match backend behavior (photo field was incorrectly required on frontend)
