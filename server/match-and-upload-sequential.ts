@@ -72,7 +72,7 @@ function cleanSpeakerName(name: string): string {
 
 async function matchAndUploadSequential() {
   try {
-    const matchesData = fs.readFileSync('/tmp/sequential_matches.json', 'utf-8');
+    const matchesData = fs.readFileSync('/tmp/corrected_matches.json', 'utf-8');
     const rawMatches: SequentialMatch[] = JSON.parse(matchesData);
     
     const allSpeakers = await db.select().from(speakers);
