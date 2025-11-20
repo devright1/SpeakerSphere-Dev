@@ -15,13 +15,13 @@ const bucket = objectStorageClient.bucket(bucketName);
 
 async function fixMichaelPikos() {
   try {
-    const imagePath = '../attached_assets/image_1763568471777.png';
+    const imagePath = '../attached_assets/image_1763673015228.png';
     
-    // Find Dr. Michael A. Pikos in database
-    const speaker = await db.select().from(speakers).where(eq(speakers.name, 'Dr. Michael A. Pikos')).limit(1);
+    // Find Dr. Michael Pikos in database
+    const speaker = await db.select().from(speakers).where(eq(speakers.name, 'Dr. Michael Pikos')).limit(1);
     
     if (!speaker.length) {
-      console.log('❌ Dr. Michael A. Pikos not found');
+      console.log('❌ Dr. Michael Pikos not found');
       return;
     }
     
@@ -30,7 +30,7 @@ async function fixMichaelPikos() {
     // Read the image
     const imageBuffer = fs.readFileSync(imagePath);
     const timestamp = Date.now();
-    const filename = `dr-michael-a-pikos-${timestamp}.jpg`;
+    const filename = `michael-pikos-${timestamp}.jpg`;
     
     // Upload to object storage
     const file = bucket.file(`public/speaker-images/${filename}`);
@@ -48,7 +48,7 @@ async function fixMichaelPikos() {
       .set({ imageUrl: `/api/speaker-images/${filename}` })
       .where(eq(speakers.id, speaker[0].id));
     
-    console.log(`✅ Updated Dr. Michael A. Pikos → ${filename}`);
+    console.log(`✅ Updated Dr. Michael Pikos → ${filename}`);
     
   } catch (error) {
     console.error('Error:', error);
