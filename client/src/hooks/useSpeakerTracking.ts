@@ -10,10 +10,13 @@ interface TrackingData {
   scrollDepth?: number;
 }
 
-export function useSpeakerTracking(speakerId: number) {
+export function useSpeakerTracking(speakerId: number, subscriptionTier?: string) {
   const startTime = useRef<number>(Date.now());
   const maxScrollDepth = useRef<number>(0);
   const hasTrackedView = useRef<boolean>(false);
+  
+  // Only track analytics for Premier tier speakers
+  const shouldTrack = subscriptionTier === 'premier';
 
   // Track page scroll depth
   useEffect(() => {
@@ -33,11 +36,11 @@ export function useSpeakerTracking(speakerId: number) {
 
   // Track initial profile view
   useEffect(() => {
-    if (!hasTrackedView.current && speakerId > 0) {
+    if (!hasTrackedView.current && speakerId > 0 && shouldTrack) {
       hasTrackedView.current = true;
       trackInteraction('profile_view', 'page_load');
     }
-  }, [speakerId]);
+  }, [speakerId, shouldTrack]);
 
   // Main tracking function
   const trackInteraction = useCallback(async (
@@ -45,8 +48,8 @@ export function useSpeakerTracking(speakerId: number) {
     elementClicked?: string,
     metadata?: any
   ) => {
-    // Only track if we have a valid speaker ID
-    if (!speakerId || speakerId === 0) return;
+    // Only track if we have a valid speaker ID and Premier tier
+    if (!speakerId || speakerId === 0 || !shouldTrack) return;
 
     try {
       const trackingData: TrackingData = {

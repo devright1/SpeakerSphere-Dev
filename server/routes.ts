@@ -1260,6 +1260,13 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(400).json({ message: "Speaker ID and event type are required" });
       }
       
+      // Check speaker's subscription tier - only track for Premier tier
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker || speaker.subscriptionTier !== 'premier') {
+        // Silently succeed without tracking for non-Premier speakers
+        return res.json({ success: true, tracked: false });
+      }
+      
       // Track the interaction
       await storage.trackSpeakerInteraction({
         speakerId,
@@ -1272,7 +1279,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         referrerSource: req.headers.referer || null
       });
       
-      res.json({ success: true });
+      res.json({ success: true, tracked: true });
     } catch (error) {
       console.error("Analytics tracking error:", error);
       res.status(500).json({ message: "Failed to track analytics" });
@@ -1288,6 +1295,16 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const user = (req as any).session?.user;
       if (!user || (user.speakerId !== speakerId)) {
         return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Check speaker's subscription tier - only show analytics for Premier tier
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker || speaker.subscriptionTier !== 'premier') {
+        return res.status(403).json({ 
+          message: "Analytics are only available for Premier tier subscribers",
+          requiresUpgrade: true,
+          currentTier: speaker?.subscriptionTier || 'basic'
+        });
       }
       
       const analytics = await storage.getSpeakerAnalytics(speakerId);

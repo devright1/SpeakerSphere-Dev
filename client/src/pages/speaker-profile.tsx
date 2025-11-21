@@ -145,8 +145,8 @@ export default function SpeakerProfile() {
     enabled: !!speaker?.id,
   });
 
-  // Initialize speaker tracking (auto-tracks profile view)
-  const tracking = useSpeakerTracking(speaker?.id || 0);
+  // Initialize speaker tracking (auto-tracks profile view) - only for Premier tier
+  const tracking = useSpeakerTracking(speaker?.id || 0, speaker?.subscriptionTier);
 
   // Track speaker view with Google Analytics
   useEffect(() => {
