@@ -206,16 +206,32 @@ export default function SpeakerDashboard() {
   // Get storage limit in MB
   const storageLimitMb = tierLimits?.storageLimitMb || null;
 
-  // Fetch user stats and reviews
-  const { data: userStats } = useQuery({
-    queryKey: ['/api/users/stats', user?.id],
+  // Fetch speaker analytics for Premier tier speakers
+  const { data: speakerAnalytics } = useQuery({
+    queryKey: ['/api/analytics/speaker', speakerProfile?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/users/stats/${user?.id}`);
-      if (!response.ok) throw new Error('Failed to fetch user stats');
+      if (!speakerProfile?.id) return null;
+      const response = await fetch(`/api/analytics/speaker/${speakerProfile.id}`, {
+        headers: {
+          'X-User-ID': user?.id || ''
+        }
+      });
+      if (!response.ok) {
+        // Return null for non-Premier speakers or access denied
+        return null;
+      }
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: !!speakerProfile?.id && speakerProfile.subscriptionTier === 'premier',
   });
+  
+  // Map analytics data to match previous userStats structure
+  const userStats = speakerAnalytics || { 
+    profileViews: 0, 
+    emailClicks: 0, 
+    phoneClicks: 0, 
+    websiteClicks: 0 
+  };
 
   const { data: speakerReviews } = useQuery({
     queryKey: ['/api/speakers/reviews', speakerProfile?.id],
