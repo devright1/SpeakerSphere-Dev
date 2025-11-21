@@ -50,8 +50,11 @@ import {
   Trash2,
   Plus,
   EyeOff,
-  Camera
+  Camera,
+  Lock,
+  AlertTriangle
 } from "lucide-react";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
@@ -906,12 +909,15 @@ export default function SpeakerDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className={`grid w-full ${(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews ({speakerReviews?.length || 0})</TabsTrigger>
-            {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' && (
-              <TabsTrigger value="stats">Analytics</TabsTrigger>
-            )}
+            <TabsTrigger value="stats">
+              Analytics
+              {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                <Lock className="w-3 h-3 ml-1 inline" />
+              )}
+            </TabsTrigger>
             <TabsTrigger value="content">My Content</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
@@ -1836,44 +1842,49 @@ export default function SpeakerDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Analytics Tab (Premier only) */}
-          {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' && (
-            <TabsContent value="stats">
+          {/* Analytics Tab */}
+          <TabsContent value="stats">
+            {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
-                  <div className="text-sm text-gray-600">Profile Views</div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Mail className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                  <div className="text-2xl font-bold">{userStats?.emailClicks || 0}</div>
-                  <div className="text-sm text-gray-600">Email Clicks</div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Phone className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-                  <div className="text-2xl font-bold">{userStats?.phoneClicks || 0}</div>
-                  <div className="text-sm text-gray-600">Phone Clicks</div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                  <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
-                  <div className="text-sm text-gray-600">Website Clicks</div>
-                </CardContent>
-              </Card>
-            </div>
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                    <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
+                    <div className="text-sm text-gray-600">Profile Views</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Mail className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                    <div className="text-2xl font-bold">{userStats?.emailClicks || 0}</div>
+                    <div className="text-sm text-gray-600">Email Clicks</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Phone className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                    <div className="text-2xl font-bold">{userStats?.phoneClicks || 0}</div>
+                    <div className="text-sm text-gray-600">Phone Clicks</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                    <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
+                    <div className="text-sm text-gray-600">Website Clicks</div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <UpgradePrompt 
+                feature="analytics" 
+                currentTier={(speakerProfile?.subscriptionTier ?? 'basic') as "basic" | "pro" | "premier"} 
+              />
+            )}
           </TabsContent>
-          )}
 
           {/* My Content Tab */}
           <TabsContent value="content">
