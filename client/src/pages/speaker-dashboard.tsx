@@ -1972,7 +1972,7 @@ export default function SpeakerDashboard() {
                       <CardTitle>How People Find You</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-blue-50 rounded-lg">
                           <div className="text-xl font-bold">{userStats.discoverySources.search || 0}</div>
                           <div className="text-sm text-gray-600">Search Results</div>
@@ -1988,10 +1988,6 @@ export default function SpeakerDashboard() {
                         <div className="text-center p-4 bg-purple-50 rounded-lg">
                           <div className="text-xl font-bold">{userStats.discoverySources.direct || 0}</div>
                           <div className="text-sm text-gray-600">Direct Link</div>
-                        </div>
-                        <div className="text-center p-4 bg-gray-50 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.discoverySources.other || 0}</div>
-                          <div className="text-sm text-gray-600">Other</div>
                         </div>
                       </div>
                     </CardContent>
