@@ -1920,6 +1920,14 @@ export default function SpeakerDashboard() {
                     
                     <Card>
                       <CardContent className="p-6 text-center">
+                        <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                        <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
+                        <div className="text-sm text-gray-600">Website Clicks</div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-6 text-center">
                         <Search className="h-8 w-8 mx-auto mb-2 text-gray-600" />
                         <div className="text-2xl font-bold">{userStats?.searchAppearances || 0}</div>
                         <div className="text-sm text-gray-600">Search Appearances</div>
@@ -1927,22 +1935,6 @@ export default function SpeakerDashboard() {
                     </Card>
                   </div>
                 </div>
-
-                {/* Contact Engagement */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Contact Engagement</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-center">
-                      <div className="text-center p-6 bg-orange-50 rounded-lg min-w-[200px]">
-                        <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                        <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
-                        <div className="text-sm text-gray-600">Website Clicks</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
 
                 {/* Social Media Engagement */}
                 {userStats?.socialClicksByPlatform && (
