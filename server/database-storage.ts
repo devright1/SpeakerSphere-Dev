@@ -1317,18 +1317,216 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSpeakerAnalytics(speakerId: number): Promise<any> {
-    // Basic analytics implementation
+    // Fetch all interactions for this speaker
     const interactions = await db
       .select()
       .from(speakerInteractions)
       .where(eq(speakerInteractions.speakerId, speakerId));
 
+    // Basic metrics
+    const profileViews = interactions.filter(i => i.interactionType === 'profile_view').length;
+    const emailClicks = interactions.filter(i => i.interactionType === 'email_click').length;
+    const phoneClicks = interactions.filter(i => i.interactionType === 'phone_click').length;
+    const websiteClicks = interactions.filter(i => i.interactionType === 'website_click').length;
+    const socialClicks = interactions.filter(i => i.interactionType === 'social_click').length;
+    const shareClicks = interactions.filter(i => i.interactionType === 'share_click').length;
+    const videoPlays = interactions.filter(i => i.interactionType === 'video_play').length;
+    const searchAppearances = interactions.filter(i => i.interactionType === 'search_appearance').length;
+    
+    // Calculate average time on profile from session_end events
+    const sessionEndEvents = interactions.filter(i => i.interactionType === 'session_end');
+    let avgTimeOnProfile = 0;
+    if (sessionEndEvents.length > 0) {
+      const totalTime = sessionEndEvents.reduce((sum, event) => {
+        try {
+          const metadata = typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
+          return sum + (metadata?.duration || 0);
+        } catch {
+          return sum;
+        }
+      }, 0);
+      avgTimeOnProfile = Math.round(totalTime / sessionEndEvents.length);
+    }
+
+    // Get social media clicks breakdown
+    const socialClicksData = interactions
+      .filter(i => i.interactionType === 'social_click')
+      .map(i => {
+        try {
+          const metadata = typeof i.metadata === 'string' ? JSON.parse(i.metadata) : i.metadata;
+          return metadata?.platform || 'unknown';
+        } catch {
+          return 'unknown';
+        }
+      });
+    
+    const socialClicksByPlatform = {
+      instagram: socialClicksData.filter(p => p === 'instagram').length,
+      facebook: socialClicksData.filter(p => p === 'facebook').length,
+      x: socialClicksData.filter(p => p === 'x' || p === 'twitter').length,
+      linkedin: socialClicksData.filter(p => p === 'linkedin').length,
+    };
+
+    // Get discovery sources
+    const discoveryData = interactions
+      .filter(i => i.interactionType === 'profile_view' && i.referrerSource)
+      .map(i => i.referrerSource);
+    
+    const discoverySources = {
+      search: discoveryData.filter(s => s === 'search' || s?.includes('search')).length,
+      category: discoveryData.filter(s => s === 'category' || s?.includes('category')).length,
+      featured: discoveryData.filter(s => s === 'featured' || s?.includes('featured')).length,
+      direct: discoveryData.filter(s => s === 'direct').length,
+      other: discoveryData.filter(s => s && s !== 'search' && s !== 'category' && s !== 'featured' && s !== 'direct').length,
+    };
+
+    // Get favorites count
+    const favoritesCount = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(userBookmarks)
+      .where(eq(userBookmarks.speakerId, speakerId));
+    
+    // Get reviews count
+    const reviewsCount = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(reviews)
+      .where(
+        and(
+          eq(reviews.speakerId, speakerId),
+          eq(reviews.approvalStatus, 'approved')
+        )
+      );
+
+    // Get content downloads with user details
+    const downloads = await db
+      .select({
+        id: contentDownloads.id,
+        contentId: contentDownloads.contentId,
+        userName: contentDownloads.userName,
+        userEmail: contentDownloads.userEmail,
+        userCompany: contentDownloads.userCompany,
+        downloadedAt: contentDownloads.downloadedAt,
+        fileName: speakerContent.fileName,
+        originalName: speakerContent.originalName,
+        category: speakerContent.category,
+      })
+      .from(contentDownloads)
+      .innerJoin(speakerContent, eq(contentDownloads.contentId, speakerContent.id))
+      .where(eq(speakerContent.speakerId, speakerId))
+      .orderBy(desc(contentDownloads.downloadedAt))
+      .limit(100);
+
+    // Time-series data: group interactions by date for trends
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const recentInteractions = interactions.filter(i => {
+      const date = new Date(i.createdAt!);
+      return date >= thirtyDaysAgo;
+    });
+
+    // Daily trends for last 30 days
+    const dailyTrends: Record<string, any> = {};
+    recentInteractions.forEach(interaction => {
+      const date = new Date(interaction.createdAt!).toISOString().split('T')[0];
+      if (!dailyTrends[date]) {
+        dailyTrends[date] = {
+          date,
+          profileViews: 0,
+          totalClicks: 0,
+          socialClicks: 0,
+          videoPlays: 0,
+        };
+      }
+      if (interaction.interactionType === 'profile_view') dailyTrends[date].profileViews++;
+      if (['email_click', 'phone_click', 'website_click'].includes(interaction.interactionType)) dailyTrends[date].totalClicks++;
+      if (interaction.interactionType === 'social_click') dailyTrends[date].socialClicks++;
+      if (interaction.interactionType === 'video_play') dailyTrends[date].videoPlays++;
+    });
+
+    const dailyData = Object.values(dailyTrends).sort((a: any, b: any) => a.date.localeCompare(b.date));
+
+    // Weekly summary (last 7 days)
+    const weeklyInteractions = interactions.filter(i => {
+      const date = new Date(i.createdAt!);
+      return date >= sevenDaysAgo;
+    });
+
+    const weeklyViews = weeklyInteractions.filter(i => i.interactionType === 'profile_view').length;
+    const weeklyClicks = weeklyInteractions.filter(i => 
+      ['email_click', 'phone_click', 'website_click', 'social_click'].includes(i.interactionType)
+    ).length;
+
+    // Peak activity analysis
+    const hourlyActivity: Record<number, number> = {};
+    const dayOfWeekActivity: Record<number, number> = {};
+    
+    interactions.forEach(interaction => {
+      if (!interaction.createdAt) return;
+      const date = new Date(interaction.createdAt);
+      const hour = date.getHours();
+      const dayOfWeek = date.getDay();
+      
+      hourlyActivity[hour] = (hourlyActivity[hour] || 0) + 1;
+      dayOfWeekActivity[dayOfWeek] = (dayOfWeekActivity[dayOfWeek] || 0) + 1;
+    });
+
+    const peakHour = Object.entries(hourlyActivity).sort((a, b) => b[1] - a[1])[0];
+    const peakDay = Object.entries(dayOfWeekActivity).sort((a, b) => b[1] - a[1])[0];
+    
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
     return {
+      // Basic metrics
       totalInteractions: interactions.length,
-      profileViews: interactions.filter(i => i.interactionType === 'profile_view').length,
-      emailClicks: interactions.filter(i => i.interactionType === 'email_click').length,
-      phoneClicks: interactions.filter(i => i.interactionType === 'phone_click').length,
-      websiteClicks: interactions.filter(i => i.interactionType === 'website_click').length
+      profileViews,
+      emailClicks,
+      phoneClicks,
+      websiteClicks,
+      socialClicks,
+      shareClicks,
+      videoPlays,
+      searchAppearances,
+      
+      // Advanced metrics
+      avgTimeOnProfile, // in seconds
+      favoritesCount: favoritesCount[0]?.count || 0,
+      reviewsCount: reviewsCount[0]?.count || 0,
+      
+      // Social breakdown
+      socialClicksByPlatform,
+      
+      // Discovery sources
+      discoverySources,
+      
+      // Downloads with details
+      downloads: downloads.map(d => ({
+        id: d.id,
+        contentId: d.contentId,
+        fileName: d.originalName || d.fileName,
+        category: d.category,
+        userName: d.userName,
+        userEmail: d.userEmail,
+        userCompany: d.userCompany,
+        downloadedAt: d.downloadedAt,
+      })),
+      totalDownloads: downloads.length,
+      
+      // Trends
+      dailyTrends: dailyData,
+      weeklyViews,
+      weeklyClicks,
+      
+      // Peak activity
+      peakActivity: {
+        hour: peakHour ? { time: `${peakHour[0]}:00`, count: peakHour[1] } : null,
+        dayOfWeek: peakDay ? { day: dayNames[parseInt(peakDay[0])], count: peakDay[1] } : null,
+      },
+      
+      // Hourly and daily distribution for heatmap
+      hourlyDistribution: Object.entries(hourlyActivity).map(([hour, count]) => ({ hour: parseInt(hour), count })),
+      dailyDistribution: Object.entries(dayOfWeekActivity).map(([day, count]) => ({ day: parseInt(day), dayName: dayNames[parseInt(day)], count })),
     };
   }
 
@@ -1481,7 +1679,7 @@ export class DatabaseStorage implements IStorage {
     // Calculate average rating from overall ratings
     let overallRating = "0.00";
     if (reviewCount > 0) {
-      const totalRating = approvedReviews.reduce((sum, r) => sum + parseFloat(r.overallRating), 0);
+      const totalRating = approvedReviews.reduce((sum, r) => sum + r.overallRating, 0);
       overallRating = (totalRating / reviewCount).toFixed(2);
     }
     

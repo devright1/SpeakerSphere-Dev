@@ -10,10 +10,11 @@ interface TrackingData {
   scrollDepth?: number;
 }
 
-export function useSpeakerTracking(speakerId: number, subscriptionTier?: string) {
+export function useSpeakerTracking(speakerId: number, subscriptionTier?: string, discoverySource?: string) {
   const startTime = useRef<number>(Date.now());
   const maxScrollDepth = useRef<number>(0);
   const hasTrackedView = useRef<boolean>(false);
+  const hasTrackedExit = useRef<boolean>(false);
   
   // Only track analytics for Premier tier speakers
   const shouldTrack = subscriptionTier === 'premier';
@@ -34,12 +35,65 @@ export function useSpeakerTracking(speakerId: number, subscriptionTier?: string)
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Track initial profile view
+  // Track initial profile view with discovery source
   useEffect(() => {
     if (!hasTrackedView.current && speakerId > 0 && shouldTrack) {
       hasTrackedView.current = true;
-      trackInteraction('profile_view', 'page_load');
+      trackInteraction('profile_view', 'page_load', { discoverySource });
     }
+  }, [speakerId, shouldTrack]);
+
+  // Track session end when user leaves the page
+  useEffect(() => {
+    if (!shouldTrack || speakerId === 0) return;
+
+    const trackSessionEnd = () => {
+      if (hasTrackedExit.current) return;
+      hasTrackedExit.current = true;
+      
+      const sessionDuration = Math.floor((Date.now() - startTime.current) / 1000); // in seconds
+      
+      // Use sendBeacon for reliable tracking on page unload
+      const trackingData = {
+        speakerId,
+        eventType: 'session_end',
+        metadata: {
+          duration: sessionDuration,
+          maxScrollDepth: maxScrollDepth.current,
+        }
+      };
+      
+      // Use sendBeacon for reliable tracking during page unload
+      const blob = new Blob([JSON.stringify(trackingData)], { type: 'application/json' });
+      try {
+        navigator.sendBeacon('/api/analytics/track', blob);
+      } catch (error) {
+        console.debug('Session end tracking failed:', error);
+      }
+    };
+
+    // Track on page visibility change (tab switch, minimize)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        trackSessionEnd();
+      }
+    };
+
+    // Track on before unload
+    const handleBeforeUnload = () => {
+      trackSessionEnd();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+      trackSessionEnd();
+    };
   }, [speakerId, shouldTrack]);
 
   // Main tracking function
@@ -74,7 +128,7 @@ export function useSpeakerTracking(speakerId: number, subscriptionTier?: string)
       // Silent fail for tracking - don't disrupt user experience
       console.debug('Tracking failed:', error);
     }
-  }, [speakerId]);
+  }, [speakerId, shouldTrack]);
 
   // Specific tracking functions for different interactions
   const trackVideoPlay = useCallback((videoId: string, videoTitle?: string) => {
@@ -190,6 +244,24 @@ export function useSpeakerTracking(speakerId: number, subscriptionTier?: string)
     trackInteraction('profile_view', 'page_load');
   }, [trackInteraction]);
 
+  const trackContentDownload = useCallback((contentId: number, fileName?: string, category?: string) => {
+    trackInteraction('content_download', 'download_button', { 
+      contentId,
+      fileName,
+      category,
+      timestamp: Date.now() 
+    });
+  }, [trackInteraction]);
+
+  const trackSearchAppearance = useCallback((searchQuery?: string, position?: number, resultCount?: number) => {
+    trackInteraction('search_appearance', 'search_result', { 
+      searchQuery,
+      position,
+      resultCount,
+      timestamp: Date.now() 
+    });
+  }, [trackInteraction]);
+
   return {
     trackInteraction,
     trackProfileView,
@@ -210,6 +282,8 @@ export function useSpeakerTracking(speakerId: number, subscriptionTier?: string)
     trackShareClick,
     trackTabSwitch,
     trackDownloadBio,
-    trackAchievementClick
+    trackAchievementClick,
+    trackContentDownload,
+    trackSearchAppearance
   };
 }

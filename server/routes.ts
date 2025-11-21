@@ -1343,7 +1343,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       const speakers = await storage.getSpeakers({});
-      const inquiries = await storage.getInquiries();
+      const inquiries = await storage.getAllInquiries();
       
       // Calculate aggregate stats
       const totalSpeakers = speakers.length;
@@ -2576,12 +2576,13 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       // Set cache headers for performance
       const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds
+      const lastModified = image.updatedAt || image.createdAt;
       res.set({
         'Content-Type': image.mimeType,
         'Content-Length': image.size.toString(),
         'Cache-Control': `public, max-age=${maxAge}, immutable`,
         'ETag': `"${image.checksum}"`,
-        'Last-Modified': new Date(image.updatedAt || image.createdAt).toUTCString()
+        'Last-Modified': lastModified ? new Date(lastModified).toUTCString() : new Date().toUTCString()
       });
 
       // Check if client has cached version
