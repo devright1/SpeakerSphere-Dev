@@ -705,8 +705,8 @@ export default function SpeakerProfile() {
                         />
                       </div>
                       
-                      {/* Social Media Icons (Pro/Premier only) */}
-                      {((speaker.subscriptionTier ?? 'basic') === 'pro' || (speaker.subscriptionTier ?? 'basic') === 'premier') && !speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
+                      {/* Social Media Icons (Premier only) */}
+                      {(speaker.subscriptionTier ?? 'basic') === 'premier' && !speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
                         <div className="flex items-center gap-2 ml-4">
                           {speaker.instagramHandle && (
                             <a 

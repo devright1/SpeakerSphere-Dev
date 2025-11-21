@@ -213,8 +213,8 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
               )}
             </div>
             
-            {/* Social Media Icons */}
-            {!speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
+            {/* Social Media Icons (Premier only) */}
+            {(speaker.subscriptionTier ?? 'basic') === 'premier' && !speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
               <div className="flex items-center gap-2 mt-2">
                 {speaker.instagramHandle && (
                   <a 
