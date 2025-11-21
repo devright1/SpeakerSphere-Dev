@@ -28,8 +28,6 @@ import {
   Star, 
   Calendar, 
   MapPin, 
-  Phone, 
-  Mail, 
   Globe, 
   Award,
   BookOpen,
@@ -56,7 +54,6 @@ import {
   Clock,
   Heart,
   Share2,
-  Play,
   Search
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
@@ -1923,14 +1920,6 @@ export default function SpeakerDashboard() {
                     
                     <Card>
                       <CardContent className="p-6 text-center">
-                        <Play className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-                        <div className="text-2xl font-bold">{userStats?.videoPlays || 0}</div>
-                        <div className="text-sm text-gray-600">Video Plays</div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-6 text-center">
                         <Search className="h-8 w-8 mx-auto mb-2 text-gray-600" />
                         <div className="text-2xl font-bold">{userStats?.searchAppearances || 0}</div>
                         <div className="text-sm text-gray-600">Search Appearances</div>
@@ -1945,20 +1934,10 @@ export default function SpeakerDashboard() {
                     <CardTitle>Contact Engagement</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <Mail className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                        <div className="text-xl font-bold">{userStats?.emailClicks || 0}</div>
-                        <div className="text-sm text-gray-600">Email Clicks</div>
-                      </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <Phone className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-                        <div className="text-xl font-bold">{userStats?.phoneClicks || 0}</div>
-                        <div className="text-sm text-gray-600">Phone Clicks</div>
-                      </div>
-                      <div className="text-center p-4 bg-orange-50 rounded-lg">
-                        <Globe className="h-6 w-6 mx-auto mb-2 text-orange-600" />
-                        <div className="text-xl font-bold">{userStats?.websiteClicks || 0}</div>
+                    <div className="flex justify-center">
+                      <div className="text-center p-6 bg-orange-50 rounded-lg min-w-[200px]">
+                        <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                        <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
                         <div className="text-sm text-gray-600">Website Clicks</div>
                       </div>
                     </div>
