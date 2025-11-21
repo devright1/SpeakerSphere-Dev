@@ -1292,18 +1292,37 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const speakerId = parseInt(req.params.speakerId);
       
       // Verify speaker ownership or admin access
-      const user = (req as any).session?.user;
-      if (!user || (user.speakerId !== speakerId)) {
+      const sessionUser = (req as any).session?.user;
+      const userId = req.headers['x-user-id'] as string;
+      
+      // Get the speaker to verify ownership
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+      
+      // Check if user owns this speaker profile
+      let isOwner = false;
+      if (userId) {
+        const user = await storage.getUserById(userId);
+        isOwner = user?.speakerId === speakerId;
+      }
+      if (!isOwner && sessionUser) {
+        isOwner = sessionUser.speakerId === speakerId;
+      }
+      
+      const isAdmin = sessionUser?.role === 'admin';
+      
+      if (!isOwner && !isAdmin) {
         return res.status(403).json({ message: "Access denied" });
       }
       
       // Check speaker's subscription tier - only show analytics for Premier tier
-      const speaker = await storage.getSpeaker(speakerId);
-      if (!speaker || speaker.subscriptionTier !== 'premier') {
+      if (speaker.subscriptionTier !== 'premier') {
         return res.status(403).json({ 
           message: "Analytics are only available for Premier tier subscribers",
           requiresUpgrade: true,
-          currentTier: speaker?.subscriptionTier || 'basic'
+          currentTier: speaker.subscriptionTier || 'basic'
         });
       }
       
