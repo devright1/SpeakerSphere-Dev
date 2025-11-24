@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import SearchFilters from "@/components/search-filters";
@@ -28,6 +29,7 @@ const SPEAKERS_PER_PAGE = 20;
 
 export default function Speakers() {
   const [location] = useLocation();
+  const { user } = useAuth();
   const [filters, setFilters] = useState<FilterState>({});
   const [sortBy, setSortBy] = useState("relevance");
   const [currentPage, setCurrentPage] = useState(1);
@@ -173,6 +175,36 @@ export default function Speakers() {
   useEffect(() => {
     setCurrentPage(1);
   }, [filters, sortBy]);
+
+  // Track search appearances for Premier speakers when search results are displayed
+  useEffect(() => {
+    if (!speakers || !filters.search || filters.search.trim() === '') return;
+    
+    // Track search appearance for each Premier speaker in results
+    const premierSpeakers = speakers.filter(s => s.subscriptionTier === 'premier');
+    
+    premierSpeakers.forEach((speaker, index) => {
+      // Track search appearance via analytics API
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': user?.id || 'anonymous'
+        },
+        body: JSON.stringify({
+          speakerId: speaker.id,
+          eventType: 'search_appearance',
+          metadata: {
+            searchQuery: filters.search,
+            position: index + 1,
+            resultCount: speakers.length
+          }
+        })
+      }).catch(() => {
+        // Silent fail - don't disrupt user experience
+      });
+    });
+  }, [speakers, filters.search, user?.id]);
 
   return (
     <div className="min-h-screen bg-neutral">
