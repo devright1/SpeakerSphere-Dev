@@ -57,6 +57,7 @@ import {
   Search
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
@@ -1955,6 +1956,77 @@ export default function SpeakerDashboard() {
                     </Card>
                   </div>
                 </div>
+
+                {/* Interactions Over Time */}
+                {userStats?.dailyTrends && userStats.dailyTrends.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Interactions Over Time</CardTitle>
+                      <CardDescription>Daily activity for the past 30 days</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={userStats.dailyTrends}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="date" 
+                              tick={{ fontSize: 12 }}
+                              tickFormatter={(value) => {
+                                const date = new Date(value);
+                                return `${date.getMonth() + 1}/${date.getDate()}`;
+                              }}
+                            />
+                            <YAxis tick={{ fontSize: 12 }} />
+                            <Tooltip 
+                              labelFormatter={(value) => {
+                                const date = new Date(value);
+                                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                              }}
+                            />
+                            <Legend />
+                            <Line 
+                              type="monotone" 
+                              dataKey="profileViews" 
+                              stroke="#3b82f6" 
+                              name="Profile Views"
+                              strokeWidth={2}
+                              dot={{ r: 3 }}
+                              activeDot={{ r: 5 }}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="totalClicks" 
+                              stroke="#10b981" 
+                              name="Total Clicks"
+                              strokeWidth={2}
+                              dot={{ r: 3 }}
+                              activeDot={{ r: 5 }}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="socialClicks" 
+                              stroke="#f59e0b" 
+                              name="Social Clicks"
+                              strokeWidth={2}
+                              dot={{ r: 3 }}
+                              activeDot={{ r: 5 }}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="videoPlays" 
+                              stroke="#8b5cf6" 
+                              name="Video Plays"
+                              strokeWidth={2}
+                              dot={{ r: 3 }}
+                              activeDot={{ r: 5 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Social Media Engagement */}
                 {userStats?.socialClicksByPlatform && (
