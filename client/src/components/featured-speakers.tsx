@@ -97,7 +97,7 @@ export default function FeaturedSpeakers() {
                 <div className="results-grid">
                   {shuffledPremierSpeakers.map((speaker) => (
                     <div key={`premier-${speaker.id}-${Math.random()}`} className="hover-lift clean-transition">
-                      <SpeakerCard speaker={speaker} featured />
+                      <SpeakerCard speaker={speaker} featured discoverySource="featured" />
                     </div>
                   ))}
                 </div>
@@ -114,7 +114,7 @@ export default function FeaturedSpeakers() {
                 <div className="results-grid">
                   {shuffledProSpeakers.map((speaker) => (
                     <div key={`pro-${speaker.id}-${Math.random()}`} className="hover-lift clean-transition">
-                      <SpeakerCard speaker={speaker} featured />
+                      <SpeakerCard speaker={speaker} featured discoverySource="featured" />
                     </div>
                   ))}
                 </div>

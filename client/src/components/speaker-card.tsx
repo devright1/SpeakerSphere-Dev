@@ -17,9 +17,10 @@ import { trackSpeakerView, trackEmailClick, trackPhoneClick, trackWebsiteClick }
 interface SpeakerCardProps {
   speaker: Speaker;
   featured?: boolean;
+  discoverySource?: 'search' | 'category' | 'featured' | 'direct';
 }
 
-export default function SpeakerCard({ speaker, featured = false }: SpeakerCardProps) {
+export default function SpeakerCard({ speaker, featured = false, discoverySource = 'category' }: SpeakerCardProps) {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -333,10 +334,9 @@ export default function SpeakerCard({ speaker, featured = false }: SpeakerCardPr
 
           {/* Button area - always at bottom */}
           <div className="flex gap-2 mt-4">
-            <Link href={`/speakers/${(speaker as any).slug}`} className="flex-1">
+            <Link href={`/speakers/${(speaker as any).slug}?source=${discoverySource}`} className="flex-1">
               <Button 
                 className="w-full bg-primary hover:bg-blue-700 text-white"
-                onClick={() => trackSpeakerView(speaker.id, { source: 'speaker_card' })}
               >
                 View Profile
               </Button>

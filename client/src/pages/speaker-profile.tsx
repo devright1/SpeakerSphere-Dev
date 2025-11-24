@@ -96,6 +96,9 @@ export default function SpeakerProfile() {
   const [isAccessCodeModalOpen, setIsAccessCodeModalOpen] = useState(false);
   const [selectedProtectedContent, setSelectedProtectedContent] = useState<any>(null);
   const [accessCode, setAccessCode] = useState("");
+  
+  // Get discovery source from URL query parameter
+  const discoverySource = new URLSearchParams(window.location.search).get('source') as 'search' | 'category' | 'featured' | 'direct' || 'direct';
 
   const { data: speaker, isLoading: speakerLoading, error: speakerError } = useQuery<Speaker>({
     queryKey: ["/api/speakers", name],
@@ -146,7 +149,7 @@ export default function SpeakerProfile() {
   });
 
   // Initialize speaker tracking (auto-tracks profile view) - only for Premier tier
-  const tracking = useSpeakerTracking(speaker?.id || 0, speaker?.subscriptionTier);
+  const tracking = useSpeakerTracking(speaker?.id || 0, speaker?.subscriptionTier, discoverySource);
 
   // Track speaker view with Google Analytics
   useEffect(() => {

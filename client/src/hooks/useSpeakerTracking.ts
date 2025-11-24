@@ -39,9 +39,9 @@ export function useSpeakerTracking(speakerId: number, subscriptionTier?: string,
   useEffect(() => {
     if (!hasTrackedView.current && speakerId > 0 && shouldTrack) {
       hasTrackedView.current = true;
-      trackInteraction('profile_view', 'page_load', { discoverySource });
+      trackInteraction('profile_view', 'page_load', { source: discoverySource });
     }
-  }, [speakerId, shouldTrack]);
+  }, [speakerId, shouldTrack, discoverySource]);
 
   // Track session end when user leaves the page
   useEffect(() => {

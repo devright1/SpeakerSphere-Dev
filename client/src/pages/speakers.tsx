@@ -256,7 +256,7 @@ export default function Speakers() {
                 <>
                   <div className="results-grid">
                     {paginatedSpeakers.map((speaker) => (
-                      <SpeakerCard key={speaker.id} speaker={speaker} />
+                      <SpeakerCard key={speaker.id} speaker={speaker} discoverySource={filters.search ? 'search' : 'category'} />
                     ))}
                   </div>
                   
