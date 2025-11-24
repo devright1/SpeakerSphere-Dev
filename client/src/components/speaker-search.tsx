@@ -32,7 +32,7 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
   }, [suggestionData]);
 
   const handleSearch = () => {
-    onSearch(searchTerm);
+    onSearch(searchTerm.trim());
     setShowSuggestions(false);
   };
 
@@ -45,7 +45,7 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
   const handleSuggestionClick = (suggestion: string) => {
     setSearchTerm(suggestion);
     setShowSuggestions(false);
-    onSearch(suggestion);
+    onSearch(suggestion.trim());
   };
 
   return (

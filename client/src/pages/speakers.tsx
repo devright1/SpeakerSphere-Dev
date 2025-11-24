@@ -135,7 +135,7 @@ export default function Speakers() {
   };
 
   const handleSearch = (searchTerm: string) => {
-    setFilters({ ...filters, search: searchTerm });
+    setFilters({ ...filters, search: searchTerm.trim() });
   };
 
   const sortedSpeakers = useMemo(() => {
