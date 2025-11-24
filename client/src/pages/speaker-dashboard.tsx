@@ -232,7 +232,15 @@ export default function SpeakerDashboard() {
     profileViews: 0, 
     emailClicks: 0, 
     phoneClicks: 0, 
-    websiteClicks: 0 
+    websiteClicks: 0,
+    searchAppearances: 0,
+    socialClicks: 0,
+    shareClicks: 0,
+    favoritesCount: 0,
+    reviewsCount: 0,
+    avgTimeOnProfile: 0,
+    downloads: [],
+    totalDownloads: 0
   };
 
   const { data: speakerReviews } = useQuery({
