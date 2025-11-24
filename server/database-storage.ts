@@ -1367,17 +1367,29 @@ export class DatabaseStorage implements IStorage {
       linkedin: socialClicksData.filter(p => p === 'linkedin').length,
     };
 
-    // Get discovery sources
+    // Get discovery sources - parse from metadata JSON
     const discoveryData = interactions
-      .filter(i => i.interactionType === 'profile_view' && i.referrerSource)
-      .map(i => i.referrerSource);
+      .filter(i => i.interactionType === 'profile_view')
+      .map(i => {
+        // Try to parse metadata for source field
+        if (i.metadata) {
+          try {
+            const meta = typeof i.metadata === 'string' ? JSON.parse(i.metadata) : i.metadata;
+            return meta.source || meta.discoverySource;
+          } catch (e) {
+            return null;
+          }
+        }
+        // Fallback to referrerSource
+        return i.referrerSource;
+      })
+      .filter(s => s); // Remove nulls
     
     const discoverySources = {
       search: discoveryData.filter(s => s === 'search' || s?.includes('search')).length,
-      category: discoveryData.filter(s => s === 'category' || s?.includes('category')).length,
+      category: discoveryData.filter(s => s === 'category' || s?.includes('category') || s === 'speaker_card').length,
       featured: discoveryData.filter(s => s === 'featured' || s?.includes('featured')).length,
       direct: discoveryData.filter(s => s === 'direct').length,
-      other: discoveryData.filter(s => s && s !== 'search' && s !== 'category' && s !== 'featured' && s !== 'direct').length,
     };
 
     // Get favorites count
