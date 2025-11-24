@@ -2012,15 +2012,6 @@ export default function SpeakerDashboard() {
                               dot={{ r: 3 }}
                               activeDot={{ r: 5 }}
                             />
-                            <Line 
-                              type="monotone" 
-                              dataKey="videoPlays" 
-                              stroke="#8b5cf6" 
-                              name="Video Plays"
-                              strokeWidth={2}
-                              dot={{ r: 3 }}
-                              activeDot={{ r: 5 }}
-                            />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
