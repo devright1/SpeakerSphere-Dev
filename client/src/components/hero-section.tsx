@@ -12,7 +12,8 @@ export default function HeroSection() {
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    if (searchTerm) params.append("search", searchTerm);
+    const trimmedSearch = searchTerm.trim();
+    if (trimmedSearch) params.append("search", trimmedSearch);
     if (category && category !== "all") params.append("category", category);
     
     setLocation(`/speakers?${params.toString()}`);
