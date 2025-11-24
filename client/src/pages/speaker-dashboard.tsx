@@ -240,7 +240,19 @@ export default function SpeakerDashboard() {
     reviewsCount: 0,
     avgTimeOnProfile: 0,
     downloads: [],
-    totalDownloads: 0
+    totalDownloads: 0,
+    discoverySources: {
+      search: 0,
+      category: 0,
+      featured: 0,
+      direct: 0
+    },
+    socialClicksByPlatform: {
+      instagram: 0,
+      facebook: 0,
+      x: 0,
+      linkedin: 0
+    }
   };
 
   const { data: speakerReviews } = useQuery({
