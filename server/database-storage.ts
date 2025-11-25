@@ -1460,12 +1460,25 @@ export class DatabaseStorage implements IStorage {
       };
     }
     
+    // Engagement interaction types that count as "Total Clicks" (profile activity beyond just viewing)
+    const engagementInteractionTypes = [
+      'social_click',      // Clicked a social media link
+      'tab_click',         // Clicked a tab on the profile (Overview, Resources, Reviews, etc.)
+      'resource_download', // Downloaded a resource
+      'bio_expand',        // Expanded the bio section
+      'share_click',       // Shared the profile
+      'website_click',     // Clicked website link
+      'inquiry_click',     // Started an inquiry
+      'topic_click',       // Clicked a topic tag
+      'review_section_view', // Viewed reviews section
+    ];
+    
     // Populate with actual interaction data
     monthInteractions.forEach(interaction => {
       const date = new Date(interaction.createdAt!).toISOString().split('T')[0];
       if (dailyTrends[date]) {
         if (interaction.interactionType === 'profile_view') dailyTrends[date].profileViews++;
-        if (['email_click', 'phone_click', 'website_click'].includes(interaction.interactionType)) dailyTrends[date].totalClicks++;
+        if (engagementInteractionTypes.includes(interaction.interactionType)) dailyTrends[date].totalClicks++;
         if (interaction.interactionType === 'social_click') dailyTrends[date].socialClicks++;
       }
     });
@@ -1480,7 +1493,7 @@ export class DatabaseStorage implements IStorage {
 
     const weeklyViews = weeklyInteractions.filter(i => i.interactionType === 'profile_view').length;
     const weeklyClicks = weeklyInteractions.filter(i => 
-      ['email_click', 'phone_click', 'website_click', 'social_click'].includes(i.interactionType)
+      engagementInteractionTypes.includes(i.interactionType)
     ).length;
 
     // Peak activity analysis
