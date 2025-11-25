@@ -1589,6 +1589,133 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Efficient platform-wide analytics aggregation (for admin dashboard)
+  async getPlatformAnalytics(): Promise<{
+    totalSpeakers: number;
+    totalViews: number;
+    totalClicks: number;
+    totalInquiries: number;
+  }> {
+    // Engagement interaction types (must match those in getSpeakerAnalytics)
+    const engagementTypes = [
+      'social_click',
+      'tab_click',
+      'resource_download',
+      'bio_expand',
+      'share_click',
+      'website_click',
+      'inquiry_click',
+      'topic_click',
+      'review_section_view',
+    ];
+
+    // Get total speakers count
+    const speakersResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(speakers);
+    const totalSpeakers = speakersResult[0]?.count || 0;
+
+    // Get total profile views
+    const viewsResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(speakerInteractions)
+      .where(eq(speakerInteractions.interactionType, 'profile_view'));
+    const totalViews = viewsResult[0]?.count || 0;
+
+    // Get total engagement clicks (all engagement interaction types)
+    const clicksResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(speakerInteractions)
+      .where(inArray(speakerInteractions.interactionType, engagementTypes));
+    const totalClicks = clicksResult[0]?.count || 0;
+
+    // Get total inquiries
+    const inquiriesResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(inquiries);
+    const totalInquiries = inquiriesResult[0]?.count || 0;
+
+    return {
+      totalSpeakers,
+      totalViews,
+      totalClicks,
+      totalInquiries
+    };
+  }
+
+  // Get top performing speakers efficiently (for admin dashboard)
+  async getTopPerformers(limit: number = 10): Promise<Array<{
+    speakerId: number;
+    name: string;
+    profileViews: number;
+    engagementClicks: number;
+    inquiryClicks: number;
+  }>> {
+    const engagementTypes = [
+      'social_click',
+      'tab_click',
+      'resource_download',
+      'bio_expand',
+      'share_click',
+      'website_click',
+      'inquiry_click',
+      'topic_click',
+      'review_section_view',
+    ];
+
+    // Get speakers with their interaction counts in one query
+    const results = await db
+      .select({
+        speakerId: speakerInteractions.speakerId,
+        interactionType: speakerInteractions.interactionType,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(speakerInteractions)
+      .groupBy(speakerInteractions.speakerId, speakerInteractions.interactionType);
+
+    // Aggregate by speaker
+    const speakerStats: Record<number, { profileViews: number; engagementClicks: number; inquiryClicks: number }> = {};
+    
+    for (const row of results) {
+      if (!speakerStats[row.speakerId]) {
+        speakerStats[row.speakerId] = { profileViews: 0, engagementClicks: 0, inquiryClicks: 0 };
+      }
+      
+      if (row.interactionType === 'profile_view') {
+        speakerStats[row.speakerId].profileViews = row.count;
+      }
+      if (engagementTypes.includes(row.interactionType)) {
+        speakerStats[row.speakerId].engagementClicks += row.count;
+      }
+      if (row.interactionType === 'inquiry_click') {
+        speakerStats[row.speakerId].inquiryClicks = row.count;
+      }
+    }
+
+    // Get speaker names
+    const speakerIds = Object.keys(speakerStats).map(id => parseInt(id));
+    if (speakerIds.length === 0) return [];
+
+    const speakerNames = await db
+      .select({ id: speakers.id, name: speakers.name })
+      .from(speakers)
+      .where(inArray(speakers.id, speakerIds));
+
+    const nameMap = new Map(speakerNames.map(s => [s.id, s.name]));
+
+    // Sort by profile views and return top performers
+    return Object.entries(speakerStats)
+      .map(([id, stats]) => ({
+        speakerId: parseInt(id),
+        name: nameMap.get(parseInt(id)) || 'Unknown Speaker',
+        profileViews: stats.profileViews,
+        engagementClicks: stats.engagementClicks,
+        inquiryClicks: stats.inquiryClicks,
+      }))
+      .sort((a, b) => b.profileViews - a.profileViews)
+      .slice(0, limit);
+  }
+
   // Email verification operations
   async setEmailVerificationToken(userId: string, token: string, expires: Date): Promise<User | undefined> {
     const result = await db.update(users)

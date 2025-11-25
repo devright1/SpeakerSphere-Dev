@@ -200,6 +200,19 @@ export interface IStorage {
   // Speaker Interaction Tracking & Analytics
   trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void>;
   getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null): Promise<any>;
+  getPlatformAnalytics(): Promise<{
+    totalSpeakers: number;
+    totalViews: number;
+    totalClicks: number;
+    totalInquiries: number;
+  }>;
+  getTopPerformers(limit?: number): Promise<Array<{
+    speakerId: number;
+    name: string;
+    profileViews: number;
+    engagementClicks: number;
+    inquiryClicks: number;
+  }>>;
   getUserSession(token: string): Promise<UserSession | undefined>;
 
   // Speaker Content Management
@@ -1254,6 +1267,61 @@ export class MemStorage implements IStorage {
 
   async updateSpeakerAnalytics(speakerId: number, interactionType: string): Promise<void> {
     // No-op for memory storage
+  }
+
+  async trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void> {
+    // No-op for memory storage
+  }
+
+  async getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null): Promise<any> {
+    // Basic stub for memory storage
+    return {
+      profileViews: 0,
+      engagementClicks: 0,
+      socialClicks: 0,
+      websiteClicks: 0,
+      inquiryClicks: 0,
+      tabClicks: 0,
+      resourceDownloads: 0,
+      bioExpands: 0,
+      topicClicks: 0,
+      reviewSectionViews: 0,
+      shareClicks: 0,
+      videoPlays: 0,
+      searchAppearances: 0,
+      totalInteractions: 0,
+      weeklyViews: 0,
+      weeklyClicks: 0,
+      dailyTrends: [],
+      downloads: [],
+      totalDownloads: 0,
+    };
+  }
+
+  async getPlatformAnalytics(): Promise<{
+    totalSpeakers: number;
+    totalViews: number;
+    totalClicks: number;
+    totalInquiries: number;
+  }> {
+    // Return basic counts from memory storage
+    return {
+      totalSpeakers: this.speakers.size,
+      totalViews: 0,
+      totalClicks: 0,
+      totalInquiries: this.inquiries.size
+    };
+  }
+
+  async getTopPerformers(limit: number = 10): Promise<Array<{
+    speakerId: number;
+    name: string;
+    profileViews: number;
+    engagementClicks: number;
+    inquiryClicks: number;
+  }>> {
+    // Return empty array for memory storage (no tracking data)
+    return [];
   }
 
   async getUserSession(token: string): Promise<UserSession | undefined> {

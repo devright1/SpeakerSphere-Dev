@@ -1344,34 +1344,11 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const speakers = await storage.getSpeakers({});
-      const inquiries = await storage.getAllInquiries();
-      
-      // Calculate aggregate stats
-      const totalSpeakers = speakers.length;
-      let totalViews = 0;
-      let totalClicks = 0;
-      let totalInquiries = inquiries.length;
-
-      // Get analytics for all speakers
-      for (const speaker of speakers) {
-        try {
-          const analytics = await storage.getSpeakerAnalytics(speaker.id);
-          totalViews += analytics.profileViews || 0;
-          totalClicks += analytics.engagementClicks || 0;
-        } catch (error) {
-          // Continue if speaker analytics fails
-          console.error(`Failed to get analytics for speaker ${speaker.id}:`, error);
-        }
-      }
+      // Use efficient aggregated query instead of iterating through all speakers
+      const platformAnalytics = await storage.getPlatformAnalytics();
 
       res.json({
-        overview: {
-          totalSpeakers,
-          totalViews,
-          totalClicks,
-          totalInquiries
-        }
+        overview: platformAnalytics
       });
     } catch (error) {
       console.error("Error fetching dashboard analytics:", error);
@@ -1387,40 +1364,17 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const speakers = await storage.getSpeakers({});
-      
-      // Get analytics for each speaker
-      const speakersWithAnalytics = await Promise.all(
-        speakers.map(async (speaker) => {
-          try {
-            const analytics = await storage.getSpeakerAnalytics(speaker.id);
-            return {
-              speakerId: speaker.id,
-              name: speaker.name,
-              profileViews: analytics.profileViews || 0,
-              totalClicks: analytics.engagementClicks || 0,
-              inquiryClicks: analytics.inquiryClicks || 0,
-              videoViews: analytics.videoViews || 0
-            };
-          } catch (error) {
-            return {
-              speakerId: speaker.id,
-              name: speaker.name,
-              profileViews: 0,
-              totalClicks: 0,
-              inquiryClicks: 0,
-              videoViews: 0
-            };
-          }
-        })
-      );
+      // Use efficient aggregated query
+      const topPerformers = await storage.getTopPerformers(10);
 
-      // Sort by profile views descending
-      const topPerformers = speakersWithAnalytics
-        .sort((a, b) => b.profileViews - a.profileViews)
-        .slice(0, 10); // Top 10 performers
-
-      res.json(topPerformers);
+      // Map to expected format
+      res.json(topPerformers.map(p => ({
+        speakerId: p.speakerId,
+        name: p.name,
+        profileViews: p.profileViews,
+        totalClicks: p.engagementClicks,
+        inquiryClicks: p.inquiryClicks
+      })));
     } catch (error) {
       console.error("Error fetching top performers:", error);
       res.status(500).json({ message: "Failed to fetch top performers" });
