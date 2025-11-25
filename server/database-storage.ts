@@ -1316,7 +1316,7 @@ export class DatabaseStorage implements IStorage {
     await db.insert(speakerInteractions).values(interaction);
   }
 
-  async getSpeakerAnalytics(speakerId: number): Promise<any> {
+  async getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null): Promise<any> {
     // Fetch all interactions for this speaker
     const interactions = await db
       .select()
@@ -1430,31 +1430,44 @@ export class DatabaseStorage implements IStorage {
 
     // Time-series data: group interactions by date for trends
     const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
-    const recentInteractions = interactions.filter(i => {
+    // Determine the month to display
+    const targetYear = year || now.getFullYear();
+    const targetMonth = month !== null && month !== undefined ? month - 1 : now.getMonth(); // Convert 1-indexed month to 0-indexed
+    
+    // Get the first and last day of the target month
+    const firstDayOfMonth = new Date(targetYear, targetMonth, 1);
+    const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0); // Day 0 of next month = last day of current month
+    const daysInMonth = lastDayOfMonth.getDate();
+    
+    // Filter interactions for the selected month
+    const monthInteractions = interactions.filter(i => {
       const date = new Date(i.createdAt!);
-      return date >= thirtyDaysAgo;
+      return date >= firstDayOfMonth && date <= lastDayOfMonth;
     });
 
-    // Daily trends for last 30 days
+    // Initialize all days of the month with zero values
     const dailyTrends: Record<string, any> = {};
-    recentInteractions.forEach(interaction => {
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${targetYear}-${String(targetMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      dailyTrends[dateStr] = {
+        date: dateStr,
+        day,
+        profileViews: 0,
+        totalClicks: 0,
+        socialClicks: 0,
+      };
+    }
+    
+    // Populate with actual interaction data
+    monthInteractions.forEach(interaction => {
       const date = new Date(interaction.createdAt!).toISOString().split('T')[0];
-      if (!dailyTrends[date]) {
-        dailyTrends[date] = {
-          date,
-          profileViews: 0,
-          totalClicks: 0,
-          socialClicks: 0,
-          videoPlays: 0,
-        };
+      if (dailyTrends[date]) {
+        if (interaction.interactionType === 'profile_view') dailyTrends[date].profileViews++;
+        if (['email_click', 'phone_click', 'website_click'].includes(interaction.interactionType)) dailyTrends[date].totalClicks++;
+        if (interaction.interactionType === 'social_click') dailyTrends[date].socialClicks++;
       }
-      if (interaction.interactionType === 'profile_view') dailyTrends[date].profileViews++;
-      if (['email_click', 'phone_click', 'website_click'].includes(interaction.interactionType)) dailyTrends[date].totalClicks++;
-      if (interaction.interactionType === 'social_click') dailyTrends[date].socialClicks++;
-      if (interaction.interactionType === 'video_play') dailyTrends[date].videoPlays++;
     });
 
     const dailyData = Object.values(dailyTrends).sort((a: any, b: any) => a.date.localeCompare(b.date));
@@ -1490,6 +1503,11 @@ export class DatabaseStorage implements IStorage {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     
     return {
+      // Selected period info
+      selectedMonth: targetMonth + 1, // Return 1-indexed month
+      selectedYear: targetYear,
+      daysInMonth,
+      
       // Basic metrics
       totalInteractions: interactions.length,
       profileViews,

@@ -199,7 +199,7 @@ export interface IStorage {
 
   // Speaker Interaction Tracking & Analytics
   trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void>;
-  getSpeakerAnalytics(speakerId: number): Promise<any>;
+  getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null): Promise<any>;
   getUserSession(token: string): Promise<UserSession | undefined>;
 
   // Speaker Content Management
