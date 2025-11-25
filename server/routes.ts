@@ -1358,7 +1358,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         try {
           const analytics = await storage.getSpeakerAnalytics(speaker.id);
           totalViews += analytics.profileViews || 0;
-          totalClicks += (analytics.emailClicks || 0) + (analytics.phoneClicks || 0) + (analytics.websiteClicks || 0);
+          totalClicks += analytics.engagementClicks || 0;
         } catch (error) {
           // Continue if speaker analytics fails
           console.error(`Failed to get analytics for speaker ${speaker.id}:`, error);
@@ -1398,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
               speakerId: speaker.id,
               name: speaker.name,
               profileViews: analytics.profileViews || 0,
-              totalClicks: (analytics.emailClicks || 0) + (analytics.phoneClicks || 0) + (analytics.websiteClicks || 0),
+              totalClicks: analytics.engagementClicks || 0,
               inquiryClicks: analytics.inquiryClicks || 0,
               videoViews: analytics.videoViews || 0
             };
