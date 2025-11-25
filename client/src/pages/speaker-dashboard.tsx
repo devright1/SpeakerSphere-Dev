@@ -2128,6 +2128,7 @@ export default function SpeakerDashboard() {
                         <div className="p-4 bg-green-50 rounded-lg">
                           <div className="text-sm text-gray-600 mb-1">Total Clicks</div>
                           <div className="text-2xl font-bold text-green-700">{userStats.weeklyClicks || 0}</div>
+                          <div className="text-xs text-gray-500 mt-1">All profile interactions</div>
                         </div>
                       </div>
                     </CardContent>
