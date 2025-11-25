@@ -73,11 +73,18 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     // Get user ID from localStorage for authentication header
     const userToken = localStorage.getItem('userToken');
+    // Get admin email for admin-only endpoints
+    const adminAuthenticated = localStorage.getItem('adminAuthenticated');
+    const adminEmail = localStorage.getItem('adminEmail');
     
     const headers: Record<string, string> = {};
     // Add X-User-ID header for authentication if user token exists
     if (userToken) {
       headers["X-User-ID"] = userToken;
+    }
+    // Add X-Admin-Email header for admin authentication
+    if (adminAuthenticated === 'true' && adminEmail) {
+      headers["X-Admin-Email"] = adminEmail;
     }
 
     console.log('Query Request Debug:', { 

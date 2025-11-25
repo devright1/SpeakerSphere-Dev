@@ -1336,11 +1336,25 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Helper function to check admin access
+  const isAdminRequest = (req: any): boolean => {
+    // Check session-based admin role
+    const sessionUser = req.session?.user;
+    if (sessionUser?.role === 'admin') {
+      return true;
+    }
+    // Check for admin email header (used by client-side admin auth)
+    const adminEmail = req.headers['x-admin-email'] as string;
+    if (adminEmail === 'speakers@devright.com') {
+      return true;
+    }
+    return false;
+  };
+
   // Get overall analytics dashboard (admin only)
   app.get("/api/analytics/dashboard", async (req, res) => {
     try {
-      const user = (req as any).session?.user;
-      if (!user || user.role !== 'admin') {
+      if (!isAdminRequest(req)) {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1359,8 +1373,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Get top performing speakers (admin only)
   app.get("/api/analytics/top-performers", async (req, res) => {
     try {
-      const user = (req as any).session?.user;
-      if (!user || user.role !== 'admin') {
+      if (!isAdminRequest(req)) {
         return res.status(403).json({ message: "Admin access required" });
       }
 
