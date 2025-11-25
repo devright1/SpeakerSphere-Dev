@@ -248,7 +248,7 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
   return (
     <div className="space-y-6">
       {/* Performance Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -273,6 +273,17 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
             </div>
             <div className="text-3xl font-bold">{analytics.profileViews || 0}</div>
             <div className="text-sm text-gray-500">Total views</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2 mb-2">
+              <MousePointer className="h-5 w-5 text-purple-500" />
+              <span className="font-medium">Total Clicks</span>
+            </div>
+            <div className="text-3xl font-bold">{analytics.engagementClicks || 0}</div>
+            <div className="text-sm text-gray-500">All profile interactions</div>
           </CardContent>
         </Card>
 
