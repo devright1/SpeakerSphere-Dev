@@ -1663,7 +1663,17 @@ export class DatabaseStorage implements IStorage {
       'review_section_view',
     ];
 
-    // Get speakers with their interaction counts in one query
+    // First, get all valid speaker IDs that actually exist
+    const validSpeakers = await db
+      .select({ id: speakers.id, name: speakers.name })
+      .from(speakers);
+    
+    const validSpeakerIds = validSpeakers.map(s => s.id);
+    const nameMap = new Map(validSpeakers.map(s => [s.id, s.name]));
+    
+    if (validSpeakerIds.length === 0) return [];
+
+    // Get speakers with their interaction counts, filtering to only valid speakers
     const results = await db
       .select({
         speakerId: speakerInteractions.speakerId,
@@ -1671,6 +1681,7 @@ export class DatabaseStorage implements IStorage {
         count: sql<number>`count(*)::int`,
       })
       .from(speakerInteractions)
+      .where(inArray(speakerInteractions.speakerId, validSpeakerIds))
       .groupBy(speakerInteractions.speakerId, speakerInteractions.interactionType);
 
     // Aggregate by speaker
@@ -1692,18 +1703,7 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    // Get speaker names
-    const speakerIds = Object.keys(speakerStats).map(id => parseInt(id));
-    if (speakerIds.length === 0) return [];
-
-    const speakerNames = await db
-      .select({ id: speakers.id, name: speakers.name })
-      .from(speakers)
-      .where(inArray(speakers.id, speakerIds));
-
-    const nameMap = new Map(speakerNames.map(s => [s.id, s.name]));
-
-    // Sort by profile views and return top performers
+    // Sort by profile views and return top performers (only speakers with interactions)
     return Object.entries(speakerStats)
       .map(([id, stats]) => ({
         speakerId: parseInt(id),
@@ -1712,6 +1712,7 @@ export class DatabaseStorage implements IStorage {
         engagementClicks: stats.engagementClicks,
         inquiryClicks: stats.inquiryClicks,
       }))
+      .filter(s => s.name !== 'Unknown Speaker') // Extra safety: exclude any that didn't get a name
       .sort((a, b) => b.profileViews - a.profileViews)
       .slice(0, limit);
   }
