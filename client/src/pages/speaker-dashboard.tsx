@@ -1971,17 +1971,18 @@ export default function SpeakerDashboard() {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis 
                               dataKey="date" 
-                              tick={{ fontSize: 12 }}
+                              tick={{ fontSize: 11 }}
                               tickFormatter={(value) => {
                                 const date = new Date(value);
-                                return `${date.getMonth() + 1}/${date.getDate()}`;
+                                return date.getDate().toString();
                               }}
+                              interval={0}
                             />
-                            <YAxis tick={{ fontSize: 12 }} />
+                            <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
                             <Tooltip 
                               labelFormatter={(value) => {
                                 const date = new Date(value);
-                                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
                               }}
                             />
                             <Legend />
@@ -1991,8 +1992,8 @@ export default function SpeakerDashboard() {
                               stroke="#3b82f6" 
                               name="Profile Views"
                               strokeWidth={2}
-                              dot={{ r: 3 }}
-                              activeDot={{ r: 5 }}
+                              dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2 }}
+                              activeDot={{ r: 6 }}
                             />
                             <Line 
                               type="monotone" 
@@ -2000,8 +2001,8 @@ export default function SpeakerDashboard() {
                               stroke="#10b981" 
                               name="Total Clicks"
                               strokeWidth={2}
-                              dot={{ r: 3 }}
-                              activeDot={{ r: 5 }}
+                              dot={{ r: 4, fill: '#10b981', strokeWidth: 2 }}
+                              activeDot={{ r: 6 }}
                             />
                             <Line 
                               type="monotone" 
@@ -2009,8 +2010,8 @@ export default function SpeakerDashboard() {
                               stroke="#f59e0b" 
                               name="Social Clicks"
                               strokeWidth={2}
-                              dot={{ r: 3 }}
-                              activeDot={{ r: 5 }}
+                              dot={{ r: 4, fill: '#f59e0b', strokeWidth: 2 }}
+                              activeDot={{ r: 6 }}
                             />
                           </LineChart>
                         </ResponsiveContainer>
