@@ -236,13 +236,11 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
   ];
 
   const trendData = trends?.map((trend: any) => ({
-    date: trend.date,
-    views: trend.profileViews || 0,
-    clicks: (trend.emailClicks || 0) + (trend.phoneClicks || 0) + 
-            (trend.websiteClicks || 0) + (trend.socialClicks || 0) + 
-            (trend.inquiryClicks || 0),
+    date: trend.day || trend.date,
+    profileViews: trend.profileViews || 0,
+    totalClicks: trend.totalClicks || (trend.emailClicks || 0) + (trend.phoneClicks || 0) + 
+            (trend.websiteClicks || 0) + (trend.socialClicks || 0),
     socialClicks: trend.socialClicks || 0,
-    inquiries: trend.inquiryClicks || 0,
   })) || [];
 
   return (
@@ -513,7 +511,7 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
                       <Legend verticalAlign="top" height={36} />
                       <Line 
                         type="monotone" 
-                        dataKey="views" 
+                        dataKey="profileViews" 
                         name="Profile Views"
                         stroke="#3b82f6" 
                         strokeWidth={2}
@@ -522,7 +520,7 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
                       />
                       <Line 
                         type="monotone" 
-                        dataKey="clicks" 
+                        dataKey="totalClicks" 
                         name="Total Clicks"
                         stroke="#10b981" 
                         strokeWidth={2}
