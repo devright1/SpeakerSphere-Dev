@@ -1323,15 +1323,37 @@ export class DatabaseStorage implements IStorage {
       .from(speakerInteractions)
       .where(eq(speakerInteractions.speakerId, speakerId));
 
+    // Engagement interaction types that count as actual profile activity (beyond just viewing)
+    const engagementInteractionTypes = [
+      'social_click',      // Clicked a social media link
+      'tab_click',         // Clicked a tab on the profile (Overview, Resources, Reviews, etc.)
+      'resource_download', // Downloaded a resource
+      'bio_expand',        // Expanded the bio section
+      'share_click',       // Shared the profile
+      'website_click',     // Clicked website link
+      'inquiry_click',     // Started an inquiry
+      'topic_click',       // Clicked a topic tag
+      'review_section_view', // Viewed reviews section
+    ];
+
     // Basic metrics
     const profileViews = interactions.filter(i => i.interactionType === 'profile_view').length;
-    const emailClicks = interactions.filter(i => i.interactionType === 'email_click').length;
-    const phoneClicks = interactions.filter(i => i.interactionType === 'phone_click').length;
-    const websiteClicks = interactions.filter(i => i.interactionType === 'website_click').length;
     const socialClicks = interactions.filter(i => i.interactionType === 'social_click').length;
     const shareClicks = interactions.filter(i => i.interactionType === 'share_click').length;
+    const websiteClicks = interactions.filter(i => i.interactionType === 'website_click').length;
     const videoPlays = interactions.filter(i => i.interactionType === 'video_play').length;
     const searchAppearances = interactions.filter(i => i.interactionType === 'search_appearance').length;
+    
+    // Engagement metrics (activity on the profile)
+    const tabClicks = interactions.filter(i => i.interactionType === 'tab_click').length;
+    const resourceDownloads = interactions.filter(i => i.interactionType === 'resource_download').length;
+    const bioExpands = interactions.filter(i => i.interactionType === 'bio_expand').length;
+    const inquiryClicks = interactions.filter(i => i.interactionType === 'inquiry_click').length;
+    const topicClicks = interactions.filter(i => i.interactionType === 'topic_click').length;
+    const reviewSectionViews = interactions.filter(i => i.interactionType === 'review_section_view').length;
+    
+    // Total engagement clicks (all activity that shows visitor is engaging with the profile)
+    const engagementClicks = interactions.filter(i => engagementInteractionTypes.includes(i.interactionType)).length;
     
     // Calculate average time on profile from session_end events
     const sessionEndEvents = interactions.filter(i => i.interactionType === 'session_end');
@@ -1460,19 +1482,6 @@ export class DatabaseStorage implements IStorage {
       };
     }
     
-    // Engagement interaction types that count as "Total Clicks" (profile activity beyond just viewing)
-    const engagementInteractionTypes = [
-      'social_click',      // Clicked a social media link
-      'tab_click',         // Clicked a tab on the profile (Overview, Resources, Reviews, etc.)
-      'resource_download', // Downloaded a resource
-      'bio_expand',        // Expanded the bio section
-      'share_click',       // Shared the profile
-      'website_click',     // Clicked website link
-      'inquiry_click',     // Started an inquiry
-      'topic_click',       // Clicked a topic tag
-      'review_section_view', // Viewed reviews section
-    ];
-    
     // Populate with actual interaction data
     monthInteractions.forEach(interaction => {
       const date = new Date(interaction.createdAt!).toISOString().split('T')[0];
@@ -1524,13 +1533,20 @@ export class DatabaseStorage implements IStorage {
       // Basic metrics
       totalInteractions: interactions.length,
       profileViews,
-      emailClicks,
-      phoneClicks,
       websiteClicks,
       socialClicks,
       shareClicks,
       videoPlays,
       searchAppearances,
+      
+      // Engagement metrics (what people are actually doing on the profile)
+      engagementClicks, // Total engagement activity
+      tabClicks,
+      resourceDownloads,
+      bioExpands,
+      inquiryClicks,
+      topicClicks,
+      reviewSectionViews,
       
       // Advanced metrics
       avgTimeOnProfile, // in seconds

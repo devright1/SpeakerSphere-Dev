@@ -115,10 +115,10 @@ export default function AnalyticsDashboard({ speakerId }: AnalyticsDashboardProp
           <CardContent className="p-6">
             <div className="flex items-center space-x-2 mb-2">
               <MousePointer className="h-5 w-5 text-orange-500" />
-              <span className="font-medium">Total Clicks</span>
+              <span className="font-medium">Engagement Clicks</span>
             </div>
             <div className="text-3xl font-bold">{(dashboardData as any)?.overview?.totalClicks || 0}</div>
-            <div className="text-sm text-gray-500">Contact interactions</div>
+            <div className="text-sm text-gray-500">Profile interactions</div>
           </CardContent>
         </Card>
 
@@ -201,12 +201,11 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
   const demandForecast = displayData.demandForecast;
   const trends = displayData.trends || displayData.dailyTrends;
 
-  const totalClicks = (analytics.emailClicks || 0) + (analytics.phoneClicks || 0) + 
-                     (analytics.websiteClicks || 0) + (analytics.socialClicks || 0) + 
-                     (analytics.inquiryClicks || 0);
+  // Use the new engagementClicks metric which tracks actual profile activity
+  const totalEngagement = analytics.engagementClicks || 0;
 
   const engagementRate = analytics.profileViews > 0 ? 
-    (totalClicks / analytics.profileViews * 100).toFixed(1) : '0.0';
+    (totalEngagement / analytics.profileViews * 100).toFixed(1) : '0.0';
 
   const monthOptions = [
     { value: 1, label: 'January' },
@@ -226,20 +225,23 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
   const currentYear = now.getFullYear();
   const yearOptions = [currentYear, currentYear - 1, currentYear - 2];
 
-  // Prepare chart data
-  const clickDistribution = [
-    { name: 'Email', value: analytics.emailClicks || 0, color: '#3b82f6' },
-    { name: 'Phone', value: analytics.phoneClicks || 0, color: '#10b981' },
-    { name: 'Website', value: analytics.websiteClicks || 0, color: '#f59e0b' },
-    { name: 'Social', value: analytics.socialClicks || 0, color: '#ef4444' },
+  // Prepare chart data for engagement distribution (matches engagementInteractionTypes on backend)
+  const engagementDistribution = [
+    { name: 'Social Links', value: analytics.socialClicks || 0, color: '#3b82f6' },
+    { name: 'Tab Clicks', value: analytics.tabClicks || 0, color: '#10b981' },
+    { name: 'Downloads', value: analytics.resourceDownloads || 0, color: '#f59e0b' },
     { name: 'Inquiries', value: analytics.inquiryClicks || 0, color: '#8b5cf6' },
+    { name: 'Topic Clicks', value: analytics.topicClicks || 0, color: '#ef4444' },
+    { name: 'Bio Expands', value: analytics.bioExpands || 0, color: '#06b6d4' },
+    { name: 'Website', value: analytics.websiteClicks || 0, color: '#ec4899' },
+    { name: 'Shares', value: analytics.shareClicks || 0, color: '#14b8a6' },
+    { name: 'Review Views', value: analytics.reviewSectionViews || 0, color: '#f97316' },
   ];
 
   const trendData = trends?.map((trend: any) => ({
     date: trend.day || trend.date,
     profileViews: trend.profileViews || 0,
-    totalClicks: trend.totalClicks || (trend.emailClicks || 0) + (trend.phoneClicks || 0) + 
-            (trend.websiteClicks || 0) + (trend.socialClicks || 0),
+    totalClicks: trend.totalClicks || 0, // Engagement clicks from backend
     socialClicks: trend.socialClicks || 0,
   })) || [];
 
@@ -296,25 +298,25 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
 
         <TabsContent value="engagement" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Click Distribution */}
+            {/* Engagement Distribution */}
             <Card>
               <CardHeader>
-                <CardTitle>Click Distribution</CardTitle>
-                <CardDescription>How users interact with contact methods</CardDescription>
+                <CardTitle>Engagement Distribution</CardTitle>
+                <CardDescription>How visitors interact with your profile</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={clickDistribution}
+                        data={engagementDistribution}
                         cx="50%"
                         cy="50%"
                         outerRadius={80}
                         dataKey="value"
                         label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
                       >
-                        {clickDistribution.map((entry, index) => (
+                        {engagementDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -325,47 +327,75 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
               </CardContent>
             </Card>
 
-            {/* Contact Method Breakdown */}
+            {/* Profile Activity Breakdown */}
             <Card>
               <CardHeader>
-                <CardTitle>Contact Methods</CardTitle>
-                <CardDescription>Detailed click analytics</CardDescription>
+                <CardTitle>Profile Activity</CardTitle>
+                <CardDescription>Detailed engagement metrics</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between border-b pb-2">
                   <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-blue-500" />
-                    <span>Email Clicks</span>
+                    <Activity className="h-4 w-4 text-blue-500" />
+                    <span className="font-medium">Total Engagement</span>
                   </div>
-                  <span className="font-medium">{analytics.emailClicks || 0}</span>
+                  <span className="font-bold text-lg">{analytics.engagementClicks || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4 text-green-500" />
-                    <span>Phone Clicks</span>
+                    <ExternalLink className="h-4 w-4 text-blue-500" />
+                    <span>Social Link Clicks</span>
                   </div>
-                  <span className="font-medium">{analytics.phoneClicks || 0}</span>
+                  <span className="font-medium">{analytics.socialClicks || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Globe className="h-4 w-4 text-orange-500" />
+                    <MousePointer className="h-4 w-4 text-green-500" />
+                    <span>Tab Clicks</span>
+                  </div>
+                  <span className="font-medium">{analytics.tabClicks || 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-4 w-4 text-orange-500" />
+                    <span>Resource Downloads</span>
+                  </div>
+                  <span className="font-medium">{analytics.resourceDownloads || 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-4 w-4 text-purple-500" />
+                    <span>Inquiry Clicks</span>
+                  </div>
+                  <span className="font-medium">{analytics.inquiryClicks || 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="h-4 w-4 text-cyan-500" />
+                    <span>Topic Clicks</span>
+                  </div>
+                  <span className="font-medium">{analytics.topicClicks || 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Globe className="h-4 w-4 text-pink-500" />
                     <span>Website Clicks</span>
                   </div>
                   <span className="font-medium">{analytics.websiteClicks || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <ExternalLink className="h-4 w-4 text-purple-500" />
-                    <span>Social Clicks</span>
+                    <Star className="h-4 w-4 text-teal-500" />
+                    <span>Profile Shares</span>
                   </div>
-                  <span className="font-medium">{analytics.socialClicks || 0}</span>
+                  <span className="font-medium">{analytics.shareClicks || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <MessageSquare className="h-4 w-4 text-pink-500" />
-                    <span>Inquiry Clicks</span>
+                    <Eye className="h-4 w-4 text-orange-500" />
+                    <span>Review Section Views</span>
                   </div>
-                  <span className="font-medium">{analytics.inquiryClicks || 0}</span>
+                  <span className="font-medium">{analytics.reviewSectionViews || 0}</span>
                 </div>
               </CardContent>
             </Card>
@@ -442,7 +472,7 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <CardTitle>Monthly Interaction Trends</CardTitle>
-                  <CardDescription>Profile views, total clicks, and social clicks over time</CardDescription>
+                  <CardDescription>Profile views and engagement activity (tab clicks, downloads, social clicks, etc.)</CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   <Select 
@@ -521,7 +551,7 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
                       <Line 
                         type="monotone" 
                         dataKey="totalClicks" 
-                        name="Total Clicks"
+                        name="Engagement Clicks"
                         stroke="#10b981" 
                         strokeWidth={2}
                         dot={{ r: 4, fill: '#10b981', strokeWidth: 2 }}
