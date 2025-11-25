@@ -1370,6 +1370,32 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Get individual speaker analytics (admin only) - uses timeframe parameter
+  // This endpoint is used by the admin dashboard's detailed speaker analytics
+  app.get("/api/speakers/:speakerId/analytics", async (req, res) => {
+    try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const speakerId = parseInt(req.params.speakerId);
+      const timeframe = (req.query.timeframe as string) || '7d';
+      
+      // Get the speaker to verify it exists
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ message: "Speaker not found" });
+      }
+      
+      // Use the interaction analytics method that supports timeframe
+      const analytics = await storage.getSpeakerInteractionAnalytics(speakerId, timeframe);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching speaker analytics:", error);
+      res.status(500).json({ message: "Failed to fetch speaker analytics" });
+    }
+  });
+
   // Get top performing speakers (admin only)
   app.get("/api/analytics/top-performers", async (req, res) => {
     try {

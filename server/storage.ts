@@ -200,6 +200,7 @@ export interface IStorage {
   // Speaker Interaction Tracking & Analytics
   trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void>;
   getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null): Promise<any>;
+  getSpeakerInteractionAnalytics(speakerId: number, timeframe: string): Promise<any>;
   getPlatformAnalytics(): Promise<{
     totalSpeakers: number;
     totalViews: number;

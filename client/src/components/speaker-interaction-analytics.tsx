@@ -63,7 +63,16 @@ export function SpeakerInteractionAnalytics({ speakerId, speakerName }: SpeakerI
   const { data: analytics, isLoading } = useQuery<SpeakerAnalytics>({
     queryKey: ['/api/speakers', speakerId, 'analytics', timeframe],
     queryFn: async () => {
-      const response = await fetch(`/api/speakers/${speakerId}/analytics?timeframe=${timeframe}`);
+      // Include admin authentication header
+      const adminEmail = localStorage.getItem('adminEmail');
+      const headers: HeadersInit = {};
+      if (adminEmail) {
+        headers['X-Admin-Email'] = adminEmail;
+      }
+      
+      const response = await fetch(`/api/speakers/${speakerId}/analytics?timeframe=${timeframe}`, {
+        headers,
+      });
       if (!response.ok) throw new Error('Failed to fetch analytics');
       return response.json();
     },
