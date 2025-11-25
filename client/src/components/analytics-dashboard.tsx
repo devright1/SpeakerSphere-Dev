@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   BarChart, 
   Bar, 
@@ -17,7 +19,8 @@ import {
   Pie,
   Cell,
   Area,
-  AreaChart
+  AreaChart,
+  Legend
 } from "recharts";
 import { 
   TrendingUp, 
@@ -179,10 +182,24 @@ export default function AnalyticsDashboard({ speakerId }: AnalyticsDashboardProp
 }
 
 function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number }) {
-  const analytics = data.analytics;
-  const performanceScore = data.performanceScore;
-  const demandForecast = data.demandForecast;
-  const trends = data.trends;
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
+
+  const { data: filteredData, isLoading: isFiltering } = useQuery({
+    queryKey: ['/api/analytics/speaker', speakerId, 'month', selectedMonth, selectedYear],
+    queryFn: async () => {
+      const response = await fetch(`/api/analytics/speaker/${speakerId}?month=${selectedMonth}&year=${selectedYear}`);
+      if (!response.ok) throw new Error('Failed to fetch analytics');
+      return response.json();
+    },
+  });
+
+  const displayData = filteredData || data;
+  const analytics = displayData.analytics || displayData;
+  const performanceScore = displayData.performanceScore;
+  const demandForecast = displayData.demandForecast;
+  const trends = displayData.trends || displayData.dailyTrends;
 
   const totalClicks = (analytics.emailClicks || 0) + (analytics.phoneClicks || 0) + 
                      (analytics.websiteClicks || 0) + (analytics.socialClicks || 0) + 
@@ -190,6 +207,24 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
 
   const engagementRate = analytics.profileViews > 0 ? 
     (totalClicks / analytics.profileViews * 100).toFixed(1) : '0.0';
+
+  const monthOptions = [
+    { value: 1, label: 'January' },
+    { value: 2, label: 'February' },
+    { value: 3, label: 'March' },
+    { value: 4, label: 'April' },
+    { value: 5, label: 'May' },
+    { value: 6, label: 'June' },
+    { value: 7, label: 'July' },
+    { value: 8, label: 'August' },
+    { value: 9, label: 'September' },
+    { value: 10, label: 'October' },
+    { value: 11, label: 'November' },
+    { value: 12, label: 'December' },
+  ];
+
+  const currentYear = now.getFullYear();
+  const yearOptions = [currentYear, currentYear - 1, currentYear - 2];
 
   // Prepare chart data
   const clickDistribution = [
@@ -206,6 +241,7 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
     clicks: (trend.emailClicks || 0) + (trend.phoneClicks || 0) + 
             (trend.websiteClicks || 0) + (trend.socialClicks || 0) + 
             (trend.inquiryClicks || 0),
+    socialClicks: trend.socialClicks || 0,
     inquiries: trend.inquiryClicks || 0,
   })) || [];
 
@@ -405,23 +441,107 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
         <TabsContent value="trends" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>30-Day Trends</CardTitle>
-              <CardDescription>Views, clicks, and inquiries over time</CardDescription>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle>Monthly Interaction Trends</CardTitle>
+                  <CardDescription>Profile views, total clicks, and social clicks over time</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select 
+                    value={selectedMonth.toString()} 
+                    onValueChange={(val) => setSelectedMonth(parseInt(val))}
+                  >
+                    <SelectTrigger className="w-[140px]" data-testid="select-month">
+                      <SelectValue placeholder="Month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthOptions.map((month) => (
+                        <SelectItem key={month.value} value={month.value.toString()}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={selectedYear.toString()} 
+                    onValueChange={(val) => setSelectedYear(parseInt(val))}
+                  >
+                    <SelectTrigger className="w-[100px]" data-testid="select-year">
+                      <SelectValue placeholder="Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearOptions.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trendData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="views" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
-                    <Area type="monotone" dataKey="clicks" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
-                    <Area type="monotone" dataKey="inquiries" stackId="1" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.3} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+              {isFiltering ? (
+                <div className="h-80 flex items-center justify-center">
+                  <div className="animate-pulse text-gray-500">Loading data...</div>
+                </div>
+              ) : (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trendData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        allowDecimals={false}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Legend verticalAlign="top" height={36} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="views" 
+                        name="Profile Views"
+                        stroke="#3b82f6" 
+                        strokeWidth={2}
+                        dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: '#3b82f6' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="clicks" 
+                        name="Total Clicks"
+                        stroke="#10b981" 
+                        strokeWidth={2}
+                        dot={{ r: 4, fill: '#10b981', strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: '#10b981' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="socialClicks" 
+                        name="Social Clicks"
+                        stroke="#f59e0b" 
+                        strokeWidth={2}
+                        dot={{ r: 4, fill: '#f59e0b', strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: '#f59e0b' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
