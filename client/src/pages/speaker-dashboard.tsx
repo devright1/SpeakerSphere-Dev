@@ -1968,7 +1968,7 @@ export default function SpeakerDashboard() {
                       <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={userStats.dailyTrends}>
-                            <CartesianGrid strokeDasharray="3 3" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
                             <XAxis 
                               dataKey="date" 
                               tick={{ fontSize: 11 }}
@@ -1977,13 +1977,21 @@ export default function SpeakerDashboard() {
                                 return date.getDate().toString();
                               }}
                               interval={0}
+                              axisLine={{ stroke: '#666' }}
+                              tickLine={{ stroke: '#666' }}
                             />
-                            <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                            <YAxis 
+                              tick={{ fontSize: 12 }} 
+                              allowDecimals={false}
+                              axisLine={{ stroke: '#666' }}
+                              tickLine={{ stroke: '#666' }}
+                            />
                             <Tooltip 
                               labelFormatter={(value) => {
                                 const date = new Date(value);
                                 return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
                               }}
+                              contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}
                             />
                             <Legend />
                             <Line 
@@ -1991,27 +1999,27 @@ export default function SpeakerDashboard() {
                               dataKey="profileViews" 
                               stroke="#3b82f6" 
                               name="Profile Views"
-                              strokeWidth={2}
-                              dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2 }}
-                              activeDot={{ r: 6 }}
+                              strokeWidth={2.5}
+                              dot={{ r: 6, fill: '#3b82f6', stroke: '#3b82f6', strokeWidth: 2 }}
+                              activeDot={{ r: 8, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
                             />
                             <Line 
                               type="monotone" 
                               dataKey="totalClicks" 
                               stroke="#10b981" 
                               name="Total Clicks"
-                              strokeWidth={2}
-                              dot={{ r: 4, fill: '#10b981', strokeWidth: 2 }}
-                              activeDot={{ r: 6 }}
+                              strokeWidth={2.5}
+                              dot={{ r: 6, fill: '#10b981', stroke: '#10b981', strokeWidth: 2 }}
+                              activeDot={{ r: 8, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
                             />
                             <Line 
                               type="monotone" 
                               dataKey="socialClicks" 
                               stroke="#f59e0b" 
                               name="Social Clicks"
-                              strokeWidth={2}
-                              dot={{ r: 4, fill: '#f59e0b', strokeWidth: 2 }}
-                              activeDot={{ r: 6 }}
+                              strokeWidth={2.5}
+                              dot={{ r: 6, fill: '#f59e0b', stroke: '#f59e0b', strokeWidth: 2 }}
+                              activeDot={{ r: 8, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
                             />
                           </LineChart>
                         </ResponsiveContainer>
