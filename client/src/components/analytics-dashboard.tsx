@@ -334,12 +334,15 @@ function SpeakerAnalytics({ data, speakerId }: { data: any; speakerId: number })
                 <CardDescription>Detailed engagement metrics</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center justify-between border-b pb-2">
-                  <div className="flex items-center space-x-2">
-                    <Activity className="h-4 w-4 text-blue-500" />
-                    <span className="font-medium">Total Engagement</span>
+                <div className="border-b pb-3 mb-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Activity className="h-4 w-4 text-blue-500" />
+                      <span className="font-medium">Total Engagement</span>
+                    </div>
+                    <span className="font-bold text-lg">{analytics.engagementClicks || 0}</span>
                   </div>
-                  <span className="font-bold text-lg">{analytics.engagementClicks || 0}</span>
+                  <p className="text-xs text-muted-foreground mt-1 ml-6">All clicks and interactions on your profile</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
