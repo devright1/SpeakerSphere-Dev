@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Speaker } from "@shared/schema";
 import { trackSpeakerView, trackEmailClick, trackPhoneClick, trackWebsiteClick } from "@/lib/analytics";
 
@@ -67,6 +68,17 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
       return response.json();
     },
     onSuccess: (data) => {
+      // Track favorite interaction for analytics
+      const eventType = data.bookmarked ? 'favorite_add' : 'favorite_remove';
+      apiRequest('POST', '/api/analytics/track', {
+        speakerId: speaker.id,
+        eventType,
+        metadata: {
+          elementClicked: 'heart_button',
+          source: discoverySource
+        }
+      }).catch(err => console.debug('Analytics tracking failed:', err));
+      
       // Invalidate bookmark queries
       queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks`] });
       queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/bookmarks/check/${speaker.id}`] });
