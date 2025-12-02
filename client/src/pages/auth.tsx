@@ -12,10 +12,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Eye, EyeOff, ArrowLeft, CheckCircle2, Loader2, Sparkles, User, UserCheck, Info, Mail, KeyRound } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, CheckCircle2, Loader2, Sparkles, User, UserCheck, Info, Mail, KeyRound, Shield, AlertCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
 
 // Validation schemas
 const loginSchema = z.object({
@@ -55,6 +58,15 @@ type RegisterForm = z.infer<typeof registerSchema>;
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
+type VerificationState = {
+  required: boolean;
+  status: string;
+  userId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+};
+
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("user-login");
@@ -65,6 +77,8 @@ export default function AuthPage() {
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [resetToken, setResetToken] = useState<string | null>(null);
   const [isResetPassword, setIsResetPassword] = useState(false);
+  const [verificationState, setVerificationState] = useState<VerificationState | null>(null);
+  const [verificationError, setVerificationError] = useState("");
   const { toast } = useToast();
   const { login } = useAuth();
 
@@ -125,6 +139,98 @@ export default function AuthPage() {
     }
   }, [resetToken, resetPasswordForm]);
 
+  // Create identity verification session
+  const createVerificationSession = useMutation({
+    mutationFn: async (data: { email: string; firstName?: string; lastName?: string }) => {
+      const response = await apiRequest("POST", "/api/identity/create-session", {
+        email: data.email,
+        firstName: data.firstName || "User",
+        lastName: data.lastName || "",
+        type: "user"
+      });
+      return response;
+    },
+    onSuccess: async (data: any) => {
+      // Load Stripe and open identity verification modal
+      const stripe = await stripePromise;
+      if (stripe && data.clientSecret) {
+        const { error } = await stripe.verifyIdentity(data.clientSecret);
+        
+        if (error) {
+          console.error("Identity verification error:", error);
+          setVerificationError(error.message || "Verification failed");
+        } else {
+          // Verification submitted - check status
+          checkVerificationStatus(data.sessionId);
+        }
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Verification Setup Failed",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Check verification status
+  const checkVerificationStatus = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/identity/status/${sessionId}`);
+      const data = await response.json();
+      
+      if (data.status === "verified") {
+        // Update user verification status
+        if (verificationState?.userId) {
+          await apiRequest("POST", "/api/identity/update-user-status", {
+            userId: verificationState.userId,
+            sessionId: sessionId,
+            status: "verified"
+          });
+        }
+        toast({
+          title: "Verification Complete!",
+          description: "You can now log in.",
+        });
+        setVerificationState(null);
+        setSubmitStep("idle");
+      } else if (data.status === "requires_input") {
+        setVerificationError(data.lastError?.reason || "Verification requires additional input");
+      } else if (data.status === "processing") {
+        // Poll again after a delay
+        setTimeout(() => checkVerificationStatus(sessionId), 2000);
+      } else {
+        // Assume success, webhook will handle final status
+        toast({
+          title: "Verification Submitted",
+          description: "You can now try logging in again.",
+        });
+        setVerificationState(null);
+        setSubmitStep("idle");
+      }
+    } catch (error) {
+      console.error("Error checking verification status:", error);
+      toast({
+        title: "Verification Submitted",
+        description: "You can now try logging in again.",
+      });
+      setVerificationState(null);
+      setSubmitStep("idle");
+    }
+  };
+
+  const handleStartVerification = () => {
+    if (verificationState) {
+      setVerificationError("");
+      createVerificationSession.mutate({
+        email: verificationState.email,
+        firstName: verificationState.firstName,
+        lastName: verificationState.lastName,
+      });
+    }
+  };
+
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm) => {
@@ -152,6 +258,18 @@ export default function AuthPage() {
       }, 1500);
     },
     onError: (error: any) => {
+      // Check if this is an identity verification requirement
+      if (error.requiresVerification) {
+        setVerificationState({
+          required: true,
+          status: error.verificationStatus,
+          userId: error.userId,
+          email: error.email,
+        });
+        setSubmitStep("idle");
+        return;
+      }
+      
       setSubmitStep("error");
       toast({
         title: "Login Failed",
@@ -330,6 +448,83 @@ export default function AuthPage() {
               <h2 className="text-2xl font-bold text-green-700 mb-2">Welcome!</h2>
               <p className="text-green-600">Redirecting you to the platform...</p>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Identity Verification Required overlay */}
+      <AnimatePresence>
+        {verificationState && (
+          <motion.div
+            className="absolute inset-0 bg-white/95 flex items-center justify-center z-40 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Card className="w-full max-w-md shadow-xl">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Shield className="w-8 h-8 text-blue-600" />
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-900">
+                  Identity Verification Required
+                </CardTitle>
+                <CardDescription>
+                  To ensure the security of our platform, we need to verify your identity before you can access your account.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {verificationError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-red-800">
+                      <AlertCircle className="w-5 h-5" />
+                      <span className="font-medium">Verification Issue</span>
+                    </div>
+                    <p className="text-sm text-red-600 mt-1">
+                      {verificationError}
+                    </p>
+                  </div>
+                )}
+                
+                <div className="text-sm text-gray-600 space-y-2">
+                  <p>You will need:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li>A valid government-issued ID (passport or driver's license)</li>
+                    <li>Good lighting for a clear photo</li>
+                    <li>A few minutes to complete the process</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <Button
+                    onClick={handleStartVerification}
+                    disabled={createVerificationSession.isPending}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {createVerificationSession.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Preparing Verification...
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="w-4 h-4 mr-2" />
+                        Start Identity Verification
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    onClick={() => setVerificationState(null)}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
       </AnimatePresence>

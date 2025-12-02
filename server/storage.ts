@@ -195,6 +195,7 @@ export interface IStorage {
   getAllSpeakerApplications(): Promise<SpeakerApplication[]>;
   getSpeakerApplication(id: number): Promise<SpeakerApplication | undefined>;
   updateSpeakerApplicationStatus(id: number, status: string, adminNotes?: string, reviewedBy?: string): Promise<SpeakerApplication>;
+  updateSpeakerApplicationVerification(id: number, verification: { identityVerificationSessionId: string; identityVerificationStatus: string; identityVerifiedAt: Date | null }): Promise<SpeakerApplication | undefined>;
   approveSpeakerApplication(id: number, reviewedBy: string): Promise<{ speaker: Speaker; user: User }>;
 
   // Speaker Interaction Tracking & Analytics
@@ -1226,6 +1227,11 @@ export class MemStorage implements IStorage {
   }
 
   async updateSpeakerApplication(id: number, updates: Partial<SpeakerApplication>): Promise<SpeakerApplication | undefined> {
+    // For memory storage, return undefined since we don't persist applications
+    return undefined;
+  }
+
+  async updateSpeakerApplicationVerification(id: number, verification: { identityVerificationSessionId: string; identityVerificationStatus: string; identityVerifiedAt: Date | null }): Promise<SpeakerApplication | undefined> {
     // For memory storage, return undefined since we don't persist applications
     return undefined;
   }

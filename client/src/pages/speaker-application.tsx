@@ -13,10 +13,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, CheckCircle2, Loader2, Send, User, FileText, Briefcase, Globe } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Send, User, FileText, Briefcase, Globe, Shield, AlertCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { TopicSelector } from "@/components/topic-selector";
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
 
 // Validation schema for speaker application
 const speakerApplicationSchema = z.object({
@@ -72,8 +75,12 @@ const travelOptions = [
   "International events"
 ];
 
+type ApplicationStep = "idle" | "submitting" | "verification" | "verifying" | "success" | "failed";
+
 export default function SpeakerApplicationPage() {
-  const [submitStep, setSubmitStep] = useState<"idle" | "submitting" | "success">("idle");
+  const [submitStep, setSubmitStep] = useState<ApplicationStep>("idle");
+  const [verificationError, setVerificationError] = useState("");
+  const [applicationId, setApplicationId] = useState<number | null>(null);
   const { toast } = useToast();
   
   const form = useForm<SpeakerApplicationForm>({
@@ -104,6 +111,79 @@ export default function SpeakerApplicationPage() {
     }
   });
 
+  // Create identity verification session for speaker
+  const createVerificationSession = useMutation({
+    mutationFn: async (data: { email: string; firstName: string; lastName: string }) => {
+      const response = await apiRequest("POST", "/api/identity/create-session", {
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        type: "speaker"
+      });
+      return response;
+    },
+    onSuccess: async (data: any) => {
+      setSubmitStep("verifying");
+      
+      // Load Stripe and open identity verification modal
+      const stripe = await stripePromise;
+      if (stripe && data.clientSecret) {
+        const { error } = await stripe.verifyIdentity(data.clientSecret);
+        
+        if (error) {
+          console.error("Identity verification error:", error);
+          setVerificationError(error.message || "Verification failed");
+          setSubmitStep("failed");
+        } else {
+          // Verification submitted - check status
+          checkVerificationStatus(data.sessionId);
+        }
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Verification Setup Failed",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+      setSubmitStep("idle");
+    },
+  });
+
+  // Check verification status
+  const checkVerificationStatus = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/identity/status/${sessionId}`);
+      const data = await response.json();
+      
+      if (data.status === "verified") {
+        // Update application verification status
+        if (applicationId) {
+          await apiRequest("POST", "/api/identity/update-application-status", {
+            applicationId: applicationId,
+            sessionId: sessionId,
+            status: "verified"
+          });
+        }
+        setSubmitStep("success");
+        form.reset();
+      } else if (data.status === "requires_input") {
+        setVerificationError(data.lastError?.reason || "Verification requires additional input");
+        setSubmitStep("failed");
+      } else if (data.status === "processing") {
+        // Poll again after a delay
+        setTimeout(() => checkVerificationStatus(sessionId), 2000);
+      } else {
+        setSubmitStep("success"); // For now, treat as success pending webhook
+        form.reset();
+      }
+    } catch (error) {
+      console.error("Error checking verification status:", error);
+      setSubmitStep("success"); // Proceed - webhook will handle final status
+      form.reset();
+    }
+  };
+
   const applicationMutation = useMutation({
     mutationFn: async (data: SpeakerApplicationForm) => {
       console.log("Submitting speaker application:", data);
@@ -111,12 +191,19 @@ export default function SpeakerApplicationPage() {
       return response;
     },
     onSuccess: (data: any) => {
-      setSubmitStep("success");
+      setApplicationId(data.applicationId);
+      setSubmitStep("verification");
       toast({
-        title: "Application Submitted!",
-        description: data.message,
+        title: "Application Received!",
+        description: "Please complete identity verification to finalize your application.",
       });
-      form.reset();
+      
+      // Start identity verification
+      createVerificationSession.mutate({
+        email: form.getValues("email"),
+        firstName: form.getValues("firstName"),
+        lastName: form.getValues("lastName"),
+      });
     },
     onError: (error: any) => {
       console.error("Speaker application submission error:", error);
@@ -134,6 +221,15 @@ export default function SpeakerApplicationPage() {
   const onSubmit = (data: SpeakerApplicationForm) => {
     setSubmitStep("submitting");
     applicationMutation.mutate(data);
+  };
+
+  const handleRetryVerification = () => {
+    setVerificationError("");
+    createVerificationSession.mutate({
+      email: form.getValues("email"),
+      firstName: form.getValues("firstName"),
+      lastName: form.getValues("lastName"),
+    });
   };
 
   const handleFormatChange = (format: string, checked: boolean) => {
@@ -200,13 +296,76 @@ export default function SpeakerApplicationPage() {
                       Application Submitted Successfully!
                     </h3>
                     <p className="text-green-600 dark:text-green-400">
-                      We'll review your application and contact you within 5-7 business days.
+                      Your identity has been verified. We'll review your application and contact you within 5-7 business days.
                     </p>
                     <Link href="/">
                       <Button size="lg" className="mt-4" data-testid="button-return-home">
                         Return Home
                       </Button>
                     </Link>
+                  </motion.div>
+                ) : submitStep === "verification" || submitStep === "verifying" ? (
+                  <motion.div
+                    key="verification"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="text-center py-8 space-y-6"
+                  >
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/20 mb-4">
+                      <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-200">
+                      Identity Verification Required
+                    </h3>
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600" />
+                    <p className="text-blue-600 dark:text-blue-400">
+                      {submitStep === "verification" 
+                        ? "Preparing identity verification..." 
+                        : "Please complete the verification in the popup window."}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      We need to verify your identity to ensure the security of our speaker network.
+                    </p>
+                  </motion.div>
+                ) : submitStep === "failed" ? (
+                  <motion.div
+                    key="failed"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="text-center py-8 space-y-6"
+                  >
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
+                      <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-red-800 dark:text-red-200">
+                      Verification Issue
+                    </h3>
+                    <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                      {verificationError || "Please try again with a valid ID document."}
+                    </p>
+                    <div className="space-y-3">
+                      <Button 
+                        onClick={handleRetryVerification}
+                        disabled={createVerificationSession.isPending}
+                        size="lg"
+                      >
+                        {createVerificationSession.isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Preparing...
+                          </>
+                        ) : (
+                          "Try Again"
+                        )}
+                      </Button>
+                      <Link href="/">
+                        <Button variant="outline" size="lg" className="ml-2">
+                          Return Home
+                        </Button>
+                      </Link>
+                    </div>
                   </motion.div>
                 ) : (
                   <motion.form

@@ -3078,6 +3078,122 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // ===== STRIPE IDENTITY VERIFICATION ENDPOINTS =====
+  
+  // Create identity verification session for user signup
+  app.post("/api/identity/create-session", async (req: AuthenticatedRequest, res) => {
+    try {
+      const { email, firstName, lastName, type } = req.body; // type: "user" | "speaker"
+      
+      if (!email || !type) {
+        return res.status(400).json({ error: "Email and type are required" });
+      }
+      
+      if (!['user', 'speaker'].includes(type)) {
+        return res.status(400).json({ error: "Type must be 'user' or 'speaker'" });
+      }
+
+      // Create Stripe Identity verification session
+      const verificationSession = await stripe.identity.verificationSessions.create({
+        type: 'document',
+        provided_details: {
+          email: email,
+        },
+        metadata: {
+          email: email,
+          firstName: firstName || '',
+          lastName: lastName || '',
+          verificationType: type, // "user" or "speaker"
+        },
+        return_url: `${req.protocol}://${req.get('host')}/verification-complete?type=${type}`,
+      });
+
+      res.json({ 
+        clientSecret: verificationSession.client_secret,
+        sessionId: verificationSession.id,
+        status: verificationSession.status
+      });
+    } catch (error: any) {
+      console.error('Error creating identity verification session:', error);
+      res.status(500).json({ error: error.message || 'Failed to create verification session' });
+    }
+  });
+
+  // Check identity verification status
+  app.get("/api/identity/status/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      
+      if (!sessionId) {
+        return res.status(400).json({ error: "Session ID is required" });
+      }
+
+      const session = await stripe.identity.verificationSessions.retrieve(sessionId);
+      
+      res.json({
+        status: session.status,
+        lastError: session.last_error,
+        verifiedOutputs: session.status === 'verified' ? session.verified_outputs : null
+      });
+    } catch (error: any) {
+      console.error('Error retrieving verification session:', error);
+      res.status(500).json({ error: error.message || 'Failed to retrieve verification session' });
+    }
+  });
+
+  // Update user identity verification status (after verification completes)
+  app.post("/api/identity/update-user-status", async (req, res) => {
+    try {
+      const { userId, sessionId, status } = req.body;
+      
+      if (!userId || !sessionId || !status) {
+        return res.status(400).json({ error: "userId, sessionId, and status are required" });
+      }
+
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Update user's identity verification status
+      await storage.updateUser(userId, {
+        identityVerificationSessionId: sessionId,
+        identityVerificationStatus: status,
+        identityVerifiedAt: status === 'verified' ? new Date() : null
+      });
+
+      res.json({ success: true, status });
+    } catch (error: any) {
+      console.error('Error updating user verification status:', error);
+      res.status(500).json({ error: error.message || 'Failed to update verification status' });
+    }
+  });
+
+  // Update speaker application identity verification status
+  app.post("/api/identity/update-application-status", async (req, res) => {
+    try {
+      const { applicationId, sessionId, status } = req.body;
+      
+      if (!applicationId || !sessionId || !status) {
+        return res.status(400).json({ error: "applicationId, sessionId, and status are required" });
+      }
+
+      // Update speaker application's identity verification status
+      await storage.updateSpeakerApplicationVerification(parseInt(applicationId), {
+        identityVerificationSessionId: sessionId,
+        identityVerificationStatus: status,
+        identityVerifiedAt: status === 'verified' ? new Date() : null
+      });
+
+      res.json({ success: true, status });
+    } catch (error: any) {
+      console.error('Error updating application verification status:', error);
+      res.status(500).json({ error: error.message || 'Failed to update verification status' });
+    }
+  });
+
+  // ===== STRIPE SUBSCRIPTION ENDPOINTS =====
+
   // Stripe subscription endpoints
   // Stripe Price IDs from Stripe Dashboard
   const STRIPE_PRICE_IDS: Record<string, Record<string, string>> = {
@@ -3812,6 +3928,97 @@ export async function registerRoutes(app: Express): Promise<Express> {
               });
               
               console.log(`Payment failed for speaker ${speakerId}`);
+            }
+          }
+          break;
+        }
+
+        // Identity verification events
+        case 'identity.verification_session.verified': {
+          const verificationSession = event.data.object as Stripe.Identity.VerificationSession;
+          const email = verificationSession.metadata?.email;
+          const verificationType = verificationSession.metadata?.verificationType; // "user" or "speaker"
+          
+          console.log(`✅ Identity verification successful: ${email} (type: ${verificationType})`);
+          
+          if (verificationType === 'user' && email) {
+            // Update user identity verification status
+            const user = await storage.getUserByEmail(email);
+            if (user) {
+              await storage.updateUser(user.id, {
+                identityVerificationSessionId: verificationSession.id,
+                identityVerificationStatus: 'verified',
+                identityVerifiedAt: new Date()
+              });
+              console.log(`Updated user ${user.id} identity status to verified`);
+            }
+          } else if (verificationType === 'speaker' && email) {
+            // Update speaker application identity verification status
+            const application = await storage.getSpeakerApplicationByEmail(email);
+            if (application) {
+              await storage.updateSpeakerApplicationVerification(application.id, {
+                identityVerificationSessionId: verificationSession.id,
+                identityVerificationStatus: 'verified',
+                identityVerifiedAt: new Date()
+              });
+              console.log(`Updated speaker application ${application.id} identity status to verified`);
+            }
+          }
+          break;
+        }
+
+        case 'identity.verification_session.requires_input': {
+          const verificationSession = event.data.object as Stripe.Identity.VerificationSession;
+          const email = verificationSession.metadata?.email;
+          const verificationType = verificationSession.metadata?.verificationType;
+          
+          console.log(`⚠️ Identity verification requires input: ${email} (type: ${verificationType})`);
+          console.log(`Last error: ${JSON.stringify(verificationSession.last_error)}`);
+          
+          if (verificationType === 'user' && email) {
+            const user = await storage.getUserByEmail(email);
+            if (user) {
+              await storage.updateUser(user.id, {
+                identityVerificationSessionId: verificationSession.id,
+                identityVerificationStatus: 'requires_input'
+              });
+            }
+          } else if (verificationType === 'speaker' && email) {
+            const application = await storage.getSpeakerApplicationByEmail(email);
+            if (application) {
+              await storage.updateSpeakerApplicationVerification(application.id, {
+                identityVerificationSessionId: verificationSession.id,
+                identityVerificationStatus: 'requires_input',
+                identityVerifiedAt: null
+              });
+            }
+          }
+          break;
+        }
+
+        case 'identity.verification_session.canceled': {
+          const verificationSession = event.data.object as Stripe.Identity.VerificationSession;
+          const email = verificationSession.metadata?.email;
+          const verificationType = verificationSession.metadata?.verificationType;
+          
+          console.log(`❌ Identity verification canceled: ${email} (type: ${verificationType})`);
+          
+          if (verificationType === 'user' && email) {
+            const user = await storage.getUserByEmail(email);
+            if (user) {
+              await storage.updateUser(user.id, {
+                identityVerificationSessionId: verificationSession.id,
+                identityVerificationStatus: 'canceled'
+              });
+            }
+          } else if (verificationType === 'speaker' && email) {
+            const application = await storage.getSpeakerApplicationByEmail(email);
+            if (application) {
+              await storage.updateSpeakerApplicationVerification(application.id, {
+                identityVerificationSessionId: verificationSession.id,
+                identityVerificationStatus: 'canceled',
+                identityVerifiedAt: null
+              });
             }
           }
           break;

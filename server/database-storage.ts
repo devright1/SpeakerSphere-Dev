@@ -703,6 +703,18 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async updateSpeakerApplicationVerification(id: number, verification: { identityVerificationSessionId: string; identityVerificationStatus: string; identityVerifiedAt: Date | null }): Promise<SpeakerApplication | undefined> {
+    const result = await db.update(speakerApplications)
+      .set({
+        identityVerificationSessionId: verification.identityVerificationSessionId,
+        identityVerificationStatus: verification.identityVerificationStatus,
+        identityVerifiedAt: verification.identityVerifiedAt
+      })
+      .where(eq(speakerApplications.id, id))
+      .returning();
+    return result[0];
+  }
+
   // Helper method to generate unique slug
   private async generateUniqueSlug(firstName: string, lastName: string): Promise<string> {
     const baseSlug = `${firstName.toLowerCase()}-${lastName.toLowerCase()}`.replace(/\s+/g, '-');
