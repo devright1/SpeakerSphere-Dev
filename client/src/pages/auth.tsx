@@ -287,20 +287,24 @@ export default function AuthPage() {
       const { confirmPassword, ...userData } = data;
       return apiRequest('POST', '/api/auth/register', userData);
     },
-    onSuccess: (data) => {
-      setSubmitStep("success");
-      setIsSuccess(true);
+    onSuccess: (data, variables) => {
+      // Account created - now require identity verification before login
+      setSubmitStep("idle");
+      setVerificationState({
+        required: true,
+        status: "pending",
+        userId: data.user.id,
+        email: data.user.email,
+        firstName: variables.firstName,
+        lastName: variables.lastName,
+      });
       
-      // Use the auth context login method to properly update state  
-      login(data.user.id, data.user);
-      
-      setTimeout(() => {
-        toast({
-          title: "Account Created!",
-          description: "Welcome to The Speaker Sphere. You're now logged in.",
-        });
-        setLocation('/');
-      }, 1500);
+      // Automatically start identity verification
+      createVerificationSession.mutate({
+        email: data.user.email,
+        firstName: variables.firstName,
+        lastName: variables.lastName,
+      });
     },
     onError: (error: any) => {
       setSubmitStep("error");
