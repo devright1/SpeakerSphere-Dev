@@ -1062,6 +1062,12 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(speakerInteractions.createdAt));
 
+    // Get actual favorite count from bookmarks table (accurate count of unique users)
+    const [bookmarkCount] = await db.select({ count: sql<number>`count(*)` })
+      .from(userBookmarks)
+      .where(eq(userBookmarks.speakerId, speakerId));
+    const actualFavoriteCount = Number(bookmarkCount?.count || 0);
+
     // Group interactions by type and calculate statistics
     const analytics = {
       totalInteractions: interactions.length,
@@ -1069,7 +1075,7 @@ export class DatabaseStorage implements IStorage {
       videoPlays: interactions.filter(i => i.interactionType === 'video_play').length,
       contactFormOpens: interactions.filter(i => i.interactionType === 'contact_form_open').length,
       inquirySubmissions: interactions.filter(i => i.interactionType === 'inquiry_submit').length,
-      favoriteAdds: interactions.filter(i => i.interactionType === 'favorite_add').length,
+      favoriteAdds: actualFavoriteCount,
       socialClicks: interactions.filter(i => i.interactionType === 'social_click').length,
       phoneClicks: interactions.filter(i => i.interactionType === 'phone_click').length,
       emailClicks: interactions.filter(i => i.interactionType === 'email_click').length,
