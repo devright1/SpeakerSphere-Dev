@@ -1251,7 +1251,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
-  // Analytics tracking endpoints
+  // Analytics tracking endpoints - track ALL speakers for admin visibility
+  // Individual speakers only see their own analytics if they're Premier tier
   app.post("/api/analytics/track", async (req, res) => {
     try {
       const { speakerId, eventType, metadata } = req.body;
@@ -1260,14 +1261,13 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(400).json({ message: "Speaker ID and event type are required" });
       }
       
-      // Check speaker's subscription tier - only track for Premier tier
+      // Verify speaker exists
       const speaker = await storage.getSpeaker(speakerId);
-      if (!speaker || speaker.subscriptionTier !== 'premier') {
-        // Silently succeed without tracking for non-Premier speakers
+      if (!speaker) {
         return res.json({ success: true, tracked: false });
       }
       
-      // Track the interaction
+      // Track the interaction for ALL speakers - admin can view all analytics
       await storage.trackSpeakerInteraction({
         speakerId,
         userId: (req as any).session?.user?.id || null,

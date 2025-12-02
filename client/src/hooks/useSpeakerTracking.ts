@@ -16,8 +16,9 @@ export function useSpeakerTracking(speakerId: number, subscriptionTier?: string,
   const hasTrackedView = useRef<boolean>(false);
   const hasTrackedExit = useRef<boolean>(false);
   
-  // Only track analytics for Premier tier speakers
-  const shouldTrack = subscriptionTier === 'premier';
+  // Track analytics for ALL speakers - admin can see all analytics
+  // Individual speakers only see their own analytics if they're Premier tier
+  const shouldTrack = speakerId > 0;
 
   // Track page scroll depth
   useEffect(() => {
