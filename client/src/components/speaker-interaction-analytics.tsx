@@ -8,11 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Eye, 
-  Play, 
   MessageCircle, 
   Heart, 
-  Phone, 
-  Mail, 
   Globe, 
   Share2,
   Tag,
@@ -28,13 +25,10 @@ import {
 interface SpeakerAnalytics {
   totalInteractions: number;
   profileViews: number;
-  videoPlays: number;
   contactFormOpens: number;
   inquirySubmissions: number;
   favoriteAdds: number;
   socialClicks: number;
-  phoneClicks: number;
-  emailClicks: number;
   websiteClicks: number;
   reviewSectionViews: number;
   tagClicks: number;
@@ -197,42 +191,6 @@ export function SpeakerInteractionAnalytics({ speakerId, speakerName }: SpeakerI
 
         <TabsContent value="interactions" className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Play className="h-4 w-4 text-blue-500" />
-                  <div>
-                    <p className="text-sm font-medium">Video Plays</p>
-                    <p className="text-xl font-bold">{analytics.videoPlays}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Phone className="h-4 w-4 text-green-500" />
-                  <div>
-                    <p className="text-sm font-medium">Phone Clicks</p>
-                    <p className="text-xl font-bold">{analytics.phoneClicks}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4 text-red-500" />
-                  <div>
-                    <p className="text-sm font-medium">Email Clicks</p>
-                    <p className="text-xl font-bold">{analytics.emailClicks}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
