@@ -202,6 +202,11 @@ export const speakerApplications = pgTable("speaker_applications", {
   
   // If approved, the created speaker ID
   createdSpeakerId: integer("created_speaker_id"),
+  
+  // Stripe Identity verification fields
+  identityVerificationStatus: varchar("identity_verification_status", { length: 30 }).default("pending"), // "pending", "processing", "verified", "requires_input", "canceled"
+  identityVerificationSessionId: varchar("identity_verification_session_id", { length: 255 }), // Stripe verification session ID
+  identityVerifiedAt: timestamp("identity_verified_at"),
 });
 
 export const insertSpeakerSchema = createInsertSchema(speakers).omit({
@@ -218,6 +223,9 @@ export const insertSpeakerApplicationSchema = createInsertSchema(speakerApplicat
   reviewedAt: true,
   createdAt: true,
   createdSpeakerId: true,
+  identityVerificationStatus: true,
+  identityVerificationSessionId: true,
+  identityVerifiedAt: true,
 });
 
 export const insertReviewSchema = createInsertSchema(reviews).omit({
@@ -283,6 +291,10 @@ export const users = pgTable("users", {
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  // Stripe Identity verification fields
+  identityVerificationStatus: varchar("identity_verification_status", { length: 30 }).default("pending"), // "pending", "processing", "verified", "requires_input", "canceled"
+  identityVerificationSessionId: varchar("identity_verification_session_id", { length: 255 }), // Stripe verification session ID
+  identityVerifiedAt: timestamp("identity_verified_at"),
 });
 
 // User session management
