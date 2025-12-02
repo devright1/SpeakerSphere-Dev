@@ -1267,14 +1267,21 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.json({ success: true, tracked: false });
       }
       
+      // Extract timeOnPage and scrollDepth from metadata for dedicated columns
+      const timeOnPage = metadata?.timeOnPage ? parseInt(metadata.timeOnPage) : null;
+      const scrollDepth = metadata?.scrollDepth ? parseInt(metadata.scrollDepth) : null;
+      
       // Track the interaction for ALL speakers - admin can view all analytics
       await storage.trackSpeakerInteraction({
         speakerId,
         userId: (req as any).session?.user?.id || null,
         sessionId: (req as any).sessionID || null,
         interactionType: eventType,
+        elementClicked: metadata?.elementClicked || null,
         metadata: JSON.stringify(metadata || {}),
         pageUrl: req.headers.referer || null,
+        timeOnPage,
+        scrollDepth,
         deviceType: req.headers['user-agent']?.includes('Mobile') ? 'mobile' : 'desktop',
         referrerSource: req.headers.referer || null
       });
