@@ -223,12 +223,15 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       const userData = insertUserSchema.parse(sanitizedData);
 
-      // Check if user already exists
+      // Check if email already exists in users, speakers, or applications
       const existingUser = await storage.getUserByEmail(userData.email);
-      if (existingUser) {
+      const existingSpeaker = await storage.getSpeakerByEmail(userData.email);
+      const existingApplication = await storage.getSpeakerApplicationByEmail(userData.email);
+      
+      if (existingUser || existingSpeaker || existingApplication) {
         return res.status(400).json({
           success: false,
-          message: "An account with this email already exists"
+          message: "This email is already in use. Please use a different email or log in to your existing account."
         });
       }
 
