@@ -3093,11 +3093,16 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(400).json({ error: "Type must be 'user' or 'speaker'" });
       }
 
-      // Create Stripe Identity verification session
+      // Create Stripe Identity verification session with Document + Selfie ($1.50)
       const verificationSession = await stripe.identity.verificationSessions.create({
         type: 'document',
         provided_details: {
           email: email,
+        },
+        options: {
+          document: {
+            require_matching_selfie: true, // Adds selfie verification - reduces cost to $1.50
+          },
         },
         metadata: {
           email: email,

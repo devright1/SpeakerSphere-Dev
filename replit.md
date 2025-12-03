@@ -2,6 +2,7 @@
 "SpeakerSphere Reviews" is a full-stack platform connecting healthcare professionals with medical speakers for discovery, evaluation, and booking. It features advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform utilizes real speaking topics extracted from CSV data, replacing generic categories with a topic-based organization. Its goal is to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
+- **December 3, 2025**: Updated Stripe Identity to use Document + Selfie verification (reduces cost from $3.00 to $1.50 per verification) - users now upload ID and take a selfie for biometric matching
 - **December 2, 2025**: Implemented Stripe Identity verification for user accounts and speaker applications - all new users and speakers must complete identity verification immediately during signup before account activation; unverified users are blocked from login with clear prompts to complete verification
 - **December 2, 2025**: Added identity verification database fields (identityVerificationSessionId, identityVerificationStatus, identityVerifiedAt) to users and speaker_applications tables
 - **December 2, 2025**: Created webhook handlers for Stripe Identity events (verified, requires_input, canceled) to automatically update verification status
