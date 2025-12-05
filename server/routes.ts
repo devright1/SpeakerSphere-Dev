@@ -3081,6 +3081,42 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Get user activity stats
+  app.get("/api/users/stats/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      // Get favorites count
+      const bookmarkIds = await storage.getUserBookmarkIds(userId);
+      const favoritesCount = bookmarkIds.length;
+      
+      // Get reviews count
+      const userReviews = await storage.getUserReviews(userId);
+      const reviewsCount = userReviews.length;
+      
+      // Get inquiries count
+      const user = await storage.getUserById(userId);
+      let inquiriesCount = 0;
+      if (user?.email) {
+        const userInquiries = await storage.getUserInquiries(user.email);
+        inquiriesCount = userInquiries.length;
+      }
+      
+      // Profile views (would need analytics tracking - return 0 for now)
+      const totalProfileViews = 0;
+      
+      res.json({
+        favoritesCount,
+        reviewsCount,
+        inquiriesCount,
+        totalProfileViews
+      });
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });
+
   // ===== STRIPE IDENTITY VERIFICATION ENDPOINTS =====
   
   // Create identity verification session for user signup
