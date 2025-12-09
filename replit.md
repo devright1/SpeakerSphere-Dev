@@ -2,10 +2,7 @@
 "SpeakerSphere Reviews" is a full-stack platform connecting healthcare professionals with medical speakers for discovery, evaluation, and booking. It features advanced speaker search, a multi-dimensional review system, and direct inquiry management. The platform utilizes real speaking topics extracted from CSV data, replacing generic categories with a topic-based organization. Its goal is to be a leading resource for evaluating speaker quality, showcasing expertise through detailed profiles and video portfolios, and streamlining the booking process.
 
 ## Recent Changes
-- **December 3, 2025**: Updated Stripe Identity to use Document + Selfie verification (reduces cost from $3.00 to $1.50 per verification) - users now upload ID and take a selfie for biometric matching
-- **December 2, 2025**: Implemented Stripe Identity verification for user accounts and speaker applications - all new users and speakers must complete identity verification immediately during signup before account activation; unverified users are blocked from login with clear prompts to complete verification
-- **December 2, 2025**: Added identity verification database fields (identityVerificationSessionId, identityVerificationStatus, identityVerifiedAt) to users and speaker_applications tables
-- **December 2, 2025**: Created webhook handlers for Stripe Identity events (verified, requires_input, canceled) to automatically update verification status
+- **December 9, 2025**: Removed Stripe Identity verification completely - users and speakers can now register and log in without identity verification; Stripe payment features retained for subscriptions
 - **November 21, 2025**: Implemented Premier-tier-only analytics tracking system - analytics tracking and dashboard access now exclusively available to Premier tier speakers; Basic and Pro tier speakers see locked Analytics tab with UpgradePrompt component encouraging upgrade; tracking API endpoint returns `tracked:false` for non-Premier tiers and stores no data
 - **November 18, 2025**: Migrated speaker images to Replit object storage - successfully re-hosted 357 of 565 speaker images (63%) from external URLs to Google Cloud Storage, eliminating most "Image unavailable" issues caused by external blocking
 - **November 18, 2025**: Reset all speaker ratings - all speakers now have reviewCount set to 0 and overallRating set to 0.00 (previously populated reviews were test data)
@@ -91,4 +88,3 @@ Preferred communication style: Simple, everyday language.
 - **Multer**: File upload handling.
 - **Google Analytics**: Platform-wide traffic and conversion tracking.
 - **Stripe**: Payment processing for subscription tiers.
-- **Stripe Identity**: Identity verification for user and speaker accounts.

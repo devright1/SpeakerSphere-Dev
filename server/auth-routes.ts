@@ -239,17 +239,6 @@ router.post("/login",
         });
       }
 
-      // Check identity verification status
-      if (user.identityVerificationStatus !== 'verified') {
-        return res.status(403).json({
-          message: "Identity verification required",
-          verificationStatus: user.identityVerificationStatus || 'pending',
-          requiresVerification: true,
-          userId: user.id,
-          email: user.email
-        });
-      }
-
       // Generate session token
       const sessionToken = generateVerificationToken();
       const sessionExpiration = new Date();
