@@ -80,6 +80,8 @@ export default function SpeakerDashboard() {
   // Topics management state
   const [isEditingTopics, setIsEditingTopics] = useState(false);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
+  const [topicSearchTerm, setTopicSearchTerm] = useState('');
+  const [topicCategoryFilter, setTopicCategoryFilter] = useState<string>('all');
   
   // New achievement state
   const [newAchievement, setNewAchievement] = useState('');
@@ -648,6 +650,8 @@ export default function SpeakerDashboard() {
   const handleCancelTopicsEdit = () => {
     setIsEditingTopics(false);
     setSelectedTopics(speakerTopics?.map((topic: any) => topic.id) || []);
+    setTopicSearchTerm('');
+    setTopicCategoryFilter('all');
   };
 
   const handleSaveTopics = () => {
@@ -1531,29 +1535,75 @@ export default function SpeakerDashboard() {
                   <CardContent>
                     {isEditingTopics ? (
                       <div className="space-y-4">
+                        {/* Search and Category Filter */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                              placeholder="Search topics..."
+                              value={topicSearchTerm}
+                              onChange={(e) => setTopicSearchTerm(e.target.value)}
+                              className="pl-9"
+                              data-testid="input-topic-search"
+                            />
+                          </div>
+                          <Select value={topicCategoryFilter} onValueChange={setTopicCategoryFilter}>
+                            <SelectTrigger className="w-full sm:w-[200px]" data-testid="select-topic-category">
+                              <SelectValue placeholder="Filter by category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Categories</SelectItem>
+                              {Array.from(new Set(allTopics?.map((t: any) => t.category).filter(Boolean) || [])).sort().map((category: string) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Topics List */}
                         <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
-                          {allTopics?.map((topic: any) => (
-                            <div key={topic.id} className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id={`topic-${topic.id}`}
-                                checked={selectedTopics.includes(topic.id)}
-                                onChange={() => handleTopicToggle(topic.id)}
-                                className="rounded border-gray-300"
-                              />
-                              <label
-                                htmlFor={`topic-${topic.id}`}
-                                className="text-sm cursor-pointer flex-1"
-                              >
-                                {topic.name}
-                                {topic.category && (
-                                  <span className="text-xs text-gray-500 ml-2">
-                                    ({topic.category})
-                                  </span>
-                                )}
-                              </label>
-                            </div>
-                          ))}
+                          {(() => {
+                            const filteredTopics = allTopics?.filter((topic: any) => {
+                              const matchesSearch = !topicSearchTerm || 
+                                topic.name.toLowerCase().includes(topicSearchTerm.toLowerCase());
+                              const matchesCategory = topicCategoryFilter === 'all' || 
+                                topic.category === topicCategoryFilter;
+                              return matchesSearch && matchesCategory;
+                            }) || [];
+                            
+                            if (filteredTopics.length === 0) {
+                              return (
+                                <p className="text-sm text-gray-500 text-center py-4">
+                                  No topics found matching your search.
+                                </p>
+                              );
+                            }
+                            
+                            return filteredTopics.map((topic: any) => (
+                              <div key={topic.id} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id={`topic-${topic.id}`}
+                                  checked={selectedTopics.includes(topic.id)}
+                                  onChange={() => handleTopicToggle(topic.id)}
+                                  className="rounded border-gray-300"
+                                />
+                                <label
+                                  htmlFor={`topic-${topic.id}`}
+                                  className="text-sm cursor-pointer flex-1"
+                                >
+                                  {topic.name}
+                                  {topic.category && (
+                                    <span className="text-xs text-gray-500 ml-2">
+                                      ({topic.category})
+                                    </span>
+                                  )}
+                                </label>
+                              </div>
+                            ));
+                          })()}
                         </div>
                         {/* Near-limit warning for topics */}
                         {topicLimit !== null && isNearLimit(selectedTopics.length, topicLimit) && selectedTopics.length < topicLimit && (
