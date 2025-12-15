@@ -166,6 +166,16 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
         {/* Badges moved below image */}
         <div className="flex gap-2 mb-3 flex-wrap">
           <TierBadge tier={speaker.subscriptionTier as "basic" | "pro" | "premier"} size="sm" />
+          {speaker.sdsBadge === 'sds_faculty' && (
+            <Badge className="bg-purple-600 text-white hover:bg-purple-700">
+              SDS Faculty
+            </Badge>
+          )}
+          {speaker.sdsBadge === 'sds' && (
+            <Badge className="bg-indigo-500 text-white hover:bg-indigo-600">
+              SDS
+            </Badge>
+          )}
           {speaker.verified && (
             <Badge variant="default" className="bg-success text-white">
               <CheckCircle className="w-3 h-3 mr-1" />

@@ -617,6 +617,16 @@ export default function SpeakerProfile() {
                       <h1 className="text-3xl font-bold text-gray-900">{speaker.name}</h1>
                       <div className="flex flex-wrap justify-center md:justify-start gap-2">
                         <TierBadge tier={speaker.subscriptionTier as "basic" | "pro" | "premier"} />
+                        {speaker.sdsBadge === 'sds_faculty' && (
+                          <Badge className="bg-purple-600 text-white hover:bg-purple-700">
+                            SDS Faculty
+                          </Badge>
+                        )}
+                        {speaker.sdsBadge === 'sds' && (
+                          <Badge className="bg-indigo-500 text-white hover:bg-indigo-600">
+                            SDS
+                          </Badge>
+                        )}
                         {speaker.verified && (
                           <Badge variant="default" className="bg-success text-white">
                             <CheckCircle className="w-3 h-3 mr-1" />
