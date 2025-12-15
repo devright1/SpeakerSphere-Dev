@@ -32,9 +32,7 @@ export default function HeroSection() {
           <h1 className="font-bold mb-8 text-balance max-w-5xl mx-auto">
             Find & Review Healthcare Speakers
           </h1>
-          <p className="text-xl md:text-2xl mb-12 opacity-90 text-balance max-w-4xl mx-auto leading-relaxed">
-            Discover top-rated medical professionals and healthcare experts through authentic peer reviews
-          </p>
+          <p className="text-xl md:text-2xl mb-12 opacity-90 text-balance max-w-4xl mx-auto leading-relaxed">Discover top-rated dental professionals and healthcare experts through authentic peer reviews</p>
           
           {/* Search Bar */}
           <div className="max-w-4xl mx-auto bg-white rounded-2xl card-spacing shadow-2xl">
