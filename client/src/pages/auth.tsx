@@ -822,10 +822,10 @@ export default function AuthPage() {
                     <div className="text-center space-y-6">
                       <div className="space-y-4">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                          Apply to Join SpeakerSphere
+                          Apply for a Speaker Sphere Profile
                         </h3>
                         <p className="text-gray-600 dark:text-gray-400">
-                          Healthcare professionals must apply for approval to ensure quality speakers for our network.
+                          If you see yourself in our speaker directory, fill out the application to claim and manage your profile. New speakers can also apply to join our network.
                         </p>
                       </div>
                       
