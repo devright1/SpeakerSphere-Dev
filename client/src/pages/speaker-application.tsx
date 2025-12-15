@@ -169,9 +169,9 @@ export default function SpeakerApplicationPage() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 mb-4">
                   <User className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-3xl font-bold">Speaker Application</CardTitle>
+                <CardTitle className="text-3xl font-bold">Apply for a Speaker Sphere Profile</CardTitle>
                 <CardDescription className="text-lg">
-                  Join SpeakerSphere's network of healthcare professionals
+                  If you see yourself in our speaker directory, fill out this application to claim and manage your profile. New speakers can also apply to join our network.
                 </CardDescription>
               </div>
 
