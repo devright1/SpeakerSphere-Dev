@@ -678,45 +678,42 @@ export default function SpeakerDashboard() {
     }
   };
 
-  // Render upload usage status with color-coded feedback
+  // Render upload usage status with color-coded feedback (storage-based only)
   const renderUploadUsage = () => {
     const uploadCount = currentUploadCount;
-    const limit = uploadLimit;
-    const approachingLimit = limit !== null && uploadCount >= Math.max(1, limit - 1);
-    const atLimit = limit !== null && uploadCount >= limit;
     
     // Calculate total storage used in bytes from all uploaded files
     const totalStorageBytes = speakerContent?.reduce((sum: number, content: any) => sum + (content.fileSize || 0), 0) || 0;
-    const totalStorageMB = (totalStorageBytes / (1024 * 1024)).toFixed(2);
+    const totalStorageMB = totalStorageBytes / (1024 * 1024);
+    const totalStorageMBFormatted = totalStorageMB.toFixed(2);
     
-    const statusColor = limit === null
-      ? 'text-emerald-600'
-      : atLimit
-        ? 'text-red-600'
-        : approachingLimit
-          ? 'text-amber-500'
-          : 'text-emerald-600';
-    const label = limit === null
-      ? `${uploadCount} files uploaded`
-      : `${uploadCount} / ${limit} files`;
+    // Storage-based limits only
+    const storageApproaching = storageLimitMb !== null && totalStorageMB >= (storageLimitMb * 0.9);
+    const storageAtLimit = storageLimitMb !== null && totalStorageMB >= storageLimitMb;
+    
+    const statusColor = storageAtLimit
+      ? 'text-red-600'
+      : storageApproaching
+        ? 'text-amber-500'
+        : 'text-emerald-600';
 
     return (
       <div className="space-y-2">
         <div className="flex items-center gap-4">
-          <p className={cn('text-sm font-medium', statusColor)} data-testid="text-upload-usage">
-            {label}
+          <p className="text-sm font-medium text-gray-600" data-testid="text-upload-usage">
+            {uploadCount} files uploaded
           </p>
-          <p className="text-sm font-medium text-gray-600" data-testid="text-storage-usage">
-            {totalStorageMB} MB{storageLimitMb !== null ? ` / ${storageLimitMb} MB` : ' uploaded'}
+          <p className={cn('text-sm font-medium', statusColor)} data-testid="text-storage-usage">
+            {totalStorageMBFormatted} MB{storageLimitMb !== null ? ` / ${storageLimitMb} MB` : ' used'}
           </p>
         </div>
-        {(approachingLimit || atLimit) && (
-          <Alert variant={atLimit ? 'destructive' : 'default'} data-testid="alert-upload-limit">
-            <AlertTitle>{atLimit ? 'Upload limit reached' : 'Approaching your upload limit'}</AlertTitle>
+        {storageApproaching && (
+          <Alert variant={storageAtLimit ? 'destructive' : 'default'} data-testid="alert-storage-limit">
+            <AlertTitle>{storageAtLimit ? 'Storage limit reached' : 'Approaching storage limit'}</AlertTitle>
             <AlertDescription>
-              {atLimit
-                ? `Your ${speakerProfile?.subscriptionTier ?? 'current'} plan allows ${limit} files. Delete a file or `
-                : 'You have one upload slot left. '} 
+              {storageAtLimit
+                ? `Your ${speakerProfile?.subscriptionTier ?? 'current'} plan storage is full. Delete files to upload more or `
+                : `You're using ${((totalStorageMB / (storageLimitMb || 1)) * 100).toFixed(0)}% of your storage. `} 
               {speakerProfile?.subscriptionTier !== 'premier' && (
                 <Link href="/subscription-upgrade" className="underline font-medium" data-testid="link-upgrade-uploads">
                   Upgrade your plan
@@ -803,16 +800,6 @@ export default function SpeakerDashboard() {
     if (!file) return;
 
     // Check upload limit before proceeding
-    if (uploadLimit !== null && currentUploadCount >= uploadLimit) {
-      toast({
-        title: "Upload Limit Reached",
-        description: `You've reached the ${uploadLimit}-file limit for your ${speakerProfile?.subscriptionTier || 'Basic'} tier. Delete a file or upgrade to upload more.`,
-        variant: "destructive",
-      });
-      // Reset file input
-      event.target.value = '';
-      return;
-    }
     
     // Check storage limit before uploading
     const totalStorageBytes = speakerContent?.reduce((sum: number, content: any) => sum + (content.fileSize || 0), 0) || 0;
@@ -2256,11 +2243,11 @@ export default function SpeakerDashboard() {
                   />
                   <Button
                     onClick={() => document.getElementById('fileUpload')?.click()}
-                    disabled={uploadContentMutation.isPending || (uploadLimit !== null && currentUploadCount >= uploadLimit)}
+                    disabled={uploadContentMutation.isPending}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    {uploadContentMutation.isPending ? 'Uploading...' : uploadLimit !== null && currentUploadCount >= uploadLimit ? 'Upload Limit Reached' : 'Upload File'}
+                    {uploadContentMutation.isPending ? 'Uploading...' : 'Upload File'}
                   </Button>
                 </div>
               </div>
@@ -2268,8 +2255,8 @@ export default function SpeakerDashboard() {
               {/* File Upload Buttons */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card 
-                  className={uploadLimit !== null && currentUploadCount >= uploadLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-md transition-shadow cursor-pointer"} 
-                  onClick={uploadLimit !== null && currentUploadCount >= uploadLimit ? undefined : () => document.getElementById('pdfUpload')?.click()}
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => document.getElementById('pdfUpload')?.click()}
                 >
                   <CardContent className="p-6 text-center">
                     <FileText className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -2281,14 +2268,13 @@ export default function SpeakerDashboard() {
                       className="hidden"
                       onChange={handleFileUpload}
                       accept=".pdf"
-                      disabled={uploadLimit !== null && currentUploadCount >= uploadLimit}
                     />
                   </CardContent>
                 </Card>
 
                 <Card 
-                  className={uploadLimit !== null && currentUploadCount >= uploadLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-md transition-shadow cursor-pointer"} 
-                  onClick={uploadLimit !== null && currentUploadCount >= uploadLimit ? undefined : () => document.getElementById('imageUpload')?.click()}
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => document.getElementById('imageUpload')?.click()}
                 >
                   <CardContent className="p-6 text-center">
                     <Image className="h-12 w-12 text-blue-500 mx-auto mb-4" />
@@ -2300,25 +2286,10 @@ export default function SpeakerDashboard() {
                       className="hidden"
                       onChange={handleFileUpload}
                       accept=".jpg,.jpeg,.png,.gif"
-                      disabled={uploadLimit !== null && currentUploadCount >= uploadLimit}
                     />
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Near-limit warning for uploads */}
-              {uploadLimit !== null && isNearLimit(currentUploadCount, uploadLimit) && currentUploadCount < uploadLimit && (
-                <Alert className="mt-4 border-amber-500 bg-amber-50">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                  <AlertTitle className="text-amber-900">Approaching Upload Limit</AlertTitle>
-                  <AlertDescription className="text-amber-800">
-                    You have {uploadLimit - currentUploadCount} upload{uploadLimit - currentUploadCount !== 1 ? 's' : ''} remaining on your {speakerProfile?.subscriptionTier || 'Basic'} plan.
-                    {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
-                      <> <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to get more uploads</Link>.</>
-                    )}
-                  </AlertDescription>
-                </Alert>
-              )}
 
               {/* Upload Usage Status */}
               <div className="mt-6">

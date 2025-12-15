@@ -1751,15 +1751,6 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
       
-      // Check upload count limit
-      const currentUploads = await storage.getSpeakerContent(speakerId);
-      if (currentUploads.length >= tierLimits.uploadLimit) {
-        return res.status(400).json({ 
-          error: "Upload limit exceeded", 
-          message: `You have reached your upload limit of ${tierLimits.uploadLimit} files for the ${speaker.subscriptionTier} tier` 
-        });
-      }
-
       // Generate a unique filename for the uploaded file
       const timestamp = Date.now();
       const sanitizedOriginalName = SecurityUtils.sanitizeFileName(req.file.originalname);
