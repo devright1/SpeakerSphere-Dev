@@ -1898,6 +1898,32 @@ export default function AdminDashboard() {
                             Featured Override
                           </button>
                           
+                          {/* SDS Badge Selector */}
+                          <Select
+                            value={speaker.sdsBadge || "none"}
+                            onValueChange={(value) => updateSpeakerMutation.mutate({
+                              ...speaker,
+                              sdsBadge: value === "none" ? null : value
+                            })}
+                          >
+                            <SelectTrigger 
+                              className={`w-32 h-8 text-xs ${
+                                speaker.sdsBadge === 'sds_faculty' 
+                                  ? 'bg-amber-500 text-white border-amber-600' 
+                                  : speaker.sdsBadge === 'sds'
+                                  ? 'bg-orange-500 text-white border-orange-600'
+                                  : 'bg-gray-100 border-gray-300'
+                              }`}
+                            >
+                              <SelectValue placeholder="SDS Badge" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No Badge</SelectItem>
+                              <SelectItem value="sds">SDS</SelectItem>
+                              <SelectItem value="sds_faculty">SDS Faculty</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
                           <Button variant="outline" size="sm">Edit</Button>
                         </div>
                       </div>
@@ -2171,6 +2197,33 @@ export default function AdminDashboard() {
                                 >
                                   Featured Override
                                 </button>
+                                
+                                {/* SDS Badge Selector */}
+                                <Select
+                                  value={speaker.sdsBadge || "none"}
+                                  onValueChange={(value) => updateSpeakerMutation.mutate({
+                                    ...speaker,
+                                    sdsBadge: value === "none" ? null : value
+                                  })}
+                                >
+                                  <SelectTrigger 
+                                    className={`w-32 h-8 text-xs ${
+                                      speaker.sdsBadge === 'sds_faculty' 
+                                        ? 'bg-amber-500 text-white border-amber-600' 
+                                        : speaker.sdsBadge === 'sds'
+                                        ? 'bg-orange-500 text-white border-orange-600'
+                                        : 'bg-gray-100 border-gray-300'
+                                    }`}
+                                    data-testid={`select-sds-badge-${speaker.id}`}
+                                  >
+                                    <SelectValue placeholder="SDS Badge" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">No Badge</SelectItem>
+                                    <SelectItem value="sds">SDS</SelectItem>
+                                    <SelectItem value="sds_faculty">SDS Faculty</SelectItem>
+                                  </SelectContent>
+                                </Select>
                                 
                                 <Button 
                                   variant="outline" 
