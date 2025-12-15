@@ -756,7 +756,7 @@ export default function ForSpeakers() {
                           name="credentials"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Credentials & Qualifications *</FormLabel>
+                              <FormLabel>Education & Credentials*</FormLabel>
                               <FormControl>
                                 <Textarea 
                                   placeholder="List your degrees, certifications, board certifications, and professional memberships..."
