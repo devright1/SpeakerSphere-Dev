@@ -463,7 +463,7 @@ export default function ForSpeakers() {
                 </TabsTrigger>
                 <TabsTrigger value="apply" className="flex items-center gap-2">
                   <UserPlus className="w-4 h-4" />
-                  Apply to Become a Speaker
+                  Apply for a Speaker Sphere Profile
                 </TabsTrigger>
               </TabsList>
               
