@@ -540,8 +540,8 @@ export default function ForSpeakers() {
               <TabsContent value="apply" className="mt-6">
                 <div className="space-y-6">
                   <div className="text-center">
-                    <h2 className="text-2xl font-bold mb-2">Speaker Application</h2>
-                    <p className="text-gray-600">Join our network of healthcare speaking professionals</p>
+                    <h2 className="text-2xl font-bold mb-2">Claim Your Profile</h2>
+                    <p className="text-gray-600">If you see yourself in our speaker directory, fill out this application to claim and manage your Speaker Sphere profile</p>
                   </div>
                   
                   <Form {...applicationForm}>
