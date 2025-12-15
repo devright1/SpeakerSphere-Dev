@@ -244,7 +244,6 @@ export default function ForSpeakers() {
         ogType="website"
       />
       <Header />
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className="text-center mb-12">
@@ -540,7 +539,7 @@ export default function ForSpeakers() {
               <TabsContent value="apply" className="mt-6">
                 <div className="space-y-6">
                   <div className="text-center">
-                    <h2 className="text-2xl font-bold mb-2">Claim Your Profile</h2>
+                    <h2 className="text-2xl font-bold mb-2">Apply </h2>
                     <p className="text-gray-600">If you see yourself in our speaker directory, fill out this application to claim and manage your Speaker Sphere profile</p>
                   </div>
                   
@@ -1008,7 +1007,6 @@ export default function ForSpeakers() {
           </div>
         </div>
       </div>
-      
       <Footer />
     </div>
   );
