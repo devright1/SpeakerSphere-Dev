@@ -71,6 +71,8 @@ export const speakers = pgTable("speakers", {
   // Storage tracking for tier enforcement (Phase 2) - using bigint for large file support
   storageUsedBytes: bigint("storage_used_bytes", { mode: "number" }).default(0).notNull(),
   videoCount: integer("video_count").default(0).notNull(),
+  // SDS Badge - prioritizes speakers within their subscription tier
+  sdsBadge: varchar("sds_badge", { length: 20 }), // null, "sds", or "sds_faculty"
 });
 
 export const reviews = pgTable("reviews", {
