@@ -66,7 +66,8 @@ import type { IStorage } from "./storage";
 
 /**
  * Helper to build tier-based randomized ordering for speaker queries.
- * Returns SQL fragments for ordering by tier (Premier > Pro > Basic) with randomization within each tier.
+ * Returns SQL fragments for ordering by tier (Premier > Pro > Basic) with SDS badge priority within each tier.
+ * SDS Faculty badges appear first, then SDS badges, then non-badged speakers.
  * @param seed Optional seed for deterministic randomization (useful for pagination/caching consistency)
  */
 function buildTierRotationOrder(seed?: string): { seedSql?: any; order: any[] } {
@@ -76,7 +77,10 @@ function buildTierRotationOrder(seed?: string): { seedSql?: any; order: any[] } 
     return {
       seedSql: sql`SELECT setseed(${seedValue})`,
       order: [
+        // First sort by subscription tier (Premier > Pro > Basic)
         sql`CASE ${speakers.subscriptionTier} WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END`,
+        // Within each tier, SDS Faculty first, then SDS, then non-badged
+        sql`CASE ${speakers.sdsBadge} WHEN 'sds_faculty' THEN 1 WHEN 'sds' THEN 2 ELSE 3 END`,
         sql`RANDOM()`
       ]
     };
@@ -85,7 +89,10 @@ function buildTierRotationOrder(seed?: string): { seedSql?: any; order: any[] } 
   // Default: no seed, fresh randomization on each request
   return {
     order: [
+      // First sort by subscription tier (Premier > Pro > Basic)
       sql`CASE ${speakers.subscriptionTier} WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END`,
+      // Within each tier, SDS Faculty first, then SDS, then non-badged
+      sql`CASE ${speakers.sdsBadge} WHEN 'sds_faculty' THEN 1 WHEN 'sds' THEN 2 ELSE 3 END`,
       sql`RANDOM()`
     ]
   };
