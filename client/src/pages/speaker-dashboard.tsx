@@ -232,7 +232,9 @@ export default function SpeakerDashboard() {
   });
   
   // Map analytics data to match previous userStats structure
-  const userStats = speakerAnalytics || { 
+  // For non-Premier tiers, only profileViews is shown - everything else is zeroed out
+  const isPremier = speakerProfile?.subscriptionTier === 'premier';
+  const defaultStats = { 
     profileViews: 0, 
     emailClicks: 0, 
     phoneClicks: 0, 
@@ -245,6 +247,7 @@ export default function SpeakerDashboard() {
     avgTimeOnProfile: 0,
     downloads: [],
     totalDownloads: 0,
+    engagementClicks: 0,
     discoverySources: {
       search: 0,
       category: 0,
@@ -256,8 +259,19 @@ export default function SpeakerDashboard() {
       facebook: 0,
       x: 0,
       linkedin: 0
-    }
+    },
+    interactionsOverTime: [],
+    peakActivityByDay: [0, 0, 0, 0, 0, 0, 0],
+    last7Days: { views: 0, clicks: 0, shares: 0, downloads: 0 }
   };
+  
+  // For Premier: show all real data. For Basic/Pro: only show profileViews, zero everything else
+  const userStats = isPremier 
+    ? (speakerAnalytics || defaultStats)
+    : { 
+        ...defaultStats, 
+        profileViews: speakerAnalytics?.profileViews || 0 
+      };
 
   const { data: speakerReviews } = useQuery({
     queryKey: ['/api/speakers/reviews', speakerProfile?.id],
