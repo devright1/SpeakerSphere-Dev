@@ -1329,15 +1329,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(403).json({ message: "Access denied" });
       }
       
-      // Check speaker's subscription tier - only show analytics for Premier tier
-      if (speaker.subscriptionTier !== 'premier') {
-        return res.status(403).json({ 
-          message: "Analytics are only available for Premier tier subscribers",
-          requiresUpgrade: true,
-          currentTier: speaker.subscriptionTier || 'basic'
-        });
-      }
-      
+      // Analytics data is now available to all tiers (for greyed-out preview)
+      // The frontend handles displaying the upgrade prompt for non-Premier tiers
       const analytics = await storage.getSpeakerAnalytics(speakerId, month, year);
       res.json(analytics);
     } catch (error) {

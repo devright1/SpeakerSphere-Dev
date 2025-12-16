@@ -219,7 +219,8 @@ export default function SpeakerDashboard() {
       const response = await fetch(`/api/analytics/speaker/${speakerProfile.id}`, {
         headers: {
           'X-User-ID': user?.id || ''
-        }
+        },
+        credentials: 'include'
       });
       if (!response.ok) {
         // Return null for non-Premier speakers or access denied
@@ -227,7 +228,7 @@ export default function SpeakerDashboard() {
       }
       return response.json();
     },
-    enabled: !!speakerProfile?.id && speakerProfile.subscriptionTier === 'premier',
+    enabled: !!speakerProfile?.id,
   });
   
   // Map analytics data to match previous userStats structure
@@ -1988,166 +1989,90 @@ export default function SpeakerDashboard() {
 
           {/* Analytics Tab */}
           <TabsContent value="stats">
-            {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
-              <div className="space-y-6">
-                {/* Overview Metrics */}
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                        <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
-                        <div className="text-sm text-gray-600">Profile Views</div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Clock className="h-8 w-8 mx-auto mb-2 text-indigo-600" />
-                        <div className="text-2xl font-bold">
-                          {userStats?.avgTimeOnProfile ? `${Math.floor(userStats.avgTimeOnProfile / 60)}:${(userStats.avgTimeOnProfile % 60).toString().padStart(2, '0')}` : '0:00'}
-                        </div>
-                        <div className="text-sm text-gray-600">Avg Time on Profile</div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Heart className="h-8 w-8 mx-auto mb-2 text-red-600" />
-                        <div className="text-2xl font-bold">{userStats?.favoritesCount || 0}</div>
-                        <div className="text-sm text-gray-600">Favorites</div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Star className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
-                        <div className="text-2xl font-bold">{userStats?.reviewsCount || 0}</div>
-                        <div className="text-sm text-gray-600">Reviews</div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Download className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                        <div className="text-2xl font-bold">{userStats?.totalDownloads || 0}</div>
-                        <div className="text-sm text-gray-600">Content Downloads</div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Share2 className="h-8 w-8 mx-auto mb-2 text-cyan-600" />
-                        <div className="text-2xl font-bold">{userStats?.shareClicks || 0}</div>
-                        <div className="text-sm text-gray-600">Profile Shares</div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                        <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
-                        <div className="text-sm text-gray-600">Website Clicks</div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Search className="h-8 w-8 mx-auto mb-2 text-gray-600" />
-                        <div className="text-2xl font-bold">{userStats?.searchAppearances || 0}</div>
-                        <div className="text-sm text-gray-600">Search Appearances</div>
-                      </CardContent>
-                    </Card>
-                  </div>
+            {/* Full analytics dashboard - greyed out for non-Premier tiers */}
+            <div className={cn(
+              "space-y-6",
+              (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && "opacity-50 pointer-events-none select-none"
+            )}>
+              {/* Overview Metrics */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                      <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
+                      <div className="text-sm text-gray-600">Profile Views</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Clock className="h-8 w-8 mx-auto mb-2 text-indigo-600" />
+                      <div className="text-2xl font-bold">
+                        {userStats?.avgTimeOnProfile ? `${Math.floor(userStats.avgTimeOnProfile / 60)}:${(userStats.avgTimeOnProfile % 60).toString().padStart(2, '0')}` : '0:00'}
+                      </div>
+                      <div className="text-sm text-gray-600">Avg Time on Profile</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Heart className="h-8 w-8 mx-auto mb-2 text-red-600" />
+                      <div className="text-2xl font-bold">{userStats?.favoritesCount || 0}</div>
+                      <div className="text-sm text-gray-600">Favorites</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Star className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
+                      <div className="text-2xl font-bold">{userStats?.reviewsCount || 0}</div>
+                      <div className="text-sm text-gray-600">Reviews</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Download className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                      <div className="text-2xl font-bold">{userStats?.totalDownloads || 0}</div>
+                      <div className="text-sm text-gray-600">Content Downloads</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Share2 className="h-8 w-8 mx-auto mb-2 text-cyan-600" />
+                      <div className="text-2xl font-bold">{userStats?.shareClicks || 0}</div>
+                      <div className="text-sm text-gray-600">Profile Shares</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                      <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
+                      <div className="text-sm text-gray-600">Website Clicks</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Search className="h-8 w-8 mx-auto mb-2 text-gray-600" />
+                      <div className="text-2xl font-bold">{userStats?.searchAppearances || 0}</div>
+                      <div className="text-sm text-gray-600">Search Appearances</div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-            ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' ? (
-              <div className="space-y-6">
-                {/* Pro tier - All-Time Views Only with upgrade prompt */}
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Analytics</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                        <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
-                        <div className="text-sm text-gray-600">All-Time Profile Views</div>
-                      </CardContent>
-                    </Card>
-                    
-                    {/* Locked analytics cards */}
-                    {[
-                      { icon: Clock, label: "Avg Time on Profile", color: "text-indigo-600" },
-                      { icon: Heart, label: "Favorites", color: "text-red-600" },
-                      { icon: Download, label: "Content Downloads", color: "text-green-600" }
-                    ].map((item, index) => (
-                      <Card 
-                        key={index}
-                        className="opacity-50 cursor-pointer hover:opacity-60 transition-opacity"
-                        onClick={() => toast({
-                          title: "Premier Feature",
-                          description: "Advanced analytics are available on the Premier plan. Upgrade to unlock detailed insights.",
-                          variant: "default"
-                        })}
-                      >
-                        <CardContent className="p-6 text-center relative">
-                          <Lock className="h-4 w-4 absolute top-2 right-2 text-gray-400" />
-                          <item.icon className={`h-8 w-8 mx-auto mb-2 ${item.color}`} />
-                          <div className="text-2xl font-bold text-gray-400">--</div>
-                          <div className="text-sm text-gray-400">{item.label}</div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
+            </div>
+            
+            {/* Upgrade prompt for non-Premier tiers */}
+            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+              <div className="mt-6">
                 <UpgradePrompt 
                   feature="analytics"
-                  currentTier="pro"
-                />
-              </div>
-            ) : (
-              /* Basic tier - All-Time Views Only with Pro upgrade prompt */
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Analytics</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
-                      <CardContent className="p-6 text-center">
-                        <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                        <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
-                        <div className="text-sm text-gray-600">All-Time Profile Views</div>
-                      </CardContent>
-                    </Card>
-                    
-                    {/* Locked analytics cards for Basic */}
-                    {[
-                      { icon: Clock, label: "Avg Time on Profile", color: "text-indigo-600" },
-                      { icon: Heart, label: "Favorites", color: "text-red-600" },
-                      { icon: Download, label: "Content Downloads", color: "text-green-600" }
-                    ].map((item, index) => (
-                      <Card 
-                        key={index}
-                        className="opacity-50 cursor-pointer hover:opacity-60 transition-opacity"
-                        onClick={() => toast({
-                          title: "Pro Feature",
-                          description: "Advanced analytics are available on the Pro plan. Upgrade to unlock detailed insights.",
-                          variant: "default"
-                        })}
-                      >
-                        <CardContent className="p-6 text-center relative">
-                          <Lock className="h-4 w-4 absolute top-2 right-2 text-gray-400" />
-                          <item.icon className={`h-8 w-8 mx-auto mb-2 ${item.color}`} />
-                          <div className="text-2xl font-bold text-gray-400">--</div>
-                          <div className="text-sm text-gray-400">{item.label}</div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-                <UpgradePrompt 
-                  feature="analytics"
-                  currentTier="basic"
+                  currentTier={(speakerProfile?.subscriptionTier ?? 'basic') as "basic" | "pro" | "premier"}
                 />
               </div>
             )}
