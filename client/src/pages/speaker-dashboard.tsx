@@ -2102,9 +2102,8 @@ export default function SpeakerDashboard() {
                   </div>
                 </div>
                 <UpgradePrompt 
-                  feature="advanced analytics"
+                  feature="analytics"
                   currentTier="pro"
-                  requiredTier="premier"
                 />
               </div>
             ) : (
@@ -2147,9 +2146,8 @@ export default function SpeakerDashboard() {
                   </div>
                 </div>
                 <UpgradePrompt 
-                  feature="advanced analytics"
+                  feature="analytics"
                   currentTier="basic"
-                  requiredTier="pro"
                 />
               </div>
             )}
