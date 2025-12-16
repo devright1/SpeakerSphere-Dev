@@ -778,7 +778,17 @@ export default function SpeakerDashboard() {
       });
       return;
     }
-    updateProfileMutation.mutate(editForm);
+    
+    // Filter out social media fields for non-Premier tiers
+    const formData = { ...editForm };
+    if ((speakerProfile?.subscriptionTier ?? 'basic') !== 'premier') {
+      delete formData.instagramHandle;
+      delete formData.linkedinHandle;
+      delete formData.facebookHandle;
+      delete formData.xHandle;
+    }
+    
+    updateProfileMutation.mutate(formData);
   };
 
   const handleStartEdit = () => {
@@ -1246,112 +1256,170 @@ export default function SpeakerDashboard() {
                       </div>
                     </div>
 
-                    {/* Social Media Links (Premier only) */}
-                    {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' && (
-                      <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="instagramHandle">
-                              Instagram Profile Link
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="instagramHandle"
-                                value={editForm.instagramHandle || ''}
-                                onChange={(e) => setEditForm({...editForm, instagramHandle: e.target.value})}
-                                placeholder="https://instagram.com/yourprofile"
-                                data-testid="input-instagram-handle"
-                              />
-                            ) : (
-                              <p className="text-gray-900 font-medium">
-                                {speakerProfile.instagramHandle ? (
-                                  speakerProfile.instagramHandle.includes('instagram.com') ? (
-                                    <a href={speakerProfile.instagramHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                      {speakerProfile.instagramHandle}
-                                    </a>
-                                  ) : speakerProfile.instagramHandle
-                                ) : 'Not provided'}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label htmlFor="linkedinHandle">
-                              LinkedIn Profile Link
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="linkedinHandle"
-                                value={editForm.linkedinHandle || ''}
-                                onChange={(e) => setEditForm({...editForm, linkedinHandle: e.target.value})}
-                                placeholder="https://linkedin.com/in/yourprofile"
-                                data-testid="input-linkedin-handle"
-                              />
-                            ) : (
-                              <p className="text-gray-900 font-medium">
-                                {speakerProfile.linkedinHandle ? (
-                                  speakerProfile.linkedinHandle.includes('linkedin.com') ? (
-                                    <a href={speakerProfile.linkedinHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                      {speakerProfile.linkedinHandle}
-                                    </a>
-                                  ) : speakerProfile.linkedinHandle
-                                ) : 'Not provided'}
-                              </p>
-                            )}
-                          </div>
+                    {/* Social Media Links - Visible to all tiers, but only editable for Premier */}
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="instagramHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                            Instagram Profile Link
+                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                          </Label>
+                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                            <Input
+                              id="instagramHandle"
+                              value={editForm.instagramHandle || ''}
+                              onChange={(e) => setEditForm({...editForm, instagramHandle: e.target.value})}
+                              placeholder="https://instagram.com/yourprofile"
+                              data-testid="input-instagram-handle"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                            <Input
+                              id="instagramHandle"
+                              value=""
+                              placeholder="Upgrade to Premier to add"
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
+                              onClick={() => toast({
+                                title: "Premier Feature",
+                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
+                                variant: "default"
+                              })}
+                              data-testid="input-instagram-handle-locked"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium">
+                              {speakerProfile?.instagramHandle ? (
+                                speakerProfile.instagramHandle.includes('instagram.com') ? (
+                                  <a href={speakerProfile.instagramHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    {speakerProfile.instagramHandle}
+                                  </a>
+                                ) : speakerProfile.instagramHandle
+                              ) : 'Not provided'}
+                            </p>
+                          )}
                         </div>
+                        <div>
+                          <Label htmlFor="linkedinHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                            LinkedIn Profile Link
+                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                          </Label>
+                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                            <Input
+                              id="linkedinHandle"
+                              value={editForm.linkedinHandle || ''}
+                              onChange={(e) => setEditForm({...editForm, linkedinHandle: e.target.value})}
+                              placeholder="https://linkedin.com/in/yourprofile"
+                              data-testid="input-linkedin-handle"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                            <Input
+                              id="linkedinHandle"
+                              value=""
+                              placeholder="Upgrade to Premier to add"
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
+                              onClick={() => toast({
+                                title: "Premier Feature",
+                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
+                                variant: "default"
+                              })}
+                              data-testid="input-linkedin-handle-locked"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium">
+                              {speakerProfile?.linkedinHandle ? (
+                                speakerProfile.linkedinHandle.includes('linkedin.com') ? (
+                                  <a href={speakerProfile.linkedinHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    {speakerProfile.linkedinHandle}
+                                  </a>
+                                ) : speakerProfile.linkedinHandle
+                              ) : 'Not provided'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="facebookHandle">
-                              Facebook Profile Link
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="facebookHandle"
-                                value={editForm.facebookHandle || ''}
-                                onChange={(e) => setEditForm({...editForm, facebookHandle: e.target.value})}
-                                placeholder="https://facebook.com/yourprofile"
-                                data-testid="input-facebook-handle"
-                              />
-                            ) : (
-                              <p className="text-gray-900 font-medium">
-                                {speakerProfile.facebookHandle ? (
-                                  speakerProfile.facebookHandle.includes('facebook.com') ? (
-                                    <a href={speakerProfile.facebookHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                      {speakerProfile.facebookHandle}
-                                    </a>
-                                  ) : speakerProfile.facebookHandle
-                                ) : 'Not provided'}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label htmlFor="xHandle">
-                              X (Twitter) Profile Link
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="xHandle"
-                                value={editForm.xHandle || ''}
-                                onChange={(e) => setEditForm({...editForm, xHandle: e.target.value})}
-                                placeholder="https://x.com/yourprofile"
-                                data-testid="input-x-handle"
-                              />
-                            ) : (
-                              <p className="text-gray-900 font-medium">
-                                {speakerProfile.xHandle ? (
-                                  speakerProfile.xHandle.includes('x.com') || speakerProfile.xHandle.includes('twitter.com') ? (
-                                    <a href={speakerProfile.xHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                      {speakerProfile.xHandle}
-                                    </a>
-                                  ) : speakerProfile.xHandle
-                                ) : 'Not provided'}
-                              </p>
-                            )}
-                          </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="facebookHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                            Facebook Profile Link
+                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                          </Label>
+                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                            <Input
+                              id="facebookHandle"
+                              value={editForm.facebookHandle || ''}
+                              onChange={(e) => setEditForm({...editForm, facebookHandle: e.target.value})}
+                              placeholder="https://facebook.com/yourprofile"
+                              data-testid="input-facebook-handle"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                            <Input
+                              id="facebookHandle"
+                              value=""
+                              placeholder="Upgrade to Premier to add"
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
+                              onClick={() => toast({
+                                title: "Premier Feature",
+                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
+                                variant: "default"
+                              })}
+                              data-testid="input-facebook-handle-locked"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium">
+                              {speakerProfile?.facebookHandle ? (
+                                speakerProfile.facebookHandle.includes('facebook.com') ? (
+                                  <a href={speakerProfile.facebookHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    {speakerProfile.facebookHandle}
+                                  </a>
+                                ) : speakerProfile.facebookHandle
+                              ) : 'Not provided'}
+                            </p>
+                          )}
                         </div>
-                      </>
-                    )}
+                        <div>
+                          <Label htmlFor="xHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                            X (Twitter) Profile Link
+                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                          </Label>
+                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                            <Input
+                              id="xHandle"
+                              value={editForm.xHandle || ''}
+                              onChange={(e) => setEditForm({...editForm, xHandle: e.target.value})}
+                              placeholder="https://x.com/yourprofile"
+                              data-testid="input-x-handle"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                            <Input
+                              id="xHandle"
+                              value=""
+                              placeholder="Upgrade to Premier to add"
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
+                              onClick={() => toast({
+                                title: "Premier Feature",
+                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
+                                variant: "default"
+                              })}
+                              data-testid="input-x-handle-locked"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium">
+                              {speakerProfile?.xHandle ? (
+                                speakerProfile.xHandle.includes('x.com') || speakerProfile.xHandle.includes('twitter.com') ? (
+                                  <a href={speakerProfile.xHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    {speakerProfile.xHandle}
+                                  </a>
+                                ) : speakerProfile.xHandle
+                              ) : 'Not provided'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </>
 
                     {/* Professional Achievements Section */}
                     <div className="pt-6 border-t">
@@ -1993,233 +2061,97 @@ export default function SpeakerDashboard() {
                     </Card>
                   </div>
                 </div>
-
-                {/* Interactions Over Time */}
-                {userStats?.dailyTrends && userStats.dailyTrends.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Interactions Over Time</CardTitle>
-                      <CardDescription>Daily activity for the past 30 days</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={userStats.dailyTrends}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                            <XAxis 
-                              dataKey="date" 
-                              tick={{ fontSize: 11 }}
-                              tickFormatter={(value) => {
-                                const date = new Date(value);
-                                return date.getDate().toString();
-                              }}
-                              interval={0}
-                              axisLine={{ stroke: '#666' }}
-                              tickLine={{ stroke: '#666' }}
-                            />
-                            <YAxis 
-                              tick={{ fontSize: 12 }} 
-                              allowDecimals={false}
-                              axisLine={{ stroke: '#666' }}
-                              tickLine={{ stroke: '#666' }}
-                            />
-                            <Tooltip 
-                              labelFormatter={(value) => {
-                                const date = new Date(value);
-                                return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-                              }}
-                              contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}
-                            />
-                            <Legend />
-                            <Line 
-                              type="monotone" 
-                              dataKey="profileViews" 
-                              stroke="#3b82f6" 
-                              name="Profile Views"
-                              strokeWidth={2.5}
-                              dot={{ r: 6, fill: '#3b82f6', stroke: '#3b82f6', strokeWidth: 2 }}
-                              activeDot={{ r: 8, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="totalClicks" 
-                              stroke="#10b981" 
-                              name="Total Clicks"
-                              strokeWidth={2.5}
-                              dot={{ r: 6, fill: '#10b981', stroke: '#10b981', strokeWidth: 2 }}
-                              activeDot={{ r: 8, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="socialClicks" 
-                              stroke="#f59e0b" 
-                              name="Social Clicks"
-                              strokeWidth={2.5}
-                              dot={{ r: 6, fill: '#f59e0b', stroke: '#f59e0b', strokeWidth: 2 }}
-                              activeDot={{ r: 8, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Social Media Engagement */}
-                {userStats?.socialClicksByPlatform && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Social Media Engagement</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.socialClicksByPlatform.instagram || 0}</div>
-                          <div className="text-sm text-gray-600">Instagram</div>
-                        </div>
-                        <div className="text-center p-4 bg-blue-50 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.socialClicksByPlatform.facebook || 0}</div>
-                          <div className="text-sm text-gray-600">Facebook</div>
-                        </div>
-                        <div className="text-center p-4 bg-gray-50 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.socialClicksByPlatform.x || 0}</div>
-                          <div className="text-sm text-gray-600">X (Twitter)</div>
-                        </div>
-                        <div className="text-center p-4 bg-blue-100 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.socialClicksByPlatform.linkedin || 0}</div>
-                          <div className="text-sm text-gray-600">LinkedIn</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Discovery Sources */}
-                {userStats?.discoverySources && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>How People Find You</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="text-center p-4 bg-blue-50 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.discoverySources.search || 0}</div>
-                          <div className="text-sm text-gray-600">Search Results</div>
-                        </div>
-                        <div className="text-center p-4 bg-green-50 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.discoverySources.category || 0}</div>
-                          <div className="text-sm text-gray-600">Category Browse</div>
-                        </div>
-                        <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.discoverySources.featured || 0}</div>
-                          <div className="text-sm text-gray-600">Featured Section</div>
-                        </div>
-                        <div className="text-center p-4 bg-purple-50 rounded-lg">
-                          <div className="text-xl font-bold">{userStats.discoverySources.direct || 0}</div>
-                          <div className="text-sm text-gray-600">Direct Link</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Peak Activity */}
-                {userStats?.peakActivity && (userStats.peakActivity.hour || userStats.peakActivity.dayOfWeek) && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Peak Activity Times</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {userStats.peakActivity.hour && (
-                          <div className="p-4 bg-blue-50 rounded-lg">
-                            <div className="text-sm text-gray-600 mb-1">Most Active Hour</div>
-                            <div className="text-2xl font-bold text-blue-700">{userStats.peakActivity.hour.time}</div>
-                            <div className="text-sm text-gray-500">{userStats.peakActivity.hour.count} interactions</div>
-                          </div>
-                        )}
-                        {userStats.peakActivity.dayOfWeek && (
-                          <div className="p-4 bg-green-50 rounded-lg">
-                            <div className="text-sm text-gray-600 mb-1">Most Active Day</div>
-                            <div className="text-2xl font-bold text-green-700">{userStats.peakActivity.dayOfWeek.day}</div>
-                            <div className="text-sm text-gray-500">{userStats.peakActivity.dayOfWeek.count} interactions</div>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Weekly Summary */}
-                {userStats?.weeklyViews !== undefined && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Last 7 Days</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-blue-50 rounded-lg">
-                          <div className="text-sm text-gray-600 mb-1">Profile Views</div>
-                          <div className="text-2xl font-bold text-blue-700">{userStats.weeklyViews}</div>
-                        </div>
-                        <div className="p-4 bg-green-50 rounded-lg">
-                          <div className="text-sm text-gray-600 mb-1">Total Clicks</div>
-                          <div className="text-2xl font-bold text-green-700">{userStats.weeklyClicks || 0}</div>
-                          <div className="text-xs text-gray-500 mt-1">All profile interactions</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Content Downloads Table */}
-                {userStats?.downloads && userStats.downloads.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Recent Content Downloads</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">File</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Downloaded By</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-200">
-                            {userStats.downloads.slice(0, 10).map((download: any) => (
-                              <tr key={download.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 text-sm font-medium text-gray-900">{download.fileName}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">
-                                  <div>{download.userName}</div>
-                                  <div className="text-xs text-gray-400">{download.userEmail}</div>
-                                </td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{download.userCompany || '—'}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">
-                                  {new Date(download.downloadedAt).toLocaleDateString()}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      {userStats.downloads.length > 10 && (
-                        <div className="mt-4 text-center text-sm text-gray-500">
-                          Showing 10 of {userStats.downloads.length} downloads
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
+              </div>
+            ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' ? (
+              <div className="space-y-6">
+                {/* Pro tier - All-Time Views Only with upgrade prompt */}
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Analytics</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                        <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
+                        <div className="text-sm text-gray-600">All-Time Profile Views</div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Locked analytics cards */}
+                    {[
+                      { icon: Clock, label: "Avg Time on Profile", color: "text-indigo-600" },
+                      { icon: Heart, label: "Favorites", color: "text-red-600" },
+                      { icon: Download, label: "Content Downloads", color: "text-green-600" }
+                    ].map((item, index) => (
+                      <Card 
+                        key={index}
+                        className="opacity-50 cursor-pointer hover:opacity-60 transition-opacity"
+                        onClick={() => toast({
+                          title: "Premier Feature",
+                          description: "Advanced analytics are available on the Premier plan. Upgrade to unlock detailed insights.",
+                          variant: "default"
+                        })}
+                      >
+                        <CardContent className="p-6 text-center relative">
+                          <Lock className="h-4 w-4 absolute top-2 right-2 text-gray-400" />
+                          <item.icon className={`h-8 w-8 mx-auto mb-2 ${item.color}`} />
+                          <div className="text-2xl font-bold text-gray-400">--</div>
+                          <div className="text-sm text-gray-400">{item.label}</div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+                <UpgradePrompt 
+                  feature="advanced analytics"
+                  currentTier="pro"
+                  requiredTier="premier"
+                />
               </div>
             ) : (
-              <UpgradePrompt 
-                feature="analytics" 
-                currentTier={(speakerProfile?.subscriptionTier ?? 'basic') as "basic" | "pro" | "premier"} 
-              />
+              /* Basic tier - All-Time Views Only with Pro upgrade prompt */
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Analytics</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                        <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
+                        <div className="text-sm text-gray-600">All-Time Profile Views</div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Locked analytics cards for Basic */}
+                    {[
+                      { icon: Clock, label: "Avg Time on Profile", color: "text-indigo-600" },
+                      { icon: Heart, label: "Favorites", color: "text-red-600" },
+                      { icon: Download, label: "Content Downloads", color: "text-green-600" }
+                    ].map((item, index) => (
+                      <Card 
+                        key={index}
+                        className="opacity-50 cursor-pointer hover:opacity-60 transition-opacity"
+                        onClick={() => toast({
+                          title: "Pro Feature",
+                          description: "Advanced analytics are available on the Pro plan. Upgrade to unlock detailed insights.",
+                          variant: "default"
+                        })}
+                      >
+                        <CardContent className="p-6 text-center relative">
+                          <Lock className="h-4 w-4 absolute top-2 right-2 text-gray-400" />
+                          <item.icon className={`h-8 w-8 mx-auto mb-2 ${item.color}`} />
+                          <div className="text-2xl font-bold text-gray-400">--</div>
+                          <div className="text-sm text-gray-400">{item.label}</div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+                <UpgradePrompt 
+                  feature="advanced analytics"
+                  currentTier="basic"
+                  requiredTier="pro"
+                />
+              </div>
             )}
           </TabsContent>
 
@@ -2478,10 +2410,25 @@ export default function SpeakerDashboard() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setSelectedContentForAccessCodes(content)}
-                                className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                                title="Manage Access Codes"
+                                disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
+                                onClick={() => {
+                                  if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
+                                    toast({
+                                      title: "Pro Feature",
+                                      description: "Access codes are available on the Pro plan. Upgrade to share exclusive content with access codes.",
+                                      variant: "default"
+                                    });
+                                  } else {
+                                    setSelectedContentForAccessCodes(content);
+                                  }
+                                }}
+                                className={cn(
+                                  "text-blue-600 border-blue-600 hover:bg-blue-50",
+                                  (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50"
+                                )}
+                                title={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? "Upgrade to Pro for Access Codes" : "Manage Access Codes"}
                               >
+                                {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 mr-1" />}
                                 <Zap className="h-4 w-4" />
                               </Button>
                               <Button
@@ -2782,10 +2729,6 @@ export default function SpeakerDashboard() {
                           </div>
                           <div className="flex items-start space-x-3">
                             <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'basic', 'uploadLimit')}</span>
-                          </div>
-                          <div className="flex items-start space-x-3">
-                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'basic', 'storageLimitMb')}</span>
                           </div>
                         </>
@@ -2806,10 +2749,6 @@ export default function SpeakerDashboard() {
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">Basic analytics</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Portfolio showcase</span>
                       </div>
                     </div>
                     {subscriptionStatus?.tier === 'basic' ? (
