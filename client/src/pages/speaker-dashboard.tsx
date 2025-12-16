@@ -1989,93 +1989,347 @@ export default function SpeakerDashboard() {
 
           {/* Analytics Tab */}
           <TabsContent value="stats">
-            {/* Full analytics dashboard - greyed out for non-Premier tiers */}
-            <div className={cn(
-              "space-y-6",
-              (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && "opacity-50 pointer-events-none select-none"
-            )}>
-              {/* Overview Metrics */}
+            <div className="space-y-6">
+              {/* All-Time Profile Views - Always visible and working for all tiers */}
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">All-Time Stats</h2>
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                    <div className="text-3xl font-bold">{userStats?.profileViews || 0}</div>
+                    <div className="text-sm text-gray-600">All-Time Profile Views</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Premium Analytics Sections - Greyed out for non-Premier tiers */}
+              <div className={cn(
+                "space-y-6",
+                (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && "opacity-50 pointer-events-none select-none"
+              )}>
+                {/* Overview Metrics */}
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Clock className="h-8 w-8 mx-auto mb-2 text-indigo-600" />
+                        <div className="text-2xl font-bold">
+                          {userStats?.avgTimeOnProfile ? `${Math.floor(userStats.avgTimeOnProfile / 60)}:${(userStats.avgTimeOnProfile % 60).toString().padStart(2, '0')}` : '0:00'}
+                        </div>
+                        <div className="text-sm text-gray-600">Avg Time on Profile</div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Heart className="h-8 w-8 mx-auto mb-2 text-red-600" />
+                        <div className="text-2xl font-bold">{userStats?.favoritesCount || 0}</div>
+                        <div className="text-sm text-gray-600">Favorites</div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Star className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
+                        <div className="text-2xl font-bold">{userStats?.reviewsCount || 0}</div>
+                        <div className="text-sm text-gray-600">Reviews</div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Download className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                        <div className="text-2xl font-bold">{userStats?.totalDownloads || 0}</div>
+                        <div className="text-sm text-gray-600">Content Downloads</div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Share2 className="h-8 w-8 mx-auto mb-2 text-cyan-600" />
+                        <div className="text-2xl font-bold">{userStats?.shareClicks || 0}</div>
+                        <div className="text-sm text-gray-600">Profile Shares</div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                        <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
+                        <div className="text-sm text-gray-600">Website Clicks</div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Search className="h-8 w-8 mx-auto mb-2 text-gray-600" />
+                        <div className="text-2xl font-bold">{userStats?.searchAppearances || 0}</div>
+                        <div className="text-sm text-gray-600">Search Appearances</div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <TrendingUp className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                        <div className="text-2xl font-bold">{userStats?.engagementClicks || 0}</div>
+                        <div className="text-sm text-gray-600">Engagement Clicks</div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* Interactions Over Time Chart */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-blue-600" />
+                      Interactions Over Time
+                    </CardTitle>
+                    <CardDescription>Profile views and engagement over the past 30 days</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={userStats?.interactionsOverTime || [
+                          { date: 'Week 1', views: 0, clicks: 0 },
+                          { date: 'Week 2', views: 0, clicks: 0 },
+                          { date: 'Week 3', views: 0, clicks: 0 },
+                          { date: 'Week 4', views: 0, clicks: 0 }
+                        ]}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} name="Profile Views" />
+                          <Line type="monotone" dataKey="clicks" stroke="#10b981" strokeWidth={2} name="Engagement Clicks" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Two Column Layout for Social and Discovery */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Social Engagement Section */}
                   <Card>
-                    <CardContent className="p-6 text-center">
-                      <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                      <div className="text-2xl font-bold">{userStats?.profileViews || 0}</div>
-                      <div className="text-sm text-gray-600">Profile Views</div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Clock className="h-8 w-8 mx-auto mb-2 text-indigo-600" />
-                      <div className="text-2xl font-bold">
-                        {userStats?.avgTimeOnProfile ? `${Math.floor(userStats.avgTimeOnProfile / 60)}:${(userStats.avgTimeOnProfile % 60).toString().padStart(2, '0')}` : '0:00'}
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Share2 className="h-5 w-5 text-purple-600" />
+                        Social Engagement
+                      </CardTitle>
+                      <CardDescription>Clicks on your social media links</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-pink-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">IG</span>
+                            </div>
+                            <span className="font-medium">Instagram</span>
+                          </div>
+                          <span className="text-lg font-bold">{userStats?.socialClicksByPlatform?.instagram || 0}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">FB</span>
+                            </div>
+                            <span className="font-medium">Facebook</span>
+                          </div>
+                          <span className="text-lg font-bold">{userStats?.socialClicksByPlatform?.facebook || 0}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">X</span>
+                            </div>
+                            <span className="font-medium">X (Twitter)</span>
+                          </div>
+                          <span className="text-lg font-bold">{userStats?.socialClicksByPlatform?.x || 0}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">in</span>
+                            </div>
+                            <span className="font-medium">LinkedIn</span>
+                          </div>
+                          <span className="text-lg font-bold">{userStats?.socialClicksByPlatform?.linkedin || 0}</span>
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-600">Avg Time on Profile</div>
                     </CardContent>
                   </Card>
-                  
+
+                  {/* How People Find You Section */}
                   <Card>
-                    <CardContent className="p-6 text-center">
-                      <Heart className="h-8 w-8 mx-auto mb-2 text-red-600" />
-                      <div className="text-2xl font-bold">{userStats?.favoritesCount || 0}</div>
-                      <div className="text-sm text-gray-600">Favorites</div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Star className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
-                      <div className="text-2xl font-bold">{userStats?.reviewsCount || 0}</div>
-                      <div className="text-sm text-gray-600">Reviews</div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Download className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                      <div className="text-2xl font-bold">{userStats?.totalDownloads || 0}</div>
-                      <div className="text-sm text-gray-600">Content Downloads</div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Share2 className="h-8 w-8 mx-auto mb-2 text-cyan-600" />
-                      <div className="text-2xl font-bold">{userStats?.shareClicks || 0}</div>
-                      <div className="text-sm text-gray-600">Profile Shares</div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Globe className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                      <div className="text-2xl font-bold">{userStats?.websiteClicks || 0}</div>
-                      <div className="text-sm text-gray-600">Website Clicks</div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Search className="h-8 w-8 mx-auto mb-2 text-gray-600" />
-                      <div className="text-2xl font-bold">{userStats?.searchAppearances || 0}</div>
-                      <div className="text-sm text-gray-600">Search Appearances</div>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Search className="h-5 w-5 text-green-600" />
+                        How People Find You
+                      </CardTitle>
+                      <CardDescription>Discovery sources for your profile</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Search className="h-5 w-5 text-green-600" />
+                            <span className="font-medium">Search Results</span>
+                          </div>
+                          <span className="text-lg font-bold">{userStats?.discoverySources?.search || 0}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="h-5 w-5 text-purple-600" />
+                            <span className="font-medium">Category Browse</span>
+                          </div>
+                          <span className="text-lg font-bold">{userStats?.discoverySources?.category || 0}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Star className="h-5 w-5 text-yellow-600" />
+                            <span className="font-medium">Featured Section</span>
+                          </div>
+                          <span className="text-lg font-bold">{userStats?.discoverySources?.featured || 0}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <ExternalLink className="h-5 w-5 text-blue-600" />
+                            <span className="font-medium">Direct Link</span>
+                          </div>
+                          <span className="text-lg font-bold">{userStats?.discoverySources?.direct || 0}</span>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Peak Activity Times */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-indigo-600" />
+                      Peak Activity Times
+                    </CardTitle>
+                    <CardDescription>When visitors are most active on your profile</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-7 gap-2">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                        <div key={day} className="text-center">
+                          <div className="text-xs font-medium text-gray-500 mb-2">{day}</div>
+                          <div className={cn(
+                            "h-20 rounded-lg flex items-center justify-center",
+                            index === 2 || index === 3 ? "bg-blue-500" : 
+                            index === 1 || index === 4 ? "bg-blue-300" : "bg-blue-100"
+                          )}>
+                            <span className={cn(
+                              "text-xs font-bold",
+                              index === 2 || index === 3 ? "text-white" : "text-blue-800"
+                            )}>
+                              {userStats?.peakActivityByDay?.[index] || 0}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 flex items-center justify-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-blue-100 rounded"></div>
+                        <span>Low</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-blue-300 rounded"></div>
+                        <span>Medium</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                        <span>High</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Last 7 Days Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-teal-600" />
+                      Last 7 Days
+                    </CardTitle>
+                    <CardDescription>Your recent activity summary</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">{userStats?.last7Days?.views || 0}</div>
+                        <div className="text-sm text-gray-600">Views</div>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">{userStats?.last7Days?.clicks || 0}</div>
+                        <div className="text-sm text-gray-600">Clicks</div>
+                      </div>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">{userStats?.last7Days?.shares || 0}</div>
+                        <div className="text-sm text-gray-600">Shares</div>
+                      </div>
+                      <div className="text-center p-4 bg-orange-50 rounded-lg">
+                        <div className="text-2xl font-bold text-orange-600">{userStats?.last7Days?.downloads || 0}</div>
+                        <div className="text-sm text-gray-600">Downloads</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Recent Downloads */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Download className="h-5 w-5 text-green-600" />
+                      Recent Downloads
+                    </CardTitle>
+                    <CardDescription>Content downloaded from your profile</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {userStats?.downloads && userStats.downloads.length > 0 ? (
+                      <div className="space-y-3">
+                        {userStats.downloads.slice(0, 5).map((download: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <FileText className="h-5 w-5 text-gray-500" />
+                              <div>
+                                <div className="font-medium">{download.fileName || 'Unknown File'}</div>
+                                <div className="text-sm text-gray-500">{download.downloadedAt || 'Recently'}</div>
+                              </div>
+                            </div>
+                            <Badge variant="secondary">{download.count || 1} downloads</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Download className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                        <p>No downloads yet</p>
+                        <p className="text-sm">When visitors download your content, it will appear here</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
+              
+              {/* Upgrade prompt for non-Premier tiers */}
+              {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                <div className="mt-6">
+                  <UpgradePrompt 
+                    feature="analytics"
+                    currentTier={(speakerProfile?.subscriptionTier ?? 'basic') as "basic" | "pro" | "premier"}
+                  />
+                </div>
+              )}
             </div>
-            
-            {/* Upgrade prompt for non-Premier tiers */}
-            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
-              <div className="mt-6">
-                <UpgradePrompt 
-                  feature="analytics"
-                  currentTier={(speakerProfile?.subscriptionTier ?? 'basic') as "basic" | "pro" | "premier"}
-                />
-              </div>
-            )}
           </TabsContent>
 
           {/* My Content Tab */}
