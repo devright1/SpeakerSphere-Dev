@@ -101,6 +101,9 @@ export default function SpeakerDashboard() {
   const [editingVideoLink, setEditingVideoLink] = useState<{id: number; title: string; url: string; description: string | null} | null>(null);
   const [newVideoLink, setNewVideoLink] = useState({ title: '', url: '', description: '' });
 
+  // Analytics time range state
+  const [analyticsTimeframe, setAnalyticsTimeframe] = useState<string>('all');
+
   // Helper functions for reviews
   const toggleReviewExpanded = (reviewId: number) => {
     const newExpanded = new Set(expandedReviews);
@@ -219,10 +222,13 @@ export default function SpeakerDashboard() {
 
   // Fetch speaker analytics for Premier tier speakers
   const { data: speakerAnalytics } = useQuery({
-    queryKey: ['/api/analytics/speaker', speakerProfile?.id],
+    queryKey: ['/api/analytics/speaker', speakerProfile?.id, analyticsTimeframe],
     queryFn: async () => {
       if (!speakerProfile?.id) return null;
-      const response = await fetch(`/api/analytics/speaker/${speakerProfile.id}`, {
+      const url = analyticsTimeframe === 'all' 
+        ? `/api/analytics/speaker/${speakerProfile.id}`
+        : `/api/analytics/speaker/${speakerProfile.id}?timeframe=${analyticsTimeframe}`;
+      const response = await fetch(url, {
         headers: {
           'X-User-ID': user?.id || ''
         },
@@ -2326,14 +2332,49 @@ export default function SpeakerDashboard() {
           {/* Analytics Tab */}
           <TabsContent value="stats">
             <div className="space-y-6">
+              {/* Time Range Selector */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Time Period:</span>
+                  <Select value={analyticsTimeframe} onValueChange={setAnalyticsTimeframe}>
+                    <SelectTrigger className="w-[160px]" data-testid="select-analytics-timeframe">
+                      <SelectValue placeholder="Select period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Time</SelectItem>
+                      <SelectItem value="7d">Last Week</SelectItem>
+                      <SelectItem value="30d">Last Month</SelectItem>
+                      <SelectItem value="90d">Last 3 Months</SelectItem>
+                      <SelectItem value="180d">Last 6 Months</SelectItem>
+                      <SelectItem value="365d">Last Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               {/* All-Time Profile Views - Always visible and working for all tiers */}
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">All-Time Stats</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                  {analyticsTimeframe === 'all' ? 'All-Time Stats' : 
+                   analyticsTimeframe === '7d' ? 'Last Week Stats' :
+                   analyticsTimeframe === '30d' ? 'Last Month Stats' :
+                   analyticsTimeframe === '90d' ? 'Last 3 Months Stats' :
+                   analyticsTimeframe === '180d' ? 'Last 6 Months Stats' :
+                   'Last Year Stats'}
+                </h2>
                 <Card>
                   <CardContent className="p-6 text-center">
                     <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                     <div className="text-3xl font-bold">{userStats?.profileViews || 0}</div>
-                    <div className="text-sm text-gray-600">All-Time Profile Views</div>
+                    <div className="text-sm text-gray-600">
+                      {analyticsTimeframe === 'all' ? 'All-Time' : 
+                       analyticsTimeframe === '7d' ? 'Last Week' :
+                       analyticsTimeframe === '30d' ? 'Last Month' :
+                       analyticsTimeframe === '90d' ? 'Last 3 Months' :
+                       analyticsTimeframe === '180d' ? 'Last 6 Months' :
+                       'Last Year'} Profile Views
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -2422,7 +2463,16 @@ export default function SpeakerDashboard() {
                       <TrendingUp className="h-5 w-5 text-blue-600" />
                       Interactions Over Time
                     </CardTitle>
-                    <CardDescription>Profile views and engagement over the past 30 days</CardDescription>
+                    <CardDescription>
+                      Profile views and engagement {
+                        analyticsTimeframe === 'all' ? 'over all time' : 
+                        analyticsTimeframe === '7d' ? 'over the past week' :
+                        analyticsTimeframe === '30d' ? 'over the past month' :
+                        analyticsTimeframe === '90d' ? 'over the past 3 months' :
+                        analyticsTimeframe === '180d' ? 'over the past 6 months' :
+                        'over the past year'
+                      }
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-64">

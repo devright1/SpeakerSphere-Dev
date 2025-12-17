@@ -203,7 +203,7 @@ export interface IStorage {
 
   // Speaker Interaction Tracking & Analytics
   trackSpeakerInteraction(interaction: InsertSpeakerInteraction): Promise<void>;
-  getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null): Promise<any>;
+  getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null, timeframe?: string): Promise<any>;
   getSpeakerInteractionAnalytics(speakerId: number, timeframe: string): Promise<any>;
   getPlatformAnalytics(): Promise<{
     totalSpeakers: number;
@@ -1294,7 +1294,7 @@ export class MemStorage implements IStorage {
     // No-op for memory storage
   }
 
-  async getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null): Promise<any> {
+  async getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null, timeframe?: string): Promise<any> {
     // Basic stub for memory storage
     return {
       profileViews: 0,
@@ -1316,6 +1316,7 @@ export class MemStorage implements IStorage {
       dailyTrends: [],
       downloads: [],
       totalDownloads: 0,
+      selectedTimeframe: timeframe || 'all',
     };
   }
 

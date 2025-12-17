@@ -1303,6 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const speakerId = parseInt(req.params.speakerId);
       const month = req.query.month ? parseInt(req.query.month as string) : null;
       const year = req.query.year ? parseInt(req.query.year as string) : null;
+      const timeframe = req.query.timeframe as string || 'all';
       
       // Verify speaker ownership or admin access
       const sessionUser = (req as any).session?.user;
@@ -1332,7 +1333,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       
       // Analytics data is now available to all tiers (for greyed-out preview)
       // The frontend handles displaying the upgrade prompt for non-Premier tiers
-      const analytics = await storage.getSpeakerAnalytics(speakerId, month, year);
+      const analytics = await storage.getSpeakerAnalytics(speakerId, month, year, timeframe);
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching speaker analytics:", error);

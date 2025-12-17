@@ -1395,12 +1395,45 @@ export class DatabaseStorage implements IStorage {
     await db.insert(speakerInteractions).values(interaction);
   }
 
-  async getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null): Promise<any> {
-    // Fetch all interactions for this speaker
-    const interactions = await db
-      .select()
-      .from(speakerInteractions)
-      .where(eq(speakerInteractions.speakerId, speakerId));
+  async getSpeakerAnalytics(speakerId: number, month?: number | null, year?: number | null, timeframe?: string): Promise<any> {
+    // Calculate date filter based on timeframe
+    let startDate: Date | null = null;
+    if (timeframe && timeframe !== 'all') {
+      startDate = new Date();
+      switch (timeframe) {
+        case '7d':
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(startDate.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(startDate.getDate() - 90);
+          break;
+        case '180d':
+          startDate.setDate(startDate.getDate() - 180);
+          break;
+        case '365d':
+          startDate.setDate(startDate.getDate() - 365);
+          break;
+        default:
+          startDate = null;
+      }
+    }
+    
+    // Fetch interactions for this speaker, optionally filtered by date
+    const interactions = startDate
+      ? await db
+          .select()
+          .from(speakerInteractions)
+          .where(and(
+            eq(speakerInteractions.speakerId, speakerId),
+            gte(speakerInteractions.createdAt, startDate)
+          ))
+      : await db
+          .select()
+          .from(speakerInteractions)
+          .where(eq(speakerInteractions.speakerId, speakerId));
 
     // Engagement interaction types that count as actual profile activity (beyond just viewing)
     const engagementInteractionTypes = [
@@ -1666,6 +1699,10 @@ export class DatabaseStorage implements IStorage {
       // Hourly and daily distribution for heatmap
       hourlyDistribution: Object.entries(hourlyActivity).map(([hour, count]) => ({ hour: parseInt(hour), count })),
       dailyDistribution: Object.entries(dayOfWeekActivity).map(([day, count]) => ({ day: parseInt(day), dayName: dayNames[parseInt(day)], count })),
+      
+      // Timeframe info
+      selectedTimeframe: timeframe || 'all',
+      dateRange: startDate ? { from: startDate.toISOString(), to: new Date().toISOString() } : null,
     };
   }
 
