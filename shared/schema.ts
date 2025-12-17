@@ -44,6 +44,7 @@ export const speakers = pgTable("speakers", {
   xHandle: text("x_handle"),
   linkedinHandle: text("linkedin_handle"),
   tiktokHandle: text("tiktok_handle"),
+  selectedSocialPlatform: varchar("selected_social_platform", { length: 20 }), // For Pro tier: "instagram", "facebook", "x", "linkedin", "tiktok"
   languages: text("languages").array().notNull(),
   medicalSpecialties: text("medical_specialties").array(),
   speakerType: text("speaker_type").notNull(), // "keynote", "clinical", "research", "educational"

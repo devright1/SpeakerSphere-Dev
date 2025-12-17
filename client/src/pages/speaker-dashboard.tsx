@@ -796,15 +796,28 @@ export default function SpeakerDashboard() {
       return;
     }
     
-    // Filter out social media fields for non-Premier tiers
+    // Filter out social media fields based on tier
     const formData = { ...editForm };
-    if ((speakerProfile?.subscriptionTier ?? 'basic') !== 'premier') {
+    const tier = speakerProfile?.subscriptionTier ?? 'basic';
+    
+    if (tier === 'basic') {
+      // Basic tier: no social media allowed
       delete formData.instagramHandle;
       delete formData.linkedinHandle;
       delete formData.facebookHandle;
       delete formData.xHandle;
       delete formData.tiktokHandle;
+      delete formData.selectedSocialPlatform;
+    } else if (tier === 'pro') {
+      // Pro tier: only allow the selected platform
+      const selectedPlatform = formData.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform;
+      if (selectedPlatform !== 'instagram') delete formData.instagramHandle;
+      if (selectedPlatform !== 'linkedin') delete formData.linkedinHandle;
+      if (selectedPlatform !== 'facebook') delete formData.facebookHandle;
+      if (selectedPlatform !== 'x') delete formData.xHandle;
+      if (selectedPlatform !== 'tiktok') delete formData.tiktokHandle;
     }
+    // Premier tier: all social media fields allowed
     
     updateProfileMutation.mutate(formData);
   };
@@ -1274,15 +1287,56 @@ export default function SpeakerDashboard() {
                       </div>
                     </div>
 
-                    {/* Social Media Links - Visible to all tiers, but only editable for Premier */}
+                    {/* Social Media Links - Tier-based access */}
                     <>
+                      {/* Pro tier: Select one platform */}
+                      {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (
+                        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-medium text-blue-900">Social Media Platform</h4>
+                              <p className="text-sm text-blue-700">Pro members can select one social media platform. <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to Premier</Link> for all platforms.</p>
+                            </div>
+                          </div>
+                          {isEditing && (
+                            <div className="mt-3">
+                              <Select
+                                value={editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform || ''}
+                                onValueChange={(value) => setEditForm({...editForm, selectedSocialPlatform: value})}
+                              >
+                                <SelectTrigger className="w-full bg-white">
+                                  <SelectValue placeholder="Choose your social platform" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="instagram">Instagram</SelectItem>
+                                  <SelectItem value="linkedin">LinkedIn</SelectItem>
+                                  <SelectItem value="facebook">Facebook</SelectItem>
+                                  <SelectItem value="x">X (Twitter)</SelectItem>
+                                  <SelectItem value="tiktok">TikTok</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Social Media Fields */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Instagram */}
                         <div>
-                          <Label htmlFor="instagramHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                          <Label htmlFor="instagramHandle" className={
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? '' :
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'instagram' ? '' :
+                            'text-gray-400'
+                          }>
                             Instagram Profile Link
-                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'instagram' && <Lock className="h-3 w-3 inline ml-1" />}
                           </Label>
-                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                          {isEditing && (
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ||
+                            ((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'instagram')
+                          ) ? (
                             <Input
                               id="instagramHandle"
                               value={editForm.instagramHandle || ''}
@@ -1290,18 +1344,22 @@ export default function SpeakerDashboard() {
                               placeholder="https://instagram.com/yourprofile"
                               data-testid="input-instagram-handle"
                             />
-                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="instagramHandle"
                               value=""
-                              placeholder="Upgrade to Premier to add"
+                              placeholder="Upgrade to Pro to add"
                               disabled
                               className="opacity-50 cursor-not-allowed"
-                              onClick={() => toast({
-                                title: "Premier Feature",
-                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
-                                variant: "default"
-                              })}
+                              data-testid="input-instagram-handle-locked"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'instagram' ? (
+                            <Input
+                              id="instagramHandle"
+                              value={speakerProfile?.instagramHandle || ''}
+                              placeholder={speakerProfile?.selectedSocialPlatform ? "Select this platform to edit" : "Select a platform above"}
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
                               data-testid="input-instagram-handle-locked"
                             />
                           ) : (
@@ -1316,12 +1374,22 @@ export default function SpeakerDashboard() {
                             </p>
                           )}
                         </div>
+
+                        {/* LinkedIn */}
                         <div>
-                          <Label htmlFor="linkedinHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                          <Label htmlFor="linkedinHandle" className={
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? '' :
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'linkedin' ? '' :
+                            'text-gray-400'
+                          }>
                             LinkedIn Profile Link
-                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'linkedin' && <Lock className="h-3 w-3 inline ml-1" />}
                           </Label>
-                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                          {isEditing && (
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ||
+                            ((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'linkedin')
+                          ) ? (
                             <Input
                               id="linkedinHandle"
                               value={editForm.linkedinHandle || ''}
@@ -1329,18 +1397,22 @@ export default function SpeakerDashboard() {
                               placeholder="https://linkedin.com/in/yourprofile"
                               data-testid="input-linkedin-handle"
                             />
-                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="linkedinHandle"
                               value=""
-                              placeholder="Upgrade to Premier to add"
+                              placeholder="Upgrade to Pro to add"
                               disabled
                               className="opacity-50 cursor-not-allowed"
-                              onClick={() => toast({
-                                title: "Premier Feature",
-                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
-                                variant: "default"
-                              })}
+                              data-testid="input-linkedin-handle-locked"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'linkedin' ? (
+                            <Input
+                              id="linkedinHandle"
+                              value={speakerProfile?.linkedinHandle || ''}
+                              placeholder={speakerProfile?.selectedSocialPlatform ? "Select this platform to edit" : "Select a platform above"}
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
                               data-testid="input-linkedin-handle-locked"
                             />
                           ) : (
@@ -1358,12 +1430,21 @@ export default function SpeakerDashboard() {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Facebook */}
                         <div>
-                          <Label htmlFor="facebookHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                          <Label htmlFor="facebookHandle" className={
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? '' :
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'facebook' ? '' :
+                            'text-gray-400'
+                          }>
                             Facebook Profile Link
-                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'facebook' && <Lock className="h-3 w-3 inline ml-1" />}
                           </Label>
-                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                          {isEditing && (
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ||
+                            ((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'facebook')
+                          ) ? (
                             <Input
                               id="facebookHandle"
                               value={editForm.facebookHandle || ''}
@@ -1371,18 +1452,22 @@ export default function SpeakerDashboard() {
                               placeholder="https://facebook.com/yourprofile"
                               data-testid="input-facebook-handle"
                             />
-                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="facebookHandle"
                               value=""
-                              placeholder="Upgrade to Premier to add"
+                              placeholder="Upgrade to Pro to add"
                               disabled
                               className="opacity-50 cursor-not-allowed"
-                              onClick={() => toast({
-                                title: "Premier Feature",
-                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
-                                variant: "default"
-                              })}
+                              data-testid="input-facebook-handle-locked"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'facebook' ? (
+                            <Input
+                              id="facebookHandle"
+                              value={speakerProfile?.facebookHandle || ''}
+                              placeholder={speakerProfile?.selectedSocialPlatform ? "Select this platform to edit" : "Select a platform above"}
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
                               data-testid="input-facebook-handle-locked"
                             />
                           ) : (
@@ -1397,12 +1482,22 @@ export default function SpeakerDashboard() {
                             </p>
                           )}
                         </div>
+
+                        {/* X (Twitter) */}
                         <div>
-                          <Label htmlFor="xHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                          <Label htmlFor="xHandle" className={
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? '' :
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'x' ? '' :
+                            'text-gray-400'
+                          }>
                             X (Twitter) Profile Link
-                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'x' && <Lock className="h-3 w-3 inline ml-1" />}
                           </Label>
-                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                          {isEditing && (
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ||
+                            ((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'x')
+                          ) ? (
                             <Input
                               id="xHandle"
                               value={editForm.xHandle || ''}
@@ -1410,18 +1505,22 @@ export default function SpeakerDashboard() {
                               placeholder="https://x.com/yourprofile"
                               data-testid="input-x-handle"
                             />
-                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="xHandle"
                               value=""
-                              placeholder="Upgrade to Premier to add"
+                              placeholder="Upgrade to Pro to add"
                               disabled
                               className="opacity-50 cursor-not-allowed"
-                              onClick={() => toast({
-                                title: "Premier Feature",
-                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
-                                variant: "default"
-                              })}
+                              data-testid="input-x-handle-locked"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'x' ? (
+                            <Input
+                              id="xHandle"
+                              value={speakerProfile?.xHandle || ''}
+                              placeholder={speakerProfile?.selectedSocialPlatform ? "Select this platform to edit" : "Select a platform above"}
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
                               data-testid="input-x-handle-locked"
                             />
                           ) : (
@@ -1441,11 +1540,19 @@ export default function SpeakerDashboard() {
                       {/* TikTok Field */}
                       <div className="grid grid-cols-1 gap-4">
                         <div>
-                          <Label htmlFor="tiktokHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                          <Label htmlFor="tiktokHandle" className={
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? '' :
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'tiktok' ? '' :
+                            'text-gray-400'
+                          }>
                             TikTok Profile Link
-                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 inline ml-1" />}
+                            {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'tiktok' && <Lock className="h-3 w-3 inline ml-1" />}
                           </Label>
-                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                          {isEditing && (
+                            (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ||
+                            ((speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) === 'tiktok')
+                          ) ? (
                             <Input
                               id="tiktokHandle"
                               value={editForm.tiktokHandle || ''}
@@ -1453,18 +1560,22 @@ export default function SpeakerDashboard() {
                               placeholder="https://tiktok.com/@yourprofile"
                               data-testid="input-tiktok-handle"
                             />
-                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="tiktokHandle"
                               value=""
-                              placeholder="Upgrade to Premier to add"
+                              placeholder="Upgrade to Pro to add"
                               disabled
                               className="opacity-50 cursor-not-allowed"
-                              onClick={() => toast({
-                                title: "Premier Feature",
-                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
-                                variant: "default"
-                              })}
+                              data-testid="input-tiktok-handle-locked"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) !== 'tiktok' ? (
+                            <Input
+                              id="tiktokHandle"
+                              value={speakerProfile?.tiktokHandle || ''}
+                              placeholder={speakerProfile?.selectedSocialPlatform ? "Select this platform to edit" : "Select a platform above"}
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
                               data-testid="input-tiktok-handle-locked"
                             />
                           ) : (
