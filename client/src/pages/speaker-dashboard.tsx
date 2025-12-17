@@ -274,7 +274,6 @@ export default function SpeakerDashboard() {
       tiktok: 0
     },
     interactionsOverTime: [],
-    peakActivityByDay: [0, 0, 0, 0, 0, 0, 0],
     last7Days: { views: 0, clicks: 0, shares: 0, downloads: 0 }
   };
   
@@ -2601,52 +2600,6 @@ export default function SpeakerDashboard() {
                     </CardContent>
                   </Card>
                 </div>
-
-                {/* Peak Activity Times */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-indigo-600" />
-                      Peak Activity Times
-                    </CardTitle>
-                    <CardDescription>When visitors are most active on your profile</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-7 gap-2">
-                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-                        <div key={day} className="text-center">
-                          <div className="text-xs font-medium text-gray-500 mb-2">{day}</div>
-                          <div className={cn(
-                            "h-20 rounded-lg flex items-center justify-center",
-                            index === 2 || index === 3 ? "bg-blue-500" : 
-                            index === 1 || index === 4 ? "bg-blue-300" : "bg-blue-100"
-                          )}>
-                            <span className={cn(
-                              "text-xs font-bold",
-                              index === 2 || index === 3 ? "text-white" : "text-blue-800"
-                            )}>
-                              {userStats?.peakActivityByDay?.[index] || 0}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 flex items-center justify-center gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-blue-100 rounded"></div>
-                        <span>Low</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-blue-300 rounded"></div>
-                        <span>Medium</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                        <span>High</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
 
                 {/* Last 7 Days Summary */}
                 <Card>
