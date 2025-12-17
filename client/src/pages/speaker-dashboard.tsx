@@ -3267,9 +3267,20 @@ export default function SpeakerDashboard() {
                                       <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => toggleVideoVisibilityMutation.mutate(link.id)}
-                                        disabled={toggleVideoVisibilityMutation.isPending}
-                                        title={link.isVisible ? "Hide from public profile" : "Show on public profile"}
+                                        onClick={() => {
+                                          const atLimit = (videoLinksData?.currentVisibleCount ?? 0) >= (videoLinksData?.visibleCount ?? 0);
+                                          if (!link.isVisible && atLimit) {
+                                            toast({
+                                              title: "Visibility Limit Reached",
+                                              description: `You can only have ${videoLinksData?.visibleCount} videos visible on your ${speakerProfile?.subscriptionTier} plan. Hide another video first.`,
+                                              variant: "destructive"
+                                            });
+                                            return;
+                                          }
+                                          toggleVideoVisibilityMutation.mutate(link.id);
+                                        }}
+                                        disabled={toggleVideoVisibilityMutation.isPending || (!link.isVisible && (videoLinksData?.currentVisibleCount ?? 0) >= (videoLinksData?.visibleCount ?? 0))}
+                                        title={link.isVisible ? "Hide from public profile" : ((videoLinksData?.currentVisibleCount ?? 0) >= (videoLinksData?.visibleCount ?? 0) ? "Visibility limit reached" : "Show on public profile")}
                                         data-testid={`button-toggle-visibility-${link.id}`}
                                       >
                                         {link.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
