@@ -3481,14 +3481,19 @@ export default function SpeakerDashboard() {
             </Card>
 
             {/* Download Analytics for this Content */}
-            {downloadAnalytics && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Download Analytics</CardTitle>
-                </CardHeader>
-                <CardContent>
+            <Card className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'relative' : ''}>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  Download Analytics
+                  {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                    <Lock className="h-4 w-4 text-gray-400" />
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
                   <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {downloadAnalytics
+                    {downloadAnalytics && downloadAnalytics
                       .filter((download: any) => download.contentId === selectedContentForAccessCodes?.id)
                       .map((download: any) => (
                         <div key={download.id} className="flex items-center justify-between p-3 border rounded">
@@ -3502,10 +3507,46 @@ export default function SpeakerDashboard() {
                           </div>
                         </div>
                       ))}
+                    {(!downloadAnalytics || downloadAnalytics.filter((d: any) => d.contentId === selectedContentForAccessCodes?.id).length === 0) && (
+                      <div className="text-center py-4 text-gray-500">No downloads yet</div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <div className="relative">
+                    {/* Blurred placeholder content */}
+                    <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
+                      <div className="flex items-center justify-between p-3 border rounded bg-gray-50">
+                        <div>
+                          <p className="font-medium text-gray-400">John Smith</p>
+                          <p className="text-sm text-gray-300">john@example.com</p>
+                        </div>
+                        <div className="text-right text-sm text-gray-300">
+                          <p>Dec 15, 2025</p>
+                          <p>Used access code</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded bg-gray-50">
+                        <div>
+                          <p className="font-medium text-gray-400">Jane Doe</p>
+                          <p className="text-sm text-gray-300">jane@example.com</p>
+                        </div>
+                        <div className="text-right text-sm text-gray-300">
+                          <p>Dec 14, 2025</p>
+                          <p>Used access code</p>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Overlay with upgrade message */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+                      <div className="text-center p-4">
+                        <Lock className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-600 font-medium">Premier feature</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </DialogContent>
       </Dialog>
