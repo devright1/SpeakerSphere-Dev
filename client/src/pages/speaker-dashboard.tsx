@@ -2166,30 +2166,6 @@ export default function SpeakerDashboard() {
           {/* Analytics Tab */}
           <TabsContent value="stats">
             <div className="space-y-6">
-              {/* Pro tier message about analytics limitations */}
-              {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (
-                <Alert className="bg-amber-50 border-amber-200">
-                  <Lock className="h-4 w-4 text-amber-600" />
-                  <AlertTitle className="text-amber-800">Analytics Limited on Pro Plan</AlertTitle>
-                  <AlertDescription className="text-amber-700">
-                    As a Pro member, you can create Access Codes to share content, but you cannot see who downloads your content or view detailed analytics. 
-                    <Link href="/subscription-upgrade" className="underline font-medium ml-1">Upgrade to Premier</Link> to unlock full analytics including download tracking.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Basic tier message */}
-              {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && (
-                <Alert className="bg-gray-50 border-gray-200">
-                  <Lock className="h-4 w-4 text-gray-600" />
-                  <AlertTitle className="text-gray-800">Analytics Locked</AlertTitle>
-                  <AlertDescription className="text-gray-700">
-                    Detailed analytics are available on higher tier plans. 
-                    <Link href="/subscription-upgrade" className="underline font-medium ml-1">Upgrade your plan</Link> to see who views your profile and downloads your content.
-                  </AlertDescription>
-                </Alert>
-              )}
-
               {/* All-Time Profile Views - Always visible and working for all tiers */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">All-Time Stats</h2>
@@ -3379,6 +3355,17 @@ export default function SpeakerDashboard() {
           </DialogHeader>
           
           <div className="space-y-6">
+            {/* Pro tier analytics limitation message */}
+            {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (
+              <Alert className="bg-amber-50 border-amber-200">
+                <Lock className="h-4 w-4 text-amber-600" />
+                <AlertTitle className="text-amber-800">Download Analytics Not Available</AlertTitle>
+                <AlertDescription className="text-amber-700">
+                  As a Pro member, you can create and share Access Codes, but you cannot see who downloads your content. 
+                  <Link href="/subscription-upgrade" className="underline font-medium ml-1">Upgrade to Premier</Link> to unlock download tracking and see exactly who accesses your content.
+                </AlertDescription>
+              </Alert>
+            )}
             {/* Create New Access Code */}
             <Card>
               <CardHeader>
