@@ -2420,10 +2420,10 @@ export async function registerRoutes(app: Express): Promise<Express> {
     try {
       const speakerId = parseInt(req.params.speakerId);
       
-      // Authentication - support session, header, and query param
+      // Authentication - session or X-User-ID header only (no query params for security)
       let user = (req as any).session?.user;
       if (!user) {
-        const userIdHeader = req.headers['x-user-id'] as string || req.query.userId as string;
+        const userIdHeader = req.headers['x-user-id'] as string;
         if (userIdHeader) {
           try {
             const userData = await storage.getUserById(userIdHeader);

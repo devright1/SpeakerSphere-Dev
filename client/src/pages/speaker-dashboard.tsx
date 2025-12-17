@@ -3991,9 +3991,30 @@ export default function SpeakerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const userData = getUserData();
-                      window.open(`/api/speakers/${speakerProfile?.id}/downloads/export?userId=${userData?.id || localStorage.getItem('userId') || ''}`, '_blank');
+                    onClick={async () => {
+                      try {
+                        const userData = getUserData();
+                        const response = await fetch(`/api/speakers/${speakerProfile?.id}/downloads/export`, {
+                          headers: {
+                            'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+                          }
+                        });
+                        if (!response.ok) {
+                          throw new Error('Failed to export');
+                        }
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `download-analytics-${new Date().toISOString().split('T')[0]}.xlsx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        toast({ title: "Export Complete", description: "Download analytics exported successfully." });
+                      } catch (error) {
+                        toast({ title: "Export Failed", description: "Failed to export download analytics.", variant: "destructive" });
+                      }
                     }}
                     data-testid="button-export-downloads"
                   >
