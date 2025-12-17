@@ -2469,36 +2469,84 @@ export default function SpeakerDashboard() {
                   </CardContent>
                 </Card>
 
-                {/* Recent Downloads */}
-                <Card>
+                {/* Recent Downloads - Premier only */}
+                <Card className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'relative' : ''}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Download className="h-5 w-5 text-green-600" />
                       Recent Downloads
+                      {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                        <Lock className="h-4 w-4 text-gray-400" />
+                      )}
                     </CardTitle>
                     <CardDescription>Content downloaded from your profile</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {userStats?.downloads && userStats.downloads.length > 0 ? (
-                      <div className="space-y-3">
-                        {userStats.downloads.slice(0, 5).map((download: any, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-5 w-5 text-gray-500" />
-                              <div>
-                                <div className="font-medium">{download.fileName || 'Unknown File'}</div>
-                                <div className="text-sm text-gray-500">{download.downloadedAt || 'Recently'}</div>
+                    {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                      userStats?.downloads && userStats.downloads.length > 0 ? (
+                        <div className="space-y-3">
+                          {userStats.downloads.slice(0, 5).map((download: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <FileText className="h-5 w-5 text-gray-500" />
+                                <div>
+                                  <div className="font-medium">{download.fileName || 'Unknown File'}</div>
+                                  <div className="text-sm text-gray-500">{download.downloadedAt || 'Recently'}</div>
+                                </div>
                               </div>
+                              <Badge variant="secondary">{download.count || 1} downloads</Badge>
                             </div>
-                            <Badge variant="secondary">{download.count || 1} downloads</Badge>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Download className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                          <p>No downloads yet</p>
+                          <p className="text-sm">When visitors download your content, it will appear here</p>
+                        </div>
+                      )
                     ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <Download className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                        <p>No downloads yet</p>
-                        <p className="text-sm">When visitors download your content, it will appear here</p>
+                      <div className="space-y-4">
+                        {/* Pro tier message */}
+                        <Alert className="bg-amber-50 border-amber-200">
+                          <Lock className="h-4 w-4 text-amber-600" />
+                          <AlertTitle className="text-amber-800">Download Analytics Not Available</AlertTitle>
+                          <AlertDescription className="text-amber-700">
+                            As a Pro member, you can create and share Access Codes, but you cannot see who downloads your content. 
+                            <Link href="/subscription-upgrade" className="underline font-medium ml-1">Upgrade to Premier</Link> to unlock download tracking and see exactly who accesses your content.
+                          </AlertDescription>
+                        </Alert>
+                        {/* Blurred placeholder */}
+                        <div className="relative">
+                          <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <FileText className="h-5 w-5 text-gray-400" />
+                                <div>
+                                  <div className="font-medium text-gray-400">Sample Document.pdf</div>
+                                  <div className="text-sm text-gray-300">Dec 15, 2025</div>
+                                </div>
+                              </div>
+                              <Badge variant="secondary" className="opacity-50">3 downloads</Badge>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <FileText className="h-5 w-5 text-gray-400" />
+                                <div>
+                                  <div className="font-medium text-gray-400">Presentation.pdf</div>
+                                  <div className="text-sm text-gray-300">Dec 14, 2025</div>
+                                </div>
+                              </div>
+                              <Badge variant="secondary" className="opacity-50">5 downloads</Badge>
+                            </div>
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+                            <div className="text-center p-4">
+                              <Lock className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                              <p className="text-sm text-gray-600 font-medium">Premier feature</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </CardContent>
