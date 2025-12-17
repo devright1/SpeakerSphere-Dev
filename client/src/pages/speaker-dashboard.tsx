@@ -370,11 +370,12 @@ export default function SpeakerDashboard() {
 
   // Fetch video links for speaker dashboard (all links, not just visible)
   const { data: videoLinksData, refetch: refetchVideoLinks } = useQuery<{
-    links: Array<{ id: number; speakerId: number; title: string; url: string; description: string | null; position: number }>;
+    links: Array<{ id: number; speakerId: number; title: string; url: string; description: string | null; position: number; isVisible: boolean }>;
     tier: string;
     visibleCount: number;
     maxLinks: number;
     currentCount: number;
+    currentVisibleCount: number;
   }>({
     queryKey: ['/api/speakers/video-links/all', speakerProfile?.id],
     queryFn: async () => {
