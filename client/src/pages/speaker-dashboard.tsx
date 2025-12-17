@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -2652,30 +2653,46 @@ export default function SpeakerDashboard() {
                               >
                                 {content.isPublic ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
-                                onClick={() => {
-                                  if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
-                                    toast({
-                                      title: "Pro Feature",
-                                      description: "Access codes are available on the Pro plan. Upgrade to share exclusive content with access codes.",
-                                      variant: "default"
-                                    });
-                                  } else {
-                                    setSelectedContentForAccessCodes(content);
-                                  }
-                                }}
-                                className={cn(
-                                  "text-blue-600 border-blue-600 hover:bg-blue-50",
-                                  (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50"
-                                )}
-                                title={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? "Upgrade to Pro for Access Codes" : "Manage Access Codes"}
-                              >
-                                {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 mr-1" />}
-                                <Zap className="h-4 w-4" />
-                              </Button>
+                              <TooltipProvider>
+                                <ShadcnTooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
+                                      onClick={() => {
+                                        if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
+                                          toast({
+                                            title: "Pro Feature",
+                                            description: "Access codes are available on the Pro plan. Upgrade to share exclusive content with access codes.",
+                                            variant: "default"
+                                          });
+                                        } else {
+                                          setSelectedContentForAccessCodes(content);
+                                        }
+                                      }}
+                                      className={cn(
+                                        "text-blue-600 border-blue-600 hover:bg-blue-50",
+                                        (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50"
+                                      )}
+                                    >
+                                      {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 mr-1" />}
+                                      <Zap className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs text-center p-3">
+                                    {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
+                                      <p className="text-sm">
+                                        <strong>Access Codes</strong> let you create unique codes to share private content with specific people. They can track downloads and set expiration dates.
+                                        <br /><br />
+                                        <span className="text-amber-600 font-medium">Upgrade to Pro to unlock this feature.</span>
+                                      </p>
+                                    ) : (
+                                      <p className="text-sm">Manage Access Codes</p>
+                                    )}
+                                  </TooltipContent>
+                                </ShadcnTooltip>
+                              </TooltipProvider>
                               <Button
                                 variant="outline"
                                 size="sm"
