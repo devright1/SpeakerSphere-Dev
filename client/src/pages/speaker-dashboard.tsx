@@ -2178,10 +2178,10 @@ export default function SpeakerDashboard() {
                 </Card>
               </div>
 
-              {/* Premium Analytics Sections - Greyed out for non-Premier tiers */}
+              {/* Premium Analytics Sections - Greyed out for Basic tier only */}
               <div className={cn(
                 "space-y-6",
-                (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && "opacity-50 pointer-events-none select-none"
+                (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none select-none"
               )}>
                 {/* Overview Metrics */}
                 <div>
@@ -2505,8 +2505,8 @@ export default function SpeakerDashboard() {
                 </Card>
               </div>
               
-              {/* Upgrade prompt for non-Premier tiers */}
-              {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+              {/* Upgrade prompt for Basic tier only */}
+              {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && (
                 <div className="mt-6">
                   <UpgradePrompt 
                     feature="analytics"
