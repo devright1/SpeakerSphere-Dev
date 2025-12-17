@@ -22,6 +22,7 @@ import {
 } from "./security";
 import { authRoutes } from "./auth-routes";
 import Stripe from "stripe";
+import * as XLSX from "xlsx";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -2458,7 +2459,6 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const contentMap = new Map(speakerContent.map(c => [c.id, c.originalName]));
 
       // Build Excel data
-      const XLSX = require('xlsx');
       const excelData = downloads.map(d => ({
         'Downloaded File': contentMap.get(d.contentId) || 'Unknown',
         'Downloader Name': d.userName,
