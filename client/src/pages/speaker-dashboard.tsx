@@ -2654,31 +2654,33 @@ export default function SpeakerDashboard() {
                                 {content.isPublic ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                               </Button>
                               <TooltipProvider>
-                                <ShadcnTooltip>
+                                <ShadcnTooltip delayDuration={100}>
                                   <TooltipTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
-                                      onClick={() => {
-                                        if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
-                                          toast({
-                                            title: "Pro Feature",
-                                            description: "Access codes are available on the Pro plan. Upgrade to share exclusive content with access codes.",
-                                            variant: "default"
-                                          });
-                                        } else {
-                                          setSelectedContentForAccessCodes(content);
-                                        }
-                                      }}
-                                      className={cn(
-                                        "text-blue-600 border-blue-600 hover:bg-blue-50",
-                                        (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50"
-                                      )}
-                                    >
-                                      {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 mr-1" />}
-                                      <Zap className="h-4 w-4" />
-                                    </Button>
+                                    <span className="inline-block">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
+                                        onClick={() => {
+                                          if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
+                                            toast({
+                                              title: "Pro Feature",
+                                              description: "Access codes are available on the Pro plan. Upgrade to share exclusive content with access codes.",
+                                              variant: "default"
+                                            });
+                                          } else {
+                                            setSelectedContentForAccessCodes(content);
+                                          }
+                                        }}
+                                        className={cn(
+                                          "text-blue-600 border-blue-600 hover:bg-blue-50",
+                                          (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none"
+                                        )}
+                                      >
+                                        {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 mr-1" />}
+                                        <Zap className="h-4 w-4" />
+                                      </Button>
+                                    </span>
                                   </TooltipTrigger>
                                   <TooltipContent side="top" className="max-w-xs text-center p-3">
                                     {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
