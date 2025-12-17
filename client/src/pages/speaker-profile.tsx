@@ -1258,7 +1258,7 @@ export default function SpeakerProfile() {
                     <div className="mt-8">
                       <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <Video className="h-5 w-5 text-red-600" />
-                        Speaking Videos
+                        Videos
                       </h3>
                       <div className="grid gap-4 md:grid-cols-2">
                         {videoLinksData.links.map((link) => {
