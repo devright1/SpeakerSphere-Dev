@@ -96,6 +96,11 @@ export default function SpeakerDashboard() {
     additionalFeedback: ''
   });
 
+  // Video links state
+  const [showAddVideoLinkDialog, setShowAddVideoLinkDialog] = useState(false);
+  const [editingVideoLink, setEditingVideoLink] = useState<{id: number; title: string; url: string; description: string | null} | null>(null);
+  const [newVideoLink, setNewVideoLink] = useState({ title: '', url: '', description: '' });
+
   // Helper functions for reviews
   const toggleReviewExpanded = (reviewId: number) => {
     const newExpanded = new Set(expandedReviews);
@@ -363,6 +368,28 @@ export default function SpeakerDashboard() {
     enabled: !!speakerProfile?.id,
   });
 
+  // Fetch video links for speaker dashboard (all links, not just visible)
+  const { data: videoLinksData, refetch: refetchVideoLinks } = useQuery<{
+    links: Array<{ id: number; speakerId: number; title: string; url: string; description: string | null; position: number }>;
+    tier: string;
+    visibleCount: number;
+    maxLinks: number;
+    currentCount: number;
+  }>({
+    queryKey: ['/api/speakers/video-links/all', speakerProfile?.id],
+    queryFn: async () => {
+      const userData = getUserData();
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/video-links/all`, {
+        headers: {
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch video links');
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id,
+  });
+
   // Fetch subscription status
   const { data: subscriptionStatus } = useQuery<{
     tier: string;
@@ -528,6 +555,106 @@ export default function SpeakerDashboard() {
       toast({
         title: "Creation Failed",
         description: "Failed to create access code. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create video link mutation
+  const createVideoLinkMutation = useMutation({
+    mutationFn: async (data: { title: string; url: string; description?: string }) => {
+      const userData = getUserData();
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/video-links`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create video link');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchVideoLinks();
+      setShowAddVideoLinkDialog(false);
+      setNewVideoLink({ title: '', url: '', description: '' });
+      toast({
+        title: "Video Link Added",
+        description: "Your video link has been added successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Add Video Link",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update video link mutation
+  const updateVideoLinkMutation = useMutation({
+    mutationFn: async ({ linkId, data }: { linkId: number; data: { title?: string; url?: string; description?: string } }) => {
+      const userData = getUserData();
+      const response = await fetch(`/api/video-links/${linkId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update video link');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchVideoLinks();
+      setEditingVideoLink(null);
+      toast({
+        title: "Video Link Updated",
+        description: "Your video link has been updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Update Video Link",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete video link mutation
+  const deleteVideoLinkMutation = useMutation({
+    mutationFn: async (linkId: number) => {
+      const userData = getUserData();
+      const response = await fetch(`/api/video-links/${linkId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        },
+      });
+      if (!response.ok) throw new Error('Failed to delete video link');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchVideoLinks();
+      toast({
+        title: "Video Link Deleted",
+        description: "Your video link has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete video link. Please try again.",
         variant: "destructive",
       });
     },
@@ -2896,6 +3023,272 @@ export default function SpeakerDashboard() {
                       </Button>
                     </CardContent>
                   </Card>
+                )}
+              </div>
+
+              {/* Video Links Section */}
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-2xl font-semibold text-gray-900">Video Links</h3>
+                    <p className="text-gray-600 mt-1">
+                      Add links to your speaking videos on YouTube, Vimeo, or other platforms.
+                      {videoLinksData && (
+                        <span className="text-sm ml-2">
+                          ({videoLinksData.currentCount}/{videoLinksData.maxLinks} slots used, {videoLinksData.visibleCount} visible publicly)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  {(speakerProfile?.subscriptionTier === 'pro' || speakerProfile?.subscriptionTier === 'premier') && (
+                    <Dialog open={showAddVideoLinkDialog} onOpenChange={setShowAddVideoLinkDialog}>
+                      <DialogTrigger asChild>
+                        <Button
+                          disabled={videoLinksData && videoLinksData.currentCount >= videoLinksData.maxLinks}
+                          className="bg-blue-600 hover:bg-blue-700"
+                          data-testid="button-add-video-link"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Video Link
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Add Video Link</DialogTitle>
+                          <DialogDescription>
+                            Add a link to a speaking video on YouTube, Vimeo, or other platforms.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div>
+                            <Label htmlFor="videoTitle">Title *</Label>
+                            <Input
+                              id="videoTitle"
+                              placeholder="e.g., Keynote at Healthcare Summit 2024"
+                              value={newVideoLink.title}
+                              onChange={(e) => setNewVideoLink({...newVideoLink, title: e.target.value})}
+                              data-testid="input-video-title"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="videoUrl">Video URL *</Label>
+                            <Input
+                              id="videoUrl"
+                              placeholder="https://youtube.com/watch?v=..."
+                              value={newVideoLink.url}
+                              onChange={(e) => setNewVideoLink({...newVideoLink, url: e.target.value})}
+                              data-testid="input-video-url"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="videoDescription">Description (optional)</Label>
+                            <Textarea
+                              id="videoDescription"
+                              placeholder="Brief description of the video..."
+                              value={newVideoLink.description}
+                              onChange={(e) => setNewVideoLink({...newVideoLink, description: e.target.value})}
+                              data-testid="input-video-description"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline" onClick={() => setShowAddVideoLinkDialog(false)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={() => createVideoLinkMutation.mutate(newVideoLink)}
+                            disabled={!newVideoLink.title || !newVideoLink.url || createVideoLinkMutation.isPending}
+                            data-testid="button-save-video-link"
+                          >
+                            {createVideoLinkMutation.isPending ? 'Adding...' : 'Add Video Link'}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </div>
+
+                {/* Basic tier upgrade prompt */}
+                {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && (
+                  <Card className="bg-gray-50 border-dashed">
+                    <CardContent className="p-6 text-center">
+                      <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">Video Links Available on Pro & Premier</h4>
+                      <p className="text-gray-600 mb-4">
+                        Upgrade to showcase your speaking videos and reach more potential clients.
+                      </p>
+                      <Link href="/speaker-dashboard?tab=subscription">
+                        <Button className="bg-blue-600 hover:bg-blue-700">
+                          <Crown className="h-4 w-4 mr-2" />
+                          View Upgrade Options
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Pro/Premier video links list */}
+                {(speakerProfile?.subscriptionTier === 'pro' || speakerProfile?.subscriptionTier === 'premier') && (
+                  <>
+                    {videoLinksData && videoLinksData.links.length > 0 ? (
+                      <div className="space-y-3">
+                        {videoLinksData.links.map((link, index) => (
+                          <Card key={link.id} className={cn(
+                            "hover:shadow-md transition-shadow",
+                            index >= videoLinksData.visibleCount && "opacity-60 border-dashed"
+                          )}>
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                  <div className="p-2 bg-red-100 rounded-lg flex-shrink-0">
+                                    <Video className="h-5 w-5 text-red-600" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    {editingVideoLink?.id === link.id ? (
+                                      <div className="space-y-2">
+                                        <Input
+                                          value={editingVideoLink.title}
+                                          onChange={(e) => setEditingVideoLink({...editingVideoLink, title: e.target.value})}
+                                          placeholder="Video title"
+                                          data-testid={`input-edit-title-${link.id}`}
+                                        />
+                                        <Input
+                                          value={editingVideoLink.url}
+                                          onChange={(e) => setEditingVideoLink({...editingVideoLink, url: e.target.value})}
+                                          placeholder="Video URL"
+                                          data-testid={`input-edit-url-${link.id}`}
+                                        />
+                                        <Textarea
+                                          value={editingVideoLink.description || ''}
+                                          onChange={(e) => setEditingVideoLink({...editingVideoLink, description: e.target.value})}
+                                          placeholder="Description (optional)"
+                                          rows={2}
+                                          data-testid={`input-edit-description-${link.id}`}
+                                        />
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <h4 className="font-medium text-gray-900 truncate">{link.title}</h4>
+                                        <a 
+                                          href={link.url} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="text-sm text-blue-600 hover:underline truncate block"
+                                        >
+                                          {link.url}
+                                        </a>
+                                        {link.description && (
+                                          <p className="text-sm text-gray-500 mt-1 truncate">{link.description}</p>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
+                                  {index >= videoLinksData.visibleCount && (
+                                    <Badge variant="outline" className="text-gray-500 border-gray-400 flex-shrink-0">
+                                      Hidden
+                                    </Badge>
+                                  )}
+                                  {index < videoLinksData.visibleCount && (
+                                    <Badge variant="outline" className="text-green-600 border-green-600 flex-shrink-0">
+                                      Visible
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-2 ml-4">
+                                  {editingVideoLink?.id === link.id ? (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          updateVideoLinkMutation.mutate({
+                                            linkId: link.id,
+                                            data: {
+                                              title: editingVideoLink.title,
+                                              url: editingVideoLink.url,
+                                              description: editingVideoLink.description || undefined
+                                            }
+                                          });
+                                        }}
+                                        disabled={updateVideoLinkMutation.isPending}
+                                        data-testid={`button-save-edit-${link.id}`}
+                                      >
+                                        <Save className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setEditingVideoLink(null)}
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setEditingVideoLink({
+                                          id: link.id,
+                                          title: link.title,
+                                          url: link.url,
+                                          description: link.description
+                                        })}
+                                        data-testid={`button-edit-video-${link.id}`}
+                                      >
+                                        <Edit3 className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => window.open(link.url, '_blank')}
+                                        title="Open video in new tab"
+                                      >
+                                        <ExternalLink className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => deleteVideoLinkMutation.mutate(link.id)}
+                                        disabled={deleteVideoLinkMutation.isPending}
+                                        className="text-red-600 border-red-600 hover:bg-red-50"
+                                        data-testid={`button-delete-video-${link.id}`}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        {videoLinksData.currentCount > videoLinksData.visibleCount && (
+                          <p className="text-sm text-amber-600 mt-2">
+                            {videoLinksData.currentCount - videoLinksData.visibleCount} video(s) are hidden from your public profile. 
+                            {speakerProfile?.subscriptionTier === 'pro' && ' Upgrade to Premier to show up to 5 videos.'}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <Card>
+                        <CardContent className="p-8 text-center">
+                          <Video className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <h4 className="text-lg font-semibold text-gray-900 mb-2">No Video Links Yet</h4>
+                          <p className="text-gray-600 mb-4">
+                            Add links to your speaking videos to showcase your presentation style.
+                          </p>
+                          <Button
+                            onClick={() => setShowAddVideoLinkDialog(true)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Your First Video Link
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </>
                 )}
               </div>
             </div>

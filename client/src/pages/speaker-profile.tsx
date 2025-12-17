@@ -136,6 +136,23 @@ export default function SpeakerProfile() {
     enabled: Boolean(speaker?.id && speaker?.verified),
   });
 
+  // Fetch speaker video links (public, respects tier visibility limits)
+  const { data: videoLinksData } = useQuery<{
+    links: Array<{ id: number; speakerId: number; title: string; url: string; description: string | null; position: number }>;
+    tier: string;
+    visibleCount: number;
+    maxLinks: number;
+  }>({
+    queryKey: ["/api/speakers/video-links", speaker?.id],
+    queryFn: async () => {
+      if (!speaker?.id) return { links: [], tier: 'basic', visibleCount: 0, maxLinks: 0 };
+      const response = await fetch(`/api/speakers/${speaker.id}/video-links`);
+      if (!response.ok) return { links: [], tier: 'basic', visibleCount: 0, maxLinks: 0 };
+      return response.json();
+    },
+    enabled: Boolean(speaker?.id && speaker?.verified),
+  });
+
   // Fetch speaker topics
   const { data: speakerTopics, isLoading: topicsLoading } = useQuery({
     queryKey: ["/api/speakers", speaker?.id, "topics"],
@@ -1233,6 +1250,45 @@ export default function SpeakerProfile() {
                         </p>
                       </CardContent>
                     </Card>
+                  )}
+
+                  {/* Video Links Section */}
+                  {videoLinksData && videoLinksData.links.length > 0 && (
+                    <div className="mt-8">
+                      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Video className="h-5 w-5 text-red-600" />
+                        Speaking Videos
+                      </h3>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {videoLinksData.links.map((link) => (
+                          <Card key={link.id} className="hover:shadow-md transition-shadow">
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-3">
+                                <div className="p-2 bg-red-100 rounded-lg flex-shrink-0">
+                                  <Video className="h-5 w-5 text-red-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-gray-900 truncate">{link.title}</h4>
+                                  {link.description && (
+                                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">{link.description}</p>
+                                  )}
+                                  <a
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline mt-2"
+                                    onClick={() => tracking.trackInteraction('video_link_click', link.title)}
+                                  >
+                                    Watch Video
+                                    <Globe className="h-3 w-3" />
+                                  </a>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               </TabsContent>

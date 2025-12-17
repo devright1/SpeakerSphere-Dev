@@ -564,6 +564,18 @@ export const contentDownloads = pgTable("content_downloads", {
   userAgent: text("user_agent"), // Browser/device info
 });
 
+// Speaker video links for embedding videos on profiles
+export const speakerVideoLinks = pgTable("speaker_video_links", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  title: text("title").notNull(), // Display title for the video
+  url: text("url").notNull(), // Video URL (YouTube, Vimeo, etc.)
+  description: text("description"), // Optional description
+  position: integer("position").notNull().default(0), // Order position for display
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Subscription features that can be assigned to tiers
 export const subscriptionFeatures = pgTable("subscription_features", {
   id: serial("id").primaryKey(),
@@ -696,6 +708,23 @@ export type ContentAccessCode = typeof contentAccessCodes.$inferSelect;
 export type InsertContentAccessCode = z.infer<typeof insertContentAccessCodeSchema>;
 export type ContentDownload = typeof contentDownloads.$inferSelect;
 export type InsertContentDownload = z.infer<typeof insertContentDownloadSchema>;
+
+// Speaker video links schema and types
+export const insertSpeakerVideoLinkSchema = createInsertSchema(speakerVideoLinks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type SpeakerVideoLink = typeof speakerVideoLinks.$inferSelect;
+export type InsertSpeakerVideoLink = z.infer<typeof insertSpeakerVideoLinkSchema>;
+
+// Video link tier limits helper
+export const VIDEO_LINK_LIMITS = {
+  basic: { maxLinks: 0, visibleLinks: 0 },
+  pro: { maxLinks: 5, visibleLinks: 2 },
+  premier: { maxLinks: 10, visibleLinks: 5 },
+} as const;
 
 // Subscription features schemas
 export const insertSubscriptionFeatureSchema = createInsertSchema(subscriptionFeatures).omit({

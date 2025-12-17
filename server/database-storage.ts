@@ -15,6 +15,7 @@ import {
   speakerContent,
   contentAccessCodes,
   contentDownloads,
+  speakerVideoLinks,
   images,
   subscriptionFeatures,
   subscriptionTierFeatures,
@@ -51,6 +52,8 @@ import {
   type InsertContentAccessCode,
   type ContentDownload,
   type InsertContentDownload,
+  type SpeakerVideoLink,
+  type InsertSpeakerVideoLink,
   type Image,
   type InsertImage,
   type SubscriptionFeature,
@@ -1304,6 +1307,52 @@ export class DatabaseStorage implements IStorage {
       .from(contentDownloads)
       .where(eq(contentDownloads.userId, userId))
       .orderBy(desc(contentDownloads.downloadedAt));
+  }
+
+  // Speaker Video Links Methods
+  async getSpeakerVideoLinks(speakerId: number): Promise<SpeakerVideoLink[]> {
+    return await db
+      .select()
+      .from(speakerVideoLinks)
+      .where(eq(speakerVideoLinks.speakerId, speakerId))
+      .orderBy(speakerVideoLinks.position);
+  }
+
+  async createSpeakerVideoLink(videoLink: InsertSpeakerVideoLink): Promise<SpeakerVideoLink> {
+    const [newLink] = await db
+      .insert(speakerVideoLinks)
+      .values(videoLink)
+      .returning();
+    return newLink;
+  }
+
+  async updateSpeakerVideoLink(id: number, updates: Partial<InsertSpeakerVideoLink>): Promise<SpeakerVideoLink | undefined> {
+    const [updatedLink] = await db
+      .update(speakerVideoLinks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(speakerVideoLinks.id, id))
+      .returning();
+    return updatedLink;
+  }
+
+  async deleteSpeakerVideoLink(id: number): Promise<boolean> {
+    const result = await db
+      .delete(speakerVideoLinks)
+      .where(eq(speakerVideoLinks.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async reorderSpeakerVideoLinks(speakerId: number, linkIds: number[]): Promise<void> {
+    for (let i = 0; i < linkIds.length; i++) {
+      await db
+        .update(speakerVideoLinks)
+        .set({ position: i, updatedAt: new Date() })
+        .where(and(
+          eq(speakerVideoLinks.id, linkIds[i]),
+          eq(speakerVideoLinks.speakerId, speakerId)
+        ));
+    }
   }
 
   // Missing methods to implement IStorage interface

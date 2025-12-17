@@ -15,6 +15,7 @@ import {
   speakerContent,
   contentAccessCodes,
   contentDownloads,
+  speakerVideoLinks,
   images,
   subscriptionFeatures,
   subscriptionTierFeatures,
@@ -51,6 +52,8 @@ import {
   type InsertContentAccessCode,
   type ContentDownload,
   type InsertContentDownload,
+  type SpeakerVideoLink,
+  type InsertSpeakerVideoLink,
   type Image,
   type InsertImage,
   type SubscriptionFeature,
@@ -239,6 +242,13 @@ export interface IStorage {
   getSpeakerContentDownloads(speakerId: number): Promise<ContentDownload[]>;
   getUserContentDownloads(userId: string): Promise<ContentDownload[]>;
   
+  // Speaker Video Links
+  getSpeakerVideoLinks(speakerId: number): Promise<SpeakerVideoLink[]>;
+  createSpeakerVideoLink(videoLink: InsertSpeakerVideoLink): Promise<SpeakerVideoLink>;
+  updateSpeakerVideoLink(id: number, updates: Partial<InsertSpeakerVideoLink>): Promise<SpeakerVideoLink | undefined>;
+  deleteSpeakerVideoLink(id: number): Promise<boolean>;
+  reorderSpeakerVideoLinks(speakerId: number, linkIds: number[]): Promise<void>;
+  
   // Images
   createImage(image: InsertImage): Promise<Image>;
   getImageById(id: number): Promise<Image | undefined>;
@@ -296,6 +306,7 @@ export class MemStorage implements IStorage {
   private speakerContentMap: Map<number, SpeakerContent>;
   private contentAccessCodes: Map<number, ContentAccessCode>;
   private contentDownloads: Map<number, ContentDownload>;
+  private speakerVideoLinksMap: Map<number, SpeakerVideoLink>;
   private images: Map<number, Image>;
   private currentSpeakerId: number;
   private currentReviewId: number;
@@ -310,6 +321,7 @@ export class MemStorage implements IStorage {
   private currentContentId: number;
   private currentAccessCodeId: number;
   private currentDownloadId: number;
+  private currentVideoLinkId: number;
   private currentImageId: number;
 
   constructor() {
@@ -328,6 +340,7 @@ export class MemStorage implements IStorage {
     this.speakerContentMap = new Map();
     this.contentAccessCodes = new Map();
     this.contentDownloads = new Map();
+    this.speakerVideoLinksMap = new Map();
     this.images = new Map();
     this.currentSpeakerId = 1;
     this.currentReviewId = 1;
@@ -342,6 +355,7 @@ export class MemStorage implements IStorage {
     this.currentContentId = 1;
     this.currentAccessCodeId = 1;
     this.currentDownloadId = 1;
+    this.currentVideoLinkId = 1;
     this.currentImageId = 1;
     
     this.seedData();
@@ -1585,6 +1599,52 @@ export class MemStorage implements IStorage {
     return Array.from(this.contentDownloads.values())
       .filter(download => download.userId === userId)
       .sort((a, b) => b.downloadedAt.getTime() - a.downloadedAt.getTime());
+  }
+
+  // Speaker Video Links Methods
+  async getSpeakerVideoLinks(speakerId: number): Promise<SpeakerVideoLink[]> {
+    return Array.from(this.speakerVideoLinksMap.values())
+      .filter(link => link.speakerId === speakerId)
+      .sort((a, b) => a.position - b.position);
+  }
+
+  async createSpeakerVideoLink(videoLink: InsertSpeakerVideoLink): Promise<SpeakerVideoLink> {
+    const existingLinks = await this.getSpeakerVideoLinks(videoLink.speakerId);
+    const newLink: SpeakerVideoLink = {
+      ...videoLink,
+      id: this.currentVideoLinkId++,
+      position: videoLink.position ?? existingLinks.length,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.speakerVideoLinksMap.set(newLink.id, newLink);
+    return newLink;
+  }
+
+  async updateSpeakerVideoLink(id: number, updates: Partial<InsertSpeakerVideoLink>): Promise<SpeakerVideoLink | undefined> {
+    const link = this.speakerVideoLinksMap.get(id);
+    if (!link) return undefined;
+
+    const updatedLink = {
+      ...link,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.speakerVideoLinksMap.set(id, updatedLink);
+    return updatedLink;
+  }
+
+  async deleteSpeakerVideoLink(id: number): Promise<boolean> {
+    return this.speakerVideoLinksMap.delete(id);
+  }
+
+  async reorderSpeakerVideoLinks(speakerId: number, linkIds: number[]): Promise<void> {
+    linkIds.forEach((linkId, index) => {
+      const link = this.speakerVideoLinksMap.get(linkId);
+      if (link && link.speakerId === speakerId) {
+        this.speakerVideoLinksMap.set(linkId, { ...link, position: index, updatedAt: new Date() });
+      }
+    });
   }
 
   // Image methods

@@ -4,7 +4,7 @@ import { z } from "zod";
 // Removed zfd import as it's not needed for current functionality
 import session from "express-session";
 import { storage } from "./storage";
-import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory, speakers } from "../shared/schema";
+import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory, speakers, VIDEO_LINK_LIMITS, insertSpeakerVideoLinkSchema } from "../shared/schema";
 import { registerAdminRoutes } from "./admin-routes";
 import { EmailService } from "./email-service";
 import multer from "multer";
@@ -2434,6 +2434,269 @@ export async function registerRoutes(app: Express): Promise<Express> {
     } catch (error) {
       console.error("Validate access code error:", error);
       res.status(500).json({ error: "Failed to validate access code" });
+    }
+  });
+
+  // ============ SPEAKER VIDEO LINKS ROUTES ============
+
+  // Get video links for a speaker (public - respects tier visibility limits)
+  app.get("/api/speakers/:speakerId/video-links", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      const speaker = await storage.getSpeaker(speakerId);
+      
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      const videoLinks = await storage.getSpeakerVideoLinks(speakerId);
+      const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
+      const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
+      
+      // Return only visible links for public access
+      const visibleLinks = videoLinks.slice(0, limits.visibleLinks);
+      
+      res.json({
+        links: visibleLinks,
+        tier,
+        visibleCount: limits.visibleLinks,
+        maxLinks: limits.maxLinks
+      });
+    } catch (error) {
+      console.error("Get speaker video links error:", error);
+      res.status(500).json({ error: "Failed to get video links" });
+    }
+  });
+
+  // Get all video links for speaker dashboard (authenticated - shows all stored links)
+  app.get("/api/speakers/:speakerId/video-links/all", async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      
+      // Authentication
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || user.speakerId !== speakerId) {
+        return res.status(403).json({ error: "Not authorized to view all video links" });
+      }
+
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      const videoLinks = await storage.getSpeakerVideoLinks(speakerId);
+      const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
+      const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
+      
+      res.json({
+        links: videoLinks,
+        tier,
+        visibleCount: limits.visibleLinks,
+        maxLinks: limits.maxLinks,
+        currentCount: videoLinks.length
+      });
+    } catch (error) {
+      console.error("Get all speaker video links error:", error);
+      res.status(500).json({ error: "Failed to get video links" });
+    }
+  });
+
+  // Create a new video link
+  app.post("/api/speakers/:speakerId/video-links", async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      
+      // Authentication
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || user.speakerId !== speakerId) {
+        return res.status(403).json({ error: "Not authorized to add video links" });
+      }
+
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      // Check tier limits
+      const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
+      const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
+      
+      if (limits.maxLinks === 0) {
+        return res.status(403).json({ error: "Video links are not available for Basic tier. Please upgrade to Pro or Premier." });
+      }
+
+      const existingLinks = await storage.getSpeakerVideoLinks(speakerId);
+      if (existingLinks.length >= limits.maxLinks) {
+        return res.status(400).json({ error: `Maximum of ${limits.maxLinks} video links allowed for ${tier} tier` });
+      }
+
+      // Validate request body
+      const { title, url, description } = req.body;
+      
+      if (!title || !url) {
+        return res.status(400).json({ error: "Title and URL are required" });
+      }
+
+      // Basic URL validation
+      try {
+        new URL(url);
+      } catch {
+        return res.status(400).json({ error: "Invalid URL format" });
+      }
+
+      const newLink = await storage.createSpeakerVideoLink({
+        speakerId,
+        title,
+        url,
+        description: description || null,
+        position: existingLinks.length
+      });
+
+      res.status(201).json(newLink);
+    } catch (error) {
+      console.error("Create video link error:", error);
+      res.status(500).json({ error: "Failed to create video link" });
+    }
+  });
+
+  // Update a video link
+  app.patch("/api/video-links/:linkId", async (req: AuthenticatedRequest, res) => {
+    try {
+      const linkId = parseInt(req.params.linkId);
+      
+      // Get the link to check ownership
+      const links = await db.select().from(speakers).limit(1); // Just checking DB access
+      
+      // Authentication
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { title, url, description } = req.body;
+      
+      // URL validation if provided
+      if (url) {
+        try {
+          new URL(url);
+        } catch {
+          return res.status(400).json({ error: "Invalid URL format" });
+        }
+      }
+
+      const updatedLink = await storage.updateSpeakerVideoLink(linkId, {
+        title,
+        url,
+        description
+      });
+
+      if (!updatedLink) {
+        return res.status(404).json({ error: "Video link not found" });
+      }
+
+      res.json(updatedLink);
+    } catch (error) {
+      console.error("Update video link error:", error);
+      res.status(500).json({ error: "Failed to update video link" });
+    }
+  });
+
+  // Delete a video link
+  app.delete("/api/video-links/:linkId", async (req: AuthenticatedRequest, res) => {
+    try {
+      const linkId = parseInt(req.params.linkId);
+      
+      // Authentication
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const deleted = await storage.deleteSpeakerVideoLink(linkId);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Video link not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete video link error:", error);
+      res.status(500).json({ error: "Failed to delete video link" });
+    }
+  });
+
+  // Reorder video links
+  app.post("/api/speakers/:speakerId/video-links/reorder", async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      
+      // Authentication
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || user.speakerId !== speakerId) {
+        return res.status(403).json({ error: "Not authorized to reorder video links" });
+      }
+
+      const { linkIds } = req.body;
+      
+      if (!Array.isArray(linkIds)) {
+        return res.status(400).json({ error: "linkIds must be an array" });
+      }
+
+      await storage.reorderSpeakerVideoLinks(speakerId, linkIds);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Reorder video links error:", error);
+      res.status(500).json({ error: "Failed to reorder video links" });
     }
   });
 
