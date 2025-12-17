@@ -1298,25 +1298,30 @@ export default function SpeakerDashboard() {
                               <p className="text-sm text-blue-700">Pro members can select one social media platform. <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to Premier</Link> for all platforms.</p>
                             </div>
                           </div>
-                          {isEditing && (
-                            <div className="mt-3">
-                              <Select
-                                value={editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform || ''}
-                                onValueChange={(value) => setEditForm({...editForm, selectedSocialPlatform: value})}
-                              >
-                                <SelectTrigger className="w-full bg-white">
-                                  <SelectValue placeholder="Choose your social platform" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="instagram">Instagram</SelectItem>
-                                  <SelectItem value="linkedin">LinkedIn</SelectItem>
-                                  <SelectItem value="facebook">Facebook</SelectItem>
-                                  <SelectItem value="x">X (Twitter)</SelectItem>
-                                  <SelectItem value="tiktok">TikTok</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
+                          <div className="mt-3">
+                            <Select
+                              value={isEditing ? (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform || '') : (speakerProfile?.selectedSocialPlatform || '')}
+                              onValueChange={(value) => {
+                                if (isEditing) {
+                                  setEditForm({...editForm, selectedSocialPlatform: value});
+                                } else {
+                                  // Save immediately when not in edit mode
+                                  updateProfileMutation.mutate({ selectedSocialPlatform: value });
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="w-full bg-white">
+                                <SelectValue placeholder="Choose your social platform" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="instagram">Instagram</SelectItem>
+                                <SelectItem value="linkedin">LinkedIn</SelectItem>
+                                <SelectItem value="facebook">Facebook</SelectItem>
+                                <SelectItem value="x">X (Twitter)</SelectItem>
+                                <SelectItem value="tiktok">TikTok</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       )}
 
