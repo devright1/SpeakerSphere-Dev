@@ -2685,7 +2685,7 @@ export default function SpeakerDashboard() {
                                   <TooltipContent side="top" className="max-w-xs text-center p-3">
                                     {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                                       <p className="text-sm">
-                                        <strong>Access Codes</strong> let you create unique codes to share private content with specific people. They can track downloads and set expiration dates.
+                                        <strong>Access Codes</strong> let you create unique codes to share private content with specific people.
                                         <br /><br />
                                         <span className="text-amber-600 font-medium">Upgrade to Pro to unlock this feature.</span>
                                       </p>
