@@ -985,9 +985,6 @@ export default function SpeakerDashboard() {
             <TabsTrigger value="reviews">Reviews ({speakerReviews?.length || 0})</TabsTrigger>
             <TabsTrigger value="stats">
               Analytics
-              {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
-                <Lock className="w-3 h-3 ml-1 inline" />
-              )}
             </TabsTrigger>
             <TabsTrigger value="content">My Content</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
