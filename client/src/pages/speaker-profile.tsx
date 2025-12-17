@@ -48,7 +48,7 @@ import {
   Download,
   Folder
 } from "lucide-react";
-import { FaInstagram, FaLinkedin, FaFacebook } from "react-icons/fa";
+import { FaInstagram, FaLinkedin, FaFacebook, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import type { Speaker, Review } from "@shared/schema";
 import { SEOHead, generateSpeakerStructuredData, generateBreadcrumbStructuredData } from "@/components/seo-head";
@@ -718,12 +718,23 @@ export default function SpeakerProfile() {
                         />
                       </div>
                       
-                      {/* Social Media Icons (Premier only) */}
-                      {(speaker.subscriptionTier ?? 'basic') === 'premier' && !speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
+                      {/* Social Media Icons (Premier: all, Pro: selected only) */}
+                      {!speaker.hideSocial && (
+                        ((speaker.subscriptionTier ?? 'basic') === 'premier' && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || speaker.tiktokHandle || (speaker.socialMedia && speaker.socialMedia.length > 0))) ||
+                        ((speaker.subscriptionTier ?? 'basic') === 'pro' && speaker.selectedSocialPlatform && (
+                          (speaker.selectedSocialPlatform === 'instagram' && speaker.instagramHandle) ||
+                          (speaker.selectedSocialPlatform === 'linkedin' && speaker.linkedinHandle) ||
+                          (speaker.selectedSocialPlatform === 'facebook' && speaker.facebookHandle) ||
+                          (speaker.selectedSocialPlatform === 'x' && speaker.xHandle) ||
+                          (speaker.selectedSocialPlatform === 'tiktok' && speaker.tiktokHandle)
+                        ))
+                      ) && (
                         <div className="flex items-center gap-2 ml-4">
                           {speaker.instagramHandle && (
+                            speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'instagram')
+                          ) && (
                             <a 
-                              href={`https://instagram.com/${speaker.instagramHandle}`} 
+                              href={speaker.instagramHandle.includes('instagram.com') ? speaker.instagramHandle : `https://instagram.com/${speaker.instagramHandle}`} 
                               target="_blank" 
                               rel="noopener noreferrer"
                               onClick={() => tracking.trackSocialClick('instagram')}
@@ -734,6 +745,8 @@ export default function SpeakerProfile() {
                             </a>
                           )}
                           {speaker.linkedinHandle && (
+                            speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'linkedin')
+                          ) && (
                             <a 
                               href={speaker.linkedinHandle.includes('linkedin.com') ? speaker.linkedinHandle : `https://linkedin.com/in/${speaker.linkedinHandle}`}
                               target="_blank" 
@@ -746,6 +759,8 @@ export default function SpeakerProfile() {
                             </a>
                           )}
                           {speaker.facebookHandle && (
+                            speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'facebook')
+                          ) && (
                             <a 
                               href={speaker.facebookHandle.includes('facebook.com') ? speaker.facebookHandle : `https://facebook.com/${speaker.facebookHandle}`}
                               target="_blank" 
@@ -758,6 +773,8 @@ export default function SpeakerProfile() {
                             </a>
                           )}
                           {speaker.xHandle && (
+                            speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'x')
+                          ) && (
                             <a 
                               href={speaker.xHandle.includes('x.com') || speaker.xHandle.includes('twitter.com') ? speaker.xHandle : `https://x.com/${speaker.xHandle}`}
                               target="_blank" 
@@ -767,6 +784,20 @@ export default function SpeakerProfile() {
                               title={`Follow ${speaker.name} on X`}
                             >
                               <FaXTwitter className="w-4 h-4" />
+                            </a>
+                          )}
+                          {speaker.tiktokHandle && (
+                            speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'tiktok')
+                          ) && (
+                            <a 
+                              href={speaker.tiktokHandle.includes('tiktok.com') ? speaker.tiktokHandle : `https://tiktok.com/@${speaker.tiktokHandle}`}
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              onClick={() => tracking.trackSocialClick('tiktok')}
+                              className="text-gray-500 hover:text-gray-900 transition-colors"
+                              title={`Follow ${speaker.name} on TikTok`}
+                            >
+                              <FaTiktok className="w-4 h-4" />
                             </a>
                           )}
                           {/* Fallback for speakers with socialMedia array but no specific handles */}
