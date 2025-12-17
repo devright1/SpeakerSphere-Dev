@@ -660,6 +660,41 @@ export default function SpeakerDashboard() {
     },
   });
 
+  // Toggle video link visibility mutation
+  const toggleVideoVisibilityMutation = useMutation({
+    mutationFn: async (linkId: number) => {
+      const userData = getUserData();
+      const response = await fetch(`/api/video-links/${linkId}/toggle-visibility`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to toggle visibility');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      refetchVideoLinks();
+      toast({
+        title: data.isVisible ? "Video Now Visible" : "Video Hidden",
+        description: data.isVisible 
+          ? "This video will now appear on your public profile." 
+          : "This video is now hidden from your public profile.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Toggle Visibility",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Cancel subscription mutation
   const cancelSubscriptionMutation = useMutation({
     mutationFn: async (data: typeof cancellationData) => {
@@ -3132,10 +3167,13 @@ export default function SpeakerDashboard() {
                   <>
                     {videoLinksData && videoLinksData.links.length > 0 ? (
                       <div className="space-y-3">
-                        {videoLinksData.links.map((link, index) => (
+                        <p className="text-sm text-gray-600 mb-2">
+                          {videoLinksData.currentVisibleCount}/{videoLinksData.visibleCount} visible slots used
+                        </p>
+                        {videoLinksData.links.map((link) => (
                           <Card key={link.id} className={cn(
                             "hover:shadow-md transition-shadow",
-                            index >= videoLinksData.visibleCount && "opacity-60 border-dashed"
+                            !link.isVisible && "opacity-60 border-dashed"
                           )}>
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
@@ -3183,12 +3221,12 @@ export default function SpeakerDashboard() {
                                       </>
                                     )}
                                   </div>
-                                  {index >= videoLinksData.visibleCount && (
+                                  {!link.isVisible && (
                                     <Badge variant="outline" className="text-gray-500 border-gray-400 flex-shrink-0">
                                       Hidden
                                     </Badge>
                                   )}
-                                  {index < videoLinksData.visibleCount && (
+                                  {link.isVisible && (
                                     <Badge variant="outline" className="text-green-600 border-green-600 flex-shrink-0">
                                       Visible
                                     </Badge>
@@ -3225,6 +3263,16 @@ export default function SpeakerDashboard() {
                                     </>
                                   ) : (
                                     <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => toggleVideoVisibilityMutation.mutate(link.id)}
+                                        disabled={toggleVideoVisibilityMutation.isPending}
+                                        title={link.isVisible ? "Hide from public profile" : "Show on public profile"}
+                                        data-testid={`button-toggle-visibility-${link.id}`}
+                                      >
+                                        {link.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                      </Button>
                                       <Button
                                         variant="outline"
                                         size="sm"

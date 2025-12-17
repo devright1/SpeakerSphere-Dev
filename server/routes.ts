@@ -2453,8 +2453,10 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
       const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
       
-      // Return only visible links for public access
-      const visibleLinks = videoLinks.slice(0, limits.visibleLinks);
+      // Filter by isVisible and limit by tier's visibleLinks count
+      const visibleLinks = videoLinks
+        .filter(link => link.isVisible)
+        .slice(0, limits.visibleLinks);
       
       res.json({
         links: visibleLinks,
@@ -2497,13 +2499,15 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const videoLinks = await storage.getSpeakerVideoLinks(speakerId);
       const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
       const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
+      const currentVisibleCount = videoLinks.filter(link => link.isVisible).length;
       
       res.json({
         links: videoLinks,
         tier,
         visibleCount: limits.visibleLinks,
         maxLinks: limits.maxLinks,
-        currentCount: videoLinks.length
+        currentCount: videoLinks.length,
+        currentVisibleCount
       });
     } catch (error) {
       console.error("Get all speaker video links error:", error);
@@ -2603,7 +2607,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(401).json({ error: "Authentication required" });
       }
 
-      const { title, url, description } = req.body;
+      const { title, url, description, isVisible } = req.body;
       
       // URL validation if provided
       if (url) {
@@ -2617,7 +2621,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const updatedLink = await storage.updateSpeakerVideoLink(linkId, {
         title,
         url,
-        description
+        description,
+        isVisible
       });
 
       if (!updatedLink) {
@@ -2662,6 +2667,65 @@ export async function registerRoutes(app: Express): Promise<Express> {
     } catch (error) {
       console.error("Delete video link error:", error);
       res.status(500).json({ error: "Failed to delete video link" });
+    }
+  });
+
+  // Toggle video link visibility
+  app.post("/api/video-links/:linkId/toggle-visibility", async (req: AuthenticatedRequest, res) => {
+    try {
+      const linkId = parseInt(req.params.linkId);
+      
+      // Authentication
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Get the existing link
+      const existingLinks = await storage.getSpeakerVideoLinks(user.speakerId);
+      const existingLink = existingLinks.find(l => l.id === linkId);
+      
+      if (!existingLink) {
+        return res.status(404).json({ error: "Video link not found" });
+      }
+
+      // Get speaker tier to check visibility limits
+      const speaker = await storage.getSpeaker(user.speakerId);
+      if (!speaker) {
+        return res.status(404).json({ error: "Speaker not found" });
+      }
+
+      const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
+      const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
+      
+      // If trying to make visible, check limit
+      const currentVisibleCount = existingLinks.filter(l => l.isVisible).length;
+      const newIsVisible = !existingLink.isVisible;
+      
+      if (newIsVisible && currentVisibleCount >= limits.visibleLinks) {
+        return res.status(400).json({ 
+          error: `Maximum of ${limits.visibleLinks} visible videos allowed for ${tier} tier. Hide another video first.` 
+        });
+      }
+
+      const updatedLink = await storage.updateSpeakerVideoLink(linkId, {
+        isVisible: newIsVisible
+      });
+
+      res.json(updatedLink);
+    } catch (error) {
+      console.error("Toggle video visibility error:", error);
+      res.status(500).json({ error: "Failed to toggle visibility" });
     }
   });
 

@@ -572,6 +572,7 @@ export const speakerVideoLinks = pgTable("speaker_video_links", {
   url: text("url").notNull(), // Video URL (YouTube, Vimeo, etc.)
   description: text("description"), // Optional description
   position: integer("position").notNull().default(0), // Order position for display
+  isVisible: boolean("is_visible").notNull().default(true), // Whether visible on public profile
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
