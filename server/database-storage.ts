@@ -1617,6 +1617,77 @@ export class DatabaseStorage implements IStorage {
     const weeklyClicks = weeklyInteractions.filter(i => 
       engagementInteractionTypes.includes(i.interactionType)
     ).length;
+    const weeklyShares = weeklyInteractions.filter(i => i.interactionType === 'share_click').length;
+    const weeklyDownloads = weeklyInteractions.filter(i => i.interactionType === 'resource_download').length;
+
+    // Generate interactionsOverTime based on timeframe
+    const interactionsOverTime: Array<{ date: string; views: number; clicks: number }> = [];
+    
+    if (timeframe === '7d' || timeframe === '30d') {
+      // Daily granularity for week and month
+      const days = timeframe === '7d' ? 7 : 30;
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        const dayInteractions = interactions.filter(int => {
+          const intDate = new Date(int.createdAt!).toISOString().split('T')[0];
+          return intDate === dateStr;
+        });
+        
+        interactionsOverTime.push({
+          date: dayLabel,
+          views: dayInteractions.filter(i => i.interactionType === 'profile_view').length,
+          clicks: dayInteractions.filter(i => engagementInteractionTypes.includes(i.interactionType)).length,
+        });
+      }
+    } else if (timeframe === '90d' || timeframe === '180d') {
+      // Weekly granularity for 3-6 months
+      const weeks = timeframe === '90d' ? 13 : 26;
+      for (let i = weeks - 1; i >= 0; i--) {
+        const weekEnd = new Date();
+        weekEnd.setDate(weekEnd.getDate() - (i * 7));
+        const weekStart = new Date(weekEnd);
+        weekStart.setDate(weekStart.getDate() - 6);
+        
+        const weekLabel = `Week ${weeks - i}`;
+        
+        const weekInteractions = interactions.filter(int => {
+          const intDate = new Date(int.createdAt!);
+          return intDate >= weekStart && intDate <= weekEnd;
+        });
+        
+        interactionsOverTime.push({
+          date: weekLabel,
+          views: weekInteractions.filter(i => i.interactionType === 'profile_view').length,
+          clicks: weekInteractions.filter(i => engagementInteractionTypes.includes(i.interactionType)).length,
+        });
+      }
+    } else {
+      // Monthly granularity for year or all time
+      const months = timeframe === '365d' ? 12 : 6; // Show last 6 months for "all time" as default
+      for (let i = months - 1; i >= 0; i--) {
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - i);
+        const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+        
+        const monthLabel = monthDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+        
+        const monthInteractionsFiltered = interactions.filter(int => {
+          const intDate = new Date(int.createdAt!);
+          return intDate >= monthStart && intDate <= monthEnd;
+        });
+        
+        interactionsOverTime.push({
+          date: monthLabel,
+          views: monthInteractionsFiltered.filter(i => i.interactionType === 'profile_view').length,
+          clicks: monthInteractionsFiltered.filter(i => engagementInteractionTypes.includes(i.interactionType)).length,
+        });
+      }
+    }
 
     // Peak activity analysis
     const hourlyActivity: Record<number, number> = {};
@@ -1689,6 +1760,17 @@ export class DatabaseStorage implements IStorage {
       dailyTrends: dailyData,
       weeklyViews,
       weeklyClicks,
+      
+      // Timeframe-adaptive chart data
+      interactionsOverTime,
+      
+      // Last 7 days summary (for quick stats card)
+      last7Days: {
+        views: weeklyViews,
+        clicks: weeklyClicks,
+        shares: weeklyShares,
+        downloads: weeklyDownloads,
+      },
       
       // Peak activity
       peakActivity: {
