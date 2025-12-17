@@ -3980,13 +3980,27 @@ export default function SpeakerDashboard() {
 
             {/* Download Analytics for this Content */}
             <Card className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'relative' : ''}>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   Download Analytics
                   {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
                     <Lock className="h-4 w-4 text-gray-400" />
                   )}
                 </CardTitle>
+                {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const userData = getUserData();
+                      window.open(`/api/speakers/${speakerProfile?.id}/downloads/export?userId=${userData?.id || localStorage.getItem('userId') || ''}`, '_blank');
+                    }}
+                    data-testid="button-export-downloads"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export All Downloads
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
                 {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (

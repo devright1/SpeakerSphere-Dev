@@ -2415,6 +2415,77 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Export download analytics as Excel (Premier only)
+  app.get("/api/speakers/:speakerId/downloads/export", async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+      
+      // Authentication - support session, header, and query param
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string || req.query.userId as string;
+        if (userIdHeader) {
+          try {
+            const userData = await storage.getUserById(userIdHeader);
+            if (userData?.speakerId) {
+              user = { speakerId: userData.speakerId };
+            }
+          } catch (error) {
+            console.error('Fallback auth failed for export:', error);
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      if (user.speakerId !== speakerId) {
+        return res.status(403).json({ error: "Not authorized to export download analytics" });
+      }
+
+      // Check Premier tier
+      const speaker = await storage.getSpeaker(speakerId);
+      if (!speaker || speaker.subscriptionTier !== 'premier') {
+        return res.status(403).json({ error: "Download analytics export is only available for Premier tier" });
+      }
+
+      // Get downloads and content info
+      const downloads = await storage.getSpeakerContentDownloads(speakerId);
+      const speakerContent = await storage.getSpeakerContent(speakerId);
+      
+      // Create content ID to name mapping
+      const contentMap = new Map(speakerContent.map(c => [c.id, c.originalName]));
+
+      // Build Excel data
+      const XLSX = require('xlsx');
+      const excelData = downloads.map(d => ({
+        'Downloaded File': contentMap.get(d.contentId) || 'Unknown',
+        'Downloader Name': d.userName,
+        'Email': d.userEmail,
+        'Company': d.userCompany || '',
+        'Download Date': d.downloadedAt ? new Date(d.downloadedAt).toLocaleString() : '',
+        'Used Access Code': d.accessCodeId ? 'Yes' : 'No'
+      }));
+
+      // Create workbook
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Download Analytics');
+
+      // Generate buffer
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      // Send file
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="download-analytics-${new Date().toISOString().split('T')[0]}.xlsx"`);
+      res.send(buffer);
+    } catch (error) {
+      console.error("Export downloads error:", error);
+      res.status(500).json({ error: "Failed to export download analytics" });
+    }
+  });
+
   // Validate access code endpoint (for frontend validation)
   app.post("/api/content/:contentId/validate-access-code", async (req, res) => {
     try {
