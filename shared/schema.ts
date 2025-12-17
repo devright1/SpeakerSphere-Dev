@@ -43,6 +43,7 @@ export const speakers = pgTable("speakers", {
   facebookHandle: text("facebook_handle"),
   xHandle: text("x_handle"),
   linkedinHandle: text("linkedin_handle"),
+  tiktokHandle: text("tiktok_handle"),
   languages: text("languages").array().notNull(),
   medicalSpecialties: text("medical_specialties").array(),
   speakerType: text("speaker_type").notNull(), // "keynote", "clinical", "research", "educational"

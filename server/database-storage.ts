@@ -1417,6 +1417,7 @@ export class DatabaseStorage implements IStorage {
       facebook: socialClicksData.filter(p => p === 'facebook').length,
       x: socialClicksData.filter(p => p === 'x' || p === 'twitter').length,
       linkedin: socialClicksData.filter(p => p === 'linkedin').length,
+      tiktok: socialClicksData.filter(p => p === 'tiktok').length,
     };
 
     // Get discovery sources - parse from metadata JSON

@@ -258,7 +258,8 @@ export default function SpeakerDashboard() {
       instagram: 0,
       facebook: 0,
       x: 0,
-      linkedin: 0
+      linkedin: 0,
+      tiktok: 0
     },
     interactionsOverTime: [],
     peakActivityByDay: [0, 0, 0, 0, 0, 0, 0],
@@ -801,6 +802,7 @@ export default function SpeakerDashboard() {
       delete formData.linkedinHandle;
       delete formData.facebookHandle;
       delete formData.xHandle;
+      delete formData.tiktokHandle;
     }
     
     updateProfileMutation.mutate(formData);
@@ -1429,6 +1431,49 @@ export default function SpeakerDashboard() {
                                     {speakerProfile.xHandle}
                                   </a>
                                 ) : speakerProfile.xHandle
+                              ) : 'Not provided'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* TikTok Field */}
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <Label htmlFor="tiktokHandle" className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'text-gray-400' : ''}>
+                            TikTok Profile Link
+                            {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && <Lock className="h-3 w-3 inline ml-1" />}
+                          </Label>
+                          {isEditing && (speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
+                            <Input
+                              id="tiktokHandle"
+                              value={editForm.tiktokHandle || ''}
+                              onChange={(e) => setEditForm({...editForm, tiktokHandle: e.target.value})}
+                              placeholder="https://tiktok.com/@yourprofile"
+                              data-testid="input-tiktok-handle"
+                            />
+                          ) : (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? (
+                            <Input
+                              id="tiktokHandle"
+                              value=""
+                              placeholder="Upgrade to Premier to add"
+                              disabled
+                              className="opacity-50 cursor-not-allowed"
+                              onClick={() => toast({
+                                title: "Premier Feature",
+                                description: "Social media links are available on the Premier plan. Upgrade to showcase your social profiles.",
+                                variant: "default"
+                              })}
+                              data-testid="input-tiktok-handle-locked"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium">
+                              {speakerProfile?.tiktokHandle ? (
+                                speakerProfile.tiktokHandle.includes('tiktok.com') ? (
+                                  <a href={speakerProfile.tiktokHandle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    {speakerProfile.tiktokHandle}
+                                  </a>
+                                ) : speakerProfile.tiktokHandle
                               ) : 'Not provided'}
                             </p>
                           )}
@@ -2172,6 +2217,15 @@ export default function SpeakerDashboard() {
                             <span className="font-medium">LinkedIn</span>
                           </div>
                           <span className="text-lg font-bold">{userStats?.socialClicksByPlatform?.linkedin || 0}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center border border-gray-700">
+                              <span className="text-white text-xs font-bold">TT</span>
+                            </div>
+                            <span className="font-medium text-white">TikTok</span>
+                          </div>
+                          <span className="text-lg font-bold text-white">{userStats?.socialClicksByPlatform?.tiktok || 0}</span>
                         </div>
                       </div>
                     </CardContent>
