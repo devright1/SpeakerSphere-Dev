@@ -520,7 +520,7 @@ export default function SpeakerDashboard() {
     cancelAtPeriodEnd: boolean;
     cancelledAt: Date | null;
   }>({
-    queryKey: ["/api/subscriptions/status"],
+    queryKey: ["/api/subscriptions/status", speakerProfile?.id],
     enabled: !!speakerProfile?.id,
   });
 
