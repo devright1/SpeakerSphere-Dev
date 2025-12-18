@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,8 +59,112 @@ import {
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { QRCodeSVG } from 'qrcode.react';
+import QRCodeStyling from 'qr-code-styling';
 import devRightLogo from '@assets/DevRight_icon_-_White_1766077629209.png';
+
+// Styled QR Code Component with circular dots
+function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc: string; speakerName?: string }) {
+  const qrRef = useRef<HTMLDivElement>(null);
+  const qrCodeRef = useRef<QRCodeStyling | null>(null);
+
+  useEffect(() => {
+    if (!qrCodeRef.current) {
+      qrCodeRef.current = new QRCodeStyling({
+        width: 180,
+        height: 180,
+        type: 'svg',
+        data: value,
+        image: logoSrc,
+        dotsOptions: {
+          color: '#0f172a',
+          type: 'dots' // Circular dots instead of squares
+        },
+        cornersSquareOptions: {
+          color: '#0f172a',
+          type: 'extra-rounded'
+        },
+        cornersDotOptions: {
+          color: '#1e293b',
+          type: 'dot'
+        },
+        backgroundOptions: {
+          color: '#f8fafc',
+        },
+        imageOptions: {
+          crossOrigin: 'anonymous',
+          margin: 8,
+          imageSize: 0.4
+        }
+      });
+    }
+    
+    if (qrRef.current && qrRef.current.childNodes.length === 0) {
+      qrCodeRef.current.append(qrRef.current);
+    }
+  }, [value, logoSrc]);
+
+  useEffect(() => {
+    if (qrCodeRef.current) {
+      qrCodeRef.current.update({ data: value });
+    }
+  }, [value]);
+
+  const handleDownload = async () => {
+    // Create high-resolution QR for download
+    const downloadQR = new QRCodeStyling({
+      width: 1024,
+      height: 1024,
+      type: 'canvas',
+      data: value,
+      image: logoSrc,
+      dotsOptions: {
+        color: '#0f172a',
+        type: 'dots'
+      },
+      cornersSquareOptions: {
+        color: '#0f172a',
+        type: 'extra-rounded'
+      },
+      cornersDotOptions: {
+        color: '#1e293b',
+        type: 'dot'
+      },
+      backgroundOptions: {
+        color: '#f8fafc',
+      },
+      imageOptions: {
+        crossOrigin: 'anonymous',
+        margin: 20,
+        imageSize: 0.4
+      }
+    });
+    
+    downloadQR.download({
+      name: `${speakerName?.replace(/\s+/g, '-') || 'speaker'}-qr-code`,
+      extension: 'png'
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div 
+        className="flex justify-center p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border shadow-sm" 
+        data-testid="qr-code-container"
+      >
+        <div ref={qrRef} />
+      </div>
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={handleDownload}
+        data-testid="button-download-qr"
+      >
+        <Download className="h-4 w-4 mr-2" />
+        Download QR Code
+      </Button>
+    </div>
+  );
+}
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
@@ -1906,143 +2010,14 @@ export default function SpeakerDashboard() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="flex justify-center p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border shadow-sm" data-testid="qr-code-container">
-                        <div className="relative">
-                          <QRCodeSVG
-                            id="speaker-qr-code"
-                            value={`https://thespeakersphere.com/speakers/${speakerProfile.slug}`}
-                            size={160}
-                            level="H"
-                            includeMargin={true}
-                            fgColor="#0f172a"
-                            bgColor="#f8fafc"
-                          />
-                          {/* Centered logo overlay with dark circular background */}
-                          <div 
-                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shadow-md"
-                          >
-                            <img 
-                              src={devRightLogo} 
-                              alt="DevRight" 
-                              className="w-7 h-auto object-contain"
-                            />
-                          </div>
-                        </div>
-                      </div>
+                      <StyledQRCode 
+                        value={`https://thespeakersphere.com/speakers/${speakerProfile.slug}`}
+                        logoSrc={devRightLogo}
+                        speakerName={speakerProfile.name}
+                      />
                       <p className="text-xs text-center text-gray-500" data-testid="text-qr-description">
                         Scan to view your public speaker profile
                       </p>
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={async () => {
-                          const exportSize = 1024; // High resolution for crisp output
-                          const qrValue = `https://thespeakersphere.com/speakers/${speakerProfile.slug}`;
-                          
-                          // Create a temporary high-resolution QR code
-                          const tempContainer = document.createElement('div');
-                          tempContainer.style.position = 'absolute';
-                          tempContainer.style.left = '-9999px';
-                          document.body.appendChild(tempContainer);
-                          
-                          // Use dynamic import to create high-res QR
-                          const { createRoot } = await import('react-dom/client');
-                          const { QRCodeSVG } = await import('qrcode.react');
-                          const { createElement } = await import('react');
-                          
-                          const root = createRoot(tempContainer);
-                          root.render(
-                            createElement(QRCodeSVG, {
-                              id: 'high-res-qr',
-                              value: qrValue,
-                              size: exportSize,
-                              level: 'H',
-                              includeMargin: true,
-                              fgColor: '#0f172a',
-                              bgColor: '#f8fafc'
-                            })
-                          );
-                          
-                          // Wait for render
-                          await new Promise(resolve => setTimeout(resolve, 100));
-                          
-                          const svg = document.getElementById('high-res-qr');
-                          if (svg) {
-                            const svgData = new XMLSerializer().serializeToString(svg);
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            const qrImg = new window.Image();
-                            
-                            qrImg.onload = async () => {
-                              canvas.width = exportSize;
-                              canvas.height = exportSize;
-                              ctx?.drawImage(qrImg, 0, 0);
-                              
-                              // Draw the logo circle overlay
-                              const logoImg = new window.Image();
-                              logoImg.crossOrigin = 'anonymous';
-                              
-                              logoImg.onload = () => {
-                                if (ctx) {
-                                  const centerX = exportSize / 2;
-                                  const centerY = exportSize / 2;
-                                  const circleRadius = exportSize * 0.12; // ~12% of QR size
-                                  
-                                  // Draw dark circular background
-                                  ctx.beginPath();
-                                  ctx.arc(centerX, centerY, circleRadius, 0, Math.PI * 2);
-                                  ctx.fillStyle = '#1e293b';
-                                  ctx.fill();
-                                  
-                                  // Calculate logo dimensions preserving aspect ratio
-                                  const aspect = logoImg.naturalWidth / logoImg.naturalHeight;
-                                  const maxLogoSize = circleRadius * 1.4; // Fit within circle
-                                  let logoWidth, logoHeight;
-                                  
-                                  if (aspect >= 1) {
-                                    // Logo is wider than tall
-                                    logoWidth = maxLogoSize;
-                                    logoHeight = maxLogoSize / aspect;
-                                  } else {
-                                    // Logo is taller than wide
-                                    logoHeight = maxLogoSize;
-                                    logoWidth = maxLogoSize * aspect;
-                                  }
-                                  
-                                  // Enable high quality image rendering
-                                  ctx.imageSmoothingEnabled = true;
-                                  ctx.imageSmoothingQuality = 'high';
-                                  
-                                  // Draw the logo centered in the circle
-                                  ctx.drawImage(
-                                    logoImg, 
-                                    centerX - logoWidth / 2, 
-                                    centerY - logoHeight / 2, 
-                                    logoWidth, 
-                                    logoHeight
-                                  );
-                                  
-                                  const pngFile = canvas.toDataURL('image/png');
-                                  const downloadLink = document.createElement('a');
-                                  downloadLink.download = `${speakerProfile.name?.replace(/\s+/g, '-') || 'speaker'}-qr-code.png`;
-                                  downloadLink.href = pngFile;
-                                  downloadLink.click();
-                                  
-                                  // Cleanup
-                                  root.unmount();
-                                  document.body.removeChild(tempContainer);
-                                }
-                              };
-                              logoImg.src = devRightLogo;
-                            };
-                            qrImg.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-                          }
-                        }}
-                        data-testid="button-download-qr"
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download QR Code
-                      </Button>
                     </CardContent>
                   </Card>
                 )}
