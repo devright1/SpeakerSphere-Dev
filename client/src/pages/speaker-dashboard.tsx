@@ -60,6 +60,7 @@ import {
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { QRCodeSVG } from 'qrcode.react';
+import devRightLogo from '@assets/DevRight_icon_-_White_1766077629209.png';
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
@@ -1912,6 +1913,14 @@ export default function SpeakerDashboard() {
                           size={150}
                           level="H"
                           includeMargin={true}
+                          imageSettings={{
+                            src: devRightLogo,
+                            x: undefined,
+                            y: undefined,
+                            height: 30,
+                            width: 30,
+                            excavate: true,
+                          }}
                         />
                       </div>
                       <p className="text-xs text-center text-gray-500" data-testid="text-qr-description">
