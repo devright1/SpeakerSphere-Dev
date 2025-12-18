@@ -60,7 +60,7 @@ import {
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import QRCodeStyling from 'qr-code-styling';
-import devRightLogo from '@assets/DevRight_icon_-_White_1766077629209.png';
+import devRightLogo from '@assets/DevRight_icon_-_Black_1766077810725.png';
 
 // Styled QR Code Component with circular dots
 function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc: string; speakerName?: string }) {
@@ -76,15 +76,15 @@ function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc:
         data: value,
         image: logoSrc,
         dotsOptions: {
-          color: '#0f172a',
+          color: '#1e4347',
           type: 'dots' // Circular dots instead of squares
         },
         cornersSquareOptions: {
-          color: '#0f172a',
+          color: '#1e4347',
           type: 'extra-rounded'
         },
         cornersDotOptions: {
-          color: '#1e293b',
+          color: '#1e4347',
           type: 'dot'
         },
         backgroundOptions: {
@@ -118,15 +118,15 @@ function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc:
       data: value,
       image: logoSrc,
       dotsOptions: {
-        color: '#0f172a',
+        color: '#1e4347',
         type: 'dots'
       },
       cornersSquareOptions: {
-        color: '#0f172a',
+        color: '#1e4347',
         type: 'extra-rounded'
       },
       cornersDotOptions: {
-        color: '#1e293b',
+        color: '#1e4347',
         type: 'dot'
       },
       backgroundOptions: {
