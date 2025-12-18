@@ -60,7 +60,7 @@ import {
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { QRCodeSVG } from 'qrcode.react';
-import devRightLogo from '@assets/DevRight_icon_-_Black_1766077810725.png';
+import devRightLogo from '@assets/DevRight_icon_-_White_1766077629209.png';
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
@@ -1906,22 +1906,29 @@ export default function SpeakerDashboard() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="flex justify-center p-4 bg-white rounded-lg border" data-testid="qr-code-container">
-                        <QRCodeSVG
-                          id="speaker-qr-code"
-                          value={`https://thespeakersphere.com/speakers/${speakerProfile.slug}`}
-                          size={150}
-                          level="H"
-                          includeMargin={true}
-                          imageSettings={{
-                            src: devRightLogo,
-                            x: undefined,
-                            y: undefined,
-                            height: 30,
-                            width: 30,
-                            excavate: true,
-                          }}
-                        />
+                      <div className="flex justify-center p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border shadow-sm" data-testid="qr-code-container">
+                        <div className="relative">
+                          <QRCodeSVG
+                            id="speaker-qr-code"
+                            value={`https://thespeakersphere.com/speakers/${speakerProfile.slug}`}
+                            size={160}
+                            level="H"
+                            includeMargin={true}
+                            fgColor="#0f172a"
+                            bgColor="#f8fafc"
+                          />
+                          {/* Centered logo overlay with dark circular background */}
+                          <div 
+                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shadow-md"
+                            style={{ padding: '6px' }}
+                          >
+                            <img 
+                              src={devRightLogo} 
+                              alt="DevRight" 
+                              className="w-6 h-6 object-contain"
+                            />
+                          </div>
+                        </div>
                       </div>
                       <p className="text-xs text-center text-gray-500" data-testid="text-qr-description">
                         Scan to view your public speaker profile
@@ -1932,45 +1939,52 @@ export default function SpeakerDashboard() {
                         onClick={async () => {
                           const svg = document.getElementById('speaker-qr-code');
                           if (svg) {
-                            // First, convert any embedded images to base64
-                            const svgClone = svg.cloneNode(true) as SVGElement;
-                            const images = svgClone.querySelectorAll('image');
-                            
-                            // Convert all embedded images to base64
-                            await Promise.all(Array.from(images).map(async (imgEl) => {
-                              const href = imgEl.getAttribute('href') || imgEl.getAttribute('xlink:href');
-                              if (href && !href.startsWith('data:')) {
-                                try {
-                                  const response = await fetch(href);
-                                  const blob = await response.blob();
-                                  const base64 = await new Promise<string>((resolve) => {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => resolve(reader.result as string);
-                                    reader.readAsDataURL(blob);
-                                  });
-                                  imgEl.setAttribute('href', base64);
-                                  imgEl.removeAttribute('xlink:href');
-                                } catch (e) {
-                                  console.error('Failed to convert image:', e);
-                                }
-                              }
-                            }));
-
-                            const svgData = new XMLSerializer().serializeToString(svgClone);
+                            const svgData = new XMLSerializer().serializeToString(svg);
                             const canvas = document.createElement('canvas');
                             const ctx = canvas.getContext('2d');
-                            const img = new window.Image();
-                            img.onload = () => {
-                              canvas.width = img.width;
-                              canvas.height = img.height;
-                              ctx?.drawImage(img, 0, 0);
-                              const pngFile = canvas.toDataURL('image/png');
-                              const downloadLink = document.createElement('a');
-                              downloadLink.download = `${speakerProfile.name?.replace(/\s+/g, '-') || 'speaker'}-qr-code.png`;
-                              downloadLink.href = pngFile;
-                              downloadLink.click();
+                            const qrImg = new window.Image();
+                            
+                            qrImg.onload = async () => {
+                              canvas.width = qrImg.width;
+                              canvas.height = qrImg.height;
+                              ctx?.drawImage(qrImg, 0, 0);
+                              
+                              // Draw the logo circle overlay
+                              const logoImg = new window.Image();
+                              logoImg.crossOrigin = 'anonymous';
+                              
+                              logoImg.onload = () => {
+                                if (ctx) {
+                                  const centerX = canvas.width / 2;
+                                  const centerY = canvas.height / 2;
+                                  const circleRadius = 20;
+                                  
+                                  // Draw dark circular background
+                                  ctx.beginPath();
+                                  ctx.arc(centerX, centerY, circleRadius, 0, Math.PI * 2);
+                                  ctx.fillStyle = '#1e293b';
+                                  ctx.fill();
+                                  
+                                  // Draw the logo centered in the circle
+                                  const logoSize = 24;
+                                  ctx.drawImage(
+                                    logoImg, 
+                                    centerX - logoSize / 2, 
+                                    centerY - logoSize / 2, 
+                                    logoSize, 
+                                    logoSize
+                                  );
+                                  
+                                  const pngFile = canvas.toDataURL('image/png');
+                                  const downloadLink = document.createElement('a');
+                                  downloadLink.download = `${speakerProfile.name?.replace(/\s+/g, '-') || 'speaker'}-qr-code.png`;
+                                  downloadLink.href = pngFile;
+                                  downloadLink.click();
+                                }
+                              };
+                              logoImg.src = devRightLogo;
                             };
-                            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                            qrImg.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
                           }
                         }}
                         data-testid="button-download-qr"
