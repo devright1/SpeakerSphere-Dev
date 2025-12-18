@@ -1920,12 +1920,11 @@ export default function SpeakerDashboard() {
                           {/* Centered logo overlay with dark circular background */}
                           <div 
                             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shadow-md"
-                            style={{ padding: '6px' }}
                           >
                             <img 
                               src={devRightLogo} 
                               alt="DevRight" 
-                              className="w-6 h-6 object-contain"
+                              className="w-7 h-auto object-contain"
                             />
                           </div>
                         </div>
@@ -1995,14 +1994,32 @@ export default function SpeakerDashboard() {
                                   ctx.fillStyle = '#1e293b';
                                   ctx.fill();
                                   
+                                  // Calculate logo dimensions preserving aspect ratio
+                                  const aspect = logoImg.naturalWidth / logoImg.naturalHeight;
+                                  const maxLogoSize = circleRadius * 1.4; // Fit within circle
+                                  let logoWidth, logoHeight;
+                                  
+                                  if (aspect >= 1) {
+                                    // Logo is wider than tall
+                                    logoWidth = maxLogoSize;
+                                    logoHeight = maxLogoSize / aspect;
+                                  } else {
+                                    // Logo is taller than wide
+                                    logoHeight = maxLogoSize;
+                                    logoWidth = maxLogoSize * aspect;
+                                  }
+                                  
+                                  // Enable high quality image rendering
+                                  ctx.imageSmoothingEnabled = true;
+                                  ctx.imageSmoothingQuality = 'high';
+                                  
                                   // Draw the logo centered in the circle
-                                  const logoSize = exportSize * 0.15; // ~15% of QR size
                                   ctx.drawImage(
                                     logoImg, 
-                                    centerX - logoSize / 2, 
-                                    centerY - logoSize / 2, 
-                                    logoSize, 
-                                    logoSize
+                                    centerX - logoWidth / 2, 
+                                    centerY - logoHeight / 2, 
+                                    logoWidth, 
+                                    logoHeight
                                   );
                                   
                                   const pngFile = canvas.toDataURL('image/png');
