@@ -1937,12 +1937,38 @@ export default function SpeakerDashboard() {
                         variant="outline"
                         className="w-full"
                         onClick={async () => {
-                          const svg = document.getElementById('speaker-qr-code');
+                          const exportSize = 1024; // High resolution for crisp output
+                          const qrValue = `https://thespeakersphere.com/speakers/${speakerProfile.slug}`;
+                          
+                          // Create a temporary high-resolution QR code
+                          const tempContainer = document.createElement('div');
+                          tempContainer.style.position = 'absolute';
+                          tempContainer.style.left = '-9999px';
+                          document.body.appendChild(tempContainer);
+                          
+                          // Use dynamic import to create high-res QR
+                          const { createRoot } = await import('react-dom/client');
+                          const { QRCodeSVG } = await import('qrcode.react');
+                          const { createElement } = await import('react');
+                          
+                          const root = createRoot(tempContainer);
+                          root.render(
+                            createElement(QRCodeSVG, {
+                              id: 'high-res-qr',
+                              value: qrValue,
+                              size: exportSize,
+                              level: 'H',
+                              includeMargin: true,
+                              fgColor: '#0f172a',
+                              bgColor: '#f8fafc'
+                            })
+                          );
+                          
+                          // Wait for render
+                          await new Promise(resolve => setTimeout(resolve, 100));
+                          
+                          const svg = document.getElementById('high-res-qr');
                           if (svg) {
-                            const scale = 3; // 3x resolution for crisp printing/scanning
-                            const baseSize = 160;
-                            const exportSize = baseSize * scale;
-                            
                             const svgData = new XMLSerializer().serializeToString(svg);
                             const canvas = document.createElement('canvas');
                             const ctx = canvas.getContext('2d');
@@ -1951,26 +1977,17 @@ export default function SpeakerDashboard() {
                             qrImg.onload = async () => {
                               canvas.width = exportSize;
                               canvas.height = exportSize;
+                              ctx?.drawImage(qrImg, 0, 0);
                               
-                              // Disable smoothing for crisp QR edges
-                              if (ctx) {
-                                ctx.imageSmoothingEnabled = false;
-                              }
-                              
-                              ctx?.drawImage(qrImg, 0, 0, exportSize, exportSize);
-                              
-                              // Draw the logo circle overlay (scaled)
+                              // Draw the logo circle overlay
                               const logoImg = new window.Image();
                               logoImg.crossOrigin = 'anonymous';
                               
                               logoImg.onload = () => {
                                 if (ctx) {
-                                  // Re-enable smoothing for the logo
-                                  ctx.imageSmoothingEnabled = true;
-                                  
                                   const centerX = exportSize / 2;
                                   const centerY = exportSize / 2;
-                                  const circleRadius = 20 * scale;
+                                  const circleRadius = exportSize * 0.12; // ~12% of QR size
                                   
                                   // Draw dark circular background
                                   ctx.beginPath();
@@ -1979,7 +1996,7 @@ export default function SpeakerDashboard() {
                                   ctx.fill();
                                   
                                   // Draw the logo centered in the circle
-                                  const logoSize = 24 * scale;
+                                  const logoSize = exportSize * 0.15; // ~15% of QR size
                                   ctx.drawImage(
                                     logoImg, 
                                     centerX - logoSize / 2, 
@@ -1993,6 +2010,10 @@ export default function SpeakerDashboard() {
                                   downloadLink.download = `${speakerProfile.name?.replace(/\s+/g, '-') || 'speaker'}-qr-code.png`;
                                   downloadLink.href = pngFile;
                                   downloadLink.click();
+                                  
+                                  // Cleanup
+                                  root.unmount();
+                                  document.body.removeChild(tempContainer);
                                 }
                               };
                               logoImg.src = devRightLogo;
