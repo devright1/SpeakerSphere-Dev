@@ -1908,7 +1908,7 @@ export default function SpeakerDashboard() {
                       <div className="flex justify-center p-4 bg-white rounded-lg border" data-testid="qr-code-container">
                         <QRCodeSVG
                           id="speaker-qr-code"
-                          value={`${window.location.origin}/speakers/${speakerProfile.slug}`}
+                          value={`https://thespeakersphere.com/speakers/${speakerProfile.slug}`}
                           size={150}
                           level="H"
                           includeMargin={true}
