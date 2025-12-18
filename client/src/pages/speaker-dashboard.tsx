@@ -1939,25 +1939,38 @@ export default function SpeakerDashboard() {
                         onClick={async () => {
                           const svg = document.getElementById('speaker-qr-code');
                           if (svg) {
+                            const scale = 3; // 3x resolution for crisp printing/scanning
+                            const baseSize = 160;
+                            const exportSize = baseSize * scale;
+                            
                             const svgData = new XMLSerializer().serializeToString(svg);
                             const canvas = document.createElement('canvas');
                             const ctx = canvas.getContext('2d');
                             const qrImg = new window.Image();
                             
                             qrImg.onload = async () => {
-                              canvas.width = qrImg.width;
-                              canvas.height = qrImg.height;
-                              ctx?.drawImage(qrImg, 0, 0);
+                              canvas.width = exportSize;
+                              canvas.height = exportSize;
                               
-                              // Draw the logo circle overlay
+                              // Disable smoothing for crisp QR edges
+                              if (ctx) {
+                                ctx.imageSmoothingEnabled = false;
+                              }
+                              
+                              ctx?.drawImage(qrImg, 0, 0, exportSize, exportSize);
+                              
+                              // Draw the logo circle overlay (scaled)
                               const logoImg = new window.Image();
                               logoImg.crossOrigin = 'anonymous';
                               
                               logoImg.onload = () => {
                                 if (ctx) {
-                                  const centerX = canvas.width / 2;
-                                  const centerY = canvas.height / 2;
-                                  const circleRadius = 20;
+                                  // Re-enable smoothing for the logo
+                                  ctx.imageSmoothingEnabled = true;
+                                  
+                                  const centerX = exportSize / 2;
+                                  const centerY = exportSize / 2;
+                                  const circleRadius = 20 * scale;
                                   
                                   // Draw dark circular background
                                   ctx.beginPath();
@@ -1966,7 +1979,7 @@ export default function SpeakerDashboard() {
                                   ctx.fill();
                                   
                                   // Draw the logo centered in the circle
-                                  const logoSize = 24;
+                                  const logoSize = 24 * scale;
                                   ctx.drawImage(
                                     logoImg, 
                                     centerX - logoSize / 2, 
