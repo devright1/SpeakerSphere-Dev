@@ -75,9 +75,13 @@ function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc:
         type: 'svg',
         data: value,
         image: logoSrc,
+        margin: 10,
+        qrOptions: {
+          errorCorrectionLevel: 'H' // High error correction for better scanning
+        },
         dotsOptions: {
           color: '#1e4347',
-          type: 'dots' // Circular dots instead of squares
+          type: 'rounded' // Rounded squares - scannable and looks nice
         },
         cornersSquareOptions: {
           color: '#1e4347',
@@ -88,12 +92,13 @@ function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc:
           type: 'dot'
         },
         backgroundOptions: {
-          color: '#f8fafc',
+          color: '#ffffff',
         },
         imageOptions: {
           crossOrigin: 'anonymous',
           margin: 8,
-          imageSize: 0.4
+          imageSize: 0.3,
+          hideBackgroundDots: true
         }
       });
     }
@@ -117,9 +122,13 @@ function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc:
       type: 'canvas',
       data: value,
       image: logoSrc,
+      margin: 40,
+      qrOptions: {
+        errorCorrectionLevel: 'H' // High error correction for better scanning
+      },
       dotsOptions: {
         color: '#1e4347',
-        type: 'dots'
+        type: 'rounded' // Rounded squares - scannable and looks nice
       },
       cornersSquareOptions: {
         color: '#1e4347',
@@ -130,12 +139,13 @@ function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc:
         type: 'dot'
       },
       backgroundOptions: {
-        color: '#f8fafc',
+        color: '#ffffff',
       },
       imageOptions: {
         crossOrigin: 'anonymous',
         margin: 20,
-        imageSize: 0.4
+        imageSize: 0.3,
+        hideBackgroundDots: true
       }
     });
     
