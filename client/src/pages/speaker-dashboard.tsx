@@ -1929,10 +1929,34 @@ export default function SpeakerDashboard() {
                       <Button
                         variant="outline"
                         className="w-full"
-                        onClick={() => {
+                        onClick={async () => {
                           const svg = document.getElementById('speaker-qr-code');
                           if (svg) {
-                            const svgData = new XMLSerializer().serializeToString(svg);
+                            // First, convert any embedded images to base64
+                            const svgClone = svg.cloneNode(true) as SVGElement;
+                            const images = svgClone.querySelectorAll('image');
+                            
+                            // Convert all embedded images to base64
+                            await Promise.all(Array.from(images).map(async (imgEl) => {
+                              const href = imgEl.getAttribute('href') || imgEl.getAttribute('xlink:href');
+                              if (href && !href.startsWith('data:')) {
+                                try {
+                                  const response = await fetch(href);
+                                  const blob = await response.blob();
+                                  const base64 = await new Promise<string>((resolve) => {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => resolve(reader.result as string);
+                                    reader.readAsDataURL(blob);
+                                  });
+                                  imgEl.setAttribute('href', base64);
+                                  imgEl.removeAttribute('xlink:href');
+                                } catch (e) {
+                                  console.error('Failed to convert image:', e);
+                                }
+                              }
+                            }));
+
+                            const svgData = new XMLSerializer().serializeToString(svgClone);
                             const canvas = document.createElement('canvas');
                             const ctx = canvas.getContext('2d');
                             const img = new window.Image();
