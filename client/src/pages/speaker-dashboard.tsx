@@ -60,7 +60,7 @@ import {
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { QRCodeSVG } from 'qrcode.react';
-import devRightLogo from '@assets/DevRight_icon_-_White_1766077629209.png';
+import devRightLogo from '@assets/DevRight_icon_-_Black_1766077810725.png';
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
