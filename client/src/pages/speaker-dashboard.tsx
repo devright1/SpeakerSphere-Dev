@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
@@ -1891,6 +1892,62 @@ export default function SpeakerDashboard() {
                   </CardContent>
                 </Card>
 
+                {/* QR Code - Premier Only */}
+                {isPremier && speakerProfile?.slug && (
+                  <Card data-testid="card-qr-code">
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Share2 className="h-5 w-5 mr-2" />
+                        Profile QR Code
+                      </CardTitle>
+                      <CardDescription>
+                        Share your profile instantly
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-center p-4 bg-white rounded-lg border" data-testid="qr-code-container">
+                        <QRCodeSVG
+                          id="speaker-qr-code"
+                          value={`${window.location.origin}/speakers/${speakerProfile.slug}`}
+                          size={150}
+                          level="H"
+                          includeMargin={true}
+                        />
+                      </div>
+                      <p className="text-xs text-center text-gray-500" data-testid="text-qr-description">
+                        Scan to view your public speaker profile
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          const svg = document.getElementById('speaker-qr-code');
+                          if (svg) {
+                            const svgData = new XMLSerializer().serializeToString(svg);
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const img = new Image();
+                            img.onload = () => {
+                              canvas.width = img.width;
+                              canvas.height = img.height;
+                              ctx?.drawImage(img, 0, 0);
+                              const pngFile = canvas.toDataURL('image/png');
+                              const downloadLink = document.createElement('a');
+                              downloadLink.download = `${speakerProfile.name?.replace(/\s+/g, '-') || 'speaker'}-qr-code.png`;
+                              downloadLink.href = pngFile;
+                              downloadLink.click();
+                            };
+                            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                          }
+                        }}
+                        data-testid="button-download-qr"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download QR Code
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Languages */}
                 {speakerProfile.languages && speakerProfile.languages.length > 0 && (
