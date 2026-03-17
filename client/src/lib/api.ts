@@ -5,8 +5,8 @@ export async function fetchSpeakers(filters?: any) {
   
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "") {
-        params.append(key, value.toString());
+      if (value !== undefined && value !== null && value !== "") {
+        params.append(key, (value as string | number | boolean).toString());
       }
     });
   }

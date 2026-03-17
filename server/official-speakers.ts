@@ -1,6 +1,4 @@
-import { Speaker } from "@shared/schema";
-
-export const officialSpeakers: Omit<Speaker, "id">[] = [
+export const officialSpeakers: any[] = [
   // Full Arch Forum Speakers
   {
     name: "Dr. Waldemar Polido",
@@ -14,7 +12,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Waldemar-Polido.png",
     verified: true,
     featured: true,
-    category: "Oral Surgery",
     achievements: [
       "Zygomatic Implant Specialist",
       "Complex Maxillofacial Reconstruction Expert",
@@ -52,7 +49,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Will-Martin.png",
     verified: true,
     featured: true,
-    category: "Prosthodontics",
     achievements: [
       "Team-Based Implant Workflow Expert",
       "Full Arch Rehabilitation Specialist",
@@ -90,7 +86,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Kostas-Chochlidakis.png",
     verified: true,
     featured: true,
-    category: "Prosthodontics",
     achievements: [
       "Full Arch Treatment Planning Expert",
       "Decision Matrix Protocol Specialist",
@@ -128,7 +123,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Edmond-Bedrossian.png",
     verified: true,
     featured: true,
-    category: "Oral Surgery",
     achievements: [
       "Full Arch Implant Rehabilitation Pioneer",
       "Immediate Loading Protocol Expert",
@@ -166,7 +160,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Ghida-Lawand.png",
     verified: true,
     featured: true,
-    category: "Digital Dentistry",
     achievements: [
       "AI-Powered Implant Rehabilitation Pioneer",
       "Digital Smile Design Expert",
@@ -204,7 +197,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Wael-Att.png",
     verified: true,
     featured: false,
-    category: "Prosthodontics",
     achievements: [
       "Contemporary Workflow Specialist",
       "Dentofacial Rehabilitation Expert",
@@ -242,7 +234,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Phil-Walton.png",
     verified: true,
     featured: false,
-    category: "Digital Dentistry",
     achievements: [
       "Digital Implant Workflow Expert",
       "Guided Surgery Specialist",
@@ -280,7 +271,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Sam-Bakuri.png",
     verified: true,
     featured: false,
-    category: "Practice Management",
     achievements: [
       "Practice Management Expert",
       "Marketing Strategy Specialist",
@@ -318,7 +308,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Edgard-El-Chaar.png",
     verified: true,
     featured: false,
-    category: "Implant Dentistry",
     achievements: [
       "Immediate Implant Placement Expert",
       "Business Aspects Specialist",
@@ -356,7 +345,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/Jason_Coss_square_white.png",
     verified: true,
     featured: false,
-    category: "Event Management",
     achievements: [
       "Straumann Full Arch Forum Coordinator",
       "Professional Event Moderator",
@@ -394,7 +382,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Mark-Schlam.png",
     verified: true,
     featured: false,
-    category: "Oral Surgery",
     achievements: [
       "Expert Oral Surgeon",
       "Implant Dentistry Specialist",
@@ -432,7 +419,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Leavitt.png",
     verified: true,
     featured: false,
-    category: "Periodontics",
     achievements: [
       "Board-Certified Periodontist",
       "Implant Surgery Specialist",
@@ -470,7 +456,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Kimberly-Schlam.png",
     verified: true,
     featured: false,
-    category: "Esthetic Dentistry",
     achievements: [
       "Technology Integration Expert",
       "Digital Workflow Specialist",
@@ -508,7 +493,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/straumann_speakers/FAF-Papaspyridakos.png",
     verified: true,
     featured: true,
-    category: "Prosthodontics",
     achievements: [
       "Distinguished Prosthodontist",
       "Implant Specialist",
@@ -548,7 +532,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/Speaker_Portrait_Armand_Bedrossian_1751049915286.png",
     verified: true,
     featured: false,
-    category: "Digital Dentistry",
     achievements: [
       "Digital Technology Expert",
       "Full Arch Implant Therapy Specialist",
@@ -586,7 +569,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/1643679947954%20(1)_1751387734753.jpg",
     verified: true,
     featured: false,
-    category: "Implant Dentistry",
     achievements: [
       "Implant Dentistry Researcher",
       "Contemporary Techniques Specialist",
@@ -624,7 +606,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "https://dev-right-conference-devright.replit.app/attached_assets/1739552984891_1751050055872.jpg",
     verified: true,
     featured: false,
-    category: "Implant Dentistry",
     achievements: [
       "Contemporary Implant Dentistry Expert",
       "Innovation Leader",
@@ -664,7 +645,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606604465.png",
     verified: true,
     featured: true,
-    category: "Periodontics",
     achievements: [
       "Board-Certified Periodontist",
       "Diplomate of the American Board of Periodontology",
@@ -702,7 +682,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607719532.png",
     verified: true,
     featured: true,
-    category: "Orthodontics",
     achievements: [
       "Dean, UNLV School of Dental Medicine",
       "Top 2% of Dentists Cited Globally (Stanford University)",
@@ -740,7 +719,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752610016008.png",
     verified: true,
     featured: false,
-    category: "Digital Dentistry",
     achievements: [
       "Co-founder of Karma.Dentistry",
       "ClearCorrect Excellence Community Member",
@@ -778,7 +756,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752611729751.png",
     verified: true,
     featured: false,
-    category: "Laser Dentistry",
     achievements: [
       "Key Opinion Leader - Biolase Lasers",
       "Global Educator - Straumann Implants",
@@ -816,7 +793,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752611912425.png",
     verified: true,
     featured: false,
-    category: "Orthodontics",
     achievements: [
       "Board-Certified Orthodontist",
       "Published Researcher in Journal of Imaging",
@@ -854,7 +830,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752608533720.png",
     verified: true,
     featured: false,
-    category: "Digital Dentistry",
     achievements: [
       "Senior DSO Program Manager - Straumann Group",
       "PhD Student in Bioengineering - UFMG",
@@ -892,7 +867,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607313957.png",
     verified: true,
     featured: false,
-    category: "Orthodontics",
     achievements: [
       "Invisalign Elite Premier Provider",
       "Century Club Member - Top 100 Invisalign Offices",
@@ -930,7 +904,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752608279514.png",
     verified: true,
     featured: false,
-    category: "Digital Dentistry",
     achievements: [
       "Board-Certified Orthodontist",
       "Leader in CE - Dentistry Today",
@@ -968,7 +941,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752611767458.png",
     verified: true,
     featured: false,
-    category: "Orthodontics",
     achievements: [
       "Valedictorian - McGill University",
       "Assistant Clinical Professor - University of Alberta",
@@ -1006,7 +978,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752605946813.png",
     verified: true,
     featured: true,
-    category: "Periodontics",
     achievements: [
       "Top 100 Clinicians in Continuing Education - Dentistry Today",
       "Lucy Hobbs Award Winner (2012)",
@@ -1044,7 +1015,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752610238423.png",
     verified: true,
     featured: false,
-    category: "Orthodontics",
     achievements: [
       "Same-Day Braces Specialist",
       "Graduated with Honors - Oregon Health & Science University",
@@ -1082,7 +1052,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752608867804.png",
     verified: true,
     featured: false,
-    category: "Digital Dentistry",
     achievements: [
       "Fellowship - MD Anderson Cancer Center",
       "Clinical Educator - Pikos Institute",
@@ -1120,7 +1089,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752526029567.png",
     verified: true,
     featured: true,
-    category: "Oral Surgery",
     achievements: [
       "Founder & Academic Chairman - gIDE Institute",
       "Past President - European Association for Osseointegration",
@@ -1158,7 +1126,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752608971887.png",
     verified: true,
     featured: true,
-    category: "Periodontics",
     achievements: [
       "Board Certified - American Board of Periodontology",
       "Chief Resident - University of Florida",
@@ -1196,7 +1163,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606054792.png",
     verified: true,
     featured: true,
-    category: "Prosthodontics",
     achievements: [
       "Past President - American Academy of Maxillofacial Prosthetics",
       "Director of Maxillofacial Prosthetics - Northwell Health",
@@ -1234,7 +1200,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607889279.png",
     verified: true,
     featured: true,
-    category: "Periodontics",
     achievements: [
       "Division Director - East Carolina University",
       "Board Certified - American Board of Periodontology",
@@ -1272,7 +1237,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752605603713.png",
     verified: true,
     featured: true,
-    category: "Periodontics",
     achievements: [
       "ITI Section Chair (2022-2024)",
       "Past President - Texas Society of Periodontists",
@@ -1310,7 +1274,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752610261448.png",
     verified: true,
     featured: true,
-    category: "Prosthodontics",
     achievements: [
       "Chair - Harvard School of Dental Medicine",
       "Fellow - International Team for Implantology",
@@ -1348,7 +1311,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606639546.png",
     verified: true,
     featured: true,
-    category: "Periodontics",
     achievements: [
       "Director - Harvard Postgraduate Periodontology",
       "120+ Published Articles, 5,500+ Citations",
@@ -1386,7 +1348,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606216917.png",
     verified: true,
     featured: true,
-    category: "Prosthodontics",
     achievements: [
       "PhD in Oral Rehabilitation - University of São Paulo",
       "426 Citations in Research Publications",
@@ -1424,7 +1385,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752605825456.png",
     verified: true,
     featured: true,
-    category: "Periodontics",
     achievements: [
       "US ITI Section Chair (2024)",
       "Fellow - International Society of Periodontal Plastic Surgeons",
@@ -1462,7 +1422,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606704921.png",
     verified: true,
     featured: true,
-    category: "Periodontics",
     achievements: [
       "Founder - Seattle Study Club",
       "Affiliate Assistant Professor - University of Washington",
@@ -1500,7 +1459,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607387469.png",
     verified: true,
     featured: true,
-    category: "Digital Dentistry",
     achievements: [
       "Founder - 3D Dentists Training Center (2013)",
       "Trained 10,000+ Dentists Globally",
@@ -1538,7 +1496,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607090186.png",
     verified: true,
     featured: true,
-    category: "Oral Surgery",
     achievements: [
       "Invited - Dental Implant Masters Summit, Mykonos",
       "Top 100 Digital Dentists Worldwide",
@@ -1576,7 +1533,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606305644.png",
     verified: true,
     featured: true,
-    category: "Prosthodontics",
     achievements: [
       "Head of New Product Development - Neodent",
       "Professor at ILAPEO",
@@ -1614,7 +1570,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607977996.png",
     verified: true,
     featured: true,
-    category: "Oral Surgery",
     achievements: [
       "Founder & CEO - Full Arch Masters",
       "Harvard School of Dental Medicine (DMD, 2006)",
@@ -1652,7 +1607,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752605565214.png",
     verified: true,
     featured: true,
-    category: "Oral Surgery",
     achievements: [
       "Clinical Assistant Professor - University of Arizona",
       "Official Team Oral Surgeon - Arizona Diamondbacks",
@@ -1690,7 +1644,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752610316654.png",
     verified: true,
     featured: false,
-    category: "Oral Surgery",
     achievements: [
       "Valedictorian - Dental College of Georgia",
       "Multi-State Educator (Licensed in 4 States)",
@@ -1728,7 +1681,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752609125344.png",
     verified: true,
     featured: false,
-    category: "Dental Technology",
     achievements: [
       "Director, Lab Services NAM - Straumann Group",
       "Multiple Achievers Awards (2015-2022)",
@@ -1766,7 +1718,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752608127526.png",
     verified: true,
     featured: false,
-    category: "Periodontics",
     achievements: [
       "Division Director of Clinical Implantology - ECU",
       "AAP Educator Award for Excellence (2021)",
@@ -1804,7 +1755,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606773045.png",
     verified: true,
     featured: false,
-    category: "Periodontics",
     achievements: [
       "Chair - Department of Periodontology, University of Rochester",
       "AAP Board Trustee, 7th District (NY & NJ)",
@@ -1842,7 +1792,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752609988409.png",
     verified: true,
     featured: false,
-    category: "General Dentistry",
     achievements: [
       "Fellow - Academy of General Dentistry (FAGD)",
       "Fellow - International Congress of Oral Implantologists",
@@ -1880,7 +1829,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607421143.png",
     verified: true,
     featured: true,
-    category: "Oral Surgery",
     achievements: [
       "CEO - Texas Implant Institute",
       "Nobel Biocare Diamond Partner",
@@ -1918,7 +1866,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607127692.png",
     verified: true,
     featured: false,
-    category: "Oral Surgery",
     achievements: [
       "Key Opinion Leader - Straumann Group",
       "First Female to Teach Full-Arch at ORCAA",
@@ -1956,7 +1903,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606343368.png",
     verified: true,
     featured: true,
-    category: "Digital Dentistry",
     achievements: [
       "Straumann Digital Excellence Center of America",
       "Diplomat - International Congress of Oral Implantologists",
@@ -1994,7 +1940,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752605852234.png",
     verified: true,
     featured: false,
-    category: "Periodontics",
     achievements: [
       "Associate Professor - Columbia University",
       "Lecturer - Harvard University School of Dental Medicine",
@@ -2032,7 +1977,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752608759822.png",
     verified: true,
     featured: false,
-    category: "Prosthodontics",
     achievements: [
       "Clinical Associate Professor - University of Florida",
       "ITI Speaker and Fellow",
@@ -2070,7 +2014,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607524525.png",
     verified: true,
     featured: false,
-    category: "Prosthodontics",
     achievements: [
       "Senior Lecturer (Oberarzt) - University of Bern",
       "Honorary Fellowship - Royal College of Surgeons Ireland",
@@ -2108,7 +2051,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606915640.png",
     verified: true,
     featured: false,
-    category: "Periodontics",
     achievements: [
       "Professor - Tufts University School of Dental Medicine",
       "Osteology Foundation Expert Council Member",
@@ -2146,7 +2088,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752611616993.png",
     verified: true,
     featured: false,
-    category: "Oral Surgery",
     achievements: [
       "Diplomate - American Board of Oral Implantology",
       "Zest Dental Solutions Advisory Board Member",
@@ -2184,7 +2125,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752612094125.png",
     verified: true,
     featured: false,
-    category: "Industry Leadership",
     achievements: [
       "VP Marketing & Education - Straumann Group",
       "Led Neodent Global Expansion (8 to 84+ Countries)",
@@ -2222,7 +2162,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607559650.png",
     verified: true,
     featured: false,
-    category: "Digital Dentistry",
     achievements: [
       "Nearly 20 Years Experience at NYC Prosthodontics",
       "Co-Manager - Full-Service On-Site Dental Lab",
@@ -2260,7 +2199,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752606458945.png",
     verified: true,
     featured: true,
-    category: "Industry Leadership",
     achievements: [
       "Executive Commercial Leader - Straumann Group North America",
       "Former VP & Chief Marketing Officer - Stryker Corporation",
@@ -2298,7 +2236,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752608215355.png",
     verified: true,
     featured: false,
-    category: "Practice Management",
     achievements: [
       "Co-Founder - Full Arch Sales Academy",
       "75% Case Acceptance Rate (vs 20-30% Industry Average)",
@@ -2336,7 +2273,6 @@ export const officialSpeakers: Omit<Speaker, "id">[] = [
     imageUrl: "/attached_assets/image_1752607181137.png",
     verified: true,
     featured: false,
-    category: "Digital Dentistry",
     achievements: [
       "Master Dental Technician - Brussels, Belgium (1994)",
       "Co-Founder & President - Beverly Hills Dental Laboratory",

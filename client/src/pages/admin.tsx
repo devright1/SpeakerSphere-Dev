@@ -5430,7 +5430,7 @@ export default function AdminDashboard() {
                     <Input
                       id="speakerName"
                       value={editingSpeaker.name || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, name: e.target.value }))}
                       placeholder="Full name"
                     />
                   </div>
@@ -5439,7 +5439,7 @@ export default function AdminDashboard() {
                     <Input
                       id="speakerTitle"
                       value={editingSpeaker.title || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, title: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, title: e.target.value }))}
                       placeholder="Professional title"
                     />
                   </div>
@@ -5449,7 +5449,7 @@ export default function AdminDashboard() {
                       id="speakerEmail"
                       type="email"
                       value={editingSpeaker.email || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, email: e.target.value }))}
                       placeholder="Email address"
                     />
                   </div>
@@ -5458,7 +5458,7 @@ export default function AdminDashboard() {
                     <Input
                       id="speakerPhone"
                       value={editingSpeaker.phone || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, phone: e.target.value }))}
                       placeholder="Phone number"
                     />
                   </div>
@@ -5467,7 +5467,7 @@ export default function AdminDashboard() {
                     <Input
                       id="speakerWebsite"
                       value={editingSpeaker.website || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, website: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, website: e.target.value }))}
                       placeholder="Website URL"
                     />
                   </div>
@@ -5476,7 +5476,7 @@ export default function AdminDashboard() {
                     <Input
                       id="speakerLocation"
                       value={editingSpeaker.location || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, location: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, location: e.target.value }))}
                       placeholder="City, State/Country"
                     />
                   </div>
@@ -5545,7 +5545,7 @@ export default function AdminDashboard() {
                     <Input
                       id="speakerSpecialty"
                       value={editingSpeaker.specialty || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, specialty: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, specialty: e.target.value }))}
                       placeholder="Medical specialty"
                     />
                   </div>
@@ -5555,7 +5555,7 @@ export default function AdminDashboard() {
                       id="speakerExperience"
                       type="number"
                       value={editingSpeaker.yearsExperience || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, yearsExperience: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, yearsExperience: parseInt(e.target.value) || 0 }))}
                       placeholder="Years of experience"
                     />
                   </div>
@@ -5568,7 +5568,7 @@ export default function AdminDashboard() {
                     id="speakerBio"
                     className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={editingSpeaker.bio || ""}
-                    onChange={(e) => setEditingSpeaker(prev => ({ ...prev, bio: e.target.value }))}
+                    onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, bio: e.target.value }))}
                     placeholder="Professional biography"
                   />
                 </div>
@@ -5582,7 +5582,7 @@ export default function AdminDashboard() {
                       <Input
                         id="speakerInstagram"
                         value={editingSpeaker.instagramUrl || ""}
-                        onChange={(e) => setEditingSpeaker(prev => ({ ...prev, instagramUrl: e.target.value }))}
+                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, instagramUrl: e.target.value }))}
                         placeholder="Instagram URL"
                       />
                     </div>
@@ -5591,7 +5591,7 @@ export default function AdminDashboard() {
                       <Input
                         id="speakerTwitter"
                         value={editingSpeaker.twitterUrl || ""}
-                        onChange={(e) => setEditingSpeaker(prev => ({ ...prev, twitterUrl: e.target.value }))}
+                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, twitterUrl: e.target.value }))}
                         placeholder="X/Twitter URL"
                       />
                     </div>
@@ -5600,7 +5600,7 @@ export default function AdminDashboard() {
                       <Input
                         id="speakerLinkedIn"
                         value={editingSpeaker.linkedinUrl || ""}
-                        onChange={(e) => setEditingSpeaker(prev => ({ ...prev, linkedinUrl: e.target.value }))}
+                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, linkedinUrl: e.target.value }))}
                         placeholder="LinkedIn URL"
                       />
                     </div>
@@ -5609,7 +5609,7 @@ export default function AdminDashboard() {
                       <Input
                         id="speakerFacebook"
                         value={editingSpeaker.facebookUrl || ""}
-                        onChange={(e) => setEditingSpeaker(prev => ({ ...prev, facebookUrl: e.target.value }))}
+                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, facebookUrl: e.target.value }))}
                         placeholder="Facebook URL"
                       />
                     </div>
@@ -5625,7 +5625,7 @@ export default function AdminDashboard() {
                       id="speakerSpeakingExperience"
                       className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       value={editingSpeaker.previousSpeakingExperience || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, previousSpeakingExperience: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, previousSpeakingExperience: e.target.value }))}
                       placeholder="Describe previous speaking engagements"
                     />
                   </div>
@@ -5635,7 +5635,7 @@ export default function AdminDashboard() {
                       id="speakerTopics"
                       className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       value={editingSpeaker.specificTopicsOfExpertise || ""}
-                      onChange={(e) => setEditingSpeaker(prev => ({ ...prev, specificTopicsOfExpertise: e.target.value }))}
+                      onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, specificTopicsOfExpertise: e.target.value }))}
                       placeholder="List specific topics you can speak about"
                     />
                   </div>
@@ -5649,7 +5649,7 @@ export default function AdminDashboard() {
                       <Label htmlFor="subscriptionTier">Subscription Tier</Label>
                       <Select 
                         value={editingSpeaker.subscriptionTier || "basic"}
-                        onValueChange={(value) => setEditingSpeaker(prev => ({ ...prev, subscriptionTier: value }))}
+                        onValueChange={(value) => setEditingSpeaker((prev: any) => ({ ...prev, subscriptionTier: value }))}
                       >
                         <SelectTrigger id="subscriptionTier">
                           <SelectValue placeholder="Select tier" />
@@ -5668,7 +5668,7 @@ export default function AdminDashboard() {
                       <Checkbox
                         id="verified"
                         checked={!!editingSpeaker.verified}
-                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, verified: checked }))}
+                        onCheckedChange={(checked) => setEditingSpeaker((prev: any) => ({ ...prev, verified: checked }))}
                       />
                       <Label htmlFor="verified" className="text-sm">Verified Speaker</Label>
                     </div>
@@ -5676,7 +5676,7 @@ export default function AdminDashboard() {
                       <Checkbox
                         id="featured"
                         checked={!!editingSpeaker.featured}
-                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, featured: checked }))}
+                        onCheckedChange={(checked) => setEditingSpeaker((prev: any) => ({ ...prev, featured: checked }))}
                       />
                       <Label htmlFor="featured" className="text-sm">Featured Status</Label>
                     </div>
@@ -5691,7 +5691,7 @@ export default function AdminDashboard() {
                       <Checkbox
                         id="hideProfile"
                         checked={!!editingSpeaker.hideProfile}
-                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, hideProfile: checked }))}
+                        onCheckedChange={(checked) => setEditingSpeaker((prev: any) => ({ ...prev, hideProfile: checked }))}
                       />
                       <Label htmlFor="hideProfile" className="text-sm">Hide Profile</Label>
                     </div>
@@ -5699,7 +5699,7 @@ export default function AdminDashboard() {
                       <Checkbox
                         id="hideRatings"
                         checked={!!editingSpeaker.hideRatings}
-                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, hideRatings: checked }))}
+                        onCheckedChange={(checked) => setEditingSpeaker((prev: any) => ({ ...prev, hideRatings: checked }))}
                       />
                       <Label htmlFor="hideRatings" className="text-sm">Hide Ratings</Label>
                     </div>
@@ -5707,7 +5707,7 @@ export default function AdminDashboard() {
                       <Checkbox
                         id="hideSocial"
                         checked={!!editingSpeaker.hideSocial}
-                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, hideSocial: checked }))}
+                        onCheckedChange={(checked) => setEditingSpeaker((prev: any) => ({ ...prev, hideSocial: checked }))}
                       />
                       <Label htmlFor="hideSocial" className="text-sm">Hide Social Media</Label>
                     </div>
@@ -5715,7 +5715,7 @@ export default function AdminDashboard() {
                       <Checkbox
                         id="hideContact"
                         checked={!!editingSpeaker.hideContact}
-                        onCheckedChange={(checked) => setEditingSpeaker(prev => ({ ...prev, hideContact: checked }))}
+                        onCheckedChange={(checked) => setEditingSpeaker((prev: any) => ({ ...prev, hideContact: checked }))}
                       />
                       <Label htmlFor="hideContact" className="text-sm">Hide Contact Info</Label>
                     </div>

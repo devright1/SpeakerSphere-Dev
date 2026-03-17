@@ -450,7 +450,9 @@ export default function SpeakerDashboard() {
   const { data: storageUsage } = useQuery({
     queryKey: ['/api/speakers/storage', speakerProfile?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/speakers/${speakerProfile?.id}/storage`);
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/storage`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch storage usage');
       return response.json();
     },
@@ -823,7 +825,7 @@ export default function SpeakerDashboard() {
       return await apiRequest("POST", "/api/subscriptions/cancel", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/subscriptions/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subscriptions/status", speakerProfile?.id] });
       setShowCancelDialog(false);
       setCancellationData({
         primaryReason: '',
@@ -851,7 +853,7 @@ export default function SpeakerDashboard() {
       return await apiRequest("POST", "/api/subscriptions/reactivate", {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/subscriptions/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subscriptions/status", speakerProfile?.id] });
       toast({
         title: "Subscription Reactivated",
         description: "Your subscription has been reactivated successfully.",
@@ -2090,7 +2092,7 @@ export default function SpeakerDashboard() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="all">All Categories</SelectItem>
-                              {Array.from(new Set(allTopics?.map((t: any) => t.category).filter(Boolean) || [])).sort().map((category: string) => (
+                              {(Array.from(new Set(allTopics?.map((t: any) => t.category).filter(Boolean) || [])) as string[]).sort().map((category: string) => (
                                 <SelectItem key={category} value={category}>
                                   {category}
                                 </SelectItem>

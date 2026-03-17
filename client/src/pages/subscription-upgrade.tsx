@@ -36,7 +36,7 @@ export default function SubscriptionUpgrade() {
     amount?: number;
     interval?: string;
   }>({
-    queryKey: ["/api/subscriptions/status"],
+    queryKey: ["/api/subscriptions/status", user?.speakerId],
     enabled: isAuthenticated && !!user?.speakerId,
   });
 

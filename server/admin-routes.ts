@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
 import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics } from "../shared/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, or } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import { generateVerificationToken, getTokenExpiration } from "./email";
 import bcrypt from "bcryptjs";
@@ -309,7 +309,6 @@ export function registerAdminRoutes(app: Express) {
           name: speaker.name,
           title: speaker.title,
           email: speaker.email,
-          category: speaker.category,
           hidden: speaker.hideProfile
         }))
       });
@@ -756,7 +755,6 @@ export function registerAdminRoutes(app: Express) {
         phone: speakerData.phone || "",
         website: speakerData.website || "",
         location: speakerData.location || "",
-        category: speakerData.category || "",
         expertise: speakerData.expertise ? [speakerData.expertise] : [],
         achievements: [],
         lectures: [],
@@ -785,19 +783,20 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/speakers/bulk-import", async (req, res) => {
     try {
       console.log("🚀 Starting comprehensive bulk speaker import from CSV...");
-      const results = await importSpeakersFromCSV('speakers_data.json');
+      const results = await importSpeakersFromCSV();
 
       res.json({
         success: true,
-        message: `Comprehensive bulk import completed: ${results.success} speakers imported successfully`,
+        message: `Comprehensive bulk import completed: ${results.imported} speakers imported successfully`,
         results: {
-          successCount: results.success,
-          errorCount: results.errors.length,
-          errors: results.errors
+          successCount: results.imported,
+          errorCount: results.errors,
+          skippedCount: results.skipped,
+          total: results.total
         }
       });
 
-      console.log(`✅ Comprehensive bulk import completed: ${results.success} speakers imported, ${results.errors.length} errors`);
+      console.log(`✅ Comprehensive bulk import completed: ${results.imported} speakers imported, ${results.errors} errors`);
     } catch (error) {
       console.error("❌ Comprehensive bulk import failed:", error);
       res.status(500).json({ 
@@ -1749,7 +1748,7 @@ export function registerAdminRoutes(app: Express) {
       }
     } catch (error) {
       console.error('Test email error:', error);
-      res.status(500).json({ message: "Test email failed", error: error.message });
+      res.status(500).json({ message: "Test email failed", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
