@@ -374,7 +374,6 @@ export class MemStorage implements IStorage {
       { name: "Oral Surgery", description: "Surgical procedures in the oral cavity" },
       { name: "Maxillofacial Surgery", description: "Complex facial and jaw surgical procedures" },
       { name: "Practice Management", description: "Dental practice operations and business growth" },
-      { name: "Event Management", description: "Professional event coordination and management" },
     ];
 
     categoriesData.forEach(cat => {

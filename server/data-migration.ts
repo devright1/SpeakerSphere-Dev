@@ -45,7 +45,6 @@ export class DataMigration {
       { name: "Oral Surgery", description: "Surgical procedures in the oral cavity", speakerCount: 0 },
       { name: "Maxillofacial Surgery", description: "Complex facial and jaw surgical procedures", speakerCount: 0 },
       { name: "Practice Management", description: "Dental practice operations and business growth", speakerCount: 0 },
-      { name: "Event Management", description: "Professional event coordination and management", speakerCount: 0 },
     ];
 
     for (const category of categoriesData) {
