@@ -102,5 +102,12 @@ app.use((req, res, next) => {
   const port = 5000;
   server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
+
+    // Pre-warm Vite in development so the first user request isn't slow
+    if (app.get("env") === "development") {
+      setTimeout(() => {
+        fetch(`http://localhost:${port}/`).catch(() => {});
+      }, 500);
+    }
   });
 })();
