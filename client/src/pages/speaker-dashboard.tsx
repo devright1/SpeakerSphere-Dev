@@ -203,6 +203,14 @@ export default function SpeakerDashboard() {
   // New achievement state
   const [newAchievement, setNewAchievement] = useState('');
   
+  // Change password state
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  
   // Cancel subscription state
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancellationData, setCancellationData] = useState({
@@ -842,6 +850,28 @@ export default function SpeakerDashboard() {
       toast({
         title: "Cancellation Failed",
         description: error.message || "Failed to cancel subscription. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Change password mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: typeof passwordForm) => {
+      return await apiRequest("POST", "/api/auth/change-password", data);
+    },
+    onSuccess: () => {
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowPasswordSection(false);
+      toast({
+        title: "Password Changed",
+        description: "Your password has been updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Password Change Failed",
+        description: error.message || "Failed to change password. Please check your current password and try again.",
         variant: "destructive",
       });
     },
@@ -2203,6 +2233,93 @@ export default function SpeakerDashboard() {
                 </Card>
               </div>
             </div>
+
+            {/* Change Password Section */}
+            <Card className="mt-6">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center text-lg">
+                      <Lock className="h-5 w-5 mr-2" />
+                      Account Security
+                    </CardTitle>
+                    <CardDescription>Update your login password</CardDescription>
+                  </div>
+                  {!showPasswordSection && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPasswordSection(true)}
+                    >
+                      Change Password
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              {showPasswordSection && (
+                <CardContent>
+                  <div className="space-y-4 max-w-md">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <Input
+                        id="currentPassword"
+                        type="password"
+                        value={passwordForm.currentPassword}
+                        onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                        placeholder="Enter your current password"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">New Password</Label>
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        value={passwordForm.newPassword}
+                        onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                        placeholder="At least 6 characters"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        placeholder="Re-enter your new password"
+                      />
+                    </div>
+                    {passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
+                      <p className="text-sm text-red-500">Passwords do not match</p>
+                    )}
+                    <div className="flex gap-3 pt-2">
+                      <Button
+                        onClick={() => changePasswordMutation.mutate(passwordForm)}
+                        disabled={
+                          changePasswordMutation.isPending ||
+                          !passwordForm.currentPassword ||
+                          !passwordForm.newPassword ||
+                          passwordForm.newPassword.length < 6 ||
+                          passwordForm.newPassword !== passwordForm.confirmPassword
+                        }
+                        className="bg-[#1e4347] hover:bg-[#2a5a5f]"
+                      >
+                        {changePasswordMutation.isPending ? "Updating..." : "Update Password"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowPasswordSection(false);
+                          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
           </TabsContent>
 
           {/* Reviews Tab */}
