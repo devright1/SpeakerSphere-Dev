@@ -2241,14 +2241,22 @@ export function registerAdminRoutes(app: Express) {
         }
       }
 
-      const allSpeakers = await db.select({ id: speakers.id, email: speakers.email }).from(speakers);
+      const nameToEmailMap = new Map<string, string>();
+      for (const app of approvedApps) {
+        const fullName = `${app.firstName} ${app.lastName}`.toLowerCase().trim();
+        nameToEmailMap.set(fullName, app.email);
+      }
+
+      const allSpeakers = await db.select({ id: speakers.id, name: speakers.name, email: speakers.email }).from(speakers);
       let cleared = 0;
       let updated = 0;
 
       for (const speaker of allSpeakers) {
         const appEmail = claimedMap.get(speaker.id);
         const userEmail = linkedUserMap.get(speaker.id);
-        const claimedEmail = appEmail || userEmail;
+        const nameEmail = nameToEmailMap.get(speaker.name.toLowerCase().replace(/^dr\.\s*/i, '').trim()) 
+          || nameToEmailMap.get(speaker.name.toLowerCase().trim());
+        const claimedEmail = appEmail || userEmail || nameEmail;
 
         if (claimedEmail) {
           if (speaker.email !== claimedEmail) {
