@@ -387,6 +387,9 @@ export function registerAdminRoutes(app: Express) {
         });
       }
       
+      // Update the speaker profile's email to match the applicant's real email
+      await storage.updateSpeaker(existingSpeaker.id, { email: application.email });
+
       // Update the application with the linked speaker ID
       await db.update(speakerApplications)
         .set({ createdSpeakerId: existingSpeaker.id })
@@ -2208,6 +2211,50 @@ export function registerAdminRoutes(app: Express) {
       }
     } catch (error) {
       console.error("Failed to send template reference email:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/fix-speaker-emails", async (req, res) => {
+    try {
+      const approvedApps = await db.select()
+        .from(speakerApplications)
+        .where(eq(speakerApplications.status, 'approved'));
+      
+      const claimedMap = new Map<number, string>();
+      for (const app of approvedApps) {
+        if (app.createdSpeakerId) {
+          claimedMap.set(app.createdSpeakerId, app.email);
+        }
+      }
+
+      const allSpeakers = await db.select({ id: speakers.id, email: speakers.email }).from(speakers);
+      let cleared = 0;
+      let updated = 0;
+
+      for (const speaker of allSpeakers) {
+        const appEmail = claimedMap.get(speaker.id);
+        if (appEmail) {
+          if (speaker.email !== appEmail) {
+            await db.update(speakers).set({ email: appEmail }).where(eq(speakers.id, speaker.id));
+            updated++;
+          }
+        } else if (speaker.email) {
+          await db.update(speakers).set({ email: '' }).where(eq(speakers.id, speaker.id));
+          cleared++;
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Fixed speaker emails: ${cleared} cleared, ${updated} updated to match applications`,
+        cleared,
+        updated,
+        totalSpeakers: allSpeakers.length,
+        claimedSpeakers: claimedMap.size
+      });
+    } catch (error) {
+      console.error("Failed to fix speaker emails:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

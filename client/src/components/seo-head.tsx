@@ -185,7 +185,7 @@ export function generateSpeakerStructuredData(speaker: {
       "@type": "PostalAddress",
       addressLocality: speaker.location,
     },
-    email: speaker.email,
+    ...(speaker.email ? { email: speaker.email } : {}),
     telephone: speaker.phone,
     url: speaker.website,
     knowsAbout: speaker.expertise,
