@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -109,6 +110,7 @@ type SpeakerApplicationForm = z.infer<typeof speakerApplicationSchema>;
 
 export default function ForSpeakers() {
   const { toast } = useToast();
+  const { login } = useAuth();
   const [activeTab, setActiveTab] = useState("signin");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -155,12 +157,12 @@ export default function ForSpeakers() {
     mutationFn: async (data: SignInForm) => {
       return apiRequest("POST", "/api/auth/login", data);
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      login(data.token, data.user);
       toast({
         title: "Success!",
         description: "You have been signed in successfully.",
       });
-      // Redirect to speaker dashboard or profile
       window.location.href = "/profile";
     },
     onError: (error: any) => {
