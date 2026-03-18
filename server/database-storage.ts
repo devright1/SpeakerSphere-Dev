@@ -363,7 +363,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateSpeaker(id: number, updates: Partial<InsertSpeaker>): Promise<Speaker | undefined> {
-    const result = await db.update(speakers).set(updates).where(eq(speakers.id, id)).returning();
+    const timestampFields = ['cancelledAt', 'subscriptionPeriodEnd', 'deletedAt', 'approvedAt', 'createdAt'];
+    const sanitized: any = { ...updates };
+    for (const field of timestampFields) {
+      if (field in sanitized && sanitized[field] !== null && sanitized[field] !== undefined) {
+        if (typeof sanitized[field] === 'string') {
+          sanitized[field] = new Date(sanitized[field]);
+        }
+      }
+    }
+    const result = await db.update(speakers).set(sanitized).where(eq(speakers.id, id)).returning();
     return result[0];
   }
 
