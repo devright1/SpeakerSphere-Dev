@@ -3512,14 +3512,14 @@ export default function SpeakerDashboard() {
                   {subscriptionStatus?.tier === 'premier' 
                     ? 'Your Premier Plan' 
                     : subscriptionStatus?.tier === 'pro'
-                    ? 'Upgrade Your Plan'
+                    ? 'Your Pro Plan'
                     : 'Choose Your Speaker Plan'}
                 </h2>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                   {subscriptionStatus?.tier === 'premier'
                     ? "You're on our top tier with maximum visibility and all premium features"
                     : subscriptionStatus?.tier === 'pro'
-                    ? "Upgrade to Premier for maximum exposure and elite speaker benefits"
+                    ? "You're on the Pro plan. Upgrade to Premier for maximum exposure and elite speaker benefits"
                     : "Unlock premium features and boost your visibility with our professional speaker subscription plans"}
                 </p>
                 {subscriptionStatus && subscriptionStatus.tier !== 'basic' && (
