@@ -3731,18 +3731,33 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       // Get subscription from Stripe
-      const subscription = await stripe.subscriptions.retrieve(speaker.stripeSubscriptionId);
-      const subscriptionItem = subscription.items.data[0];
-      
-      res.json({
-        tier: speaker.subscriptionTier,
-        status: subscription.status,
-        periodEnd: subscriptionItem?.current_period_end ? new Date(subscriptionItem.current_period_end * 1000) : null,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        cancelledAt: speaker.cancelledAt,
-        amount: subscriptionItem?.price.unit_amount || 0,
-        interval: subscriptionItem?.price.recurring?.interval || 'month'
-      });
+      try {
+        const subscription = await stripe.subscriptions.retrieve(speaker.stripeSubscriptionId);
+        const subscriptionItem = subscription.items.data[0];
+        
+        return res.json({
+          tier: speaker.subscriptionTier,
+          status: subscription.status,
+          periodEnd: subscriptionItem?.current_period_end ? new Date(subscriptionItem.current_period_end * 1000) : null,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          cancelledAt: speaker.cancelledAt,
+          amount: subscriptionItem?.price.unit_amount || 0,
+          interval: subscriptionItem?.price.recurring?.interval || 'month'
+        });
+      } catch (stripeError: any) {
+        // If Stripe doesn't recognize the subscription ID, fall back to DB tier
+        if (stripeError?.code === 'resource_missing') {
+          console.warn(`Stripe subscription ${speaker.stripeSubscriptionId} not found for speaker ${speaker.id} - falling back to DB tier`);
+          return res.json({
+            tier: speaker.subscriptionTier || 'basic',
+            status: speaker.subscriptionStatus || 'active',
+            periodEnd: speaker.subscriptionPeriodEnd,
+            cancelAtPeriodEnd: false,
+            cancelledAt: speaker.cancelledAt
+          });
+        }
+        throw stripeError;
+      }
     } catch (error: any) {
       console.error('Error getting subscription status:', error);
       res.status(500).json({ error: 'Failed to get subscription status' });
