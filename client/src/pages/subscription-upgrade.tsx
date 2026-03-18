@@ -385,7 +385,7 @@ export default function SubscriptionUpgrade() {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-3">
                 <Star className="w-6 h-6 text-blue-600" />
               </div>
-              <CardTitle>Featured Speaker</CardTitle>
+              <CardTitle>Pro Speaker</CardTitle>
               <div className="mt-4">
                 <span className="text-3xl font-bold">
                   ${isAnnual ? pricing.pro.annual : pricing.pro.monthly}

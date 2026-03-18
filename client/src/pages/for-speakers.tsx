@@ -375,7 +375,7 @@ export default function ForSpeakers() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-3">
                   <Star className="w-6 h-6 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-bold">Featured Speaker</h3>
+                <h3 className="text-2xl font-bold">Pro Speaker</h3>
                 <p className="text-sm text-gray-600 mt-1">Enhanced Visibility</p>
                 <div className="mt-4">
                   <span className="text-3xl font-bold">Contact Us</span>
@@ -408,7 +408,7 @@ export default function ForSpeakers() {
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm">Featured speaker badge</span>
+                  <span className="text-sm">Pro speaker badge</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />

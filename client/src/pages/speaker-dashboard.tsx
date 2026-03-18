@@ -3942,7 +3942,7 @@ export default function SpeakerDashboard() {
                       </div>
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">Pro</CardTitle>
-                    <CardDescription className="text-lg">Featured speaker status</CardDescription>
+                    <CardDescription className="text-lg">Pro speaker status</CardDescription>
                     <div className="mt-4">
                       <span className="text-4xl font-bold text-gray-900">$29</span>
                       <span className="text-gray-600">/month</span>
@@ -3976,7 +3976,7 @@ export default function SpeakerDashboard() {
                       <div className="text-sm font-medium text-blue-700 mb-2">Everything in Basic, plus:</div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Featured speaker badge</span>
+                        <span className="text-gray-700">Pro speaker badge</span>
                       </div>
                       <div className="flex items-start space-x-3">
                         <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />

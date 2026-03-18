@@ -16,7 +16,7 @@ const tierConfig = {
     icon: User,
   },
   pro: {
-    label: "Featured Speaker",
+    label: "Pro Speaker",
     color: "bg-blue-50 text-blue-700 border-blue-300",
     icon: Star,
   },
