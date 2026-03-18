@@ -12,6 +12,7 @@ import {
   createPasswordResetEmail,
   sendEmail 
 } from "./email";
+import { EmailService } from "./email-service";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -293,42 +294,36 @@ router.post("/forgot-password",
 
       const { email } = req.body;
 
-      // Always return success to prevent email enumeration attacks
-      const successMessage = "If an account with this email exists, you will receive a password reset link shortly.";
+      const successMessage = "If an account with this email exists, a new temporary password has been sent.";
 
       try {
-        // Find user by email
         const user = await storage.getUserByEmail(email);
         
         if (user) {
-          // Generate secure 32-byte token
-          const resetToken = crypto.randomBytes(32).toString('hex');
-          
-          // Hash the token before storing (SHA-256)
-          const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
-          
-          // Set 1-hour expiration
-          const expires = new Date();
-          expires.setHours(expires.getHours() + 1);
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+          const randomBytes = crypto.randomBytes(12);
+          let temporaryPassword = '';
+          for (let i = 0; i < 12; i++) {
+            temporaryPassword += chars.charAt(randomBytes[i] % chars.length);
+          }
 
-          // Store hashed token in database
-          await storage.setPasswordResetToken(user.id, tokenHash, expires);
+          const emailService = EmailService.getInstance();
+          const emailSent = await emailService.sendPasswordReset(user.email, user.firstName, temporaryPassword);
 
-          // Send password reset email with raw token
-          const emailData = createPasswordResetEmail(user.email, user.firstName, resetToken);
-          const emailSent = await sendEmail(emailData);
-
-          if (!emailSent) {
+          if (emailSent) {
+            const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+            await storage.updateUserPassword(user.id, hashedPassword);
+            console.log(`🔑 Password reset for ${user.email}`);
+          } else {
             console.error('Failed to send password reset email to:', email);
           }
         }
       } catch (error) {
         console.error('Password reset error:', error);
-        // Don't expose error to prevent information disclosure
       }
 
-      // Always return success message regardless of whether email exists
       res.json({
+        success: true,
         message: successMessage
       });
 

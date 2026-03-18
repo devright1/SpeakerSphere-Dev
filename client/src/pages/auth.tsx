@@ -136,7 +136,7 @@ export default function AuthPage() {
       setIsSuccess(true);
       
       // Use the auth context login method to properly update state  
-      login(data.user.id, data.user);
+      login(data.token, data.user);
       
       setTimeout(() => {
         toast({
@@ -200,8 +200,8 @@ export default function AuthPage() {
     },
     onSuccess: () => {
       toast({
-        title: "Reset Link Sent",
-        description: "If an account with this email exists, you will receive a password reset link shortly.",
+        title: "Check Your Email",
+        description: "If an account with this email exists, a new temporary password has been sent.",
       });
       setIsForgotPasswordOpen(false);
       forgotPasswordForm.reset();

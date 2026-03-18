@@ -110,6 +110,8 @@ type SpeakerApplicationForm = z.infer<typeof speakerApplicationSchema>;
 export default function ForSpeakers() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("signin");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
 
   // Sign In Form
   const signInForm = useForm<SignInForm>({
@@ -165,6 +167,28 @@ export default function ForSpeakers() {
       toast({
         title: "Sign In Failed",
         description: error.message || "Please check your credentials and try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Forgot Password Mutation
+  const forgotPasswordMutation = useMutation({
+    mutationFn: async (email: string) => {
+      return apiRequest("POST", "/api/auth/forgot-password", { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Check Your Email",
+        description: "If an account exists with that email, a new temporary password has been sent.",
+      });
+      setShowForgotPassword(false);
+      setForgotEmail("");
+    },
+    onError: () => {
+      toast({
+        title: "Something went wrong",
+        description: "Please try again later.",
         variant: "destructive",
       });
     },
@@ -522,6 +546,17 @@ export default function ForSpeakers() {
                       >
                         {signInMutation.isPending ? "Signing In..." : "Sign In"}
                       </Button>
+
+                      <div className="text-center">
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="p-0 h-auto text-sm text-gray-500"
+                          onClick={() => setShowForgotPassword(true)}
+                        >
+                          Forgot your password?
+                        </Button>
+                      </div>
                       
                       <div className="text-center">
                         <p className="text-sm text-gray-600">
@@ -537,6 +572,38 @@ export default function ForSpeakers() {
                       </div>
                     </form>
                   </Form>
+
+                  {showForgotPassword && (
+                    <div className="mt-6 max-w-md mx-auto p-6 bg-gray-50 rounded-lg border">
+                      <h3 className="text-lg font-semibold mb-2">Reset Your Password</h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Enter your email address and we'll send you a new temporary password.
+                      </p>
+                      <div className="space-y-3">
+                        <Input
+                          type="email"
+                          placeholder="your.email@example.com"
+                          value={forgotEmail}
+                          onChange={(e) => setForgotEmail(e.target.value)}
+                        />
+                        <div className="flex gap-3">
+                          <Button
+                            className="flex-1"
+                            onClick={() => forgotPasswordMutation.mutate(forgotEmail)}
+                            disabled={!forgotEmail || forgotPasswordMutation.isPending}
+                          >
+                            {forgotPasswordMutation.isPending ? "Sending..." : "Send New Password"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => { setShowForgotPassword(false); setForgotEmail(""); }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               

@@ -261,6 +261,62 @@ The SpeakerSphere Team`
     return await this.sendEmail(template);
   }
 
+  async sendPasswordReset(email: string, firstName: string, temporaryPassword: string): Promise<boolean> {
+    const logoHeader = getEmailLogoHeader();
+    const template: EmailTemplate = {
+      to: email,
+      from: FROM_EMAIL,
+      subject: 'SpeakerSphere - Password Reset',
+      html: `
+        ${logoHeader}
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Password Reset Request</h2>
+          
+          <p>Dear ${firstName},</p>
+          
+          <p>We received a request to reset your password. Your new temporary password is below.</p>
+          
+          <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+            <h3 style="color: #1e40af; margin-top: 0;">Your New Temporary Password</h3>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Password:</strong> <span style="font-family: monospace; background: white; padding: 4px 8px; border-radius: 4px; font-size: 16px;">${temporaryPassword}</span></p>
+            <p style="color: #dc2626; font-size: 14px; margin-top: 15px;">Please log in and change your password right away for security.</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://thespeakersphere.com/for-speakers" 
+               style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Log In Now
+            </a>
+          </div>
+          
+          <p style="color: #64748b; font-size: 13px;">If you did not request this reset, you can ignore this email. Your account is still secure.</p>
+          
+          <p>Best regards,<br>The SpeakerSphere Team</p>
+        </div>
+      `,
+      text: `Password Reset Request
+
+Dear ${firstName},
+
+We received a request to reset your password. Your new temporary password is:
+
+Email: ${email}
+Password: ${temporaryPassword}
+
+Please log in and change your password right away for security.
+
+Log in at: https://thespeakersphere.com/for-speakers
+
+If you did not request this reset, you can ignore this email.
+
+Best regards,
+The SpeakerSphere Team`
+    };
+
+    return await this.sendEmail(template);
+  }
+
   // Resend login credentials to approved speaker
   async sendLoginCredentials(email: string, speakerName: string, credentials: { email: string; password: string }): Promise<boolean> {
     const logoHeader = getEmailLogoHeader();

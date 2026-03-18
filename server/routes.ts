@@ -77,15 +77,6 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   }));
 
-  // Add debugging middleware for password change requests
-  app.use('/api/auth/change-password', (req, res, next) => {
-    console.log("MIDDLEWARE: Password change request intercepted");
-    console.log("Method:", req.method);
-    console.log("Body:", req.body);
-    console.log("Session:", req.session);
-    next();
-  });
-
   // Register authentication routes first
   app.use("/api/auth", authRoutes);
   
@@ -383,8 +374,17 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.post("/api/auth/change-password", async (req, res) => {
     try {
       const sessionUser = (req as any).session?.user;
-      const headerUserId = req.headers['x-user-id'] as string;
-      const userId = sessionUser?.id || headerUserId;
+      let userId = sessionUser?.id;
+      
+      if (!userId) {
+        const headerToken = req.headers['x-user-id'] as string;
+        if (headerToken) {
+          const userSession = await storage.getUserSession(headerToken);
+          if (userSession) {
+            userId = userSession.userId;
+          }
+        }
+      }
       
       if (!userId) {
         return res.status(401).json({
