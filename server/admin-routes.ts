@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
 import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics } from "../shared/schema";
-import { eq, desc, and, or } from "drizzle-orm";
+import { eq, desc, and, or, isNotNull } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import { generateVerificationToken, getTokenExpiration } from "./email";
 import bcrypt from "bcryptjs";
@@ -2228,15 +2228,31 @@ export function registerAdminRoutes(app: Express) {
         }
       }
 
+      const linkedUsers = await db.select({ speakerId: users.speakerId, email: users.email })
+        .from(users)
+        .where(and(
+          eq(users.accountType, 'speaker'),
+          isNotNull(users.speakerId)
+        ));
+      const linkedUserMap = new Map<number, string>();
+      for (const u of linkedUsers) {
+        if (u.speakerId) {
+          linkedUserMap.set(u.speakerId, u.email);
+        }
+      }
+
       const allSpeakers = await db.select({ id: speakers.id, email: speakers.email }).from(speakers);
       let cleared = 0;
       let updated = 0;
 
       for (const speaker of allSpeakers) {
         const appEmail = claimedMap.get(speaker.id);
-        if (appEmail) {
-          if (speaker.email !== appEmail) {
-            await db.update(speakers).set({ email: appEmail }).where(eq(speakers.id, speaker.id));
+        const userEmail = linkedUserMap.get(speaker.id);
+        const claimedEmail = appEmail || userEmail;
+
+        if (claimedEmail) {
+          if (speaker.email !== claimedEmail) {
+            await db.update(speakers).set({ email: claimedEmail }).where(eq(speakers.id, speaker.id));
             updated++;
           }
         } else if (speaker.email) {
@@ -2247,11 +2263,12 @@ export function registerAdminRoutes(app: Express) {
 
       res.json({
         success: true,
-        message: `Fixed speaker emails: ${cleared} cleared, ${updated} updated to match applications`,
+        message: `Fixed speaker emails: ${cleared} cleared, ${updated} updated to match applications/accounts`,
         cleared,
         updated,
         totalSpeakers: allSpeakers.length,
-        claimedSpeakers: claimedMap.size
+        claimedByApp: claimedMap.size,
+        claimedByUser: linkedUserMap.size
       });
     } catch (error) {
       console.error("Failed to fix speaker emails:", error);
