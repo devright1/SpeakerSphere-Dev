@@ -1891,6 +1891,9 @@ export default function AdminDashboard() {
                               <h4 className="font-medium">{account.speakerName}</h4>
                               <p className="text-sm text-gray-600">{account.speakerTitle}</p>
                               <p className="text-xs text-gray-400">{account.email}</p>
+                              {account.tempPassword && (
+                                <p className="text-xs text-orange-600 font-mono mt-1">Password: {account.tempPassword}</p>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">

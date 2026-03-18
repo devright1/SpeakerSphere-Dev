@@ -302,6 +302,7 @@ export const users = pgTable("users", {
   identityVerificationStatus: varchar("identity_verification_status", { length: 30 }).default("pending"), // "pending", "processing", "verified", "requires_input", "canceled"
   identityVerificationSessionId: varchar("identity_verification_session_id", { length: 255 }), // Stripe verification session ID
   identityVerifiedAt: timestamp("identity_verified_at"),
+  tempPassword: varchar("temp_password", { length: 255 }),
 });
 
 // User session management

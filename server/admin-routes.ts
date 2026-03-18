@@ -182,6 +182,7 @@ export function registerAdminRoutes(app: Express) {
           speakerImageUrl: speaker?.imageUrl || '',
           speakerTitle: speaker?.title || '',
           subscriptionTier: speaker?.subscriptionTier || 'basic',
+          tempPassword: u.tempPassword || null,
         };
       });
       res.json(accounts);
@@ -408,7 +409,8 @@ export function registerAdminRoutes(app: Express) {
       const hashedPassword = await hashPassword(temporaryPassword);
       
       await storage.updateUser(user.id, { 
-        passwordHash: hashedPassword 
+        passwordHash: hashedPassword,
+        tempPassword: temporaryPassword,
       });
       
       // Send welcome email with login credentials
@@ -459,9 +461,10 @@ export function registerAdminRoutes(app: Express) {
       const temporaryPassword = generateTemporaryPassword();
       const hashedPassword = await hashPassword(temporaryPassword);
       
-      // Update the created user with the hashed password and verify email immediately
+      // Update the created user with the hashed password, store temp password, and verify email immediately
       await storage.updateUser(result.user.id, { 
         passwordHash: hashedPassword,
+        tempPassword: temporaryPassword,
         emailVerified: true
       });
       
@@ -590,16 +593,17 @@ export function registerAdminRoutes(app: Express) {
         return res.status(404).json({ message: "No user account found for this speaker" });
       }
 
-      // Generate new temporary password
-      const temporaryPassword = generateTemporaryPassword();
-      const hashedPassword = await hashPassword(temporaryPassword);
+      let temporaryPassword = user.tempPassword;
       
-      // Update user with new password
-      await storage.updateUser(user.id, { 
-        passwordHash: hashedPassword 
-      });
+      if (!temporaryPassword) {
+        temporaryPassword = generateTemporaryPassword();
+        const hashedPassword = await hashPassword(temporaryPassword);
+        await storage.updateUser(user.id, { 
+          passwordHash: hashedPassword,
+          tempPassword: temporaryPassword,
+        });
+      }
 
-      // Send credentials email
       const emailService = EmailService.getInstance();
       const emailSent = await emailService.sendLoginCredentials(
         speaker.email,
@@ -609,7 +613,7 @@ export function registerAdminRoutes(app: Express) {
 
       res.json({ 
         success: true, 
-        message: emailSent ? "Login credentials sent successfully" : "Failed to send email, but password was reset",
+        message: emailSent ? "Login credentials sent successfully" : "Failed to send email",
         emailSent: emailSent,
         credentials: {
           email: speaker.email,
