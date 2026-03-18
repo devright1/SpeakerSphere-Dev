@@ -3745,15 +3745,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
           interval: subscriptionItem?.price.recurring?.interval || 'month'
         });
       } catch (stripeError: any) {
-        // If Stripe doesn't recognize the subscription ID, fall back to DB tier
         if (stripeError?.code === 'resource_missing') {
-          console.warn(`Stripe subscription ${speaker.stripeSubscriptionId} not found for speaker ${speaker.id} - falling back to DB tier`);
+          console.warn(`⚠️ Stripe subscription ${speaker.stripeSubscriptionId} not found for speaker ${speaker.id} (${speaker.name}) - downgrading to basic`);
+          await storage.updateSpeaker(speaker.id, {
+            subscriptionTier: 'basic',
+            subscriptionStatus: 'canceled',
+            stripeSubscriptionId: null,
+            subscriptionPeriodEnd: null
+          });
           return res.json({
-            tier: speaker.subscriptionTier || 'basic',
-            status: speaker.subscriptionStatus || 'active',
-            periodEnd: speaker.subscriptionPeriodEnd,
+            tier: 'basic',
+            status: 'canceled',
+            periodEnd: null,
             cancelAtPeriodEnd: false,
-            cancelledAt: speaker.cancelledAt
+            cancelledAt: null
           });
         }
         throw stripeError;

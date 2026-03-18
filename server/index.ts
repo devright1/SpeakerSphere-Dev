@@ -3,6 +3,7 @@ import { createServer } from "http";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { helmetConfig, rateLimiters, handleValidationError } from "./security";
+import { validateStripeSubscriptions } from "./validate-subscriptions";
 import path from "path";
 
 const app = express();
@@ -109,5 +110,12 @@ app.use((req, res, next) => {
         fetch(`http://localhost:${port}/`).catch(() => {});
       }, 500);
     }
+
+    // Validate Stripe subscriptions in background after startup
+    setTimeout(() => {
+      validateStripeSubscriptions().catch(err => 
+        console.error("Subscription validation failed:", err)
+      );
+    }, 3000);
   });
 })();
