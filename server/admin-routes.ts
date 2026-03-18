@@ -2241,22 +2241,21 @@ export function registerAdminRoutes(app: Express) {
         }
       }
 
-      const nameToEmailMap = new Map<string, string>();
-      for (const app of approvedApps) {
-        const fullName = `${app.firstName} ${app.lastName}`.toLowerCase().trim();
-        nameToEmailMap.set(fullName, app.email);
-      }
+      const explicitFixes = new Map<number, string>([
+        [1231, 'wmartin@devright.com'],
+        [1641, 'alex@zahnlab.com'],
+        [1795, 'alex@zahnlab.com'],
+      ]);
 
-      const allSpeakers = await db.select({ id: speakers.id, name: speakers.name, email: speakers.email }).from(speakers);
+      const allSpeakers = await db.select({ id: speakers.id, email: speakers.email }).from(speakers);
       let cleared = 0;
       let updated = 0;
 
       for (const speaker of allSpeakers) {
         const appEmail = claimedMap.get(speaker.id);
         const userEmail = linkedUserMap.get(speaker.id);
-        const nameEmail = nameToEmailMap.get(speaker.name.toLowerCase().replace(/^dr\.\s*/i, '').trim()) 
-          || nameToEmailMap.get(speaker.name.toLowerCase().trim());
-        const claimedEmail = appEmail || userEmail || nameEmail;
+        const explicitEmail = explicitFixes.get(speaker.id);
+        const claimedEmail = appEmail || userEmail || explicitEmail;
 
         if (claimedEmail) {
           if (speaker.email !== claimedEmail) {
