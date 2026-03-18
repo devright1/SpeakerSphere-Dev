@@ -55,7 +55,8 @@ import {
   Clock,
   Heart,
   Share2,
-  Search
+  Search,
+  X
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -2131,6 +2132,34 @@ export default function SpeakerDashboard() {
                           </Select>
                         </div>
                         
+                        {/* Selected Topics Chips */}
+                        {selectedTopics.length > 0 && (
+                          <div className="border rounded-lg p-3 bg-gray-50">
+                            <p className="text-xs font-medium text-gray-500 mb-2">Selected Topics ({selectedTopics.length}{topicLimit !== null ? `/${topicLimit}` : ''}):</p>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedTopics.map((topicId) => {
+                                const topic = allTopics?.find((t: any) => t.id === topicId);
+                                if (!topic) return null;
+                                return (
+                                  <span
+                                    key={topicId}
+                                    className="inline-flex items-center gap-1 px-2 py-1 bg-white border rounded-full text-xs"
+                                  >
+                                    {topic.name}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleTopicToggle(topicId)}
+                                      className="ml-0.5 hover:bg-gray-200 rounded-full p-0.5"
+                                    >
+                                      <X className="h-3 w-3 text-gray-500" />
+                                    </button>
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Topics List */}
                         <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
                           {(() => {
