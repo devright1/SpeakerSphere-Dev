@@ -44,6 +44,18 @@ interface AuthenticatedRequest extends Request {
   session: any;
 }
 
+async function resolveUserId(req: AuthenticatedRequest): Promise<string | undefined> {
+  const tokenHeader = req.headers['x-user-id'] as string;
+  if (tokenHeader) {
+    const user = await storage.getUserByToken(tokenHeader);
+    if (user) return user.id;
+  }
+  if (req.session?.user?.id) {
+    return req.session.user.id;
+  }
+  return undefined;
+}
+
 // Form validation schemas
 const loginSchema = z.object({
   email: z.string().email(),
@@ -3521,16 +3533,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Create subscription checkout session
   app.post("/api/subscriptions/create-checkout", async (req: AuthenticatedRequest, res) => {
     try {
-      // Get user from X-User-ID header or session
-      const userIdHeader = req.headers['x-user-id'] as string;
-      let userId: string | undefined;
-      
-      if (userIdHeader) {
-        userId = userIdHeader;
-      } else if (req.session?.user?.id) {
-        userId = req.session.user.id;
-      }
-      
+      const userId = await resolveUserId(req);
       if (!userId) {
         return res.status(401).json({ error: "Must be logged in" });
       }
@@ -3702,16 +3705,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Get subscription status
   app.get("/api/subscriptions/status", async (req: AuthenticatedRequest, res) => {
     try {
-      // Get user from X-User-ID header or session
-      const userIdHeader = req.headers['x-user-id'] as string;
-      let userId: string | undefined;
-      
-      if (userIdHeader) {
-        userId = userIdHeader;
-      } else if (req.session?.user?.id) {
-        userId = req.session.user.id;
-      }
-      
+      const userId = await resolveUserId(req);
       if (!userId) {
         return res.status(401).json({ error: "Must be logged in" });
       }
@@ -3802,16 +3796,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       // Store as JSON string in the reason field
       const reason = JSON.stringify(cancellationData);
       
-      // Get user from X-User-ID header or session
-      const userIdHeader = req.headers['x-user-id'] as string;
-      let userId: string | undefined;
-      
-      if (userIdHeader) {
-        userId = userIdHeader;
-      } else if (req.session?.user?.id) {
-        userId = req.session.user.id;
-      }
-      
+      const userId = await resolveUserId(req);
       if (!userId) {
         return res.status(401).json({ error: "Must be logged in" });
       }
@@ -3931,15 +3916,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.post("/api/subscriptions/reactivate", async (req: AuthenticatedRequest, res) => {
     try {
       // Get user from X-User-ID header or session
-      const userIdHeader = req.headers['x-user-id'] as string;
-      let userId: string | undefined;
-      
-      if (userIdHeader) {
-        userId = userIdHeader;
-      } else if (req.session?.user?.id) {
-        userId = req.session.user.id;
-      }
-      
+      const userId = await resolveUserId(req);
       if (!userId) {
         return res.status(401).json({ error: "Must be logged in" });
       }
