@@ -382,8 +382,11 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Change password
   app.post("/api/auth/change-password", async (req, res) => {
     try {
-      const user = (req as any).session?.user;
-      if (!user) {
+      const sessionUser = (req as any).session?.user;
+      const headerUserId = req.headers['x-user-id'] as string;
+      const userId = sessionUser?.id || headerUserId;
+      
+      if (!userId) {
         return res.status(401).json({
           success: false,
           message: "Not authenticated"
@@ -393,7 +396,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
       
       // Get current user data
-      const currentUser = await storage.getUserById(user.id);
+      const currentUser = await storage.getUserById(userId);
       if (!currentUser) {
         return res.status(404).json({
           success: false,
@@ -415,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
 
       // Update password in database
-      await storage.updateUserPassword(user.id, newPasswordHash);
+      await storage.updateUserPassword(userId, newPasswordHash);
 
       res.json({
         success: true,
