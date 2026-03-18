@@ -357,6 +357,16 @@ export function registerAdminRoutes(app: Express) {
         });
       }
       
+      // Link the speaker profile to the user account
+      await storage.updateSpeaker(existingSpeaker.id, {
+        userId: user.id,
+      });
+
+      // Update the application with the linked speaker ID
+      await storage.updateSpeakerApplication(applicationId, {
+        createdSpeakerId: existingSpeaker.id,
+      });
+
       // Update application status and link to existing speaker
       await storage.updateSpeakerApplicationStatus(
         applicationId, 

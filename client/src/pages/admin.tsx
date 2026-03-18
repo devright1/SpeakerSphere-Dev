@@ -867,13 +867,15 @@ export default function AdminDashboard() {
       return response.json();
     },
     onSuccess: (data) => {
-      const matches = data.potentialMatches || [];
+      const matches = (data.potentialMatches || []).map((m: any) => ({ ...m, _autoMatch: true }));
       setPotentialDuplicates(matches);
-      // Set action type based on whether duplicates were found
-      if (matches.length > 0) {
-        setActionType('add_to_existing'); // Show link to existing option
-      } else {
-        setActionType('create_new'); // Show create new option
+      // Only override actionType if not explicitly set to 'add_to_existing' by "Link to Existing" button
+      if (actionType !== 'add_to_existing') {
+        if (matches.length > 0) {
+          setActionType('add_to_existing');
+        } else {
+          setActionType('create_new');
+        }
       }
       setDuplicateCheckDialogOpen(true);
       setIsCheckingDuplicates(false);
@@ -1784,7 +1786,9 @@ export default function AdminDashboard() {
                                   onClick={() => {
                                     setCurrentApplication(application);
                                     setActionType('add_to_existing');
-                                    setDuplicateCheckDialogOpen(true);
+                                    setSelectedExistingSpeaker(null);
+                                    setIsCheckingDuplicates(true);
+                                    checkDuplicatesMutation.mutate(application.id);
                                   }}
                                   className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1"
                                 >
@@ -5028,10 +5032,40 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                {potentialDuplicates.length === 0 && (
+                {potentialDuplicates.length === 0 && actionType !== 'add_to_existing' && (
                   <div className="text-center py-6 text-gray-500">
                     <UserCheck className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                     <p>No potential duplicates found. Safe to proceed.</p>
+                  </div>
+                )}
+
+                {actionType === 'add_to_existing' && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-900">Search for Speaker to Link</h4>
+                    <Input
+                      type="text"
+                      placeholder="Type a speaker name to search..."
+                      onChange={(e) => {
+                        const query = e.target.value.toLowerCase().trim();
+                        if (query.length >= 2) {
+                          const matches = speakersArray
+                            .filter((s: any) => s.name.toLowerCase().includes(query))
+                            .slice(0, 10)
+                            .map((s: any) => ({ id: s.id, name: s.name, title: s.title, email: s.email, hidden: s.hideProfile }));
+                          setPotentialDuplicates((prev: any[]) => {
+                            const autoMatchIds = new Set(prev.filter((p: any) => p._autoMatch).map((p: any) => p.id));
+                            const autoMatches = prev.filter((p: any) => p._autoMatch);
+                            const searchResults = matches
+                              .filter((m: any) => !autoMatchIds.has(m.id))
+                              .map((m: any) => ({ ...m, _searchResult: true }));
+                            return [...autoMatches, ...searchResults];
+                          });
+                        }
+                      }}
+                    />
+                    {potentialDuplicates.length === 0 && (
+                      <p className="text-sm text-gray-500 text-center py-2">Type at least 2 characters to search speakers</p>
+                    )}
                   </div>
                 )}
 
