@@ -161,6 +161,36 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  app.get("/api/admin/speaker-accounts", async (req, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      const speakerUsers = allUsers.filter(u => u.speakerId && u.accountType === 'speaker');
+      const speakerIds = speakerUsers.map(u => u.speakerId!);
+      const allSpeakers = await storage.getSpeakers({ includeHidden: true });
+      const speakerMap = new Map(allSpeakers.map(s => [s.id, s]));
+      const accounts = speakerUsers.map(u => {
+        const speaker = speakerMap.get(u.speakerId!);
+        return {
+          speakerId: u.speakerId,
+          userId: u.id,
+          email: u.email,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          lastLogin: u.lastLogin,
+          speakerName: speaker?.name || 'Unknown',
+          speakerSlug: speaker?.slug || '',
+          speakerImageUrl: speaker?.imageUrl || '',
+          speakerTitle: speaker?.title || '',
+          subscriptionTier: speaker?.subscriptionTier || 'basic',
+        };
+      });
+      res.json(accounts);
+    } catch (error) {
+      console.error("Failed to get speaker accounts:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.patch("/api/admin/speaker-applications/:id/status", async (req, res) => {
     try {
       const applicationId = parseInt(req.params.id);
@@ -357,15 +387,10 @@ export function registerAdminRoutes(app: Express) {
         });
       }
       
-      // Link the speaker profile to the user account
-      await storage.updateSpeaker(existingSpeaker.id, {
-        userId: user.id,
-      });
-
       // Update the application with the linked speaker ID
-      await storage.updateSpeakerApplication(applicationId, {
-        createdSpeakerId: existingSpeaker.id,
-      });
+      await db.update(speakerApplications)
+        .set({ createdSpeakerId: existingSpeaker.id })
+        .where(eq(speakerApplications.id, applicationId));
 
       // Update application status and link to existing speaker
       await storage.updateSpeakerApplicationStatus(

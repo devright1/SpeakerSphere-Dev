@@ -317,6 +317,15 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: speakerAccounts } = useQuery({
+    queryKey: ["/api/admin/speaker-accounts"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/speaker-accounts");
+      if (!response.ok) throw new Error("Failed to fetch speaker accounts");
+      return response.json();
+    },
+  });
+
   // Memoize application filtering and counts to prevent performance issues during tab switching
   const applicationCounts = useMemo(() => {
     if (!applications) return { pending: 0, under_review: 0, approved: 0, rejected: 0, all: 0 };
@@ -900,6 +909,7 @@ export default function AdminDashboard() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-applications"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-accounts"] });
       setDuplicateCheckDialogOpen(false);
       setCurrentApplication(null);
       setPotentialDuplicates([]);
@@ -942,6 +952,7 @@ export default function AdminDashboard() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-applications"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/speakers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-accounts"] });
       setDuplicateCheckDialogOpen(false);
       setCurrentApplication(null);
       setPotentialDuplicates([]);
@@ -1606,7 +1617,7 @@ export default function AdminDashboard() {
                 <CardContent className="p-6 text-center">
                   <Users className="h-12 w-12 mx-auto mb-3 text-purple-600" />
                   <div className="text-3xl font-bold text-purple-700 mb-1">
-                    {speakersArray.filter((s: any) => s.userId).length || 0}
+                    {speakerAccounts?.length || 0}
                   </div>
                   <div className="text-sm font-medium text-purple-800">Registered Accounts</div>
                   <div className="text-xs text-purple-600 mt-1">Speakers with login access</div>
@@ -1861,91 +1872,38 @@ export default function AdminDashboard() {
                   </div>
                   
                   <div className="grid gap-4">
-                    {(() => {
-                      const ownedSpeakers = speakersArray.filter((s: any) => s.userId);
-                      if (ownedSpeakers.length === 0) {
-                        return (
-                          <div className="text-center py-8 text-gray-500 border rounded-lg bg-gray-50">
-                            <UserCheck className="h-10 w-10 mx-auto mb-3 text-gray-300" />
-                            <p className="font-medium text-gray-600">No registered speaker accounts yet</p>
-                            <p className="text-sm mt-1">Speakers will appear here once they apply through the application form and are approved, or claim an existing profile.</p>
-                          </div>
-                        );
-                      }
-                      return ownedSpeakers.map((speaker: any) => (
-                        <div key={speaker.slug} className="flex items-center justify-between p-4 border rounded-lg">
+                    {(!speakerAccounts || speakerAccounts.length === 0) ? (
+                      <div className="text-center py-8 text-gray-500 border rounded-lg bg-gray-50">
+                        <UserCheck className="h-10 w-10 mx-auto mb-3 text-gray-300" />
+                        <p className="font-medium text-gray-600">No registered speaker accounts yet</p>
+                        <p className="text-sm mt-1">Speakers will appear here once they apply through the application form and are approved, or claim an existing profile.</p>
+                      </div>
+                    ) : (
+                      speakerAccounts.map((account: any) => (
+                        <div key={account.speakerId} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center space-x-4">
                             <img 
-                              src={speaker.imageUrl} 
-                              alt={speaker.name}
+                              src={account.speakerImageUrl} 
+                              alt={account.speakerName}
                               className="w-12 h-12 rounded-full object-cover"
                             />
                             <div>
-                              <h4 className="font-medium">{speaker.name}</h4>
-                              <p className="text-sm text-gray-600">{speaker.title}</p>
+                              <h4 className="font-medium">{account.speakerName}</h4>
+                              <p className="text-sm text-gray-600">{account.speakerTitle}</p>
+                              <p className="text-xs text-gray-400">{account.email}</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => updateSpeakerMutation.mutate({
-                                ...speaker,
-                                verified: !speaker.verified
-                              })}
-                              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                                speaker.verified 
-                                  ? 'bg-green-600 text-white hover:bg-green-700' 
-                                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                              }`}
-                              title={speaker.verified ? "Click to unverify" : "Click to verify"}
-                            >
-                              Verified
-                            </button>
-                            
-                            <button
-                              onClick={() => updateSpeakerMutation.mutate({
-                                ...speaker,
-                                isFeaturedOverride: !speaker.isFeaturedOverride
-                              })}
-                              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                                speaker.isFeaturedOverride 
-                                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                              }`}
-                              title={speaker.isFeaturedOverride ? "Click to remove manual featured status" : "Click to manually feature"}
-                            >
-                              Featured Override
-                            </button>
-                            
-                            <Select
-                              value={speaker.sdsBadge || "none"}
-                              onValueChange={(value) => updateSpeakerMutation.mutate({
-                                ...speaker,
-                                sdsBadge: value === "none" ? null : value
-                              })}
-                            >
-                              <SelectTrigger 
-                                className={`w-32 h-8 text-xs ${
-                                  speaker.sdsBadge === 'sds_faculty' 
-                                    ? 'bg-amber-500 text-white border-amber-600' 
-                                    : speaker.sdsBadge === 'sds'
-                                    ? 'bg-orange-500 text-white border-orange-600'
-                                    : 'bg-gray-100 border-gray-300'
-                                }`}
-                              >
-                                <SelectValue placeholder="SDS Badge" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">No Badge</SelectItem>
-                                <SelectItem value="sds">SDS</SelectItem>
-                                <SelectItem value="sds_faculty">SDS Faculty</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            
-                            <Button variant="outline" size="sm">Edit</Button>
+                            <Badge variant="outline" className="text-xs capitalize">{account.subscriptionTier}</Badge>
+                            {account.lastLogin && (
+                              <span className="text-xs text-gray-400">
+                                Last login: {new Date(account.lastLogin).toLocaleDateString()}
+                              </span>
+                            )}
                           </div>
                         </div>
-                      ));
-                    })()}
+                      ))
+                    )}
                   </div>
 
                   {/* All Speakers Management */}
@@ -2668,7 +2626,7 @@ export default function AdminDashboard() {
                   <CardContent className="p-6 text-center">
                     <BarChart3 className="h-12 w-12 mx-auto mb-3 text-purple-600" />
                     <div className="text-3xl font-bold text-purple-700 mb-1">
-                      {speakersArray.filter((s: any) => s.userId).length || 0}
+                      {speakerAccounts?.length || 0}
                     </div>
                     <div className="text-sm font-medium text-purple-800">Registered Accounts</div>
                     <div className="text-xs text-purple-600 mt-1">Speakers with login access</div>
