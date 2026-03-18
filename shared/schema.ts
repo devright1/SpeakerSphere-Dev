@@ -197,6 +197,9 @@ export const speakerApplications = pgTable("speaker_applications", {
   specialRequirements: text("special_requirements"),
   references: text("references"),
   
+  // Profile Claim
+  claimExistingProfile: boolean("claim_existing_profile").default(false),
+
   // Application Status
   status: text("status").default("pending"), // "pending", "approved", "rejected", "under_review"
   adminNotes: text("admin_notes"),

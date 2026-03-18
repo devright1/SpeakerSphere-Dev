@@ -1690,6 +1690,11 @@ export default function AdminDashboard() {
                               }`}>
                                 {application.status?.charAt(0).toUpperCase() + application.status?.slice(1)}
                               </Badge>
+                              {application.claimExistingProfile && (
+                                <Badge className="bg-amber-100 text-amber-800 border border-amber-300">
+                                  Profile Claim
+                                </Badge>
+                              )}
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -4446,6 +4451,19 @@ export default function AdminDashboard() {
             </DialogHeader>
             {selectedApplicationDetails && (
               <div className="space-y-6">
+                {/* Profile Claim Banner */}
+                {selectedApplicationDetails.claimExistingProfile && (
+                  <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 flex items-center gap-3">
+                    <div className="p-2 bg-amber-100 rounded-full">
+                      <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-amber-800">Existing Profile Claim</p>
+                      <p className="text-sm text-amber-700">This applicant indicated they already have a profile on Speaker Sphere and would like to claim it. Please verify their identity matches an existing speaker profile before approving.</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Personal Information */}
                 <div>
                   <h4 className="font-medium text-gray-900 mb-3 flex items-center">

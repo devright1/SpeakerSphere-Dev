@@ -51,6 +51,9 @@ const speakerApplicationSchema = z.object({
   biography: z.string().min(100, "Biography must be at least 100 characters"),
   specialRequirements: z.string().optional(),
   references: z.string().optional(),
+  
+  // Profile Claim
+  claimExistingProfile: z.boolean().default(false),
 });
 
 type SpeakerApplicationForm = z.infer<typeof speakerApplicationSchema>;
@@ -102,7 +105,8 @@ export default function SpeakerApplicationPage() {
       travelWillingness: "",
       biography: "",
       specialRequirements: "",
-      references: ""
+      references: "",
+      claimExistingProfile: false
     }
   });
 
@@ -537,6 +541,25 @@ export default function SpeakerApplicationPage() {
                           placeholder="Names and contact information of professional references"
                           className="min-h-[80px]"
                         />
+                      </div>
+                    </div>
+
+                    {/* Claim Existing Profile */}
+                    <div className="border rounded-lg p-4 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="claimExistingProfile"
+                          checked={form.watch("claimExistingProfile")}
+                          onCheckedChange={(checked) => form.setValue("claimExistingProfile", checked as boolean)}
+                        />
+                        <div className="space-y-1">
+                          <Label htmlFor="claimExistingProfile" className="text-sm font-medium cursor-pointer">
+                            I already have a profile on Speaker Sphere and would like to claim it
+                          </Label>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            Check this box if you see your profile already listed in our speaker directory and you'd like to take ownership of it to manage your information and access dashboard features.
+                          </p>
+                        </div>
                       </div>
                     </div>
 
