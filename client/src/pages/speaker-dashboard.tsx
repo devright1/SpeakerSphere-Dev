@@ -1273,22 +1273,6 @@ export default function SpeakerDashboard() {
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View Public Profile
               </Button>
-              <Button
-                onClick={() => isEditing ? handleCancel() : handleStartEdit()}
-                className={isEditing ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}
-              >
-                {isEditing ? (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Cancel
-                  </>
-                ) : (
-                  <>
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </div>
@@ -1314,13 +1298,33 @@ export default function SpeakerDashboard() {
               <div className="lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <User className="h-5 w-5 mr-2" />
-                      Speaker Profile
-                    </CardTitle>
-                    <CardDescription>
-                      {isEditing ? "Edit your speaker information" : "Your public speaker profile information"}
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center">
+                          <User className="h-5 w-5 mr-2" />
+                          Speaker Profile
+                        </CardTitle>
+                        <CardDescription>
+                          {isEditing ? "Edit your speaker information" : "Your public speaker profile information"}
+                        </CardDescription>
+                      </div>
+                      <Button
+                        onClick={() => isEditing ? handleCancel() : handleStartEdit()}
+                        className={isEditing ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}
+                      >
+                        {isEditing ? (
+                          <>
+                            <Save className="h-4 w-4 mr-2" />
+                            Cancel
+                          </>
+                        ) : (
+                          <>
+                            <Edit3 className="h-4 w-4 mr-2" />
+                            Edit Profile
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Headshot Upload Section */}
