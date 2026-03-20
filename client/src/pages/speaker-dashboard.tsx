@@ -180,6 +180,7 @@ function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc:
 export default function SpeakerDashboard() {
   // const { user } = useAuth();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [selectedContentForAccessCodes, setSelectedContentForAccessCodes] = useState<any>(null);
@@ -1280,7 +1281,7 @@ export default function SpeakerDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <Tabs defaultValue="profile" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews ({speakerReviews?.length || 0})</TabsTrigger>
@@ -3448,12 +3449,10 @@ export default function SpeakerDashboard() {
                       <p className="text-gray-600 mb-4">
                         Upgrade to showcase your speaking videos and reach more potential clients.
                       </p>
-                      <Link href="/speaker-dashboard?tab=subscription">
-                        <Button className="bg-blue-600 hover:bg-blue-700">
-                          <Crown className="h-4 w-4 mr-2" />
-                          View Upgrade Options
-                        </Button>
-                      </Link>
+                      <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setActiveTab("subscription")}>
+                        <Crown className="h-4 w-4 mr-2" />
+                        View Upgrade Options
+                      </Button>
                     </CardContent>
                   </Card>
                 )}
