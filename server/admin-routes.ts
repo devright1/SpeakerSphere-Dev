@@ -388,8 +388,8 @@ export function registerAdminRoutes(app: Express) {
         });
       }
       
-      // Update the speaker profile's email to match the applicant's real email
-      await storage.updateSpeaker(existingSpeaker.id, { email: application.email });
+      // Update the speaker profile's email and mark as verified (claimed profile)
+      await storage.updateSpeaker(existingSpeaker.id, { email: application.email, verified: true });
 
       // Update the application with the linked speaker ID
       await db.update(speakerApplications)
