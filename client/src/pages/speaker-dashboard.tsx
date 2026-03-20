@@ -1638,29 +1638,37 @@ export default function SpeakerDashboard() {
                               <p className="text-sm text-blue-700">Pro members can select one social media platform. <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to Premier</Link> for all platforms.</p>
                             </div>
                           </div>
-                          <div className="mt-3">
-                            <Select
-                              value={isEditing ? (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform || '') : (speakerProfile?.selectedSocialPlatform || '')}
-                              onValueChange={(value) => {
-                                if (isEditing) {
-                                  setEditForm({...editForm, selectedSocialPlatform: value});
-                                } else {
-                                  // Save immediately when not in edit mode
-                                  updateProfileMutation.mutate({ selectedSocialPlatform: value });
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="w-full bg-white">
-                                <SelectValue placeholder="Choose your social platform" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="instagram">Instagram</SelectItem>
-                                <SelectItem value="linkedin">LinkedIn</SelectItem>
-                                <SelectItem value="facebook">Facebook</SelectItem>
-                                <SelectItem value="x">X (Twitter)</SelectItem>
-                                <SelectItem value="tiktok">TikTok</SelectItem>
-                              </SelectContent>
-                            </Select>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {[
+                              { value: 'instagram', label: 'Instagram' },
+                              { value: 'linkedin', label: 'LinkedIn' },
+                              { value: 'facebook', label: 'Facebook' },
+                              { value: 'x', label: 'X (Twitter)' },
+                              { value: 'tiktok', label: 'TikTok' },
+                            ].map((platform) => {
+                              const selected = (isEditing ? (editForm.selectedSocialPlatform || speakerProfile?.selectedSocialPlatform) : speakerProfile?.selectedSocialPlatform) === platform.value;
+                              return (
+                                <button
+                                  key={platform.value}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isEditing) {
+                                      setEditForm({...editForm, selectedSocialPlatform: platform.value});
+                                    } else {
+                                      updateProfileMutation.mutate({ selectedSocialPlatform: platform.value });
+                                    }
+                                  }}
+                                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                                    selected
+                                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                                  }`}
+                                >
+                                  {selected && <Check className="h-4 w-4" />}
+                                  {platform.label}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
