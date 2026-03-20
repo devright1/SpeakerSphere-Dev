@@ -1608,6 +1608,27 @@ export default function SpeakerDashboard() {
 
                     {/* Social Media Links - Tier-based access */}
                     <>
+                      {/* Basic tier: Upgrade message */}
+                      {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && (
+                        <div className="mb-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                          <div className="flex items-center gap-3">
+                            <Lock className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-medium text-amber-900">Social Media Links Locked</h4>
+                              <p className="text-sm text-amber-700 mt-1">
+                                Upgrade your subscription to display your social media handles on your public speaker profile. 
+                                <button 
+                                  onClick={() => setActiveTab("subscription")} 
+                                  className="underline font-medium ml-1 hover:text-amber-900"
+                                >
+                                  View upgrade options
+                                </button>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Pro tier: Select one platform */}
                       {(speakerProfile?.subscriptionTier ?? 'basic') === 'pro' && (
                         <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
