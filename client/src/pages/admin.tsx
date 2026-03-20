@@ -5603,8 +5603,8 @@ export default function AdminDashboard() {
                       <Label htmlFor="speakerInstagram">Instagram</Label>
                       <Input
                         id="speakerInstagram"
-                        value={editingSpeaker.instagramUrl || ""}
-                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, instagramUrl: e.target.value }))}
+                        value={editingSpeaker.instagramHandle || ""}
+                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, instagramHandle: e.target.value }))}
                         placeholder="Instagram URL"
                       />
                     </div>
@@ -5612,8 +5612,8 @@ export default function AdminDashboard() {
                       <Label htmlFor="speakerTwitter">X (Twitter)</Label>
                       <Input
                         id="speakerTwitter"
-                        value={editingSpeaker.twitterUrl || ""}
-                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, twitterUrl: e.target.value }))}
+                        value={editingSpeaker.xHandle || ""}
+                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, xHandle: e.target.value }))}
                         placeholder="X/Twitter URL"
                       />
                     </div>
@@ -5621,8 +5621,8 @@ export default function AdminDashboard() {
                       <Label htmlFor="speakerLinkedIn">LinkedIn</Label>
                       <Input
                         id="speakerLinkedIn"
-                        value={editingSpeaker.linkedinUrl || ""}
-                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, linkedinUrl: e.target.value }))}
+                        value={editingSpeaker.linkedinHandle || ""}
+                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, linkedinHandle: e.target.value }))}
                         placeholder="LinkedIn URL"
                       />
                     </div>
@@ -5630,8 +5630,8 @@ export default function AdminDashboard() {
                       <Label htmlFor="speakerFacebook">Facebook</Label>
                       <Input
                         id="speakerFacebook"
-                        value={editingSpeaker.facebookUrl || ""}
-                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, facebookUrl: e.target.value }))}
+                        value={editingSpeaker.facebookHandle || ""}
+                        onChange={(e) => setEditingSpeaker((prev: any) => ({ ...prev, facebookHandle: e.target.value }))}
                         placeholder="Facebook URL"
                       />
                     </div>

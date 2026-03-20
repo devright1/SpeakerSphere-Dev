@@ -1671,8 +1671,8 @@ export default function SpeakerDashboard() {
                           ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="instagramHandle"
-                              value=""
-                              placeholder="Upgrade to Pro to add"
+                              value={speakerProfile?.instagramHandle || ''}
+                              placeholder="Upgrade to Pro to edit"
                               disabled
                               className="opacity-50 cursor-not-allowed"
                               data-testid="input-instagram-handle-locked"
@@ -1724,8 +1724,8 @@ export default function SpeakerDashboard() {
                           ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="linkedinHandle"
-                              value=""
-                              placeholder="Upgrade to Pro to add"
+                              value={speakerProfile?.linkedinHandle || ''}
+                              placeholder="Upgrade to Pro to edit"
                               disabled
                               className="opacity-50 cursor-not-allowed"
                               data-testid="input-linkedin-handle-locked"
@@ -1779,8 +1779,8 @@ export default function SpeakerDashboard() {
                           ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="facebookHandle"
-                              value=""
-                              placeholder="Upgrade to Pro to add"
+                              value={speakerProfile?.facebookHandle || ''}
+                              placeholder="Upgrade to Pro to edit"
                               disabled
                               className="opacity-50 cursor-not-allowed"
                               data-testid="input-facebook-handle-locked"
@@ -1832,8 +1832,8 @@ export default function SpeakerDashboard() {
                           ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="xHandle"
-                              value=""
-                              placeholder="Upgrade to Pro to add"
+                              value={speakerProfile?.xHandle || ''}
+                              placeholder="Upgrade to Pro to edit"
                               disabled
                               className="opacity-50 cursor-not-allowed"
                               data-testid="input-x-handle-locked"
@@ -1887,8 +1887,8 @@ export default function SpeakerDashboard() {
                           ) : (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
                             <Input
                               id="tiktokHandle"
-                              value=""
-                              placeholder="Upgrade to Pro to add"
+                              value={speakerProfile?.tiktokHandle || ''}
+                              placeholder="Upgrade to Pro to edit"
                               disabled
                               className="opacity-50 cursor-not-allowed"
                               data-testid="input-tiktok-handle-locked"
