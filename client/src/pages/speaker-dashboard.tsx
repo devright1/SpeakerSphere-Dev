@@ -3015,6 +3015,7 @@ export default function SpeakerDashboard() {
                   <UpgradePrompt 
                     feature="analytics"
                     currentTier={(speakerProfile?.subscriptionTier ?? 'basic') as "basic" | "pro" | "premier"}
+                    onUpgradeClick={() => setActiveTab("subscription")}
                   />
                 </div>
               )}

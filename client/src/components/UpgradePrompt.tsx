@@ -1,14 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Lock, TrendingUp, BarChart3, LineChart, PieChart } from "lucide-react";
-import { Link } from "wouter";
 
 interface UpgradePromptProps {
   feature: "analytics" | "storage" | "social";
   currentTier: "basic" | "pro" | "premier";
+  onUpgradeClick?: () => void;
 }
 
-export function UpgradePrompt({ feature, currentTier }: UpgradePromptProps) {
+export function UpgradePrompt({ feature, currentTier, onUpgradeClick }: UpgradePromptProps) {
   const featureContent = {
     analytics: {
       title: "Advanced Analytics",
@@ -90,14 +90,13 @@ export function UpgradePrompt({ feature, currentTier }: UpgradePromptProps) {
           </div>
 
           {/* CTA Button */}
-          <Link href="/speaker-dashboard?tab=subscription">
-            <Button 
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-6 text-lg font-semibold shadow-lg"
-              data-testid="button-upgrade-to-premier"
-            >
-              Upgrade to Premier - $99/month
-            </Button>
-          </Link>
+          <Button 
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-6 text-lg font-semibold shadow-lg"
+            data-testid="button-upgrade-to-premier"
+            onClick={onUpgradeClick}
+          >
+            Upgrade to Premier - $99/month
+          </Button>
 
           {/* Additional Info */}
           <p className="text-center text-sm text-gray-500">
