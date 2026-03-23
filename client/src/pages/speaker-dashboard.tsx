@@ -3248,37 +3248,35 @@ export default function SpeakerDashboard() {
                           <h4 className="font-medium text-gray-900 text-[11px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
                           <span className="text-[9px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
                         </div>
-                        <div className="flex items-center gap-0.5 mt-1 w-full justify-center">
+                        <div className="grid grid-cols-4 gap-1 mt-1 w-full">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
                             disabled={updateContentMutation.isPending}
-                            className={cn("h-5 w-5 p-0", content.isPublic ? "text-orange-600 border-orange-600" : "text-green-600 border-green-600")}
+                            className={cn("h-7 w-full p-0 flex items-center justify-center", content.isPublic ? "text-orange-600 border-orange-600" : "text-green-600 border-green-600")}
                             title={content.isPublic ? "Make Private" : "Make Public"}
                           >
-                            {content.isPublic ? <EyeOff className="h-2.5 w-2.5" /> : <Eye className="h-2.5 w-2.5" />}
+                            {content.isPublic ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                           </Button>
                           <TooltipProvider>
                             <ShadcnTooltip delayDuration={100}>
                               <TooltipTrigger asChild>
-                                <span className="inline-block">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
-                                    onClick={() => {
-                                      if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
-                                        toast({ title: "Pro Feature", description: "Access codes are available on the Pro plan.", variant: "default" });
-                                      } else {
-                                        setSelectedContentForAccessCodes(content);
-                                      }
-                                    }}
-                                    className={cn("h-5 w-5 p-0 text-blue-600 border-blue-600", (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none")}
-                                  >
-                                    <Zap className="h-2.5 w-2.5" />
-                                  </Button>
-                                </span>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
+                                  onClick={() => {
+                                    if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
+                                      toast({ title: "Pro Feature", description: "Access codes are available on the Pro plan.", variant: "default" });
+                                    } else {
+                                      setSelectedContentForAccessCodes(content);
+                                    }
+                                  }}
+                                  className={cn("h-7 w-full p-0 flex items-center justify-center text-blue-600 border-blue-600", (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none")}
+                                >
+                                  <Zap className="h-3 w-3" />
+                                </Button>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-xs text-center p-2">
                                 {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
@@ -3289,17 +3287,17 @@ export default function SpeakerDashboard() {
                               </TooltipContent>
                             </ShadcnTooltip>
                           </TooltipProvider>
-                          <Button variant="outline" size="sm" onClick={() => handleDownload(content.id, content.originalName)} title="Download" className="h-5 w-5 p-0">
-                            <Download className="h-2.5 w-2.5" />
+                          <Button variant="outline" size="sm" onClick={() => handleDownload(content.id, content.originalName)} title="Download" className="h-7 w-full p-0 flex items-center justify-center">
+                            <Download className="h-3 w-3" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => deleteContentMutation.mutate(content.id)}
                             disabled={deleteContentMutation.isPending}
-                            className="h-5 w-5 p-0 text-red-500 border-red-500"
+                            className="h-7 w-full p-0 flex items-center justify-center text-red-500 border-red-500"
                           >
-                            <Trash2 className="h-2.5 w-2.5" />
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
