@@ -3159,9 +3159,9 @@ export default function SpeakerDashboard() {
                             size="sm"
                             onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
                             disabled={updateContentMutation.isPending}
-                            className="flex-1 text-[9px] h-6 px-1"
+                            className={cn("flex-1 text-[9px] h-6 px-1", content.isPublic ? "text-green-600 border-green-600" : "text-orange-600 border-orange-600")}
                           >
-                            {content.isPublic ? <EyeOff className="h-2.5 w-2.5" /> : <Eye className="h-2.5 w-2.5" />}
+                            {content.isPublic ? <Eye className="h-2.5 w-2.5" /> : <EyeOff className="h-2.5 w-2.5" />}
                           </Button>
                           <Button
                             variant="outline"
@@ -3254,10 +3254,10 @@ export default function SpeakerDashboard() {
                             size="sm"
                             onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
                             disabled={updateContentMutation.isPending}
-                            className={cn("h-7 w-full p-0 flex items-center justify-center", content.isPublic ? "text-orange-600 border-orange-600" : "text-green-600 border-green-600")}
+                            className={cn("h-7 w-full p-0 flex items-center justify-center", content.isPublic ? "text-green-600 border-green-600" : "text-orange-600 border-orange-600")}
                             title={content.isPublic ? "Make Private" : "Make Public"}
                           >
-                            {content.isPublic ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                            {content.isPublic ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                           </Button>
                           <TooltipProvider>
                             <ShadcnTooltip delayDuration={100}>
