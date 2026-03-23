@@ -3136,24 +3136,24 @@ export default function SpeakerDashboard() {
                 </div>
 
                 {speakerContent && speakerContent.length > 0 ? (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                  <div className="flex flex-wrap gap-3">
                     {speakerContent.map((content: any) => (
-                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 aspect-square hover:shadow-md transition-shadow relative group">
-                        <div className="absolute top-1.5 right-1.5">
+                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 hover:shadow-md transition-shadow relative group w-28 h-28">
+                        <div className="absolute top-1 right-1">
                           {content.isPublic ? (
                             <Badge variant="outline" className="text-[8px] px-1 py-0 text-green-600 border-green-600 bg-white">Public</Badge>
                           ) : (
                             <Badge variant="outline" className="text-[8px] px-1 py-0 text-gray-500 border-gray-400 bg-white">Private</Badge>
                           )}
                         </div>
-                        <div className="flex-1 flex flex-col items-center justify-center w-full pt-3">
-                          <div className="p-1.5 bg-white rounded-md shadow-sm mb-1.5">
+                        <div className="flex-1 flex flex-col items-center justify-center w-full pt-2">
+                          <div className="p-1.5 bg-white rounded-md shadow-sm mb-1">
                             {getFileIcon(content.category)}
                           </div>
-                          <h4 className="font-medium text-gray-900 text-[10px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
-                          <span className="text-[8px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
+                          <h4 className="font-medium text-gray-900 text-[11px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
+                          <span className="text-[9px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
                         </div>
-                        <div className="flex items-center gap-1 mt-1.5 w-full">
+                        <div className="flex items-center gap-1 mt-1 w-full">
                           <Button
                             variant="outline"
                             size="sm"
@@ -3228,9 +3228,9 @@ export default function SpeakerDashboard() {
               {/* Content List */}
               <div className="space-y-4">
                 {speakerContent && speakerContent.length > 0 ? (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                  <div className="flex flex-wrap gap-3">
                     {speakerContent.map((content: any) => (
-                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 aspect-square hover:shadow-md transition-shadow relative">
+                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 hover:shadow-md transition-shadow relative w-28 h-28">
                         <div className="absolute top-1 left-1 flex gap-0.5">
                           {content.isPublic ? (
                             <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-green-600 border-green-600 bg-white leading-tight">Public</Badge>
@@ -3245,8 +3245,8 @@ export default function SpeakerDashboard() {
                           <div className="p-1 bg-white rounded-md shadow-sm mb-1">
                             {getFileIcon(content.category)}
                           </div>
-                          <h4 className="font-medium text-gray-900 text-[9px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
-                          <span className="text-[7px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
+                          <h4 className="font-medium text-gray-900 text-[11px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
+                          <span className="text-[9px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
                         </div>
                         <div className="flex items-center gap-0.5 mt-1 w-full justify-center">
                           <Button
