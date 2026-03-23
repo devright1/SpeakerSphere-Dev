@@ -893,16 +893,12 @@ export default function SpeakerProfile() {
             {/* Tabs */}
             <Tabs defaultValue="overview" className="space-y-6">
               <TabsList className={`grid w-full ${
-                speaker.hideRatings 
-                  ? (speaker.verified ? 'grid-cols-4' : 'grid-cols-3')
-                  : (speaker.verified ? 'grid-cols-5' : 'grid-cols-4')
+                speaker.hideRatings ? 'grid-cols-4' : 'grid-cols-5'
               }`}>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="experience">Experience</TabsTrigger>
                 <TabsTrigger value="topics">Topics</TabsTrigger>
-                {speaker.verified && (
-                  <TabsTrigger value="resources">Speaker Resources</TabsTrigger>
-                )}
+                <TabsTrigger value="resources">Speaker Resources</TabsTrigger>
                 {!speaker.hideRatings && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
               </TabsList>
 
