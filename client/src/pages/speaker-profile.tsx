@@ -1125,15 +1125,15 @@ export default function SpeakerProfile() {
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="px-6 py-4">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                               {contents.map((content: any) => (
-                                <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-4 aspect-square hover:shadow-md transition-shadow">
+                                <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 aspect-square hover:shadow-md transition-shadow">
                                   <div className="flex-1 flex flex-col items-center justify-center w-full">
-                                    <div className="p-3 bg-white rounded-lg shadow-sm mb-3">
+                                    <div className="p-1.5 bg-white rounded-md shadow-sm mb-1.5">
                                       {getFileIcon(content.category)}
                                     </div>
-                                    <h4 className="font-semibold text-gray-900 text-xs text-center line-clamp-2 w-full px-1">{content.originalName}</h4>
-                                    <span className="text-[10px] text-gray-500 mt-1">{formatFileSize(content.fileSize)}</span>
+                                    <h4 className="font-medium text-gray-900 text-[10px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
+                                    <span className="text-[8px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
                                   </div>
                                   <Button
                                     variant="outline"
@@ -1200,9 +1200,9 @@ export default function SpeakerProfile() {
                                         console.error('Download error:', error);
                                       }
                                     }}
-                                    className="flex items-center gap-1 mt-2 w-full justify-center text-xs"
+                                    className="flex items-center gap-0.5 mt-1.5 w-full justify-center text-[10px] h-6 px-1"
                                   >
-                                    <Download className="h-3 w-3" />
+                                    <Download className="h-2.5 w-2.5" />
                                     {!isAuthenticated ? "Login" : content.requiresAccessCode ? "Access Code" : "Download"}
                                   </Button>
                                 </div>
