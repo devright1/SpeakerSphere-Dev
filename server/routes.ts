@@ -1836,10 +1836,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
     try {
       const speakerId = parseInt(req.params.speakerId);
       const content = await storage.getSpeakerContent(speakerId);
-      
-      // Filter for public content only when viewed on speaker profile
-      const publicContent = content.filter(item => item.isPublic);
-      res.json(publicContent);
+      res.json(content);
     } catch (error) {
       console.error("Get content error:", error);
       res.status(500).json({ error: "Failed to get content" });
