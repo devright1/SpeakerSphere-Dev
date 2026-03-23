@@ -3136,68 +3136,44 @@ export default function SpeakerDashboard() {
                 </div>
 
                 {speakerContent && speakerContent.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {speakerContent.map((content: any) => (
-                      <Card key={content.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                              <div className="p-2 bg-gray-100 rounded-lg">
-                                {getFileIcon(content.category)}
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-gray-900">{content.originalName}</h4>
-                                <p className="text-sm text-gray-600">{content.description}</p>
-                                <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                                  <span>{formatFileSize(content.fileSize)}</span>
-                                  <span className="capitalize">{content.category}</span>
-                                  <span>{content.downloadCount} downloads</span>
-                                  <span>
-                                    {content.isPublic ? (
-                                      <Badge variant="outline" className="text-green-600 border-green-600">
-                                        Public
-                                      </Badge>
-                                    ) : (
-                                      <Badge variant="outline" className="text-gray-600 border-gray-600">
-                                        Private
-                                      </Badge>
-                                    )}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
-                                disabled={updateContentMutation.isPending}
-                              >
-                                {content.isPublic ? (
-                                  <>
-                                    <EyeOff className="h-4 w-4 mr-1" />
-                                    Make Private
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    Make Public
-                                  </>
-                                )}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteContentMutation.mutate(content.id)}
-                                disabled={deleteContentMutation.isPending}
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Delete
-                              </Button>
-                            </div>
+                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 aspect-square hover:shadow-md transition-shadow relative group">
+                        <div className="absolute top-1.5 right-1.5">
+                          {content.isPublic ? (
+                            <Badge variant="outline" className="text-[8px] px-1 py-0 text-green-600 border-green-600 bg-white">Public</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[8px] px-1 py-0 text-gray-500 border-gray-400 bg-white">Private</Badge>
+                          )}
+                        </div>
+                        <div className="flex-1 flex flex-col items-center justify-center w-full pt-3">
+                          <div className="p-1.5 bg-white rounded-md shadow-sm mb-1.5">
+                            {getFileIcon(content.category)}
                           </div>
-                        </CardContent>
-                      </Card>
+                          <h4 className="font-medium text-gray-900 text-[10px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
+                          <span className="text-[8px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
+                        </div>
+                        <div className="flex items-center gap-1 mt-1.5 w-full">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
+                            disabled={updateContentMutation.isPending}
+                            className="flex-1 text-[9px] h-6 px-1"
+                          >
+                            {content.isPublic ? <EyeOff className="h-2.5 w-2.5" /> : <Eye className="h-2.5 w-2.5" />}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteContentMutation.mutate(content.id)}
+                            disabled={deleteContentMutation.isPending}
+                            className="text-[9px] h-6 px-1.5 text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-2.5 w-2.5" />
+                          </Button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
