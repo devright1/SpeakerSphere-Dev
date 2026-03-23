@@ -301,9 +301,10 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
 
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-      if (!isValidPassword) {
+      // Verify password — check both admin-assigned password and user-set password
+      const isAdminPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      const isUserPasswordValid = user.userPasswordHash ? await bcrypt.compare(password, user.userPasswordHash) : false;
+      if (!isAdminPasswordValid && !isUserPasswordValid) {
         return res.status(401).json({
           success: false,
           message: "Invalid email or password"
@@ -416,21 +417,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
 
-      // Verify current password
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.passwordHash);
-      if (!isCurrentPasswordValid) {
+      // Verify current password — accept either admin or user-set password
+      const isAdminPwValid = await bcrypt.compare(currentPassword, currentUser.passwordHash);
+      const isUserPwValid = currentUser.userPasswordHash ? await bcrypt.compare(currentPassword, currentUser.userPasswordHash) : false;
+      if (!isAdminPwValid && !isUserPwValid) {
         return res.status(400).json({
           success: false,
           message: "Current password is incorrect"
         });
       }
 
-      // Hash new password
+      // Hash new password and store as user-set password only (admin password stays untouched)
       const saltRounds = 10;
       const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
-
-      // Update password and tempPassword in database so admin always sees the current password
-      await storage.updateUserPassword(userId, newPasswordHash, newPassword);
+      await storage.updateUserSetPassword(userId, newPasswordHash);
 
       res.json({
         success: true,
@@ -1623,20 +1623,19 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
 
-      // Verify current password
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
-      if (!isCurrentPasswordValid) {
+      // Verify current password — accept either admin or user-set password
+      const isAdminPwValid = await bcrypt.compare(currentPassword, user.passwordHash);
+      const isUserPwValid = user.userPasswordHash ? await bcrypt.compare(currentPassword, user.userPasswordHash) : false;
+      if (!isAdminPwValid && !isUserPwValid) {
         return res.status(400).json({ 
           success: false,
           message: "Current password is incorrect" 
         });
       }
 
-      // Hash new password
+      // Hash new password and store as user-set password only (admin password stays untouched)
       const newPasswordHash = await bcrypt.hash(newPassword, 10);
-      
-      // Update password and tempPassword in database so admin always sees the current password
-      await storage.updateUserPassword(userId, newPasswordHash, newPassword);
+      await storage.updateUserSetPassword(userId, newPasswordHash);
 
       console.log("Password changed successfully for user:", userId);
 

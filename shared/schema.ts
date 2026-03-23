@@ -303,6 +303,7 @@ export const users = pgTable("users", {
   identityVerificationSessionId: varchar("identity_verification_session_id", { length: 255 }), // Stripe verification session ID
   identityVerifiedAt: timestamp("identity_verified_at"),
   tempPassword: varchar("temp_password", { length: 255 }),
+  userPasswordHash: varchar("user_password_hash", { length: 255 }),
 });
 
 // User session management

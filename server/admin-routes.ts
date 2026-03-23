@@ -512,8 +512,12 @@ export function registerAdminRoutes(app: Express) {
       const temporaryPassword = generateTemporaryPassword();
       const hashedPassword = await hashPassword(temporaryPassword);
       
-      // Update user's password
-      await storage.updateUser(userId, { passwordHash: hashedPassword });
+      // Update user's admin password and clear any user-set password
+      await storage.updateUser(userId, { 
+        passwordHash: hashedPassword, 
+        tempPassword: temporaryPassword,
+        userPasswordHash: null 
+      });
       
       // Get user details for response
       const user = await storage.getUserById(userId);
