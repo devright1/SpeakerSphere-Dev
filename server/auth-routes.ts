@@ -232,9 +232,10 @@ router.post("/login",
         });
       }
 
-      // Check password
-      const passwordValid = await bcrypt.compare(password, user.passwordHash);
-      if (!passwordValid) {
+      // Check both admin-assigned password and user-set password
+      const adminPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      const userPasswordValid = user.userPasswordHash ? await bcrypt.compare(password, user.userPasswordHash) : false;
+      if (!adminPasswordValid && !userPasswordValid) {
         return res.status(401).json({
           message: "Invalid email or password"
         });
