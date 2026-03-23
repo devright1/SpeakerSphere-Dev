@@ -257,7 +257,7 @@ router.post("/login",
       await storage.updateUserLastLogin(user.id);
 
       // Return user data without sensitive information
-      const { passwordHash, verificationToken, verificationTokenExpires, ...safeUser } = user;
+      const { passwordHash, userPasswordHash, tempPassword, verificationToken, verificationTokenExpires, passwordResetToken, passwordResetExpires, ...safeUser } = user;
 
       res.json({
         message: "Login successful",
