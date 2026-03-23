@@ -3228,120 +3228,81 @@ export default function SpeakerDashboard() {
               {/* Content List */}
               <div className="space-y-4">
                 {speakerContent && speakerContent.length > 0 ? (
-                  <div className="grid gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {speakerContent.map((content: any) => (
-                      <Card key={content.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                              <div className="p-2 bg-gray-100 rounded-lg">
-                                {getFileIcon(content.category)}
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-gray-900">{content.originalName}</h4>
-                                <p className="text-sm text-gray-600">{content.description}</p>
-                                <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                                  <span>{formatFileSize(content.fileSize)}</span>
-                                  <span>{content.category}</span>
-                                  <span>{content.downloadCount} downloads</span>
-                                  <span>
-                                    {content.isPublic ? (
-                                      <Badge variant="outline" className="text-green-600 border-green-600">
-                                        Public
-                                      </Badge>
-                                    ) : (
-                                      <Badge variant="outline" className="text-gray-600 border-gray-600">
-                                        Private
-                                      </Badge>
-                                    )}
-                                  </span>
-                                  {content.requiresAccessCode && (
-                                    <span>
-                                      <Badge variant="outline" className="text-blue-600 border-blue-600">
-                                        Access Code Required
-                                      </Badge>
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
-                                disabled={updateContentMutation.isPending}
-                                className={content.isPublic ? 
-                                  "text-orange-600 border-orange-600 hover:bg-orange-50" : 
-                                  "text-green-600 border-green-600 hover:bg-green-50"
-                                }
-                                title={content.isPublic ? "Make Private" : "Make Public"}
-                              >
-                                {content.isPublic ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </Button>
-                              <TooltipProvider>
-                                <ShadcnTooltip delayDuration={100}>
-                                  <TooltipTrigger asChild>
-                                    <span className="inline-block">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
-                                        onClick={() => {
-                                          if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
-                                            toast({
-                                              title: "Pro Feature",
-                                              description: "Access codes are available on the Pro plan. Upgrade to share exclusive content with access codes.",
-                                              variant: "default"
-                                            });
-                                          } else {
-                                            setSelectedContentForAccessCodes(content);
-                                          }
-                                        }}
-                                        className={cn(
-                                          "text-blue-600 border-blue-600 hover:bg-blue-50",
-                                          (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none"
-                                        )}
-                                      >
-                                        {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && <Lock className="h-3 w-3 mr-1" />}
-                                        <Zap className="h-4 w-4" />
-                                      </Button>
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs text-center p-3">
-                                    {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
-                                      <p className="text-sm">
-                                        <strong>Access Codes</strong> let you create unique codes to share private content with specific people.
-                                        <br /><br />
-                                        <span className="text-amber-600 font-medium">Upgrade to Pro to unlock this feature.</span>
-                                      </p>
-                                    ) : (
-                                      <p className="text-sm">Manage Access Codes</p>
-                                    )}
-                                  </TooltipContent>
-                                </ShadcnTooltip>
-                              </TooltipProvider>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDownload(content.id, content.originalName)}
-                                title="Download File"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteContentMutation.mutate(content.id)}
-                                disabled={deleteContentMutation.isPending}
-                                className="text-red-600 border-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 aspect-square hover:shadow-md transition-shadow relative">
+                        <div className="absolute top-1 left-1 flex gap-0.5">
+                          {content.isPublic ? (
+                            <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-green-600 border-green-600 bg-white leading-tight">Public</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-gray-500 border-gray-400 bg-white leading-tight">Private</Badge>
+                          )}
+                          {content.requiresAccessCode && (
+                            <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-blue-600 border-blue-600 bg-white leading-tight">Code</Badge>
+                          )}
+                        </div>
+                        <div className="flex-1 flex flex-col items-center justify-center w-full pt-3">
+                          <div className="p-1 bg-white rounded-md shadow-sm mb-1">
+                            {getFileIcon(content.category)}
                           </div>
-                        </CardContent>
-                      </Card>
+                          <h4 className="font-medium text-gray-900 text-[9px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
+                          <span className="text-[7px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5 mt-1 w-full justify-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
+                            disabled={updateContentMutation.isPending}
+                            className={cn("h-5 w-5 p-0", content.isPublic ? "text-orange-600 border-orange-600" : "text-green-600 border-green-600")}
+                            title={content.isPublic ? "Make Private" : "Make Public"}
+                          >
+                            {content.isPublic ? <EyeOff className="h-2.5 w-2.5" /> : <Eye className="h-2.5 w-2.5" />}
+                          </Button>
+                          <TooltipProvider>
+                            <ShadcnTooltip delayDuration={100}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-block">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
+                                    onClick={() => {
+                                      if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
+                                        toast({ title: "Pro Feature", description: "Access codes are available on the Pro plan.", variant: "default" });
+                                      } else {
+                                        setSelectedContentForAccessCodes(content);
+                                      }
+                                    }}
+                                    className={cn("h-5 w-5 p-0 text-blue-600 border-blue-600", (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none")}
+                                  >
+                                    <Zap className="h-2.5 w-2.5" />
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs text-center p-2">
+                                {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
+                                  <p className="text-xs"><strong>Access Codes</strong> — Upgrade to Pro to unlock.</p>
+                                ) : (
+                                  <p className="text-xs">Manage Access Codes</p>
+                                )}
+                              </TooltipContent>
+                            </ShadcnTooltip>
+                          </TooltipProvider>
+                          <Button variant="outline" size="sm" onClick={() => handleDownload(content.id, content.originalName)} title="Download" className="h-5 w-5 p-0">
+                            <Download className="h-2.5 w-2.5" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteContentMutation.mutate(content.id)}
+                            disabled={deleteContentMutation.isPending}
+                            className="h-5 w-5 p-0 text-red-500 border-red-500"
+                          >
+                            <Trash2 className="h-2.5 w-2.5" />
+                          </Button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
