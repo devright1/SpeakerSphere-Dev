@@ -1125,57 +1125,40 @@ export default function SpeakerProfile() {
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="px-6 py-4">
-                            <div className="space-y-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                               {contents.map((content: any) => (
-                                <div key={content.id} className="flex items-center justify-between gap-4 py-4 border-b border-gray-200 last:border-b-0">
-                                  <div className="flex items-center space-x-4 flex-1 min-w-0">
-                                    <div className="p-2 bg-gray-100 rounded-lg flex-shrink-0">
+                                <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-4 aspect-square hover:shadow-md transition-shadow">
+                                  <div className="flex-1 flex flex-col items-center justify-center w-full">
+                                    <div className="p-3 bg-white rounded-lg shadow-sm mb-3">
                                       {getFileIcon(content.category)}
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="font-semibold text-gray-900 truncate">{content.originalName}</h4>
-                                      <p className="text-sm text-gray-600 truncate">{content.description}</p>
-                                      <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                                        <span>{formatFileSize(content.fileSize)}</span>
-                                        <span>{content.downloadCount} downloads</span>
-                                        <span>
-                                          Updated {new Date(content.updatedAt).toLocaleDateString()}
-                                        </span>
-                                      </div>
-                                    </div>
+                                    <h4 className="font-semibold text-gray-900 text-xs text-center line-clamp-2 w-full px-1">{content.originalName}</h4>
+                                    <span className="text-[10px] text-gray-500 mt-1">{formatFileSize(content.fileSize)}</span>
                                   </div>
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={async () => {
-                                      // Check if user is authenticated before allowing download
                                       if (!isAuthenticated) {
                                         toast({
                                           title: "Login Required",
                                           description: "Please sign in or create an account to download content.",
                                           variant: "destructive",
                                         });
-                                        // Redirect to login page
                                         window.location.href = '/auth';
                                         return;
                                       }
-                                      
-                                      // Check if content requires access code
                                       if (content.requiresAccessCode) {
                                         setSelectedProtectedContent(content);
                                         setIsAccessCodeModalOpen(true);
                                         return;
                                       }
-                                      
                                       tracking.trackInteraction('resource_download', content.originalName);
-                                      
-                                      // Use fetch with user ID for download
                                       const userData = localStorage.getItem('userData');
                                       if (!userData) {
                                         window.location.href = '/auth';
                                         return;
                                       }
-                                      
                                       let userId;
                                       try {
                                         const user = JSON.parse(userData);
@@ -1185,26 +1168,18 @@ export default function SpeakerProfile() {
                                         window.location.href = '/auth';
                                         return;
                                       }
-                                      
                                       try {
                                         const response = await fetch(`/api/content/${content.id}/download`, {
                                           method: 'GET',
-                                          headers: {
-                                            'X-User-ID': userId
-                                          }
+                                          headers: { 'X-User-ID': userId }
                                         });
-                                        
                                         if (response.ok) {
-                                          // Check if response is JSON (error case) or file blob
                                           const contentType = response.headers.get('content-type');
                                           if (contentType && contentType.includes('application/json')) {
-                                            // Handle JSON error response
                                             const errorData = await response.json();
                                             console.error('Download error:', errorData.error);
                                             return;
                                           }
-                                          
-                                          // Get the blob and create download
                                           const blob = await response.blob();
                                           const url = window.URL.createObjectURL(blob);
                                           const link = document.createElement('a');
@@ -1225,10 +1200,10 @@ export default function SpeakerProfile() {
                                         console.error('Download error:', error);
                                       }
                                     }}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center gap-1 mt-2 w-full justify-center text-xs"
                                   >
-                                    <Download className="h-4 w-4" />
-                                    {!isAuthenticated ? "Login to Download" : content.requiresAccessCode ? "Access Code Required" : "Download"}
+                                    <Download className="h-3 w-3" />
+                                    {!isAuthenticated ? "Login" : content.requiresAccessCode ? "Access Code" : "Download"}
                                   </Button>
                                 </div>
                               ))}
