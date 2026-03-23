@@ -312,7 +312,7 @@ router.post("/forgot-password",
 
           if (emailSent) {
             const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
-            await storage.updateUserPassword(user.id, hashedPassword);
+            await storage.updateUserPassword(user.id, hashedPassword, temporaryPassword);
             console.log(`🔑 Password reset for ${user.email}`);
           } else {
             console.error('Failed to send password reset email to:', email);

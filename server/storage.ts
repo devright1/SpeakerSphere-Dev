@@ -144,7 +144,7 @@ export interface IStorage {
   getUserById(id: string): Promise<User | undefined>;
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
   updateUserAccountType(id: string, accountType: string): Promise<User>;
-  updateUserPassword(userId: string, passwordHash: string): Promise<void>;
+  updateUserPassword(userId: string, passwordHash: string, tempPassword?: string): Promise<void>;
   updateUserSubscription(userId: string, subscriptionData: Partial<User>): Promise<User>;
   
   // Email verification operations
@@ -1357,10 +1357,11 @@ export class MemStorage implements IStorage {
     }
   }
 
-  async updateUserPassword(userId: string, passwordHash: string): Promise<void> {
+  async updateUserPassword(userId: string, passwordHash: string, tempPassword?: string): Promise<void> {
     const user = this.users.get(userId);
     if (user) {
       user.passwordHash = passwordHash;
+      user.tempPassword = tempPassword ?? null;
       user.updatedAt = new Date();
       this.users.set(userId, user);
     }

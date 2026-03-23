@@ -429,8 +429,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const saltRounds = 10;
       const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
 
-      // Update password in database
-      await storage.updateUserPassword(userId, newPasswordHash);
+      // Update password and tempPassword in database so admin always sees the current password
+      await storage.updateUserPassword(userId, newPasswordHash, newPassword);
 
       res.json({
         success: true,
@@ -1635,8 +1635,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
       // Hash new password
       const newPasswordHash = await bcrypt.hash(newPassword, 10);
       
-      // Update password in database
-      await storage.updateUserPassword(userId, newPasswordHash);
+      // Update password and tempPassword in database so admin always sees the current password
+      await storage.updateUserPassword(userId, newPasswordHash, newPassword);
 
       console.log("Password changed successfully for user:", userId);
 
