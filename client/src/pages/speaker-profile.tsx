@@ -1127,7 +1127,7 @@ export default function SpeakerProfile() {
                           <CardContent className="px-6 py-4">
                             <div className="flex flex-wrap gap-3">
                               {contents.map((content: any) => (
-                                <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 hover:shadow-md transition-shadow w-28 h-28">
+                                <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 hover:shadow-md transition-shadow w-36 h-36">
                                   <div className="flex-1 flex flex-col items-center justify-center w-full">
                                     <div className="p-1.5 bg-white rounded-md shadow-sm mb-1">
                                       {getFileIcon(content.category)}

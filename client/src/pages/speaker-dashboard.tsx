@@ -3138,7 +3138,7 @@ export default function SpeakerDashboard() {
                 {speakerContent && speakerContent.length > 0 ? (
                   <div className="flex flex-wrap gap-3">
                     {speakerContent.map((content: any) => (
-                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 hover:shadow-md transition-shadow relative group w-28 h-28">
+                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 hover:shadow-md transition-shadow relative group w-36 h-36">
                         <div className="absolute top-1 right-1">
                           {content.isPublic ? (
                             <Badge variant="outline" className="text-[8px] px-1 py-0 text-green-600 border-green-600 bg-white">Public</Badge>
@@ -3230,7 +3230,7 @@ export default function SpeakerDashboard() {
                 {speakerContent && speakerContent.length > 0 ? (
                   <div className="flex flex-wrap gap-3">
                     {speakerContent.map((content: any) => (
-                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 hover:shadow-md transition-shadow relative w-28 h-28">
+                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 hover:shadow-md transition-shadow relative w-36 h-36">
                         <div className="absolute top-1 left-1 flex gap-0.5">
                           {content.isPublic ? (
                             <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-green-600 border-green-600 bg-white leading-tight">Public</Badge>
