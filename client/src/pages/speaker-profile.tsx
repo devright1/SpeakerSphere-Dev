@@ -125,7 +125,7 @@ export default function SpeakerProfile() {
     enabled: !!speaker,
   });
 
-  // Fetch speaker content (only for approved speakers)
+  // Fetch speaker content
   const { data: speakerContent, isLoading: contentLoading } = useQuery({
     queryKey: ["/api/speakers/content", speaker?.id],
     queryFn: async () => {
@@ -134,7 +134,7 @@ export default function SpeakerProfile() {
       if (!response.ok) return [];
       return response.json();
     },
-    enabled: Boolean(speaker?.id && speaker?.verified),
+    enabled: Boolean(speaker?.id),
   });
 
   // Fetch speaker video links (public, respects tier visibility limits)
@@ -151,7 +151,7 @@ export default function SpeakerProfile() {
       if (!response.ok) return { links: [], tier: 'basic', visibleCount: 0, maxLinks: 0 };
       return response.json();
     },
-    enabled: Boolean(speaker?.id && speaker?.verified),
+    enabled: Boolean(speaker?.id),
   });
 
   // Fetch speaker topics
