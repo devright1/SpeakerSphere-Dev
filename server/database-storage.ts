@@ -2221,16 +2221,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Subscription features management
-  async listSubscriptionFeatures(): Promise<(SubscriptionFeature & { tiers: Array<{ tier: string; sortOrder: number; isHighlighted: boolean }> })[]> {
+  async listSubscriptionFeatures(): Promise<(SubscriptionFeature & { tiers: Array<{ id: number; tier: string; sortOrder: number; isHighlighted: boolean }> })[]> {
     try {
-      // Get all subscription features
       const features = await db.select().from(subscriptionFeatures).orderBy(subscriptionFeatures.name);
       
-      // For each feature, get its tier associations
       const featuresWithTiers = await Promise.all(
         features.map(async (feature) => {
           const tierAssociations = await db
             .select({
+              id: subscriptionTierFeatures.id,
               tier: subscriptionTierFeatures.tier,
               sortOrder: subscriptionTierFeatures.sortOrder,
               isHighlighted: subscriptionTierFeatures.isHighlighted,
@@ -2239,8 +2238,8 @@ export class DatabaseStorage implements IStorage {
             .where(eq(subscriptionTierFeatures.featureId, feature.id))
             .orderBy(subscriptionTierFeatures.sortOrder);
           
-          // Map tier associations to ensure non-null values
           const tiersWithDefaults = tierAssociations.map(tier => ({
+            id: tier.id,
             tier: tier.tier,
             sortOrder: tier.sortOrder ?? 0,
             isHighlighted: tier.isHighlighted ?? false,

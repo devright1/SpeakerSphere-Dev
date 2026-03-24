@@ -268,7 +268,7 @@ export interface IStorage {
   updateSpeakerStorage(speakerId: number, bytesChange: number, videoCountChange: number): Promise<void>;
 
   // Subscription features management
-  listSubscriptionFeatures(): Promise<(SubscriptionFeature & { tiers: Array<{ tier: string; sortOrder: number; isHighlighted: boolean }> })[]>;
+  listSubscriptionFeatures(): Promise<(SubscriptionFeature & { tiers: Array<{ id: number; tier: string; sortOrder: number; isHighlighted: boolean }> })[]>;
   listSubscriptionFeaturesByTier(tier: string): Promise<SubscriptionFeature[]>;
   createSubscriptionFeature(feature: InsertSubscriptionFeature): Promise<SubscriptionFeature>;
   updateSubscriptionFeature(id: number, feature: Partial<InsertSubscriptionFeature>): Promise<SubscriptionFeature>;
