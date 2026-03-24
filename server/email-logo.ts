@@ -31,8 +31,28 @@ function getDevRightLogoBase64(): string {
 export function getEmailLogoHeader(): string {
   const logoBase64 = getDevRightLogoBase64();
   return `
-  <div style="text-align: center; padding: 20px; background: #ffffff; border-bottom: 1px solid #e5e7eb;">
-    <img src="${logoBase64}" alt="DevRight Logo" style="max-width: 200px; height: auto;" />
+  <div style="text-align: center; padding: 24px 20px 16px; background: #1e4347;">
+    <img src="${logoBase64}" alt="DevRight Logo" style="max-width: 180px; height: auto;" />
+  </div>
+`;
+}
+
+export function getEmailWrapper(content: string): string {
+  const logoBase64 = getDevRightLogoBase64();
+  return `
+  <div style="background-color: #f0f4f5; padding: 40px 20px; font-family: 'Inter', 'Segoe UI', Arial, sans-serif;">
+    <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(30,67,71,0.08);">
+      <div style="text-align: center; padding: 28px 20px 20px; background: #1e4347;">
+        <img src="${logoBase64}" alt="DevRight Logo" style="max-width: 160px; height: auto;" />
+        <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 10px 0 0; letter-spacing: 0.5px;">SPEAKERSPHERE</p>
+      </div>
+      <div style="padding: 32px 36px;">
+        ${content}
+      </div>
+      <div style="background: #f7fafa; padding: 20px 36px; border-top: 1px solid #e2e8e9; text-align: center;">
+        <p style="color: #6b8285; font-size: 12px; margin: 0;">SpeakerSphere by DevRight &middot; <a href="https://thespeakersphere.com" style="color: #1e4347; text-decoration: none;">thespeakersphere.com</a></p>
+      </div>
+    </div>
   </div>
 `;
 }

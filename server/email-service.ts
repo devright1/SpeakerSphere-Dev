@@ -1,5 +1,5 @@
 import sgMail from '@sendgrid/mail';
-import { getEmailLogoHeader } from './email-logo';
+import { getEmailLogoHeader, getEmailWrapper } from './email-logo';
 
 if (!process.env.SENDGRID_API_KEY) {
   throw new Error("SENDGRID_API_KEY environment variable must be set");
@@ -183,31 +183,42 @@ View in Admin Panel: https://thespeakersphere.com/admin`
 
   // Speaker application approval
   async sendSpeakerApproval(email: string, firstName: string, credentials: { email: string; password: string }): Promise<boolean> {
-    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
       subject: 'Welcome to SpeakerSphere - Application Approved!',
-      html: `
-        ${logoHeader}
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #059669;">Congratulations! Your application has been approved</h2>
+      html: getEmailWrapper(`
+          <h2 style="color: #1e4347; margin-top: 0; font-size: 22px;">Welcome to SpeakerSphere!</h2>
           
-          <p>Dear ${firstName},</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">Dear ${firstName},</p>
           
-          <p>We're excited to welcome you to the SpeakerSphere platform! Your speaker application has been approved and your profile is now live.</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">We're excited to let you know your speaker application has been <strong>approved</strong> and your profile is now live on the platform.</p>
           
-          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #059669; margin-top: 0;">Your Login Credentials</h3>
-            <p><strong>Email:</strong> ${credentials.email}</p>
-            <p><strong>Password:</strong> ${credentials.password}</p>
-            <p style="color: #dc2626; font-size: 14px;">Please change your password after your first login for security.</p>
+          <div style="background-color: #eef4f5; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #1e4347;">
+            <h3 style="color: #1e4347; margin-top: 0; font-size: 15px;">Your Login Credentials</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #6b8285; font-size: 13px; width: 90px;">Email</td>
+                <td style="padding: 6px 0; color: #1e4347; font-weight: 600;">${credentials.email}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #6b8285; font-size: 13px;">Password</td>
+                <td style="padding: 6px 0;"><span style="font-family: 'Courier New', monospace; background: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid #d1dbdc; color: #1e4347; font-weight: 600;">${credentials.password}</span></td>
+              </tr>
+            </table>
+            <p style="color: #8b6914; font-size: 12px; margin-top: 12px; margin-bottom: 0;">We recommend changing your password after your first login.</p>
           </div>
           
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #475569; margin-top: 0;">Getting Started</h3>
-            <ul style="color: #64748b;">
-              <li>Log in to your speaker dashboard</li>
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="https://thespeakersphere.com/for-speakers" 
+               style="background-color: #1e4347; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 14px; letter-spacing: 0.3px;">
+              Access Your Dashboard
+            </a>
+          </div>
+          
+          <div style="background-color: #f7fafa; padding: 16px 20px; border-radius: 8px; margin: 24px 0;">
+            <h3 style="color: #1e4347; margin-top: 0; font-size: 14px;">Getting Started</h3>
+            <ul style="color: #4a6568; font-size: 13px; line-height: 1.8; padding-left: 18px; margin-bottom: 0;">
               <li>Complete your profile with additional details</li>
               <li>Upload professional photos and videos</li>
               <li>Manage your content visibility settings</li>
@@ -215,20 +226,10 @@ View in Admin Panel: https://thespeakersphere.com/admin`
             </ul>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="https://thespeakersphere.com/auth" 
-               style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Access Your Dashboard
-            </a>
-          </div>
+          <p style="color: #6b8285; font-size: 13px;">Questions? Reply to this email and we'll be happy to help.</p>
           
-          <p>If you have any questions or need assistance, please don't hesitate to contact us.</p>
-          
-          <p>Welcome to the SpeakerSphere community!</p>
-          
-          <p>Best regards,<br>The SpeakerSphere Team</p>
-        </div>
-      `,
+          <p style="color: #3a3a3a;">Best regards,<br><strong style="color: #1e4347;">The SpeakerSphere Team</strong></p>
+      `),
       text: `Congratulations! Your application has been approved
 
 Dear ${firstName},
@@ -262,39 +263,43 @@ The SpeakerSphere Team`
   }
 
   async sendPasswordReset(email: string, firstName: string, temporaryPassword: string): Promise<boolean> {
-    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
       subject: 'SpeakerSphere - Password Reset',
-      html: `
-        ${logoHeader}
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Password Reset Request</h2>
+      html: getEmailWrapper(`
+          <h2 style="color: #1e4347; margin-top: 0; font-size: 22px;">Password Reset</h2>
           
-          <p>Dear ${firstName},</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">Dear ${firstName},</p>
           
-          <p>We received a request to reset your password. Your new temporary password is below.</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">We received a request to reset your password. Your new temporary password is below.</p>
           
-          <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
-            <h3 style="color: #1e40af; margin-top: 0;">Your New Temporary Password</h3>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Password:</strong> <span style="font-family: monospace; background: white; padding: 4px 8px; border-radius: 4px; font-size: 16px;">${temporaryPassword}</span></p>
-            <p style="color: #dc2626; font-size: 14px; margin-top: 15px;">Please log in and change your password right away for security.</p>
+          <div style="background-color: #eef4f5; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #1e4347;">
+            <h3 style="color: #1e4347; margin-top: 0; font-size: 15px;">Your New Password</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #6b8285; font-size: 13px; width: 90px;">Email</td>
+                <td style="padding: 6px 0; color: #1e4347; font-weight: 600;">${email}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #6b8285; font-size: 13px;">Password</td>
+                <td style="padding: 6px 0;"><span style="font-family: 'Courier New', monospace; background: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid #d1dbdc; color: #1e4347; font-weight: 600; font-size: 15px;">${temporaryPassword}</span></td>
+              </tr>
+            </table>
+            <p style="color: #8b6914; font-size: 12px; margin-top: 12px; margin-bottom: 0;">Please log in and change your password right away.</p>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
+          <div style="text-align: center; margin: 28px 0;">
             <a href="https://thespeakersphere.com/for-speakers" 
-               style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+               style="background-color: #1e4347; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 14px; letter-spacing: 0.3px;">
               Log In Now
             </a>
           </div>
           
-          <p style="color: #64748b; font-size: 13px;">If you did not request this reset, you can ignore this email. Your account is still secure.</p>
+          <p style="color: #6b8285; font-size: 12px;">If you did not request this reset, you can safely ignore this email.</p>
           
-          <p>Best regards,<br>The SpeakerSphere Team</p>
-        </div>
-      `,
+          <p style="color: #3a3a3a;">Best regards,<br><strong style="color: #1e4347;">The SpeakerSphere Team</strong></p>
+      `),
       text: `Password Reset Request
 
 Dear ${firstName},
@@ -319,49 +324,43 @@ The SpeakerSphere Team`
 
   // Resend login credentials to approved speaker
   async sendLoginCredentials(email: string, speakerName: string, credentials: { email: string; password: string }): Promise<boolean> {
-    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
       subject: 'Your SpeakerSphere Login Credentials',
-      html: `
-        ${logoHeader}
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Your SpeakerSphere Login Information</h2>
+      html: getEmailWrapper(`
+          <h2 style="color: #1e4347; margin-top: 0; font-size: 22px;">Your Login Information</h2>
           
-          <p>Dear ${speakerName},</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">Dear ${speakerName},</p>
           
-          <p>As requested, here are your login credentials for accessing your SpeakerSphere dashboard.</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">Here are your login credentials for accessing your SpeakerSphere dashboard.</p>
           
-          <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
-            <h3 style="color: #1e40af; margin-top: 0;">Your Login Credentials</h3>
-            <p><strong>Email:</strong> ${credentials.email}</p>
-            <p><strong>Temporary Password:</strong> <span style="font-family: monospace; background: white; padding: 4px 8px; border-radius: 4px;">${credentials.password}</span></p>
-            <p style="color: #dc2626; font-size: 14px; margin-top: 15px;">⚠️ For security, please change your password immediately after logging in.</p>
+          <div style="background-color: #eef4f5; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #1e4347;">
+            <h3 style="color: #1e4347; margin-top: 0; font-size: 15px;">Your Login Credentials</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #6b8285; font-size: 13px; width: 90px;">Email</td>
+                <td style="padding: 6px 0; color: #1e4347; font-weight: 600;">${credentials.email}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #6b8285; font-size: 13px;">Password</td>
+                <td style="padding: 6px 0;"><span style="font-family: 'Courier New', monospace; background: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid #d1dbdc; color: #1e4347; font-weight: 600;">${credentials.password}</span></td>
+              </tr>
+            </table>
+            <p style="color: #8b6914; font-size: 12px; margin-top: 12px; margin-bottom: 0;">We recommend changing your password after logging in.</p>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
+          <div style="text-align: center; margin: 28px 0;">
             <a href="https://thespeakersphere.com/for-speakers" 
-               style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+               style="background-color: #1e4347; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 14px; letter-spacing: 0.3px;">
               Access Your Dashboard
             </a>
           </div>
           
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #475569; margin-top: 0;">Quick Access</h3>
-            <ul style="color: #64748b;">
-              <li>Manage your speaker profile</li>
-              <li>Upload photos and videos</li>
-              <li>View and respond to inquiries</li>
-              <li>Update your content settings</li>
-            </ul>
-          </div>
+          <p style="color: #6b8285; font-size: 12px;">If you didn't request these credentials, please contact us immediately.</p>
           
-          <p>If you didn't request these credentials or have any questions, please contact us immediately.</p>
-          
-          <p>Best regards,<br>The SpeakerSphere Team</p>
-        </div>
-      `,
+          <p style="color: #3a3a3a;">Best regards,<br><strong style="color: #1e4347;">The SpeakerSphere Team</strong></p>
+      `),
       text: `Your SpeakerSphere Login Information
 
 Dear ${speakerName},
@@ -393,42 +392,37 @@ The SpeakerSphere Team`
 
   // Speaker application rejection
   async sendSpeakerRejection(email: string, firstName: string, reason?: string): Promise<boolean> {
-    const logoHeader = getEmailLogoHeader();
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
       subject: 'SpeakerSphere Application Update',
-      html: `
-        ${logoHeader}
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #475569;">Thank you for your interest in SpeakerSphere</h2>
+      html: getEmailWrapper(`
+          <h2 style="color: #1e4347; margin-top: 0; font-size: 22px;">Application Update</h2>
           
-          <p>Dear ${firstName},</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">Dear ${firstName},</p>
           
-          <p>Thank you for taking the time to apply to become a speaker on our platform. After careful review, we have decided not to move forward with your application at this time.</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">Thank you for taking the time to apply to become a speaker on our platform. After careful review, we have decided not to move forward with your application at this time.</p>
           
           ${reason ? `
-          <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #dc2626; margin-top: 0;">Feedback</h3>
-            <p style="color: #64748b;">${reason}</p>
+          <div style="background-color: #fdf6f6; padding: 16px 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #c9a2a2;">
+            <h3 style="color: #6b4545; margin-top: 0; font-size: 14px;">Feedback</h3>
+            <p style="color: #4a6568; font-size: 13px; margin-bottom: 0;">${reason}</p>
           </div>
           ` : ''}
           
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #475569; margin-top: 0;">Next Steps</h3>
-            <ul style="color: #64748b;">
+          <div style="background-color: #f7fafa; padding: 16px 20px; border-radius: 8px; margin: 24px 0;">
+            <h3 style="color: #1e4347; margin-top: 0; font-size: 14px;">Next Steps</h3>
+            <ul style="color: #4a6568; font-size: 13px; line-height: 1.8; padding-left: 18px; margin-bottom: 0;">
               <li>You're welcome to reapply in the future</li>
               <li>Consider gaining additional speaking experience</li>
               <li>Build your professional portfolio</li>
-              <li>Connect with us on social media for updates</li>
             </ul>
           </div>
           
-          <p>We appreciate your interest in our platform and wish you the best in your speaking career.</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">We appreciate your interest and wish you the best in your speaking career.</p>
           
-          <p>Best regards,<br>The SpeakerSphere Team</p>
-        </div>
-      `,
+          <p style="color: #3a3a3a;">Best regards,<br><strong style="color: #1e4347;">The SpeakerSphere Team</strong></p>
+      `),
       text: `Thank you for your interest in SpeakerSphere
 
 Dear ${firstName},
@@ -595,75 +589,68 @@ This is a test email from SpeakerSphere's email system verification.`
 
   // Speaker application approval with email verification
   async sendSpeakerApprovalWithVerification(email: string, firstName: string, credentials: { email: string; password: string }, verificationToken: string): Promise<boolean> {
-    const logoHeader = getEmailLogoHeader();
     const verificationUrl = `${process.env.REPLIT_DOMAIN ? `https://${process.env.REPLIT_DOMAIN}` : 'http://localhost:5000'}/verify-email?token=${verificationToken}`;
     
     const template: EmailTemplate = {
       to: email,
       from: FROM_EMAIL,
       subject: 'Welcome to SpeakerSphere - Please Verify Your Email',
-      html: `
-        ${logoHeader}
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #059669;">🎉 Congratulations! Your application has been approved</h2>
+      html: getEmailWrapper(`
+          <h2 style="color: #1e4347; margin-top: 0; font-size: 22px;">Welcome to SpeakerSphere!</h2>
           
-          <p>Dear ${firstName},</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">Dear ${firstName},</p>
           
-          <p>We're excited to welcome you to the SpeakerSphere platform! Your speaker application has been approved and your profile is now live.</p>
+          <p style="color: #3a3a3a; line-height: 1.6;">Your speaker application has been <strong>approved</strong> and your profile is now live on the platform.</p>
           
-          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #059669; margin-top: 0;">Your Login Credentials</h3>
-            <p><strong>Email:</strong> ${credentials.email}</p>
-            <p><strong>Password:</strong> ${credentials.password}</p>
-            <p style="color: #dc2626; font-size: 14px;">Please change your password after your first login for security.</p>
+          <div style="background-color: #eef4f5; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #1e4347;">
+            <h3 style="color: #1e4347; margin-top: 0; font-size: 15px;">Your Login Credentials</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #6b8285; font-size: 13px; width: 90px;">Email</td>
+                <td style="padding: 6px 0; color: #1e4347; font-weight: 600;">${credentials.email}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #6b8285; font-size: 13px;">Password</td>
+                <td style="padding: 6px 0;"><span style="font-family: 'Courier New', monospace; background: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid #d1dbdc; color: #1e4347; font-weight: 600;">${credentials.password}</span></td>
+              </tr>
+            </table>
+            <p style="color: #8b6914; font-size: 12px; margin-top: 12px; margin-bottom: 0;">We recommend changing your password after your first login.</p>
           </div>
           
-          <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-            <h3 style="color: #d97706; margin-top: 0;">⚠️ Email Verification Required</h3>
-            <p style="color: #92400e;">Before you can log in, please verify your email address by clicking the button below:</p>
+          <div style="background-color: #fdf6e3; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #c99a2e;">
+            <h3 style="color: #8b6914; margin-top: 0; font-size: 15px;">Email Verification Required</h3>
+            <p style="color: #6b5318; font-size: 13px;">Before you can log in, please verify your email address:</p>
             
-            <div style="text-align: center; margin: 20px 0;">
+            <div style="text-align: center; margin: 16px 0 8px;">
               <a href="${verificationUrl}" 
-                 style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-                ✅ Verify Email Address
+                 style="background-color: #1e4347; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 13px;">
+                Verify Email Address
               </a>
             </div>
             
-            <p style="color: #92400e; font-size: 14px;">This verification link will expire in 24 hours. You will not be able to log in until your email is verified.</p>
+            <p style="color: #8b6914; font-size: 11px; margin-bottom: 0;">This link expires in 24 hours.</p>
           </div>
           
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #475569; margin-top: 0;">After Email Verification</h3>
-            <ul style="color: #64748b;">
+          <div style="background-color: #f7fafa; padding: 16px 20px; border-radius: 8px; margin: 24px 0;">
+            <h3 style="color: #1e4347; margin-top: 0; font-size: 14px;">After Verification</h3>
+            <ul style="color: #4a6568; font-size: 13px; line-height: 1.8; padding-left: 18px; margin-bottom: 0;">
               <li>Log in to your speaker dashboard</li>
               <li>Complete your profile with additional details</li>
               <li>Upload professional photos and videos</li>
               <li>Manage your content visibility settings</li>
-              <li>Respond to booking inquiries</li>
             </ul>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <p style="color: #64748b; font-size: 14px;">After verifying your email, you can access your dashboard:</p>
-            <a href="https://thespeakersphere.com/auth" 
-               style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Access Your Dashboard
-            </a>
-          </div>
+          <p style="color: #6b8285; font-size: 13px;">Questions? Reply to this email and we'll be happy to help.</p>
           
-          <p>If you have any questions or need assistance, please don't hesitate to contact us.</p>
+          <p style="color: #3a3a3a;">Best regards,<br><strong style="color: #1e4347;">The SpeakerSphere Team</strong></p>
           
-          <p>Welcome to the SpeakerSphere community!</p>
-          
-          <p>Best regards,<br>The SpeakerSphere Team</p>
-          
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-          <p style="font-size: 12px; color: #94a3b8;">
-            If you can't click the verification button, copy and paste this link into your browser:<br>
-            ${verificationUrl}
+          <hr style="border: none; border-top: 1px solid #e2e8e9; margin: 24px 0;">
+          <p style="font-size: 11px; color: #9bb0b3;">
+            Can't click the button? Copy this link into your browser:<br>
+            <span style="color: #1e4347;">${verificationUrl}</span>
           </p>
-        </div>
-      `,
+      `),
       text: `Congratulations! Your application has been approved
 
 Dear ${firstName},
