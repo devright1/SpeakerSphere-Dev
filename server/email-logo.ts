@@ -15,7 +15,7 @@ function getDevRightLogoBase64(): string {
 
   try {
     // Read the logo file from attached_assets
-    const logoPath = join(process.cwd(), 'attached_assets', 'DevRight TM - Color_1763410602237.png');
+    const logoPath = join(process.cwd(), 'attached_assets', 'DevRight_TM_-_White_1774385465926.png');
     const logoBuffer = readFileSync(logoPath);
     const base64 = logoBuffer.toString('base64');
     logoBase64Cache = `data:image/png;base64,${base64}`;
