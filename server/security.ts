@@ -149,7 +149,7 @@ export const validators = {
     body('expertise.*').trim().isLength({ max: 50 }).escape(),
     body('location').optional().trim().isLength({ max: 100 }).escape(),
     body('website').optional().isURL({ protocols: ['http', 'https'] }),
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail(),
     body('languages').optional().isArray({ max: 10 }),
     body('languages.*').trim().isLength({ max: 30 }).escape()
   ],
@@ -157,7 +157,7 @@ export const validators = {
   speakerApplication: [
     body('firstName').trim().isLength({ min: 1, max: 50 }).withMessage('First name is required and must be between 1-50 characters').escape(),
     body('lastName').trim().isLength({ min: 1, max: 50 }).withMessage('Last name is required and must be between 1-50 characters').escape(),
-    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('email').isEmail().withMessage('Valid email is required'),
     body('phone').trim().isLength({ min: 1, max: 20 }).withMessage('Phone number is required').escape(),
     body('website').optional().custom((value) => {
       // Allow empty, null, undefined, or valid URLs
@@ -209,7 +209,7 @@ export const validators = {
     body('value').isFloat({ min: 1, max: 5 }),
     body('reviewText').trim().isLength({ min: 10, max: 2000 }).customSanitizer(SecurityUtils.sanitizeHtml),
     body('reviewerName').trim().isLength({ min: 2, max: 100 }).escape(),
-    body('reviewerEmail').isEmail().normalizeEmail(),
+    body('reviewerEmail').isEmail(),
     body('eventName').optional().trim().isLength({ max: 200 }).escape(),
     body('eventDate').optional().isISO8601()
   ],
@@ -217,7 +217,7 @@ export const validators = {
   // Inquiry validation
   inquiry: [
     body('name').trim().isLength({ min: 2, max: 100 }).escape(),
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail(),
     body('phone').optional().trim().isMobilePhone('any'),
     body('organization').optional().trim().isLength({ max: 200 }).escape(),
     body('eventDate').optional().isISO8601(),

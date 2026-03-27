@@ -24,7 +24,6 @@ router.post("/register",
   [
     body('email')
       .isEmail()
-      .normalizeEmail()
       .withMessage('Please provide a valid email address'),
     body('password')
       .isLength({ min: 6 })
@@ -142,7 +141,6 @@ router.post("/resend-verification",
   [
     body('email')
       .isEmail()
-      .normalizeEmail()
       .withMessage('Please provide a valid email address'),
   ],
   async (req: Request, res: Response) => {
@@ -206,7 +204,6 @@ router.post("/login",
   [
     body('email')
       .isEmail()
-      .normalizeEmail()
       .withMessage('Please provide a valid email address'),
     body('password')
       .notEmpty()
@@ -280,7 +277,6 @@ router.post("/forgot-password",
   [
     body('email')
       .isEmail()
-      .normalizeEmail()
       .withMessage('Please provide a valid email address'),
   ],
   async (req: Request, res: Response) => {
