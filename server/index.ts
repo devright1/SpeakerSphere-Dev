@@ -68,6 +68,10 @@ app.use((req, res, next) => {
   const { seedSubscriptionPlans } = await import("./seed-subscriptions");
   await seedSubscriptionPlans();
 
+  // Migrate legacy content categories to new section-based values
+  const { migrateContentCategories } = await import("./migrate-content-categories");
+  await migrateContentCategories();
+
   await registerRoutes(app);
 
   // Security error handling middleware
