@@ -533,23 +533,20 @@ export default function SpeakerProfile() {
     const [imgSrc, setImgSrc] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
-    const renderingRef = useRef(false);
-
     const isPdf = content.fileType === 'application/pdf';
     const isImage = content.category === 'images' || content.fileType?.startsWith('image/');
     const previewUrl = `/api/content/${content.id}/preview`;
 
     useEffect(() => {
-      if (!isPdf || renderingRef.current) return;
-      renderingRef.current = true;
+      if (!isPdf) return;
       let cancelled = false;
 
       (async () => {
         try {
           const pdfjsLib = await import('pdfjs-dist');
-          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs`;
+          pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
-          const loadingTask = pdfjsLib.getDocument(previewUrl);
+          const loadingTask = pdfjsLib.getDocument({ url: previewUrl, useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true });
           const pdf = await loadingTask.promise;
           const page = await pdf.getPage(1);
           const viewport = page.getViewport({ scale: 1 });
