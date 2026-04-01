@@ -962,6 +962,69 @@ export default function SpeakerProfile() {
                               <p className="text-sm font-medium text-gray-900 truncate">{content.originalName}</p>
                               <p className="text-xs text-gray-500">{formatFileSize(content.fileSize)}</p>
                             </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-shrink-0"
+                              onClick={async () => {
+                                if (!isAuthenticated) {
+                                  toast({
+                                    title: "Login Required",
+                                    description: "Please sign in or create an account to download content.",
+                                    variant: "destructive",
+                                  });
+                                  window.location.href = '/auth';
+                                  return;
+                                }
+                                if (content.requiresAccessCode) {
+                                  setSelectedProtectedContent(content);
+                                  setIsAccessCodeModalOpen(true);
+                                  return;
+                                }
+                                tracking.trackInteraction('resource_download', content.originalName);
+                                const userData = localStorage.getItem('userData');
+                                if (!userData) {
+                                  window.location.href = '/auth';
+                                  return;
+                                }
+                                let userId;
+                                try {
+                                  const user = JSON.parse(userData);
+                                  userId = user.id;
+                                } catch (error) {
+                                  window.location.href = '/auth';
+                                  return;
+                                }
+                                try {
+                                  const response = await fetch(`/api/content/${content.id}/download`, {
+                                    method: 'GET',
+                                    headers: { 'X-User-ID': userId }
+                                  });
+                                  if (response.ok) {
+                                    const contentType = response.headers.get('content-type');
+                                    if (contentType && contentType.includes('application/json')) {
+                                      return;
+                                    }
+                                    const blob = await response.blob();
+                                    const url = window.URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.download = content.originalName || 'download';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    window.URL.revokeObjectURL(url);
+                                  } else if (response.status === 401) {
+                                    window.location.href = '/auth';
+                                  }
+                                } catch (error) {
+                                  console.error('Download error:', error);
+                                }
+                              }}
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              {!isAuthenticated ? "Login" : content.requiresAccessCode ? "Access Code" : "Download"}
+                            </Button>
                           </div>
                         ))}
                         {speakerContent.length > 3 && (
