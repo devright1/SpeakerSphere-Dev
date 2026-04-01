@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSpeakerTracking } from "@/hooks/useSpeakerTracking";
 import Header from "@/components/header";
@@ -529,6 +529,84 @@ export default function SpeakerProfile() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const ContentPreview = ({ content, className = "" }: { content: any; className?: string }) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [pdfRendered, setPdfRendered] = useState(false);
+    const [pdfError, setPdfError] = useState(false);
+
+    const isPdf = content.fileType === 'application/pdf';
+    const isImage = content.category === 'images' || content.fileType?.startsWith('image/');
+    const previewUrl = `/api/content/${content.id}/preview`;
+
+    useEffect(() => {
+      if (isPdf && canvasRef.current && !pdfRendered) {
+        let cancelled = false;
+        (async () => {
+          try {
+            const pdfjsLib = await import('pdfjs-dist');
+            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+            const pdf = await pdfjsLib.getDocument(previewUrl).promise;
+            const page = await pdf.getPage(1);
+            const canvas = canvasRef.current;
+            if (!canvas || cancelled) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            const viewport = page.getViewport({ scale: 1 });
+            const scale = Math.min(canvas.width / viewport.width, canvas.height / viewport.height);
+            const scaledViewport = page.getViewport({ scale });
+            canvas.width = scaledViewport.width;
+            canvas.height = scaledViewport.height;
+            await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+            if (!cancelled) setPdfRendered(true);
+          } catch (err) {
+            if (!cancelled) setPdfError(true);
+          }
+        })();
+        return () => { cancelled = true; };
+      }
+    }, [isPdf, previewUrl, pdfRendered]);
+
+    if (isImage) {
+      return (
+        <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
+          <img
+            src={previewUrl}
+            alt={content.originalName}
+            className="w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        </div>
+      );
+    }
+
+    if (isPdf) {
+      return (
+        <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
+          {pdfError ? (
+            <div className="p-2"><FileText className="h-8 w-8 text-red-400" /></div>
+          ) : (
+            <canvas
+              ref={canvasRef}
+              width={200}
+              height={260}
+              className="w-full h-full object-contain"
+              style={{ display: pdfRendered ? 'block' : 'none' }}
+            />
+          )}
+          {!pdfRendered && !pdfError && (
+            <div className="p-2 animate-pulse"><FileText className="h-8 w-8 text-gray-300" /></div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
+        <div className="p-2">{getFileIcon(content.category)}</div>
+      </div>
+    );
+  };
+
   const resourceSections = [
     { key: 'lecture_notes', label: 'Lecture Notes', icon: GraduationCap, color: 'text-purple-600' },
     { key: 'articles', label: 'Articles / Publications', icon: Newspaper, color: 'text-blue-600' },
@@ -955,9 +1033,7 @@ export default function SpeakerProfile() {
                       <div className="space-y-3">
                         {speakerContent.slice(0, 3).map((content: any) => (
                           <div key={content.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border">
-                            <div className="p-2 bg-gray-100 rounded-md flex-shrink-0">
-                              {getFileIcon(content.category)}
-                            </div>
+                            <ContentPreview content={content} className="w-14 h-14 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-900 truncate">{content.originalName}</p>
                               <p className="text-xs text-gray-500">{formatFileSize(content.fileSize)}</p>
@@ -1137,11 +1213,9 @@ export default function SpeakerProfile() {
                           <CardContent className="px-6 py-4">
                             <div className="flex flex-wrap gap-3">
                               {contents.map((content: any) => (
-                                <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 hover:shadow-md transition-shadow w-36 h-36">
+                                <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2.5 hover:shadow-md transition-shadow w-36 h-44">
                                   <div className="flex-1 flex flex-col items-center justify-center w-full">
-                                    <div className="p-1.5 bg-white rounded-md shadow-sm mb-1">
-                                      {getFileIcon(content.category)}
-                                    </div>
+                                    <ContentPreview content={content} className="w-full h-20 mb-1" />
                                     <h4 className="font-medium text-gray-900 text-[11px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
                                     <span className="text-[9px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
                                   </div>

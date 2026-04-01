@@ -1991,6 +1991,44 @@ export async function registerRoutes(app: Express): Promise<Express> {
   });
 
   // Simple content download (GET endpoint - supports access codes and authentication)
+  app.get("/api/content/:contentId/preview", async (req: any, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const content = await storage.getSpeakerContentById(contentId);
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+
+      const uploadPath = content.uploadPath.startsWith('/') ? content.uploadPath : `/${content.uploadPath}`;
+      const pathParts = uploadPath.split('/').filter((part: string) => part.length > 0);
+      if (pathParts.length < 2) {
+        return res.status(404).json({ error: "Invalid file path" });
+      }
+
+      const bucketName = pathParts[0];
+      const objectName = pathParts.slice(1).join('/');
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+
+      const [exists] = await file.exists();
+      if (!exists) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      res.setHeader('Content-Type', content.fileType || 'application/octet-stream');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      const stream = file.createReadStream();
+      stream.on('error', (err: any) => {
+        console.error('Preview stream error:', err);
+        if (!res.headersSent) res.status(500).json({ error: "Preview failed" });
+      });
+      stream.pipe(res);
+    } catch (error) {
+      console.error("Content preview error:", error);
+      res.status(500).json({ error: "Failed to load preview" });
+    }
+  });
+
   app.get("/api/content/:contentId/download", async (req: any, res) => {
     try {
       const contentId = parseInt(req.params.contentId);
