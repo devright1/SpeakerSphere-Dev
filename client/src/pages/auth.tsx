@@ -813,6 +813,58 @@ export default function AuthPage() {
                       >
                         {getButtonContent(true)}
                       </Button>
+                      
+                      <div className="text-center mt-4">
+                        <Dialog open={isForgotPasswordOpen} onOpenChange={setIsForgotPasswordOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="link" size="sm" className="text-[#1e4347] hover:text-[#2a5a5f] font-medium underline">
+                              Forgot Password?
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle className="flex items-center">
+                                <Mail className="h-5 w-5 mr-2" />
+                                Reset Your Password
+                              </DialogTitle>
+                              <DialogDescription>
+                                Enter your email address and we'll send you a new temporary password.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="speaker-forgot-email">Email</Label>
+                                <Input
+                                  id="speaker-forgot-email"
+                                  type="email"
+                                  placeholder="speaker.email@example.com"
+                                  {...forgotPasswordForm.register("email")}
+                                />
+                                {forgotPasswordForm.formState.errors.email && (
+                                  <p className="text-sm text-red-600">{forgotPasswordForm.formState.errors.email.message}</p>
+                                )}
+                              </div>
+                              <div className="flex gap-3">
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  className="flex-1"
+                                  onClick={() => setIsForgotPasswordOpen(false)}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button 
+                                  type="submit" 
+                                  className="flex-1"
+                                  disabled={forgotPasswordMutation.isPending}
+                                >
+                                  {forgotPasswordMutation.isPending ? "Sending..." : "Send New Password"}
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </form>
                   </TabsContent>
 
