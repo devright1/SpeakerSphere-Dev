@@ -553,7 +553,7 @@ export default function ForSpeakers() {
                         <Button
                           type="button"
                           variant="link"
-                          className="p-0 h-auto text-sm text-gray-500"
+                          className="p-0 h-auto text-sm text-[#1e4347] hover:text-[#2a5a5f] font-medium underline"
                           onClick={() => setShowForgotPassword(true)}
                         >
                           Forgot your password?
