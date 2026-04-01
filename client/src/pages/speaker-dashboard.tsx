@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -1196,6 +1197,9 @@ export default function SpeakerDashboard() {
   ];
 
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [contentRightsDialogOpen, setContentRightsDialogOpen] = useState(false);
+  const [contentRightsConfirmed, setContentRightsConfirmed] = useState(false);
+  const [pendingUploadSection, setPendingUploadSection] = useState<string | null>(null);
 
   const toggleSectionCollapse = (key: string) => {
     setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
@@ -3097,7 +3101,12 @@ export default function SpeakerDashboard() {
                           size="sm"
                           variant="outline"
                           disabled={uploadContentMutation.isPending}
-                          onClick={(e) => { e.stopPropagation(); document.getElementById(inputId)?.click(); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingUploadSection(sec.key);
+                            setContentRightsConfirmed(false);
+                            setContentRightsDialogOpen(true);
+                          }}
                         >
                           <Plus className="h-3 w-3 mr-1" />
                           {uploadContentMutation.isPending ? 'Uploading...' : 'Upload'}
@@ -3195,6 +3204,63 @@ export default function SpeakerDashboard() {
                   </Card>
                 );
               })}
+
+              <Dialog open={contentRightsDialogOpen} onOpenChange={(open) => {
+                setContentRightsDialogOpen(open);
+                if (!open) {
+                  setContentRightsConfirmed(false);
+                  setPendingUploadSection(null);
+                }
+              }}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Content Ownership Confirmation</DialogTitle>
+                    <DialogDescription>
+                      Before uploading, please confirm that you have the rights to publish this content.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex items-start space-x-3 py-4">
+                    <Checkbox
+                      id="content-rights"
+                      checked={contentRightsConfirmed}
+                      onCheckedChange={(checked) => setContentRightsConfirmed(checked === true)}
+                    />
+                    <label
+                      htmlFor="content-rights"
+                      className="text-sm leading-relaxed cursor-pointer"
+                    >
+                      I confirm that I own this content or have the necessary rights and permissions to publish it. I understand that uploading copyrighted material without authorization may result in removal of the content and potential account action.
+                    </label>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setContentRightsDialogOpen(false);
+                        setContentRightsConfirmed(false);
+                        setPendingUploadSection(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      disabled={!contentRightsConfirmed}
+                      onClick={() => {
+                        setContentRightsDialogOpen(false);
+                        if (pendingUploadSection) {
+                          const inputId = `upload-${pendingUploadSection}`;
+                          document.getElementById(inputId)?.click();
+                        }
+                        setContentRightsConfirmed(false);
+                        setPendingUploadSection(null);
+                      }}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Proceed to Upload
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               {/* Video Links Section */}
               <div className="mt-8">
