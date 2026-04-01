@@ -1688,6 +1688,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
+      const sectionMimeRules: Record<string, string[]> = {
+        lecture_notes: ['application/pdf'],
+        articles: ['application/pdf'],
+        documents: ['application/pdf'],
+        images: ['image/jpeg', 'image/png', 'image/gif'],
+      };
+      const allowedMimes = sectionMimeRules[resolvedCategory];
+      if (allowedMimes && !allowedMimes.includes(req.file.mimetype)) {
+        return res.status(400).json({ 
+          error: "Invalid file type", 
+          message: `${resolvedCategory === 'images' ? 'Images' : 'This'} section only accepts ${resolvedCategory === 'images' ? 'JPG, PNG, or GIF' : 'PDF'} files.`
+        });
+      }
+
       // Check if user owns this speaker profile - check both session and auth header
       let user = (req as any).session?.user;
       
