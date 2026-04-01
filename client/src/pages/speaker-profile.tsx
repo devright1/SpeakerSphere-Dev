@@ -47,6 +47,7 @@ import {
   BookOpen,
   Download,
   Folder,
+  FolderOpen,
   GraduationCap,
   Newspaper
 } from "lucide-react";
@@ -941,103 +942,6 @@ export default function SpeakerProfile() {
                 {/* Video Portfolio */}
                 <SpeakerVideoPortfolio speakerId={speaker.id} />
 
-                {/* Recent Reviews */}
-                {!speaker.hideRatings && (
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle>Recent Reviews</CardTitle>
-                    <div className="text-sm text-gray-600">
-                      What clients are saying about {speaker.name}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {reviewsLoading ? (
-                      <div className="space-y-4">
-                        {[...Array(2)].map((_, i) => (
-                          <Skeleton key={i} className="h-24 w-full" />
-                        ))}
-                      </div>
-                    ) : reviews && reviews.length > 0 ? (
-                      <div className="space-y-4">
-                        {reviews.slice(0, 3).map((review) => (
-                          <div key={review.id} className="border-l-4 border-primary bg-gray-50 p-4 rounded-r-lg">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <h5 className="font-semibold text-sm">{review.reviewerName}</h5>
-                                <p className="text-xs text-gray-600">{review.reviewerTitle} at {review.reviewerCompany}</p>
-                              </div>
-                              <div className="flex items-center">
-                                <div className="flex text-yellow-400 mr-1">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star key={i} className={`w-3 h-3 ${i < review.overallRating ? "fill-current" : ""}`} />
-                                  ))}
-                                </div>
-                                <span className="text-xs font-medium">{review.overallRating}/5</span>
-                              </div>
-                            </div>
-                            <p className="text-gray-700 text-sm mb-2 line-clamp-2">"{review.comment}"</p>
-                            <div className="flex items-center justify-between">
-                              <div className="text-xs text-gray-500">
-                                {review.eventType} • {review.eventDate}
-                                {review.verified && (
-                                  <span className="ml-2 inline-flex items-center">
-                                    <CheckCircle className="w-3 h-3 text-green-600 mr-1" />
-                                    Verified
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {reviews.length > 3 && (
-                          <div className="text-center pt-4">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                // Switch to reviews tab - we need to get the tab trigger
-                                const reviewsTab = document.querySelector('[value="reviews"]') as HTMLButtonElement;
-                                reviewsTab?.click();
-                              }}
-                            >
-                              View All {reviews.length} Reviews
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <Star className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p className="mb-2">No reviews yet</p>
-                        <p className="text-sm">Be the first to review {speaker.name}</p>
-                        <Button 
-                          onClick={() => {
-                            if (isAuthenticated) {
-                              setIsReviewOpen(true);
-                            } else {
-                              window.location.href = "/auth";
-                            }
-                          }}
-                          className="mt-3"
-                          size="sm"
-                        >
-                          {isAuthenticated ? (
-                            <>
-                              <Star className="w-4 h-4 mr-2" />
-                              Leave a Review
-                            </>
-                          ) : (
-                            <>
-                              <LogIn className="w-4 h-4 mr-2" />
-                              Login to leave a review
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-                )}
               </TabsContent>
 
               <TabsContent value="experience">
@@ -1398,7 +1302,6 @@ export default function SpeakerProfile() {
                           description: "Please log in or create an account to send an inquiry.",
                           variant: "destructive",
                         });
-                        // Redirect to login page
                         window.location.href = '/auth';
                         return;
                       }
@@ -1422,6 +1325,141 @@ export default function SpeakerProfile() {
               </CardContent>
             </Card>
 
+            {/* Recent Resources */}
+            {speakerContent && speakerContent.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FolderOpen className="h-5 w-5" />
+                    Recent Resources
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {speakerContent.slice(0, 3).map((content: any) => (
+                      <div key={content.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="p-1.5 bg-gray-100 rounded-md flex-shrink-0">
+                          {getFileIcon(content.category)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{content.originalName}</p>
+                          <p className="text-xs text-gray-500">{formatFileSize(content.fileSize)}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {speakerContent.length > 3 && (
+                      <div className="pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => {
+                            const resourcesTab = document.querySelector('[value="resources"]') as HTMLButtonElement;
+                            resourcesTab?.click();
+                          }}
+                        >
+                          View All {speakerContent.length} Resources
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recent Reviews */}
+            {!speaker.hideRatings && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Recent Reviews</CardTitle>
+                  <div className="text-sm text-gray-600">
+                    What clients are saying about {speaker.name}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {reviewsLoading ? (
+                    <div className="space-y-4">
+                      {[...Array(2)].map((_, i) => (
+                        <Skeleton key={i} className="h-24 w-full" />
+                      ))}
+                    </div>
+                  ) : reviews && reviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {reviews.slice(0, 3).map((review) => (
+                        <div key={review.id} className="border-l-4 border-primary bg-gray-50 p-3 rounded-r-lg">
+                          <div className="flex items-start justify-between mb-1">
+                            <div>
+                              <h5 className="font-semibold text-sm">{review.reviewerName}</h5>
+                              <p className="text-xs text-gray-600">{review.reviewerTitle}</p>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="flex text-yellow-400 mr-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star key={i} className={`w-3 h-3 ${i < review.overallRating ? "fill-current" : ""}`} />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-gray-700 text-sm line-clamp-2">"{review.comment}"</p>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {review.eventType} • {review.eventDate}
+                            {review.verified && (
+                              <span className="ml-2 inline-flex items-center">
+                                <CheckCircle className="w-3 h-3 text-green-600 mr-1" />
+                                Verified
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {reviews.length > 3 && (
+                        <div className="pt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="w-full"
+                            onClick={() => {
+                              const reviewsTab = document.querySelector('[value="reviews"]') as HTMLButtonElement;
+                              reviewsTab?.click();
+                            }}
+                          >
+                            View All {reviews.length} Reviews
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-gray-500">
+                      <Star className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm mb-1">No reviews yet</p>
+                      <Button 
+                        onClick={() => {
+                          if (isAuthenticated) {
+                            setIsReviewOpen(true);
+                          } else {
+                            window.location.href = "/auth";
+                          }
+                        }}
+                        className="mt-2"
+                        size="sm"
+                      >
+                        {isAuthenticated ? (
+                          <>
+                            <Star className="w-4 h-4 mr-2" />
+                            Leave a Review
+                          </>
+                        ) : (
+                          <>
+                            <LogIn className="w-4 h-4 mr-2" />
+                            Login to review
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
           </div>
         </div>
