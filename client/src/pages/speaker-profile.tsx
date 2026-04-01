@@ -942,6 +942,48 @@ export default function SpeakerProfile() {
                 {/* Video Portfolio */}
                 <SpeakerVideoPortfolio speakerId={speaker.id} />
 
+                {/* Recent Resources */}
+                {speakerContent && speakerContent.length > 0 && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FolderOpen className="h-5 w-5" />
+                        Recent Resources
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {speakerContent.slice(0, 3).map((content: any) => (
+                          <div key={content.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border">
+                            <div className="p-2 bg-gray-100 rounded-md flex-shrink-0">
+                              {getFileIcon(content.category)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">{content.originalName}</p>
+                              <p className="text-xs text-gray-500">{formatFileSize(content.fileSize)}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {speakerContent.length > 3 && (
+                          <div className="pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => {
+                                const resourcesTab = document.querySelector('[value="resources"]') as HTMLButtonElement;
+                                resourcesTab?.click();
+                              }}
+                            >
+                              View All {speakerContent.length} Resources
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
               </TabsContent>
 
               <TabsContent value="experience">
@@ -1324,48 +1366,6 @@ export default function SpeakerProfile() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Recent Resources */}
-            {speakerContent && speakerContent.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <FolderOpen className="h-5 w-5" />
-                    Recent Resources
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {speakerContent.slice(0, 3).map((content: any) => (
-                      <div key={content.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div className="p-1.5 bg-gray-100 rounded-md flex-shrink-0">
-                          {getFileIcon(content.category)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{content.originalName}</p>
-                          <p className="text-xs text-gray-500">{formatFileSize(content.fileSize)}</p>
-                        </div>
-                      </div>
-                    ))}
-                    {speakerContent.length > 3 && (
-                      <div className="pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => {
-                            const resourcesTab = document.querySelector('[value="resources"]') as HTMLButtonElement;
-                            resourcesTab?.click();
-                          }}
-                        >
-                          View All {speakerContent.length} Resources
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Recent Reviews */}
             {!speaker.hideRatings && (
