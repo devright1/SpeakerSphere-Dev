@@ -530,7 +530,7 @@ export const speakerContent = pgTable("speaker_content", {
   originalName: text("original_name").notNull(),
   fileSize: integer("file_size").notNull(), // in bytes
   fileType: text("file_type").notNull(), // MIME type
-  category: text("category").notNull(), // "document", "image", "video", "audio", "presentation"
+  category: text("category").notNull(), // "lecture_notes", "articles", "documents", "images"
   description: text("description"),
   isPublic: boolean("is_public").default(false), // Whether file is public or private
   requiresAccessCode: boolean("requires_access_code").default(false), // Whether file requires 4-letter code

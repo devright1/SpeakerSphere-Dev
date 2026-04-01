@@ -1677,7 +1677,12 @@ export async function registerRoutes(app: Express): Promise<Express> {
     async (req: AuthenticatedRequest, res: Response) => {
     try {
       const speakerId = parseInt(req.params.speakerId);
-      const { description, category, isPublic } = req.body;
+      const { description, category, section, isPublic } = req.body;
+      
+      const validSections = ['lecture_notes', 'articles', 'documents', 'images'];
+      const resolvedCategory = section && validSections.includes(section) 
+        ? section 
+        : (category && validSections.includes(category) ? category : 'documents');
       
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -1810,7 +1815,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         originalName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
-        category: category || 'document',
+        category: resolvedCategory,
         description: description || '',
         isPublic: isPublic === 'true',
         uploadPath: uploadPath // Store the object storage path

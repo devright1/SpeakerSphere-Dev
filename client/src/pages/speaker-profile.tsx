@@ -46,7 +46,9 @@ import {
   Music,
   BookOpen,
   Download,
-  Folder
+  Folder,
+  GraduationCap,
+  Newspaper
 } from "lucide-react";
 import { FaInstagram, FaLinkedin, FaFacebook, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -511,10 +513,9 @@ export default function SpeakerProfile() {
   // Helper functions for file management
   const getFileIcon = (category: string) => {
     switch (category) {
-      case 'image': return <Image className="h-5 w-5 text-blue-600" />;
-      case 'video': return <Video className="h-5 w-5 text-purple-600" />;
-      case 'audio': return <Music className="h-5 w-5 text-green-600" />;
-      case 'presentation': return <BookOpen className="h-5 w-5 text-orange-600" />;
+      case 'images': return <Image className="h-5 w-5 text-green-600" />;
+      case 'lecture_notes': return <GraduationCap className="h-5 w-5 text-purple-600" />;
+      case 'articles': return <Newspaper className="h-5 w-5 text-blue-600" />;
       default: return <FileText className="h-5 w-5 text-gray-600" />;
     }
   };
@@ -527,20 +528,15 @@ export default function SpeakerProfile() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getCategoryDisplayName = (category: string) => {
-    switch (category) {
-      case 'image': return 'Images';
-      case 'video': return 'Videos';
-      case 'audio': return 'Audio';
-      case 'presentation': return 'Presentations';
-      case 'document': return 'Documents';
-      default: return 'Files';
-    }
-  };
+  const resourceSections = [
+    { key: 'lecture_notes', label: 'Lecture Notes', icon: GraduationCap, color: 'text-purple-600' },
+    { key: 'articles', label: 'Articles / Publications', icon: Newspaper, color: 'text-blue-600' },
+    { key: 'documents', label: 'Documents', icon: FileText, color: 'text-gray-600' },
+    { key: 'images', label: 'Images', icon: Image, color: 'text-green-600' },
+  ];
 
-  // Group content by category
   const groupedContent = speakerContent?.reduce((acc: any, content: any) => {
-    const category = content.category || 'document';
+    const category = content.category || 'documents';
     if (!acc[category]) acc[category] = [];
     acc[category].push(content);
     return acc;
@@ -1115,13 +1111,18 @@ export default function SpeakerProfile() {
 
                   {speakerContent && speakerContent.length > 0 ? (
                     <div className="space-y-6">
-                      {Object.entries(groupedContent).map(([category, contents]: [string, any]) => (
-                        <Card key={category}>
+                      {resourceSections
+                        .filter(sec => groupedContent[sec.key] && groupedContent[sec.key].length > 0)
+                        .map((sec) => {
+                          const SectionIcon = sec.icon;
+                          const contents = groupedContent[sec.key];
+                          return (
+                        <Card key={sec.key}>
                           <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                              <Folder className="h-5 w-5 text-blue-600" />
-                              {getCategoryDisplayName(category)}
-                              <Badge variant="outline">{contents.length} files</Badge>
+                              <SectionIcon className={`h-5 w-5 ${sec.color}`} />
+                              {sec.label}
+                              <Badge variant="outline">{contents.length} {contents.length === 1 ? 'file' : 'files'}</Badge>
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="px-6 py-4">
@@ -1210,7 +1211,8 @@ export default function SpeakerProfile() {
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                          );
+                        })}
                     </div>
                   ) : (
                     <Card>

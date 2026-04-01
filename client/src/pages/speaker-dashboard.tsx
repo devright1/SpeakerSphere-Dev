@@ -56,7 +56,12 @@ import {
   Heart,
   Share2,
   Search,
-  X
+  X,
+  ChevronDown,
+  ChevronUp,
+  GraduationCap,
+  Newspaper,
+  FolderOpen
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -1154,13 +1159,10 @@ export default function SpeakerDashboard() {
   };
 
   // File upload handling
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSectionFileUpload = (event: React.ChangeEvent<HTMLInputElement>, sectionCategory: string) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check upload limit before proceeding
-    
-    // Check storage limit before uploading
     const totalStorageBytes = speakerContent?.reduce((sum: number, content: any) => sum + (content.fileSize || 0), 0) || 0;
     const totalStorageMB = totalStorageBytes / (1024 * 1024);
     const newFileSizeMB = file.size / (1024 * 1024);
@@ -1172,7 +1174,6 @@ export default function SpeakerDashboard() {
         description: `This file would exceed your ${storageLimitMb} MB storage limit. You have ${remainingMB} MB remaining. Delete some files or upgrade your plan.`,
         variant: "destructive",
       });
-      // Reset file input
       event.target.value = '';
       return;
     }
@@ -1180,29 +1181,31 @@ export default function SpeakerDashboard() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('description', `${file.name}`);
-    formData.append('category', getFileCategory(file.type));
-    formData.append('isPublic', 'true'); // Default to public so files appear on speaker profile
+    formData.append('section', sectionCategory);
+    formData.append('isPublic', 'true');
 
     uploadContentMutation.mutate(formData);
-    // Reset file input
     event.target.value = '';
   };
 
-  const getFileCategory = (mimeType: string) => {
-    if (mimeType.startsWith('image/')) return 'image';
-    if (mimeType.startsWith('video/')) return 'video';
-    if (mimeType.startsWith('audio/')) return 'audio';
-    if (mimeType.includes('pdf')) return 'document';
-    if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return 'presentation';
-    return 'document';
+  const contentSections = [
+    { key: 'lecture_notes', label: 'Lecture Notes', icon: GraduationCap, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-200', accept: '.pdf', description: 'Lecture slides, notes, outlines' },
+    { key: 'articles', label: 'Articles / Publications', icon: Newspaper, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', accept: '.pdf', description: 'Research papers, articles, publications' },
+    { key: 'documents', label: 'Documents', icon: FileText, color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-200', accept: '.pdf', description: 'Certificates, CVs, other documents' },
+    { key: 'images', label: 'Images', icon: Image, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200', accept: '.jpg,.jpeg,.png,.gif', description: 'Photos, diagrams, charts' },
+  ];
+
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSectionCollapse = (key: string) => {
+    setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const getFileIcon = (category: string) => {
     switch (category) {
-      case 'image': return <Image className="h-5 w-5" />;
-      case 'video': return <Video className="h-5 w-5" />;
-      case 'audio': return <Music className="h-5 w-5" />;
-      case 'presentation': return <BookOpen className="h-5 w-5" />;
+      case 'images': return <Image className="h-5 w-5" />;
+      case 'lecture_notes': return <GraduationCap className="h-5 w-5" />;
+      case 'articles': return <Newspaper className="h-5 w-5" />;
       default: return <FileText className="h-5 w-5" />;
     }
   };
@@ -3058,203 +3061,140 @@ export default function SpeakerDashboard() {
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900">My Content</h2>
                   <p className="text-gray-600 mt-2">
-                    Manage your documents, presentations, media files, and other content
+                    Organize and manage your lecture notes, articles, documents, and images
                   </p>
                 </div>
-                <div>
-                  <input
-                    type="file"
-                    id="fileUpload"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                    accept=".pdf,.jpg,.jpeg,.png,.gif,.mp4,.mov,.mp3,.wav"
-                  />
-                  <Button
-                    onClick={() => document.getElementById('fileUpload')?.click()}
-                    disabled={uploadContentMutation.isPending}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {uploadContentMutation.isPending ? 'Uploading...' : 'Upload File'}
-                  </Button>
-                </div>
               </div>
 
-              {/* File Upload Buttons */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card 
-                  className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => document.getElementById('pdfUpload')?.click()}
-                >
-                  <CardContent className="p-6 text-center">
-                    <FileText className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload PDF</h3>
-                    <p className="text-sm text-gray-600">Documents, presentations, guides</p>
-                    <input
-                      type="file"
-                      id="pdfUpload"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      accept=".pdf"
-                    />
-                  </CardContent>
-                </Card>
+              {renderUploadUsage()}
 
-                <Card 
-                  className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => document.getElementById('imageUpload')?.click()}
-                >
-                  <CardContent className="p-6 text-center">
-                    <Image className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Images</h3>
-                    <p className="text-sm text-gray-600">Photos, diagrams, charts</p>
-                    <input
-                      type="file"
-                      id="imageUpload"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      accept=".jpg,.jpeg,.png,.gif"
-                    />
-                  </CardContent>
-                </Card>
-              </div>
+              {contentSections.map((sec) => {
+                const SectionIcon = sec.icon;
+                const sectionItems = speakerContent?.filter((c: any) => c.category === sec.key) || [];
+                const isCollapsed = collapsedSections[sec.key];
+                const inputId = `upload-${sec.key}`;
 
-              {/* Upload Usage Status */}
-              <div className="mt-6">
-                {renderUploadUsage()}
-              </div>
-
-              {/* Content Management Section */}
-              {speakerContent && speakerContent.length > 0 && (
-                <div className="bg-blue-50 rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Content Management</h3>
-                      <p className="text-gray-600 mt-1">
-                        Control the visibility of your uploaded content. Public content appears on your speaker profile for potential clients to view and download.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <Eye className="h-4 w-4 text-green-600" />
+                return (
+                  <Card key={sec.key} className={cn("border", sec.borderColor)}>
+                    <div
+                      className={cn("flex items-center justify-between px-6 py-4 cursor-pointer select-none", sec.bgColor, "rounded-t-lg")}
+                      onClick={() => toggleSectionCollapse(sec.key)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <SectionIcon className={cn("h-5 w-5", sec.color)} />
+                        <h3 className="text-lg font-semibold text-gray-900">{sec.label}</h3>
+                        <Badge variant="outline" className="text-xs">{sectionItems.length} {sectionItems.length === 1 ? 'file' : 'files'}</Badge>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Public Content</p>
-                        <p className="text-gray-600">Visible on your speaker profile for everyone to see and download</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          id={inputId}
+                          className="hidden"
+                          onChange={(e) => handleSectionFileUpload(e, sec.key)}
+                          accept={sec.accept}
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={uploadContentMutation.isPending}
+                          onClick={(e) => { e.stopPropagation(); document.getElementById(inputId)?.click(); }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          {uploadContentMutation.isPending ? 'Uploading...' : 'Upload'}
+                        </Button>
+                        {isCollapsed ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronUp className="h-4 w-4 text-gray-500" />}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-gray-100 rounded-lg">
-                        <EyeOff className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Private Content</p>
-                        <p className="text-gray-600">Only visible to you in this dashboard</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Content List */}
-              <div className="space-y-4">
-                {speakerContent && speakerContent.length > 0 ? (
-                  <div className="flex flex-wrap gap-3">
-                    {speakerContent.map((content: any) => (
-                      <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 hover:shadow-md transition-shadow relative w-36 h-36">
-                        <div className="absolute top-1 left-1 flex gap-0.5">
-                          {content.isPublic ? (
-                            <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-green-600 border-green-600 bg-white leading-tight">Public</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-gray-500 border-gray-400 bg-white leading-tight">Private</Badge>
-                          )}
-                          {content.requiresAccessCode && (
-                            <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-blue-600 border-blue-600 bg-white leading-tight">Code</Badge>
-                          )}
-                        </div>
-                        <div className="flex-1 flex flex-col items-center justify-center w-full pt-3">
-                          <div className="p-1 bg-white rounded-md shadow-sm mb-1">
-                            {getFileIcon(content.category)}
+                    {!isCollapsed && (
+                      <CardContent className="p-4">
+                        {sectionItems.length > 0 ? (
+                          <div className="flex flex-wrap gap-3">
+                            {sectionItems.map((content: any) => (
+                              <div key={content.id} className="flex flex-col items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 hover:shadow-md transition-shadow relative w-36 h-36">
+                                <div className="absolute top-1 left-1 flex gap-0.5">
+                                  {content.isPublic ? (
+                                    <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-green-600 border-green-600 bg-white leading-tight">Public</Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-gray-500 border-gray-400 bg-white leading-tight">Private</Badge>
+                                  )}
+                                  {content.requiresAccessCode && (
+                                    <Badge variant="outline" className="text-[7px] px-0.5 py-0 text-blue-600 border-blue-600 bg-white leading-tight">Code</Badge>
+                                  )}
+                                </div>
+                                <div className="flex-1 flex flex-col items-center justify-center w-full pt-3">
+                                  <div className="p-1 bg-white rounded-md shadow-sm mb-1">
+                                    {getFileIcon(content.category)}
+                                  </div>
+                                  <h4 className="font-medium text-gray-900 text-[11px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
+                                  <span className="text-[9px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
+                                </div>
+                                <div className="grid grid-cols-4 gap-1 mt-1 w-full">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
+                                    disabled={updateContentMutation.isPending}
+                                    className={cn("h-7 w-full p-0 flex items-center justify-center", content.isPublic ? "text-green-600 border-green-600" : "text-orange-600 border-orange-600")}
+                                    title={content.isPublic ? "Make Private" : "Make Public"}
+                                  >
+                                    {content.isPublic ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                                  </Button>
+                                  <TooltipProvider>
+                                    <ShadcnTooltip delayDuration={100}>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
+                                          onClick={() => {
+                                            if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
+                                              toast({ title: "Pro Feature", description: "Access codes are available on the Pro plan.", variant: "default" });
+                                            } else {
+                                              setSelectedContentForAccessCodes(content);
+                                            }
+                                          }}
+                                          className={cn("h-7 w-full p-0 flex items-center justify-center text-blue-600 border-blue-600", (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none")}
+                                        >
+                                          <Zap className="h-3 w-3" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top" className="max-w-xs text-center p-2">
+                                        {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
+                                          <p className="text-xs"><strong>Access Codes</strong> — Upgrade to Pro to unlock.</p>
+                                        ) : (
+                                          <p className="text-xs">Manage Access Codes</p>
+                                        )}
+                                      </TooltipContent>
+                                    </ShadcnTooltip>
+                                  </TooltipProvider>
+                                  <Button variant="outline" size="sm" onClick={() => handleDownload(content.id, content.originalName)} title="Download" className="h-7 w-full p-0 flex items-center justify-center">
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => deleteContentMutation.mutate(content.id)}
+                                    disabled={deleteContentMutation.isPending}
+                                    className="h-7 w-full p-0 flex items-center justify-center text-red-500 border-red-500"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          <h4 className="font-medium text-gray-900 text-[11px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
-                          <span className="text-[9px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
-                        </div>
-                        <div className="grid grid-cols-4 gap-1 mt-1 w-full">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleContentVisibility(content.id, !content.isPublic)}
-                            disabled={updateContentMutation.isPending}
-                            className={cn("h-7 w-full p-0 flex items-center justify-center", content.isPublic ? "text-green-600 border-green-600" : "text-orange-600 border-orange-600")}
-                            title={content.isPublic ? "Make Private" : "Make Public"}
-                          >
-                            {content.isPublic ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                          </Button>
-                          <TooltipProvider>
-                            <ShadcnTooltip delayDuration={100}>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic'}
-                                  onClick={() => {
-                                    if ((speakerProfile?.subscriptionTier ?? 'basic') === 'basic') {
-                                      toast({ title: "Pro Feature", description: "Access codes are available on the Pro plan.", variant: "default" });
-                                    } else {
-                                      setSelectedContentForAccessCodes(content);
-                                    }
-                                  }}
-                                  className={cn("h-7 w-full p-0 flex items-center justify-center text-blue-600 border-blue-600", (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none")}
-                                >
-                                  <Zap className="h-3 w-3" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs text-center p-2">
-                                {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? (
-                                  <p className="text-xs"><strong>Access Codes</strong> — Upgrade to Pro to unlock.</p>
-                                ) : (
-                                  <p className="text-xs">Manage Access Codes</p>
-                                )}
-                              </TooltipContent>
-                            </ShadcnTooltip>
-                          </TooltipProvider>
-                          <Button variant="outline" size="sm" onClick={() => handleDownload(content.id, content.originalName)} title="Download" className="h-7 w-full p-0 flex items-center justify-center">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteContentMutation.mutate(content.id)}
-                            disabled={deleteContentMutation.isPending}
-                            className="h-7 w-full p-0 flex items-center justify-center text-red-500 border-red-500"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="p-12 text-center">
-                      <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Content Yet</h3>
-                      <p className="text-gray-600 mb-6">
-                        Start by uploading your first document, presentation, or media file
-                      </p>
-                      <Button
-                        onClick={() => document.getElementById('fileUpload')?.click()}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Upload Your First File
-                      </Button>
-                    </CardContent>
+                        ) : (
+                          <div className="text-center py-8 text-gray-400">
+                            <SectionIcon className="h-10 w-10 mx-auto mb-2 opacity-40" />
+                            <p className="text-sm">No {sec.label.toLowerCase()} uploaded yet</p>
+                            <p className="text-xs text-gray-400 mt-1">{sec.description}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    )}
                   </Card>
-                )}
-              </div>
+                );
+              })}
 
               {/* Video Links Section */}
               <div className="mt-8">
