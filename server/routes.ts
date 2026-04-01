@@ -2377,6 +2377,76 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  app.patch("/api/access-codes/:codeId", async (req: AuthenticatedRequest, res) => {
+    try {
+      const codeId = parseInt(req.params.codeId);
+
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { description, isActive, expiresAt, maxUses } = req.body;
+
+      const updates: any = {};
+      if (description !== undefined) updates.description = description;
+      if (isActive !== undefined) updates.isActive = isActive;
+      if (expiresAt !== undefined) updates.expiresAt = expiresAt ? new Date(expiresAt) : null;
+      if (maxUses !== undefined) updates.maxUses = maxUses;
+
+      const updated = await storage.updateContentAccessCode(codeId, updates);
+      if (!updated) {
+        return res.status(404).json({ error: "Access code not found" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Update access code error:", error);
+      res.status(500).json({ error: "Failed to update access code" });
+    }
+  });
+
+  app.delete("/api/access-codes/:codeId", async (req: AuthenticatedRequest, res) => {
+    try {
+      const codeId = parseInt(req.params.codeId);
+
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || !user.speakerId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const deleted = await storage.deleteContentAccessCode(codeId);
+      if (!deleted) {
+        return res.status(404).json({ error: "Access code not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete access code error:", error);
+      res.status(500).json({ error: "Failed to delete access code" });
+    }
+  });
+
   // Verify access code for content download
   app.post("/api/content/:contentId/verify-access-code", async (req, res) => {
     try {

@@ -1266,6 +1266,21 @@ export class DatabaseStorage implements IStorage {
       .where(eq(contentAccessCodes.id, accessCodeId));
   }
 
+  async updateContentAccessCode(accessCodeId: number, updates: { description?: string; isActive?: boolean; expiresAt?: Date | null; maxUses?: number | null }): Promise<ContentAccessCode | undefined> {
+    const updateData: any = { updatedAt: new Date() };
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
+    if (updates.expiresAt !== undefined) updateData.expiresAt = updates.expiresAt;
+    if (updates.maxUses !== undefined) updateData.maxUses = updates.maxUses;
+
+    const result = await db
+      .update(contentAccessCodes)
+      .set(updateData)
+      .where(eq(contentAccessCodes.id, accessCodeId))
+      .returning();
+    return result[0];
+  }
+
   async deleteContentAccessCode(accessCodeId: number): Promise<boolean> {
     const result = await db
       .delete(contentAccessCodes)

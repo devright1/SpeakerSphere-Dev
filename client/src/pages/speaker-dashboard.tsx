@@ -704,6 +704,54 @@ export default function SpeakerDashboard() {
     },
   });
 
+  const [editingAccessCode, setEditingAccessCode] = useState<{ id: number; description: string; isActive: boolean; expiresAt: string; maxUses: string } | null>(null);
+
+  const updateAccessCodeMutation = useMutation({
+    mutationFn: async (data: { id: number; description?: string; isActive?: boolean; expiresAt?: string | null; maxUses?: number | null }) => {
+      const userData = getUserData();
+      const { id, ...updates } = data;
+      const response = await fetch(`/api/access-codes/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) throw new Error('Failed to update access code');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchAccessCodes();
+      setEditingAccessCode(null);
+      toast({ title: "Access Code Updated", description: "Access code has been updated successfully." });
+    },
+    onError: () => {
+      toast({ title: "Update Failed", description: "Failed to update access code.", variant: "destructive" });
+    },
+  });
+
+  const deleteAccessCodeMutation = useMutation({
+    mutationFn: async (codeId: number) => {
+      const userData = getUserData();
+      const response = await fetch(`/api/access-codes/${codeId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+        },
+      });
+      if (!response.ok) throw new Error('Failed to delete access code');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchAccessCodes();
+      toast({ title: "Access Code Deleted", description: "Access code has been removed." });
+    },
+    onError: () => {
+      toast({ title: "Delete Failed", description: "Failed to delete access code.", variant: "destructive" });
+    },
+  });
+
   // Create video link mutation
   const createVideoLinkMutation = useMutation({
     mutationFn: async (data: { title: string; url: string; description?: string; thumbnailUrl?: string }) => {
@@ -4277,34 +4325,123 @@ export default function SpeakerDashboard() {
                 {accessCodes && accessCodes.length > 0 ? (
                   <div className="space-y-3">
                     {accessCodes.map((code: any) => (
-                      <div key={code.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4">
-                            <Badge variant="outline" className="text-lg font-mono">
-                              {code.accessCode}
-                            </Badge>
+                      <div key={code.id} className="p-4 border rounded-lg">
+                        {editingAccessCode?.id === code.id ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-lg font-mono">
+                                {code.accessCode}
+                              </Badge>
+                              <span className="text-sm text-gray-500">(code cannot be changed)</span>
+                            </div>
                             <div>
-                              <p className="font-medium">{code.description || "No description"}</p>
-                              <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                <span>Uses: {code.currentUses || 0}{code.maxUses ? `/${code.maxUses}` : ''}</span>
-                                {code.expiresAt && (
-                                  <span>Expires: {new Date(code.expiresAt).toLocaleDateString()}</span>
-                                )}
-                                <span className={code.isActive ? "text-green-600" : "text-red-600"}>
-                                  {code.isActive ? "Active" : "Inactive"}
-                                </span>
+                              <Label>Description</Label>
+                              <Input
+                                value={editingAccessCode.description}
+                                onChange={(e) => setEditingAccessCode({...editingAccessCode, description: e.target.value})}
+                                placeholder="Description"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <Label>Expiration Date</Label>
+                                <Input
+                                  type="date"
+                                  value={editingAccessCode.expiresAt}
+                                  onChange={(e) => setEditingAccessCode({...editingAccessCode, expiresAt: e.target.value})}
+                                />
+                              </div>
+                              <div>
+                                <Label>Max Uses</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  value={editingAccessCode.maxUses}
+                                  onChange={(e) => setEditingAccessCode({...editingAccessCode, maxUses: e.target.value})}
+                                  placeholder="Unlimited"
+                                />
                               </div>
                             </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`active-${code.id}`}
+                                checked={editingAccessCode.isActive}
+                                onCheckedChange={(checked) => setEditingAccessCode({...editingAccessCode, isActive: checked === true})}
+                              />
+                              <label htmlFor={`active-${code.id}`} className="text-sm">Active</label>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => updateAccessCodeMutation.mutate({
+                                  id: editingAccessCode.id,
+                                  description: editingAccessCode.description,
+                                  isActive: editingAccessCode.isActive,
+                                  expiresAt: editingAccessCode.expiresAt || null,
+                                  maxUses: editingAccessCode.maxUses ? parseInt(editingAccessCode.maxUses) : null,
+                                })}
+                                disabled={updateAccessCodeMutation.isPending}
+                              >
+                                <Save className="h-3 w-3 mr-1" />
+                                {updateAccessCodeMutation.isPending ? 'Saving...' : 'Save'}
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => setEditingAccessCode(null)}>
+                                Cancel
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="outline" size="sm">
-                            Edit
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-4">
+                                <Badge variant="outline" className="text-lg font-mono">
+                                  {code.accessCode}
+                                </Badge>
+                                <div>
+                                  <p className="font-medium">{code.description || "No description"}</p>
+                                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span>Uses: {code.currentUses || 0}{code.maxUses ? `/${code.maxUses}` : ''}</span>
+                                    {code.expiresAt && (
+                                      <span>Expires: {new Date(code.expiresAt).toLocaleDateString()}</span>
+                                    )}
+                                    <span className={code.isActive ? "text-green-600" : "text-red-600"}>
+                                      {code.isActive ? "Active" : "Inactive"}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingAccessCode({
+                                  id: code.id,
+                                  description: code.description || '',
+                                  isActive: code.isActive ?? true,
+                                  expiresAt: code.expiresAt ? new Date(code.expiresAt).toISOString().split('T')[0] : '',
+                                  maxUses: code.maxUses ? String(code.maxUses) : '',
+                                })}
+                              >
+                                <Edit3 className="h-3 w-3 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700"
+                                onClick={() => {
+                                  if (window.confirm(`Delete access code "${code.accessCode}"? This cannot be undone.`)) {
+                                    deleteAccessCodeMutation.mutate(code.id);
+                                  }
+                                }}
+                                disabled={deleteAccessCodeMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

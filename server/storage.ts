@@ -236,6 +236,7 @@ export interface IStorage {
   validateAccessCode(contentId: number, code: string): Promise<ContentAccessCode | undefined>;
   incrementAccessCodeUsage(accessCodeId: number): Promise<void>;
   updateAccessCodeUsage(accessCodeId: number): Promise<void>;
+  updateContentAccessCode(accessCodeId: number, updates: { description?: string; isActive?: boolean; expiresAt?: Date | null; maxUses?: number | null }): Promise<ContentAccessCode | undefined>;
   deleteContentAccessCode(accessCodeId: number): Promise<boolean>;
 
   // Content Download Tracking
@@ -1585,6 +1586,18 @@ export class MemStorage implements IStorage {
       accessCode.updatedAt = new Date();
       this.contentAccessCodes.set(accessCodeId, accessCode);
     }
+  }
+
+  async updateContentAccessCode(accessCodeId: number, updates: { description?: string; isActive?: boolean; expiresAt?: Date | null; maxUses?: number | null }): Promise<ContentAccessCode | undefined> {
+    const accessCode = this.contentAccessCodes.get(accessCodeId);
+    if (!accessCode) return undefined;
+    if (updates.description !== undefined) accessCode.description = updates.description;
+    if (updates.isActive !== undefined) accessCode.isActive = updates.isActive;
+    if (updates.expiresAt !== undefined) accessCode.expiresAt = updates.expiresAt;
+    if (updates.maxUses !== undefined) accessCode.maxUses = updates.maxUses;
+    accessCode.updatedAt = new Date();
+    this.contentAccessCodes.set(accessCodeId, accessCode);
+    return accessCode;
   }
 
   async deleteContentAccessCode(accessCodeId: number): Promise<boolean> {
