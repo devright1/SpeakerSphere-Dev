@@ -530,41 +530,56 @@ export default function SpeakerProfile() {
   };
 
   const ContentPreview = ({ content, className = "" }: { content: any; className?: string }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [pdfRendered, setPdfRendered] = useState(false);
-    const [pdfError, setPdfError] = useState(false);
+    const [imgSrc, setImgSrc] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const renderingRef = useRef(false);
 
     const isPdf = content.fileType === 'application/pdf';
     const isImage = content.category === 'images' || content.fileType?.startsWith('image/');
     const previewUrl = `/api/content/${content.id}/preview`;
 
     useEffect(() => {
-      if (isPdf && canvasRef.current && !pdfRendered) {
-        let cancelled = false;
-        (async () => {
-          try {
-            const pdfjsLib = await import('pdfjs-dist');
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-            const pdf = await pdfjsLib.getDocument(previewUrl).promise;
-            const page = await pdf.getPage(1);
-            const canvas = canvasRef.current;
-            if (!canvas || cancelled) return;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            const viewport = page.getViewport({ scale: 1 });
-            const scale = Math.min(canvas.width / viewport.width, canvas.height / viewport.height);
-            const scaledViewport = page.getViewport({ scale });
-            canvas.width = scaledViewport.width;
-            canvas.height = scaledViewport.height;
-            await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
-            if (!cancelled) setPdfRendered(true);
-          } catch (err) {
-            if (!cancelled) setPdfError(true);
+      if (!isPdf || renderingRef.current) return;
+      renderingRef.current = true;
+      let cancelled = false;
+
+      (async () => {
+        try {
+          const pdfjsLib = await import('pdfjs-dist');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs`;
+
+          const loadingTask = pdfjsLib.getDocument(previewUrl);
+          const pdf = await loadingTask.promise;
+          const page = await pdf.getPage(1);
+          const viewport = page.getViewport({ scale: 1 });
+
+          const scale = 200 / viewport.width;
+          const scaledViewport = page.getViewport({ scale });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = scaledViewport.width;
+          canvas.height = scaledViewport.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx || cancelled) return;
+
+          await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+          if (cancelled) return;
+
+          const dataUrl = canvas.toDataURL('image/png');
+          setImgSrc(dataUrl);
+          setLoading(false);
+        } catch (err: any) {
+          console.error('PDF preview error:', err?.message || err?.name || JSON.stringify(err) || err);
+          if (!cancelled) {
+            setError(true);
+            setLoading(false);
           }
-        })();
-        return () => { cancelled = true; };
-      }
-    }, [isPdf, previewUrl, pdfRendered]);
+        }
+      })();
+
+      return () => { cancelled = true; };
+    }, [isPdf, previewUrl]);
 
     if (isImage) {
       return (
@@ -580,22 +595,23 @@ export default function SpeakerProfile() {
     }
 
     if (isPdf) {
+      if (error) {
+        return (
+          <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
+            <FileText className="h-8 w-8 text-red-400" />
+          </div>
+        );
+      }
+      if (imgSrc) {
+        return (
+          <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
+            <img src={imgSrc} alt={content.originalName} className="w-full h-full object-cover" />
+          </div>
+        );
+      }
       return (
         <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
-          {pdfError ? (
-            <div className="p-2"><FileText className="h-8 w-8 text-red-400" /></div>
-          ) : (
-            <canvas
-              ref={canvasRef}
-              width={200}
-              height={260}
-              className="w-full h-full object-contain"
-              style={{ display: pdfRendered ? 'block' : 'none' }}
-            />
-          )}
-          {!pdfRendered && !pdfError && (
-            <div className="p-2 animate-pulse"><FileText className="h-8 w-8 text-gray-300" /></div>
-          )}
+          <div className="animate-pulse"><FileText className="h-8 w-8 text-gray-300" /></div>
         </div>
       );
     }
