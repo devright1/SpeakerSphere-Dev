@@ -1282,10 +1282,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteContentAccessCode(accessCodeId: number): Promise<boolean> {
+    const codeToDelete = await db
+      .select()
+      .from(contentAccessCodes)
+      .where(eq(contentAccessCodes.id, accessCodeId));
+    if (!codeToDelete.length) return false;
+
+    const contentId = codeToDelete[0].contentId;
+
     const result = await db
       .delete(contentAccessCodes)
       .where(eq(contentAccessCodes.id, accessCodeId));
-    return result.rowCount ? result.rowCount > 0 : false;
+
+    if (!result.rowCount || result.rowCount === 0) return false;
+
+    const remaining = await db
+      .select()
+      .from(contentAccessCodes)
+      .where(eq(contentAccessCodes.contentId, contentId));
+
+    if (remaining.length === 0) {
+      await db
+        .update(speakerContent)
+        .set({ requiresAccessCode: false })
+        .where(eq(speakerContent.id, contentId));
+    }
+
+    return true;
   }
 
   // Content Download Tracking
