@@ -2656,18 +2656,24 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(400).json({ error: `Maximum of ${limits.maxLinks} video links allowed for ${tier} tier` });
       }
 
-      // Validate request body
-      const { title, url, description } = req.body;
+      const { title, url, description, thumbnailUrl } = req.body;
       
       if (!title || !url) {
         return res.status(400).json({ error: "Title and URL are required" });
       }
 
-      // Basic URL validation
       try {
         new URL(url);
       } catch {
         return res.status(400).json({ error: "Invalid URL format" });
+      }
+
+      if (thumbnailUrl) {
+        try {
+          new URL(thumbnailUrl);
+        } catch {
+          return res.status(400).json({ error: "Invalid thumbnail URL format" });
+        }
       }
 
       const newLink = await storage.createSpeakerVideoLink({
@@ -2675,6 +2681,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         title,
         url,
         description: description || null,
+        thumbnailUrl: thumbnailUrl || null,
         position: existingLinks.length
       });
 
@@ -2682,6 +2689,98 @@ export async function registerRoutes(app: Express): Promise<Express> {
     } catch (error) {
       console.error("Create video link error:", error);
       res.status(500).json({ error: "Failed to create video link" });
+    }
+  });
+
+  app.post("/api/speakers/:speakerId/video-thumbnail", upload.single('thumbnail'), async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.speakerId);
+
+      let user = (req as any).session?.user;
+      if (!user) {
+        const userIdHeader = req.headers['x-user-id'] as string;
+        if (userIdHeader) {
+          const userData = await storage.getUserById(userIdHeader);
+          if (userData?.speakerId) {
+            user = { speakerId: userData.speakerId };
+          }
+        }
+      }
+
+      if (!user || user.speakerId !== speakerId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "No thumbnail file provided" });
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ error: "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed." });
+      }
+
+      const ext = req.file.originalname.split('.').pop() || 'jpg';
+      const fileName = `video-thumb-${speakerId}-${Date.now()}.${ext}`;
+      const privateDir = objectStorage.getPrivateObjectDir();
+      const uploadPath = `${privateDir}/${speakerId}/${fileName}`;
+
+      const parseObjectPath = (path: string) => {
+        if (!path.startsWith("/")) path = `/${path}`;
+        const pathParts = path.split("/");
+        const bucketName = pathParts[1];
+        const objectName = pathParts.slice(2).join("/");
+        return { bucketName, objectName };
+      };
+
+      const { bucketName, objectName } = parseObjectPath(uploadPath);
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+
+      await file.save(req.file.buffer, {
+        metadata: { contentType: req.file.mimetype },
+      });
+
+      const thumbnailUrl = `/api/video-thumbnail/${speakerId}/${fileName}`;
+      res.json({ thumbnailUrl });
+    } catch (error) {
+      console.error("Thumbnail upload error:", error);
+      res.status(500).json({ error: "Failed to upload thumbnail" });
+    }
+  });
+
+  app.get("/api/video-thumbnail/:speakerId/:fileName", async (req, res) => {
+    try {
+      const { speakerId, fileName } = req.params;
+      const privateDir = objectStorage.getPrivateObjectDir();
+      const filePath = `${privateDir}/${speakerId}/${fileName}`;
+
+      const parseObjectPath = (path: string) => {
+        if (!path.startsWith("/")) path = `/${path}`;
+        const pathParts = path.split("/");
+        const bucketName = pathParts[1];
+        const objectName = pathParts.slice(2).join("/");
+        return { bucketName, objectName };
+      };
+
+      const { bucketName, objectName } = parseObjectPath(filePath);
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+
+      const [exists] = await file.exists();
+      if (!exists) {
+        return res.status(404).json({ error: "Thumbnail not found" });
+      }
+
+      const [metadata] = await file.getMetadata();
+      res.setHeader('Content-Type', metadata.contentType || 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+
+      const stream = file.createReadStream();
+      stream.pipe(res);
+    } catch (error) {
+      console.error("Thumbnail serve error:", error);
+      res.status(500).json({ error: "Failed to serve thumbnail" });
     }
   });
 
@@ -2709,9 +2808,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(401).json({ error: "Authentication required" });
       }
 
-      const { title, url, description, isVisible } = req.body;
+      const { title, url, description, isVisible, thumbnailUrl } = req.body;
       
-      // URL validation if provided
       if (url) {
         try {
           new URL(url);
@@ -2720,11 +2818,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
         }
       }
 
+      if (thumbnailUrl) {
+        try {
+          new URL(thumbnailUrl);
+        } catch {
+          return res.status(400).json({ error: "Invalid thumbnail URL format" });
+        }
+      }
+
       const updatedLink = await storage.updateSpeakerVideoLink(linkId, {
         title,
         url,
         description,
-        isVisible
+        isVisible,
+        thumbnailUrl
       });
 
       if (!updatedLink) {

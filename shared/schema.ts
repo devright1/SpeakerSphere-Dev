@@ -573,11 +573,12 @@ export const contentDownloads = pgTable("content_downloads", {
 export const speakerVideoLinks = pgTable("speaker_video_links", {
   id: serial("id").primaryKey(),
   speakerId: integer("speaker_id").notNull(),
-  title: text("title").notNull(), // Display title for the video
-  url: text("url").notNull(), // Video URL (YouTube, Vimeo, etc.)
-  description: text("description"), // Optional description
-  position: integer("position").notNull().default(0), // Order position for display
-  isVisible: boolean("is_visible").notNull().default(true), // Whether visible on public profile
+  title: text("title").notNull(),
+  url: text("url").notNull(),
+  description: text("description"),
+  thumbnailUrl: text("thumbnail_url"),
+  position: integer("position").notNull().default(0),
+  isVisible: boolean("is_visible").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

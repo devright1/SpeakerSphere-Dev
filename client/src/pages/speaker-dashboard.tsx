@@ -65,6 +65,7 @@ import {
   FolderOpen
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
+import { getVideoThumbnail } from "@/lib/video-utils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import QRCodeStyling from 'qr-code-styling';
 import devRightLogo from '@assets/DevRight_icon_-_Black_1766077810725.png';
@@ -231,7 +232,10 @@ export default function SpeakerDashboard() {
   // Video links state
   const [showAddVideoLinkDialog, setShowAddVideoLinkDialog] = useState(false);
   const [editingVideoLink, setEditingVideoLink] = useState<{id: number; title: string; url: string; description: string | null} | null>(null);
-  const [newVideoLink, setNewVideoLink] = useState({ title: '', url: '', description: '' });
+  const [newVideoLink, setNewVideoLink] = useState({ title: '', url: '', description: '', thumbnailUrl: '' });
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [useCustomThumbnail, setUseCustomThumbnail] = useState(false);
 
   // Analytics time range state
   const [analyticsTimeframe, setAnalyticsTimeframe] = useState<string>('all');
@@ -702,15 +706,34 @@ export default function SpeakerDashboard() {
 
   // Create video link mutation
   const createVideoLinkMutation = useMutation({
-    mutationFn: async (data: { title: string; url: string; description?: string }) => {
+    mutationFn: async (data: { title: string; url: string; description?: string; thumbnailUrl?: string }) => {
       const userData = getUserData();
+      const userId = userData?.id || localStorage.getItem('userId') || '';
+
+      let finalThumbnailUrl = data.thumbnailUrl || '';
+
+      if (thumbnailFile && speakerProfile?.id) {
+        const formData = new FormData();
+        formData.append('thumbnail', thumbnailFile);
+        const uploadResponse = await fetch(`/api/speakers/${speakerProfile.id}/video-thumbnail`, {
+          method: 'POST',
+          headers: { 'X-User-ID': userId },
+          body: formData,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload thumbnail');
+        }
+        const uploadResult = await uploadResponse.json();
+        finalThumbnailUrl = uploadResult.thumbnailUrl;
+      }
+
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/video-links`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-ID': userData?.id || localStorage.getItem('userId') || ''
+          'X-User-ID': userId
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, thumbnailUrl: finalThumbnailUrl || undefined }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -721,7 +744,10 @@ export default function SpeakerDashboard() {
     onSuccess: () => {
       refetchVideoLinks();
       setShowAddVideoLinkDialog(false);
-      setNewVideoLink({ title: '', url: '', description: '' });
+      setNewVideoLink({ title: '', url: '', description: '', thumbnailUrl: '' });
+      setThumbnailFile(null);
+      setThumbnailPreview(null);
+      setUseCustomThumbnail(false);
       toast({
         title: "Video Link Added",
         description: "Your video link has been added successfully.",
@@ -3277,7 +3303,15 @@ export default function SpeakerDashboard() {
                     </p>
                   </div>
                   {(speakerProfile?.subscriptionTier === 'pro' || speakerProfile?.subscriptionTier === 'premier') && (
-                    <Dialog open={showAddVideoLinkDialog} onOpenChange={setShowAddVideoLinkDialog}>
+                    <Dialog open={showAddVideoLinkDialog} onOpenChange={(open) => {
+                      setShowAddVideoLinkDialog(open);
+                      if (!open) {
+                        setNewVideoLink({ title: '', url: '', description: '', thumbnailUrl: '' });
+                        setThumbnailFile(null);
+                        setThumbnailPreview(null);
+                        setUseCustomThumbnail(false);
+                      }
+                    }}>
                       <DialogTrigger asChild>
                         <Button
                           disabled={videoLinksData && videoLinksData.currentCount >= videoLinksData.maxLinks}
@@ -3312,7 +3346,14 @@ export default function SpeakerDashboard() {
                               id="videoUrl"
                               placeholder="https://youtube.com/watch?v=..."
                               value={newVideoLink.url}
-                              onChange={(e) => setNewVideoLink({...newVideoLink, url: e.target.value})}
+                              onChange={(e) => {
+                                const url = e.target.value;
+                                setNewVideoLink({...newVideoLink, url});
+                                if (!useCustomThumbnail) {
+                                  const autoThumb = getVideoThumbnail(url);
+                                  setThumbnailPreview(autoThumb);
+                                }
+                              }}
                               data-testid="input-video-url"
                             />
                           </div>
@@ -3325,6 +3366,90 @@ export default function SpeakerDashboard() {
                               onChange={(e) => setNewVideoLink({...newVideoLink, description: e.target.value})}
                               data-testid="input-video-description"
                             />
+                          </div>
+                          <div>
+                            <Label>Thumbnail</Label>
+                            <div className="mt-2 space-y-3">
+                              {thumbnailPreview && (
+                                <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden border">
+                                  <img
+                                    src={thumbnailPreview}
+                                    alt="Video thumbnail preview"
+                                    className="w-full h-full object-cover"
+                                    onError={() => setThumbnailPreview(null)}
+                                  />
+                                  {!useCustomThumbnail && (
+                                    <div className="absolute bottom-2 left-2">
+                                      <Badge variant="secondary" className="text-xs">Auto-detected</Badge>
+                                    </div>
+                                  )}
+                                  {useCustomThumbnail && (
+                                    <div className="absolute bottom-2 left-2">
+                                      <Badge className="text-xs bg-green-600">Custom thumbnail</Badge>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              {!thumbnailPreview && !useCustomThumbnail && newVideoLink.url && (
+                                <div className="w-full aspect-video bg-gray-100 rounded-lg border flex items-center justify-center">
+                                  <div className="text-center text-gray-400">
+                                    <Video className="h-8 w-8 mx-auto mb-1" />
+                                    <p className="text-xs">No thumbnail detected</p>
+                                  </div>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="file"
+                                  id="videoThumbnailInput"
+                                  className="hidden"
+                                  accept=".jpg,.jpeg,.png,.webp,.gif"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      setThumbnailFile(file);
+                                      setUseCustomThumbnail(true);
+                                      const reader = new FileReader();
+                                      reader.onload = (ev) => {
+                                        setThumbnailPreview(ev.target?.result as string);
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                    e.target.value = '';
+                                  }}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => document.getElementById('videoThumbnailInput')?.click()}
+                                >
+                                  <Image className="h-3 w-3 mr-1" />
+                                  {useCustomThumbnail ? 'Change Thumbnail' : 'Upload Custom Thumbnail'}
+                                </Button>
+                                {useCustomThumbnail && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setThumbnailFile(null);
+                                      setUseCustomThumbnail(false);
+                                      const autoThumb = getVideoThumbnail(newVideoLink.url);
+                                      setThumbnailPreview(autoThumb);
+                                    }}
+                                  >
+                                    <X className="h-3 w-3 mr-1" />
+                                    Use Auto Thumbnail
+                                  </Button>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500">
+                                {useCustomThumbnail
+                                  ? "Your custom thumbnail will be used on your profile."
+                                  : "A thumbnail will be automatically extracted from YouTube/Vimeo URLs. You can also upload your own."}
+                              </p>
+                            </div>
                           </div>
                         </div>
                         <div className="flex justify-end space-x-2">
@@ -3377,9 +3502,24 @@ export default function SpeakerDashboard() {
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3 flex-1 min-w-0">
-                                  <div className="p-2 bg-red-100 rounded-lg flex-shrink-0">
-                                    <Video className="h-5 w-5 text-red-600" />
-                                  </div>
+                                  {(link.thumbnailUrl || getVideoThumbnail(link.url)) ? (
+                                    <div className="w-16 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                                      <img
+                                        src={link.thumbnailUrl || getVideoThumbnail(link.url) || ''}
+                                        alt={link.title}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          target.parentElement!.innerHTML = '<div class="p-2 bg-red-100 rounded-lg flex items-center justify-center h-full"><svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>';
+                                        }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="p-2 bg-red-100 rounded-lg flex-shrink-0">
+                                      <Video className="h-5 w-5 text-red-600" />
+                                    </div>
+                                  )}
                                   <div className="flex-1 min-w-0">
                                     {editingVideoLink?.id === link.id ? (
                                       <div className="space-y-2">

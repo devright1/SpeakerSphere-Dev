@@ -1226,7 +1226,7 @@ export default function SpeakerProfile() {
                           <CardContent className="px-6 py-4">
                             <div className="grid gap-4 md:grid-cols-2">
                               {videoLinksData.links.map((link) => {
-                                const thumbnail = getVideoThumbnail(link.url);
+                                const thumbnail = link.thumbnailUrl || getVideoThumbnail(link.url);
                                 return (
                                   <a
                                     key={link.id}
