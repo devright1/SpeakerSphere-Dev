@@ -37,7 +37,6 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">For Speakers</h4>
             <ul className="space-y-2 text-gray-400">
               <li><Link href="/for-speakers" className="hover:text-white transition-colors">Join Platform</Link></li>
-              <li><Link href="/resources" className="hover:text-white transition-colors">Speaker Resources</Link></li>
               <li><Link href="/success-stories" className="hover:text-white transition-colors">Success Stories</Link></li>
             </ul>
           </div>
