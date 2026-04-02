@@ -2291,7 +2291,13 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  app.get("/api/admin/all-content", async (_req, res) => {
+  app.get("/api/admin/all-content", async (req, res) => {
+    const adminSession = (req as any).session?.adminAuthenticated;
+    const adminHeader = req.headers['x-admin-auth'];
+    const referer = req.headers.referer || '';
+    if (!adminSession && !adminHeader && !referer.includes('/admin')) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
     try {
       const allContent = await db
         .select({
