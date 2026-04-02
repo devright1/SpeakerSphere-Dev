@@ -25,6 +25,172 @@ import { SubscriptionFeaturesManager } from "@/components/subscription-features-
 import { SpeakerSubscriptionsView } from "@/components/speaker-subscriptions-view";
 import type { User, Speaker, Category, Inquiry } from "@shared/schema";
 
+function AdminContentTable() {
+  const [contentSearchQuery, setContentSearchQuery] = useState("");
+  const [contentCategoryFilter, setContentCategoryFilter] = useState("all");
+
+  const { data: allContent = [], isLoading: contentLoading } = useQuery({
+    queryKey: ["/api/admin/all-content"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/all-content");
+      if (!response.ok) throw new Error("Failed to fetch content");
+      return response.json();
+    },
+  });
+
+  const filteredContent = useMemo(() => {
+    let filtered = allContent;
+    if (contentCategoryFilter !== "all") {
+      filtered = filtered.filter((c: any) => c.category === contentCategoryFilter);
+    }
+    if (contentSearchQuery.trim()) {
+      const q = contentSearchQuery.toLowerCase();
+      filtered = filtered.filter((c: any) =>
+        c.originalName?.toLowerCase().includes(q) ||
+        c.speakerName?.toLowerCase().includes(q)
+      );
+    }
+    return filtered;
+  }, [allContent, contentCategoryFilter, contentSearchQuery]);
+
+  const formatFileSize = (bytes: number) => {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const categoryLabels: Record<string, string> = {
+    lecture_notes: 'Lecture Notes',
+    articles: 'Articles',
+    documents: 'Documents',
+    images: 'Images',
+  };
+
+  const acknowledgedCount = allContent.filter((c: any) => c.copyrightAcknowledgedAt).length;
+  const unacknowledgedCount = allContent.filter((c: any) => !c.copyrightAcknowledgedAt).length;
+
+  if (contentLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-teal-700">{allContent.length}</p>
+          <p className="text-sm text-teal-600">Total Files</p>
+        </div>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-green-700">{acknowledgedCount}</p>
+          <p className="text-sm text-green-600">Rights Confirmed</p>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-amber-700">{unacknowledgedCount}</p>
+          <p className="text-sm text-amber-600">Pre-Tracking (No Record)</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="Search by file name or speaker..."
+          value={contentSearchQuery}
+          onChange={(e) => setContentSearchQuery(e.target.value)}
+          className="max-w-sm"
+        />
+        <Select value={contentCategoryFilter} onValueChange={setContentCategoryFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="lecture_notes">Lecture Notes</SelectItem>
+            <SelectItem value="articles">Articles</SelectItem>
+            <SelectItem value="documents">Documents</SelectItem>
+            <SelectItem value="images">Images</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {filteredContent.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          <FolderOpen className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+          <p className="font-medium">No content found</p>
+          <p className="text-sm mt-1">No uploaded files match your filters.</p>
+        </div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-700">File</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700">Speaker</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700">Category</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700">Size</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-700">Rights Confirmed</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700">Uploaded</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-700">Downloads</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {filteredContent.map((content: any) => (
+                <tr key={content.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <span className="truncate max-w-[200px]" title={content.originalName}>
+                        {content.originalName}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-gray-900">{content.speakerName || 'Unknown'}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant="outline" className="text-xs">
+                      {categoryLabels[content.category] || content.category}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {formatFileSize(content.fileSize)}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {content.copyrightAcknowledgedAt ? (
+                      <div className="flex flex-col items-center">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-[10px] text-green-600 mt-0.5">
+                          {new Date(content.copyrightAcknowledgedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs text-gray-400">N/A</span>
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {content.createdAt ? new Date(content.createdAt).toLocaleDateString() : 'N/A'}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <Badge variant="secondary" className="text-xs">
+                      {content.downloadCount || 0}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [adminEmail, setAdminEmail] = useState("");
@@ -1536,7 +1702,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8 bg-gray-100 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-9 bg-gray-100 p-1 rounded-lg">
             <TabsTrigger 
               value="analytics"
               className="data-[state=active]:bg-blue-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
@@ -1560,6 +1726,12 @@ export default function AdminDashboard() {
               className="data-[state=active]:bg-yellow-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
             >
               Reviews
+            </TabsTrigger>
+            <TabsTrigger 
+              value="content"
+              className="data-[state=active]:bg-teal-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+            >
+              Content
             </TabsTrigger>
             <TabsTrigger 
               value="users"
@@ -3929,6 +4101,23 @@ export default function AdminDashboard() {
                     </div>
                   </TabsContent>
                 </Tabs>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="content" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FolderOpen className="h-5 w-5" />
+                  Uploaded Content
+                </CardTitle>
+                <CardDescription>
+                  All content uploaded by speakers with ownership acknowledgment status
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AdminContentTable />
               </CardContent>
             </Card>
           </TabsContent>

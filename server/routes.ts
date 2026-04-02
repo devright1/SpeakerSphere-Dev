@@ -1823,6 +1823,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       // Create content record
+      const copyrightAcknowledged = req.body.copyrightAcknowledged === 'true';
       const contentData = {
         speakerId,
         fileName: finalFileName,
@@ -1832,7 +1833,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
         category: resolvedCategory,
         description: description || '',
         isPublic: isPublic === 'true',
-        uploadPath: uploadPath // Store the object storage path
+        uploadPath: uploadPath,
+        copyrightAcknowledgedAt: copyrightAcknowledged ? new Date() : null,
       };
 
       const content = await storage.createSpeakerContent(contentData);

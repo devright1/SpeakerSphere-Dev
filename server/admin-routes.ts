@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
-import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics } from "../shared/schema";
+import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics, speakerContent } from "../shared/schema";
 import { eq, desc, and, or, isNotNull } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import { generateVerificationToken, getTokenExpiration } from "./email";
@@ -2287,6 +2287,37 @@ export function registerAdminRoutes(app: Express) {
       });
     } catch (error) {
       console.error("Failed to fix speaker emails:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/all-content", async (_req, res) => {
+    try {
+      const allContent = await db
+        .select({
+          id: speakerContent.id,
+          speakerId: speakerContent.speakerId,
+          fileName: speakerContent.fileName,
+          originalName: speakerContent.originalName,
+          fileSize: speakerContent.fileSize,
+          fileType: speakerContent.fileType,
+          category: speakerContent.category,
+          description: speakerContent.description,
+          isPublic: speakerContent.isPublic,
+          requiresAccessCode: speakerContent.requiresAccessCode,
+          downloadCount: speakerContent.downloadCount,
+          copyrightAcknowledgedAt: speakerContent.copyrightAcknowledgedAt,
+          createdAt: speakerContent.createdAt,
+          speakerName: speakers.name,
+          speakerSlug: speakers.slug,
+        })
+        .from(speakerContent)
+        .leftJoin(speakers, eq(speakerContent.speakerId, speakers.id))
+        .orderBy(desc(speakerContent.createdAt));
+
+      res.json(allContent);
+    } catch (error) {
+      console.error("Failed to fetch all content:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

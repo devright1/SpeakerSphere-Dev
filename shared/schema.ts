@@ -537,6 +537,7 @@ export const speakerContent = pgTable("speaker_content", {
   downloadCount: integer("download_count").default(0),
   uploadPath: text("upload_path").notNull(), // Path to file in storage
   thumbnailPath: text("thumbnail_path"), // Path to thumbnail for images/videos
+  copyrightAcknowledgedAt: timestamp("copyright_acknowledged_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

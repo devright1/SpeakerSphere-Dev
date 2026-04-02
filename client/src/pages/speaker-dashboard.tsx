@@ -1258,6 +1258,7 @@ export default function SpeakerDashboard() {
     formData.append('description', `${file.name}`);
     formData.append('section', sectionCategory);
     formData.append('isPublic', 'true');
+    formData.append('copyrightAcknowledged', 'true');
 
     uploadContentMutation.mutate(formData);
     event.target.value = '';
