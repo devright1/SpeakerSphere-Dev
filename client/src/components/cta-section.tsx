@@ -17,12 +17,6 @@ export default function CTASection() {
                   Find Speakers Now
                 </Button>
               </Link>
-              <Button 
-                size="lg" 
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg"
-              >
-                Schedule Demo
-              </Button>
             </div>
           </div>
           <div className="text-center">
