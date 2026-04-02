@@ -544,9 +544,9 @@ export default function SpeakerProfile() {
       (async () => {
         try {
           const pdfjsLib = await import('pdfjs-dist');
-          pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+          pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
-          const loadingTask = pdfjsLib.getDocument({ url: previewUrl, useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true });
+          const loadingTask = pdfjsLib.getDocument(previewUrl);
           const pdf = await loadingTask.promise;
           const page = await pdf.getPage(1);
           const viewport = page.getViewport({ scale: 1 });
