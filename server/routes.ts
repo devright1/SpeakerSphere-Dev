@@ -95,6 +95,32 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Register admin routes
   registerAdminRoutes(app);
   
+  // Contact form endpoint
+  app.post("/api/contact", async (req, res) => {
+    const schema = z.object({
+      name: z.string().min(1),
+      email: z.string().email(),
+      message: z.string().min(1),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid request" });
+    }
+    const { name, email, message } = parsed.data;
+    const emailService = EmailService.getInstance();
+    const sent = await emailService.sendEmail({
+      to: "speakers@devright.com",
+      from: process.env.SENDGRID_FROM_EMAIL || "noreply@thespeakersphere.com",
+      subject: `Contact Form Message from ${name}`,
+      html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Message:</strong></p><p>${message.replace(/\n/g, "<br>")}</p>`,
+      text: `Name: ${name}\nEmail: ${email}\nMessage:\n${message}`,
+    });
+    if (!sent) {
+      return res.status(500).json({ error: "Failed to send message" });
+    }
+    return res.json({ success: true });
+  });
+
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
