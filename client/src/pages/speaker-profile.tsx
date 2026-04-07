@@ -996,10 +996,14 @@ export default function SpeakerProfile() {
             <Tabs defaultValue="overview" className="space-y-6">
               {(() => {
                 const hasEvents = speakerUpcomingEvents && speakerUpcomingEvents.length > 0;
-                const baseCols = speaker.hideRatings ? 4 : 5;
-                const totalCols = hasEvents ? baseCols + 1 : baseCols;
+                // Use static Tailwind classes so purging doesn't remove them
+                const colsClass =
+                  speaker.hideRatings && !hasEvents ? 'grid-cols-4'
+                  : !speaker.hideRatings && !hasEvents ? 'grid-cols-5'
+                  : speaker.hideRatings && hasEvents ? 'grid-cols-5'
+                  : 'grid-cols-6'; // !hideRatings && hasEvents
                 return (
-                  <TabsList className={`grid w-full grid-cols-${totalCols}`}>
+                  <TabsList className={`grid w-full ${colsClass}`}>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="experience">Experience</TabsTrigger>
                     <TabsTrigger value="topics">Topics</TabsTrigger>

@@ -639,9 +639,12 @@ export default function SpeakerDashboard() {
     if (!eventForm.eventName.trim() || !eventForm.eventDate) {
       toast({ title: 'Event name and date are required', variant: 'destructive' }); return;
     }
-    const payload: any = { eventName: eventForm.eventName, eventDate: eventForm.eventDate };
-    if (eventForm.location) payload.location = eventForm.location;
-    if (eventForm.eventUrl) payload.eventUrl = eventForm.eventUrl;
+    const payload: EventPayload = {
+      eventName: eventForm.eventName,
+      eventDate: eventForm.eventDate,
+      ...(eventForm.location ? { location: eventForm.location } : {}),
+      ...(eventForm.eventUrl ? { eventUrl: eventForm.eventUrl } : {}),
+    };
     if (editingEvent) { updateEventMutation.mutate({ id: editingEvent.id, data: payload }); }
     else { createEventMutation.mutate(payload); }
   };
@@ -3860,11 +3863,21 @@ export default function SpeakerDashboard() {
                           <Calendar className="h-5 w-5" />
                           Upcoming Events
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {speakerEventsList?.length || 0} / {eventLimit} events used
-                        </p>
+                        {(() => {
+                          const today = new Date().toISOString().slice(0, 10);
+                          const upcomingCount = speakerEventsList?.filter(e => e.eventDate >= today).length ?? 0;
+                          return (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {upcomingCount} / {eventLimit} upcoming slots used
+                            </p>
+                          );
+                        })()}
                       </div>
-                      {(speakerEventsList?.length || 0) < eventLimit && (
+                      {(() => {
+                        const today = new Date().toISOString().slice(0, 10);
+                        const upcomingCount = speakerEventsList?.filter(e => e.eventDate >= today).length ?? 0;
+                        return upcomingCount < eventLimit;
+                      })() && (
                         <Button
                           size="sm"
                           onClick={() => {

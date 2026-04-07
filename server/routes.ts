@@ -166,7 +166,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
     const limit = EVENT_LIMITS[tier] ?? 0;
     if (limit === 0) return res.status(403).json({ error: "Upgrade required to add events" });
 
-    const existing = await storage.getSpeakerEvents(speakerId, false);
+    // Slot enforcement uses only upcoming events — past events don't consume slots
+    const existing = await storage.getSpeakerEvents(speakerId, true);
     if (existing.length >= limit) {
       return res.status(400).json({ error: `Event limit reached (${limit} for ${tier} tier)` });
     }
