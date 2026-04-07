@@ -759,3 +759,29 @@ export const insertTierLimitSchema = createInsertSchema(tierLimits).omit({
 
 export type TierLimit = typeof tierLimits.$inferSelect;
 export type InsertTierLimit = z.infer<typeof insertTierLimitSchema>;
+
+// Speaker upcoming events
+export const speakerEvents = pgTable("speaker_events", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull(),
+  eventName: text("event_name").notNull(),
+  eventDate: text("event_date").notNull(), // YYYY-MM-DD format
+  location: text("location"),
+  eventUrl: text("event_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSpeakerEventSchema = createInsertSchema(speakerEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type SpeakerEvent = typeof speakerEvents.$inferSelect;
+export type InsertSpeakerEvent = z.infer<typeof insertSpeakerEventSchema>;
+
+// Event slot limits per tier
+export const EVENT_LIMITS = {
+  basic: 0,
+  pro: 2,
+  premier: 5,
+} as const;

@@ -49,7 +49,9 @@ import {
   Folder,
   FolderOpen,
   GraduationCap,
-  Newspaper
+  Newspaper,
+  MapPin,
+  ExternalLink
 } from "lucide-react";
 import { FaInstagram, FaLinkedin, FaFacebook, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -155,6 +157,18 @@ export default function SpeakerProfile() {
       return response.json();
     },
     enabled: Boolean(speaker?.id),
+  });
+
+  // Fetch speaker upcoming events (public)
+  const { data: speakerUpcomingEvents } = useQuery<any[]>({
+    queryKey: ["/api/speakers", speaker?.id, "events"],
+    queryFn: async () => {
+      if (!speaker?.id) return [];
+      const response = await fetch(`/api/speakers/${speaker.id}/events`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!speaker?.id,
   });
 
   // Fetch speaker topics
@@ -980,15 +994,21 @@ export default function SpeakerProfile() {
 
             {/* Tabs */}
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className={`grid w-full ${
-                speaker.hideRatings ? 'grid-cols-4' : 'grid-cols-5'
-              }`}>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="experience">Experience</TabsTrigger>
-                <TabsTrigger value="topics">Topics</TabsTrigger>
-                <TabsTrigger value="resources">Speaker Resources</TabsTrigger>
-                {!speaker.hideRatings && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
-              </TabsList>
+              {(() => {
+                const hasEvents = speakerUpcomingEvents && speakerUpcomingEvents.length > 0;
+                const baseCols = speaker.hideRatings ? 4 : 5;
+                const totalCols = hasEvents ? baseCols + 1 : baseCols;
+                return (
+                  <TabsList className={`grid w-full grid-cols-${totalCols}`}>
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="experience">Experience</TabsTrigger>
+                    <TabsTrigger value="topics">Topics</TabsTrigger>
+                    <TabsTrigger value="resources">Speaker Resources</TabsTrigger>
+                    {hasEvents && <TabsTrigger value="events">Events</TabsTrigger>}
+                    {!speaker.hideRatings && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
+                  </TabsList>
+                );
+              })()}
 
               <TabsContent value="overview">
                 <Card>
@@ -1195,6 +1215,54 @@ export default function SpeakerProfile() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* Upcoming Events Tab */}
+              {speakerUpcomingEvents && speakerUpcomingEvents.length > 0 && (
+                <TabsContent value="events">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5" />
+                        Upcoming Events
+                      </CardTitle>
+                      <p className="text-muted-foreground">Speaking engagements and upcoming appearances</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {speakerUpcomingEvents.map((event: any) => (
+                          <div key={event.id} className="flex items-start gap-4 p-4 border rounded-lg">
+                            <div className="flex-shrink-0 text-center min-w-[60px]">
+                              <div className="bg-primary/10 rounded-lg p-2">
+                                <Calendar className="h-5 w-5 text-primary mx-auto" />
+                                <p className="text-xs font-medium text-primary mt-1">
+                                  {new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <p className="font-semibold">{event.eventName}</p>
+                              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                <span>{new Date(event.eventDate + 'T00:00:00').getFullYear()}</span>
+                                {event.location && (
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="h-3.5 w-3.5" /> {event.location}
+                                  </span>
+                                )}
+                              </div>
+                              {event.eventUrl && (
+                                <a href={event.eventUrl} target="_blank" rel="noopener noreferrer"
+                                  className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                                  <ExternalLink className="h-3.5 w-3.5" /> Event details
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
 
               <TabsContent value="resources">
                 <div className="space-y-6">

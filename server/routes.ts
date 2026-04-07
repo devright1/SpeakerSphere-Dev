@@ -4,7 +4,7 @@ import { z } from "zod";
 // Removed zfd import as it's not needed for current functionality
 import session from "express-session";
 import { storage } from "./storage";
-import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory, speakers, VIDEO_LINK_LIMITS, insertSpeakerVideoLinkSchema } from "../shared/schema";
+import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory, speakers, VIDEO_LINK_LIMITS, insertSpeakerVideoLinkSchema, EVENT_LIMITS } from "../shared/schema";
 import { registerAdminRoutes } from "./admin-routes";
 import { EmailService } from "./email-service";
 import multer from "multer";
@@ -118,6 +118,101 @@ export async function registerRoutes(app: Express): Promise<Express> {
     if (!sent) {
       return res.status(500).json({ error: "Failed to send message" });
     }
+    return res.json({ success: true });
+  });
+
+  // =====================
+  // Speaker Events API
+  // =====================
+
+  // GET /api/speakers/:id/events — public, upcoming only
+  app.get("/api/speakers/:id/events", async (req, res) => {
+    const speakerId = parseInt(req.params.id);
+    if (isNaN(speakerId)) return res.status(400).json({ error: "Invalid speaker ID" });
+    const events = await storage.getSpeakerEvents(speakerId, true);
+    return res.json(events);
+  });
+
+  // POST /api/speakers/:id/events — create event (auth required, tier check)
+  app.post("/api/speakers/:id/events", async (req: AuthenticatedRequest, res) => {
+    const speakerId = parseInt(req.params.id);
+    if (isNaN(speakerId)) return res.status(400).json({ error: "Invalid speaker ID" });
+
+    const userId = await resolveUserId(req);
+    if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+    const user = await storage.getUserById(userId);
+    if (!user || user.speakerId !== speakerId) return res.status(403).json({ error: "Forbidden" });
+
+    const speaker = await storage.getSpeaker(speakerId);
+    if (!speaker) return res.status(404).json({ error: "Speaker not found" });
+
+    const tier = speaker.subscriptionTier as 'basic' | 'pro' | 'premier';
+    const limit = EVENT_LIMITS[tier] ?? 0;
+    if (limit === 0) return res.status(403).json({ error: "Upgrade required to add events" });
+
+    const existing = await storage.getSpeakerEvents(speakerId, false);
+    if (existing.length >= limit) {
+      return res.status(400).json({ error: `Event limit reached (${limit} for ${tier} tier)` });
+    }
+
+    const schema = z.object({
+      eventName: z.string().min(1),
+      eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      location: z.string().optional(),
+      eventUrl: z.string().url().optional().or(z.literal('')),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid event data", details: parsed.error.errors });
+
+    const event = await storage.createSpeakerEvent({ speakerId, ...parsed.data });
+    return res.status(201).json(event);
+  });
+
+  // PUT /api/speakers/:id/events/:eventId — update event (auth required)
+  app.put("/api/speakers/:id/events/:eventId", async (req: AuthenticatedRequest, res) => {
+    const speakerId = parseInt(req.params.id);
+    const eventId = parseInt(req.params.eventId);
+    if (isNaN(speakerId) || isNaN(eventId)) return res.status(400).json({ error: "Invalid ID" });
+
+    const userId = await resolveUserId(req);
+    if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+    const user = await storage.getUserById(userId);
+    if (!user || user.speakerId !== speakerId) return res.status(403).json({ error: "Forbidden" });
+
+    const existing = await storage.getSpeakerEventById(eventId);
+    if (!existing || existing.speakerId !== speakerId) return res.status(404).json({ error: "Event not found" });
+
+    const schema = z.object({
+      eventName: z.string().min(1).optional(),
+      eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      location: z.string().optional().nullable(),
+      eventUrl: z.string().url().optional().nullable().or(z.literal('')),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid event data", details: parsed.error.errors });
+
+    const updated = await storage.updateSpeakerEvent(eventId, parsed.data);
+    return res.json(updated);
+  });
+
+  // DELETE /api/speakers/:id/events/:eventId — delete event (auth required)
+  app.delete("/api/speakers/:id/events/:eventId", async (req: AuthenticatedRequest, res) => {
+    const speakerId = parseInt(req.params.id);
+    const eventId = parseInt(req.params.eventId);
+    if (isNaN(speakerId) || isNaN(eventId)) return res.status(400).json({ error: "Invalid ID" });
+
+    const userId = await resolveUserId(req);
+    if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+    const user = await storage.getUserById(userId);
+    if (!user || user.speakerId !== speakerId) return res.status(403).json({ error: "Forbidden" });
+
+    const existing = await storage.getSpeakerEventById(eventId);
+    if (!existing || existing.speakerId !== speakerId) return res.status(404).json({ error: "Event not found" });
+
+    await storage.deleteSpeakerEvent(eventId);
     return res.json({ success: true });
   });
 

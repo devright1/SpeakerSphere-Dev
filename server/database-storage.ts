@@ -20,6 +20,7 @@ import {
   subscriptionFeatures,
   subscriptionTierFeatures,
   tierLimits,
+  speakerEvents,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -61,7 +62,9 @@ import {
   type SubscriptionTierFeature,
   type InsertSubscriptionTierFeature,
   type TierLimit,
-  type InsertTierLimit
+  type InsertTierLimit,
+  type SpeakerEvent,
+  type InsertSpeakerEvent,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull, inArray } from "drizzle-orm";
@@ -2545,5 +2548,44 @@ export class DatabaseStorage implements IStorage {
       console.error('Error updating speaker cancellation:', error);
       throw error;
     }
+  }
+
+  // Speaker Events
+  async getSpeakerEvents(speakerId: number, upcomingOnly = false): Promise<SpeakerEvent[]> {
+    const conditions = [eq(speakerEvents.speakerId, speakerId)];
+    if (upcomingOnly) {
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      conditions.push(gte(speakerEvents.eventDate, today));
+    }
+    const result = await db
+      .select()
+      .from(speakerEvents)
+      .where(and(...conditions))
+      .orderBy(speakerEvents.eventDate);
+    return result;
+  }
+
+  async createSpeakerEvent(event: InsertSpeakerEvent): Promise<SpeakerEvent> {
+    const result = await db.insert(speakerEvents).values(event).returning();
+    return result[0];
+  }
+
+  async updateSpeakerEvent(eventId: number, updates: Partial<InsertSpeakerEvent>): Promise<SpeakerEvent | undefined> {
+    const result = await db
+      .update(speakerEvents)
+      .set(updates)
+      .where(eq(speakerEvents.id, eventId))
+      .returning();
+    return result[0];
+  }
+
+  async deleteSpeakerEvent(eventId: number): Promise<boolean> {
+    const result = await db.delete(speakerEvents).where(eq(speakerEvents.id, eventId));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getSpeakerEventById(eventId: number): Promise<SpeakerEvent | undefined> {
+    const result = await db.select().from(speakerEvents).where(eq(speakerEvents.id, eventId));
+    return result[0];
   }
 }

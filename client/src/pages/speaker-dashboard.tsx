@@ -62,7 +62,8 @@ import {
   ChevronUp,
   GraduationCap,
   Newspaper,
-  FolderOpen
+  FolderOpen,
+  Pencil
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { getVideoThumbnail } from "@/lib/video-utils";
@@ -236,6 +237,11 @@ export default function SpeakerDashboard() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [useCustomThumbnail, setUseCustomThumbnail] = useState(false);
+
+  // Events state
+  const [showEventDialog, setShowEventDialog] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [eventForm, setEventForm] = useState({ eventName: '', eventDate: '', location: '', eventUrl: '' });
 
   // Analytics time range state
   const [analyticsTimeframe, setAnalyticsTimeframe] = useState<string>('all');
@@ -548,6 +554,90 @@ export default function SpeakerDashboard() {
 
   // Fetch all tier limits for subscription tab display
   const { data: allTierLimits, isLoading: allTierLimitsLoading } = useTierLimits();
+
+  // Fetch speaker events (all, not just upcoming, so dashboard shows all)
+  const { data: speakerEventsList, refetch: refetchEvents } = useQuery<any[]>({
+    queryKey: ['/api/speakers/events', speakerProfile?.id],
+    queryFn: async () => {
+      if (!speakerProfile?.id) return [];
+      const response = await fetch(`/api/speakers/${speakerProfile.id}/events`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id,
+  });
+
+  const eventLimit = speakerProfile?.subscriptionTier === 'premier' ? 5 : speakerProfile?.subscriptionTier === 'pro' ? 2 : 0;
+
+  const createEventMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const userData = getUserData();
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': userData?.id || localStorage.getItem('userId') || '' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) { const e = await response.json(); throw new Error(e.error || 'Failed'); }
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchEvents();
+      setShowEventDialog(false);
+      setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '' });
+      toast({ title: 'Event added successfully' });
+    },
+    onError: (e: any) => toast({ title: 'Failed to add event', description: e.message, variant: 'destructive' }),
+  });
+
+  const updateEventMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const userData = getUserData();
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/events/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': userData?.id || localStorage.getItem('userId') || '' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) { const e = await response.json(); throw new Error(e.error || 'Failed'); }
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchEvents();
+      setShowEventDialog(false);
+      setEditingEvent(null);
+      setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '' });
+      toast({ title: 'Event updated successfully' });
+    },
+    onError: (e: any) => toast({ title: 'Failed to update event', description: e.message, variant: 'destructive' }),
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: async (eventId: number) => {
+      const userData = getUserData();
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'X-User-ID': userData?.id || localStorage.getItem('userId') || '' },
+        credentials: 'include',
+      });
+      if (!response.ok) { const e = await response.json(); throw new Error(e.error || 'Failed'); }
+      return response.json();
+    },
+    onSuccess: () => { refetchEvents(); toast({ title: 'Event removed' }); },
+    onError: (e: any) => toast({ title: 'Failed to remove event', description: e.message, variant: 'destructive' }),
+  });
+
+  const handleEventSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eventForm.eventName.trim() || !eventForm.eventDate) {
+      toast({ title: 'Event name and date are required', variant: 'destructive' }); return;
+    }
+    const payload: any = { eventName: eventForm.eventName, eventDate: eventForm.eventDate };
+    if (eventForm.location) payload.location = eventForm.location;
+    if (eventForm.eventUrl) payload.eventUrl = eventForm.eventUrl;
+    if (editingEvent) { updateEventMutation.mutate({ id: editingEvent.id, data: payload }); }
+    else { createEventMutation.mutate(payload); }
+  };
 
   // Update speaker profile mutation
   const updateProfileMutation = useMutation({
@@ -1364,13 +1454,12 @@ export default function SpeakerDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews ({speakerReviews?.length || 0})</TabsTrigger>
-            <TabsTrigger value="stats">
-              Analytics
-            </TabsTrigger>
+            <TabsTrigger value="stats">Analytics</TabsTrigger>
             <TabsTrigger value="content">My Content</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
@@ -3739,6 +3828,156 @@ export default function SpeakerDashboard() {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          {/* Events Tab */}
+          <TabsContent value="events">
+            <div className="space-y-6">
+              {eventLimit === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Upcoming Events</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Upgrade to Pro or Premier to list upcoming speaking engagements on your profile.
+                    </p>
+                    <Button onClick={() => setActiveTab('subscription')}>Upgrade Plan</Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Calendar className="h-5 w-5" />
+                          Upcoming Events
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {speakerEventsList?.length || 0} / {eventLimit} events used
+                        </p>
+                      </div>
+                      {(speakerEventsList?.length || 0) < eventLimit && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setEditingEvent(null);
+                            setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '' });
+                            setShowEventDialog(true);
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Add Event
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {!speakerEventsList || speakerEventsList.length === 0 ? (
+                      <div className="text-center py-10 text-muted-foreground">
+                        <Calendar className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                        <p>No events added yet. Add your upcoming speaking engagements.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {speakerEventsList.map((event: any) => (
+                          <div key={event.id} className="flex items-start justify-between p-4 border rounded-lg bg-muted/30">
+                            <div className="space-y-1">
+                              <p className="font-medium">{event.eventName}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                {event.location ? ` · ${event.location}` : ''}
+                              </p>
+                              {event.eventUrl && (
+                                <a href={event.eventUrl} target="_blank" rel="noopener noreferrer"
+                                  className="text-sm text-primary hover:underline flex items-center gap-1">
+                                  <ExternalLink className="h-3 w-3" /> Event link
+                                </a>
+                              )}
+                            </div>
+                            <div className="flex gap-2 ml-4">
+                              <Button variant="ghost" size="icon"
+                                onClick={() => {
+                                  setEditingEvent(event);
+                                  setEventForm({
+                                    eventName: event.eventName,
+                                    eventDate: event.eventDate,
+                                    location: event.location || '',
+                                    eventUrl: event.eventUrl || '',
+                                  });
+                                  setShowEventDialog(true);
+                                }}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon"
+                                onClick={() => deleteEventMutation.mutate(event.id)}
+                                disabled={deleteEventMutation.isPending}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Add/Edit Event Dialog */}
+            <Dialog open={showEventDialog} onOpenChange={(open) => { if (!open) { setShowEventDialog(false); setEditingEvent(null); } }}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editingEvent ? 'Edit Event' : 'Add Event'}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleEventSubmit} className="space-y-4 pt-2">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Event Name *</label>
+                    <input
+                      className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      placeholder="e.g. Healthcare Innovation Summit 2026"
+                      value={eventForm.eventName}
+                      onChange={e => setEventForm(f => ({ ...f, eventName: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Event Date *</label>
+                    <input
+                      type="date"
+                      className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      value={eventForm.eventDate}
+                      onChange={e => setEventForm(f => ({ ...f, eventDate: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Location</label>
+                    <input
+                      className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      placeholder="e.g. Chicago, IL or Virtual"
+                      value={eventForm.location}
+                      onChange={e => setEventForm(f => ({ ...f, location: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Event URL</label>
+                    <input
+                      type="url"
+                      className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      placeholder="https://..."
+                      value={eventForm.eventUrl}
+                      onChange={e => setEventForm(f => ({ ...f, eventUrl: e.target.value }))}
+                    />
+                  </div>
+                  <div className="flex gap-3 justify-end pt-2">
+                    <Button type="button" variant="outline" onClick={() => setShowEventDialog(false)}>Cancel</Button>
+                    <Button type="submit" disabled={createEventMutation.isPending || updateEventMutation.isPending}>
+                      {editingEvent ? 'Save Changes' : 'Add Event'}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Subscription Tab */}

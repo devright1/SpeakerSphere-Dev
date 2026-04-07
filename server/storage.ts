@@ -20,6 +20,7 @@ import {
   subscriptionFeatures,
   subscriptionTierFeatures,
   tierLimits,
+  speakerEvents,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -61,7 +62,9 @@ import {
   type SubscriptionTierFeature,
   type InsertSubscriptionTierFeature,
   type TierLimit,
-  type InsertTierLimit
+  type InsertTierLimit,
+  type SpeakerEvent,
+  type InsertSpeakerEvent,
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -291,6 +294,13 @@ export interface IStorage {
     periodEnd?: Date;
     status?: string;
   }): Promise<Speaker>;
+
+  // Speaker Events
+  getSpeakerEvents(speakerId: number, upcomingOnly?: boolean): Promise<SpeakerEvent[]>;
+  createSpeakerEvent(event: InsertSpeakerEvent): Promise<SpeakerEvent>;
+  updateSpeakerEvent(eventId: number, updates: Partial<InsertSpeakerEvent>): Promise<SpeakerEvent | undefined>;
+  deleteSpeakerEvent(eventId: number): Promise<boolean>;
+  getSpeakerEventById(eventId: number): Promise<SpeakerEvent | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -1849,6 +1859,13 @@ export class MemStorage implements IStorage {
     
     return speaker;
   }
+
+  // Speaker Events (MemStorage stubs — not used in production)
+  async getSpeakerEvents(_speakerId: number, _upcomingOnly?: boolean): Promise<SpeakerEvent[]> { return []; }
+  async createSpeakerEvent(event: InsertSpeakerEvent): Promise<SpeakerEvent> { return { ...event, id: 1, createdAt: new Date() } as SpeakerEvent; }
+  async updateSpeakerEvent(_eventId: number, _updates: Partial<InsertSpeakerEvent>): Promise<SpeakerEvent | undefined> { return undefined; }
+  async deleteSpeakerEvent(_eventId: number): Promise<boolean> { return false; }
+  async getSpeakerEventById(_eventId: number): Promise<SpeakerEvent | undefined> { return undefined; }
 }
 
 import { DatabaseStorage } from "./database-storage";
