@@ -70,6 +70,7 @@ import { getVideoThumbnail } from "@/lib/video-utils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import QRCodeStyling from 'qr-code-styling';
 import devRightLogo from '@assets/DevRight_icon_-_Black_1766077810725.png';
+import type { SpeakerEvent } from "@shared/schema";
 
 // Styled QR Code Component with circular dots
 function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc: string; speakerName?: string }) {
@@ -240,7 +241,7 @@ export default function SpeakerDashboard() {
 
   // Events state
   const [showEventDialog, setShowEventDialog] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [editingEvent, setEditingEvent] = useState<SpeakerEvent | null>(null);
   const [eventForm, setEventForm] = useState({ eventName: '', eventDate: '', location: '', eventUrl: '' });
 
   // Analytics time range state
@@ -555,12 +556,16 @@ export default function SpeakerDashboard() {
   // Fetch all tier limits for subscription tab display
   const { data: allTierLimits, isLoading: allTierLimitsLoading } = useTierLimits();
 
-  // Fetch speaker events (all, not just upcoming, so dashboard shows all)
-  const { data: speakerEventsList, refetch: refetchEvents } = useQuery<any[]>({
-    queryKey: ['/api/speakers/events', speakerProfile?.id],
+  // Fetch ALL speaker events for dashboard management (including past events)
+  const { data: speakerEventsList, refetch: refetchEvents } = useQuery<SpeakerEvent[]>({
+    queryKey: ['/api/speakers/events/all', speakerProfile?.id],
     queryFn: async () => {
       if (!speakerProfile?.id) return [];
-      const response = await fetch(`/api/speakers/${speakerProfile.id}/events`);
+      const userData = getUserData();
+      const response = await fetch(`/api/speakers/${speakerProfile.id}/events/all`, {
+        headers: { 'X-User-ID': userData?.id || localStorage.getItem('userId') || '' },
+        credentials: 'include',
+      });
       if (!response.ok) return [];
       return response.json();
     },
@@ -569,8 +574,10 @@ export default function SpeakerDashboard() {
 
   const eventLimit = speakerProfile?.subscriptionTier === 'premier' ? 5 : speakerProfile?.subscriptionTier === 'pro' ? 2 : 0;
 
-  const createEventMutation = useMutation({
-    mutationFn: async (data: any) => {
+  type EventPayload = { eventName: string; eventDate: string; location?: string; eventUrl?: string };
+
+  const createEventMutation = useMutation<SpeakerEvent, Error, EventPayload>({
+    mutationFn: async (data) => {
       const userData = getUserData();
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/events`, {
         method: 'POST',
@@ -587,11 +594,11 @@ export default function SpeakerDashboard() {
       setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '' });
       toast({ title: 'Event added successfully' });
     },
-    onError: (e: any) => toast({ title: 'Failed to add event', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast({ title: 'Failed to add event', description: e.message, variant: 'destructive' }),
   });
 
-  const updateEventMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+  const updateEventMutation = useMutation<SpeakerEvent, Error, { id: number; data: Partial<EventPayload> }>({
+    mutationFn: async ({ id, data }) => {
       const userData = getUserData();
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/events/${id}`, {
         method: 'PUT',
@@ -609,11 +616,11 @@ export default function SpeakerDashboard() {
       setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '' });
       toast({ title: 'Event updated successfully' });
     },
-    onError: (e: any) => toast({ title: 'Failed to update event', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast({ title: 'Failed to update event', description: e.message, variant: 'destructive' }),
   });
 
-  const deleteEventMutation = useMutation({
-    mutationFn: async (eventId: number) => {
+  const deleteEventMutation = useMutation<{ success: boolean }, Error, number>({
+    mutationFn: async (eventId) => {
       const userData = getUserData();
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/events/${eventId}`, {
         method: 'DELETE',
@@ -624,7 +631,7 @@ export default function SpeakerDashboard() {
       return response.json();
     },
     onSuccess: () => { refetchEvents(); toast({ title: 'Event removed' }); },
-    onError: (e: any) => toast({ title: 'Failed to remove event', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast({ title: 'Failed to remove event', description: e.message, variant: 'destructive' }),
   });
 
   const handleEventSubmit = (e: React.FormEvent) => {
@@ -3879,7 +3886,7 @@ export default function SpeakerDashboard() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {speakerEventsList.map((event: any) => (
+                        {speakerEventsList.map((event: SpeakerEvent) => (
                           <div key={event.id} className="flex items-start justify-between p-4 border rounded-lg bg-muted/30">
                             <div className="space-y-1">
                               <p className="font-medium">{event.eventName}</p>

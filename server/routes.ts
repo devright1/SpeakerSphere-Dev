@@ -125,11 +125,26 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Speaker Events API
   // =====================
 
-  // GET /api/speakers/:id/events — public, upcoming only
+  // GET /api/speakers/:id/events — public, upcoming only (for profile page)
   app.get("/api/speakers/:id/events", async (req, res) => {
     const speakerId = parseInt(req.params.id);
     if (isNaN(speakerId)) return res.status(400).json({ error: "Invalid speaker ID" });
     const events = await storage.getSpeakerEvents(speakerId, true);
+    return res.json(events);
+  });
+
+  // GET /api/speakers/:id/events/all — authenticated, all events for dashboard management
+  app.get("/api/speakers/:id/events/all", async (req: AuthenticatedRequest, res) => {
+    const speakerId = parseInt(req.params.id);
+    if (isNaN(speakerId)) return res.status(400).json({ error: "Invalid speaker ID" });
+
+    const userId = await resolveUserId(req);
+    if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+    const user = await storage.getUserById(userId);
+    if (!user || user.speakerId !== speakerId) return res.status(403).json({ error: "Forbidden" });
+
+    const events = await storage.getSpeakerEvents(speakerId, false);
     return res.json(events);
   });
 

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid, customType, bigint } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid, customType, bigint, date } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -763,15 +763,17 @@ export type InsertTierLimit = z.infer<typeof insertTierLimitSchema>;
 // Speaker upcoming events
 export const speakerEvents = pgTable("speaker_events", {
   id: serial("id").primaryKey(),
-  speakerId: integer("speaker_id").notNull(),
+  speakerId: integer("speaker_id").notNull().references(() => speakers.id, { onDelete: "cascade" }),
   eventName: text("event_name").notNull(),
-  eventDate: text("event_date").notNull(), // YYYY-MM-DD format
+  eventDate: date("event_date").notNull(),
   location: text("location"),
   eventUrl: text("event_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertSpeakerEventSchema = createInsertSchema(speakerEvents).omit({
+export const insertSpeakerEventSchema = createInsertSchema(speakerEvents, {
+  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format"),
+}).omit({
   id: true,
   createdAt: true,
 });

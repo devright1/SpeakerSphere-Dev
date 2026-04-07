@@ -55,7 +55,7 @@ import {
 } from "lucide-react";
 import { FaInstagram, FaLinkedin, FaFacebook, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import type { Speaker, Review } from "@shared/schema";
+import type { Speaker, Review, SpeakerEvent } from "@shared/schema";
 import { SEOHead, generateSpeakerStructuredData, generateBreadcrumbStructuredData } from "@/components/seo-head";
 import { SocialShare } from "@/components/social-share";
 import { GA_EVENTS } from "@/lib/analytics";
@@ -160,7 +160,7 @@ export default function SpeakerProfile() {
   });
 
   // Fetch speaker upcoming events (public)
-  const { data: speakerUpcomingEvents } = useQuery<any[]>({
+  const { data: speakerUpcomingEvents } = useQuery<SpeakerEvent[]>({
     queryKey: ["/api/speakers", speaker?.id, "events"],
     queryFn: async () => {
       if (!speaker?.id) return [];
@@ -1229,7 +1229,7 @@ export default function SpeakerProfile() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {speakerUpcomingEvents.map((event: any) => (
+                        {speakerUpcomingEvents.map((event: SpeakerEvent) => (
                           <div key={event.id} className="flex items-start gap-4 p-4 border rounded-lg">
                             <div className="flex-shrink-0 text-center min-w-[60px]">
                               <div className="bg-primary/10 rounded-lg p-2">
