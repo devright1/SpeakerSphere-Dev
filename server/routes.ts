@@ -200,6 +200,13 @@ export async function registerRoutes(app: Express): Promise<Express> {
     const existing = await storage.getSpeakerEventById(eventId);
     if (!existing || existing.speakerId !== speakerId) return res.status(404).json({ error: "Event not found" });
 
+    // Tier check: Basic speakers cannot edit events
+    const speaker = await storage.getSpeaker(speakerId);
+    if (!speaker) return res.status(404).json({ error: "Speaker not found" });
+    const tier = speaker.subscriptionTier as 'basic' | 'pro' | 'premier';
+    const limit = EVENT_LIMITS[tier] ?? 0;
+    if (limit === 0) return res.status(403).json({ error: "Upgrade required to manage events" });
+
     const schema = z.object({
       eventName: z.string().min(1).optional(),
       eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -208,6 +215,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
     });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid event data", details: parsed.error.errors });
+
+    // If the date is being changed, check that shifting to future doesn't exceed slot limit
+    if (parsed.data.eventDate && parsed.data.eventDate !== existing.eventDate) {
+      const today = new Date().toISOString().slice(0, 10);
+      const wasUpcoming = existing.eventDate >= today;
+      const willBeUpcoming = parsed.data.eventDate >= today;
+      if (!wasUpcoming && willBeUpcoming) {
+        // Moving a past event to future — check upcoming slot availability
+        const currentUpcoming = await storage.getSpeakerEvents(speakerId, true);
+        if (currentUpcoming.length >= limit) {
+          return res.status(400).json({ error: `Event slot limit reached (${limit} for ${tier} tier)` });
+        }
+      }
+    }
 
     const updated = await storage.updateSpeakerEvent(eventId, parsed.data);
     return res.json(updated);
