@@ -3866,9 +3866,10 @@ export default function SpeakerDashboard() {
                         {(() => {
                           const today = new Date().toISOString().slice(0, 10);
                           const upcomingCount = speakerEventsList?.filter(e => e.eventDate >= today).length ?? 0;
+                          const remaining = eventLimit - upcomingCount;
                           return (
                             <p className="text-sm text-muted-foreground mt-1">
-                              {upcomingCount} / {eventLimit} upcoming slots used
+                              {upcomingCount} / {eventLimit} upcoming slots used · {remaining} remaining
                             </p>
                           );
                         })()}
