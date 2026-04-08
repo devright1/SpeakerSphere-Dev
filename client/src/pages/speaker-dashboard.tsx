@@ -561,9 +561,9 @@ export default function SpeakerDashboard() {
     queryKey: ['/api/speakers/events/all', speakerProfile?.id],
     queryFn: async () => {
       if (!speakerProfile?.id) return [];
-      const userData = getUserData();
+      const token = localStorage.getItem('userToken') || '';
       const response = await fetch(`/api/speakers/${speakerProfile.id}/events/all`, {
-        headers: { 'X-User-ID': userData?.id || localStorage.getItem('userId') || '' },
+        headers: { 'X-User-ID': token },
         credentials: 'include',
       });
       if (!response.ok) return [];
@@ -578,10 +578,10 @@ export default function SpeakerDashboard() {
 
   const createEventMutation = useMutation<SpeakerEvent, Error, EventPayload>({
     mutationFn: async (data) => {
-      const userData = getUserData();
+      const token = localStorage.getItem('userToken') || '';
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/events`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-ID': userData?.id || localStorage.getItem('userId') || '' },
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': token },
         credentials: 'include',
         body: JSON.stringify(data),
       });
@@ -599,10 +599,10 @@ export default function SpeakerDashboard() {
 
   const updateEventMutation = useMutation<SpeakerEvent, Error, { id: number; data: Partial<EventPayload> }>({
     mutationFn: async ({ id, data }) => {
-      const userData = getUserData();
+      const token = localStorage.getItem('userToken') || '';
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/events/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-User-ID': userData?.id || localStorage.getItem('userId') || '' },
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': token },
         credentials: 'include',
         body: JSON.stringify(data),
       });
@@ -621,10 +621,10 @@ export default function SpeakerDashboard() {
 
   const deleteEventMutation = useMutation<{ success: boolean }, Error, number>({
     mutationFn: async (eventId) => {
-      const userData = getUserData();
+      const token = localStorage.getItem('userToken') || '';
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/events/${eventId}`, {
         method: 'DELETE',
-        headers: { 'X-User-ID': userData?.id || localStorage.getItem('userId') || '' },
+        headers: { 'X-User-ID': token },
         credentials: 'include',
       });
       if (!response.ok) { const e = await response.json(); throw new Error(e.error || 'Failed'); }
