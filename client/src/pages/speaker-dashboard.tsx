@@ -2651,8 +2651,8 @@ export default function SpeakerDashboard() {
                               <h4 className="font-semibold text-gray-900 mb-2">Reviewer</h4>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
                                 <div><span className="font-medium">Name:</span> {review.reviewerName}</div>
-                                <div><span className="font-medium">Title:</span> {review.reviewerTitle}</div>
-                                <div><span className="font-medium">Company:</span> {review.reviewerCompany}</div>
+                                {review.reviewerTitle && <div><span className="font-medium">Title:</span> {review.reviewerTitle}</div>}
+                                {review.reviewerCompany && <div><span className="font-medium">Company:</span> {review.reviewerCompany}</div>}
                               </div>
                             </div>
 

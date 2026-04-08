@@ -1506,7 +1506,11 @@ export default function SpeakerProfile() {
                               <div className="flex items-start justify-between mb-4">
                                 <div>
                                   <h4 className="font-semibold">{review.reviewerName}</h4>
-                                  <p className="text-sm text-gray-600">{review.reviewerTitle} at {review.reviewerCompany}</p>
+                                  {(review.reviewerTitle || review.reviewerCompany) && (
+                                    <p className="text-sm text-gray-600">
+                                      {[review.reviewerTitle, review.reviewerCompany].filter(Boolean).join(" at ")}
+                                    </p>
+                                  )}
                                 </div>
                                 <div className="flex items-center">
                                   <div className="flex text-yellow-400 mr-2">

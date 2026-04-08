@@ -82,8 +82,8 @@ export const reviews = pgTable("reviews", {
   speakerId: integer("speaker_id").notNull(),
   userId: text("user_id"), // Optional - links to registered user if logged in
   reviewerName: text("reviewer_name").notNull(),
-  reviewerTitle: text("reviewer_title").notNull(),
-  reviewerCompany: text("reviewer_company").notNull(),
+  reviewerTitle: text("reviewer_title"),
+  reviewerCompany: text("reviewer_company"),
   overallRating: integer("overall_rating").notNull(),
   speakingStyleRating: integer("speaking_style_rating").notNull(),
   podiumPresenceRating: integer("podium_presence_rating").notNull(),

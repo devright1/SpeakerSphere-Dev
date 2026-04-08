@@ -3772,7 +3772,7 @@ export default function AdminDashboard() {
                                     <strong>{review.reviewerName}</strong>
                                   </p>
                                   <p className="text-sm text-gray-600">
-                                    {review.reviewerTitle} at {review.reviewerCompany}
+                                    {[review.reviewerTitle, review.reviewerCompany].filter(Boolean).join(" at ")}
                                   </p>
                                   <p className="text-xs text-gray-500 mt-1">
                                     Event: {review.eventType} on {review.eventDate}
@@ -3910,7 +3910,7 @@ export default function AdminDashboard() {
                                         <strong>{review.reviewerName}</strong>
                                       </p>
                                       <p className="text-sm text-gray-600">
-                                        {review.reviewerTitle} at {review.reviewerCompany}
+                                        {[review.reviewerTitle, review.reviewerCompany].filter(Boolean).join(" at ")}
                                       </p>
                                       <p className="text-xs text-gray-500 mt-1">
                                         Event: {review.eventType} on {review.eventDate}
@@ -4033,7 +4033,7 @@ export default function AdminDashboard() {
                                         <strong>{review.reviewerName}</strong>
                                       </p>
                                       <p className="text-sm text-gray-600">
-                                        {review.reviewerTitle} at {review.reviewerCompany}
+                                        {[review.reviewerTitle, review.reviewerCompany].filter(Boolean).join(" at ")}
                                       </p>
                                       <p className="text-xs text-gray-500 mt-1">
                                         Event: {review.eventType} on {review.eventDate}
