@@ -82,6 +82,7 @@ const reviewSchema = z.object({
   easeOfWorkingRating: z.number().min(0).max(5),
   visualDesignRating: z.number().min(0).max(5),
   comment: z.string().min(10, "Written review is required (minimum 10 characters)"),
+  eventName: z.string().optional(),
   eventType: z.string().min(1, "Event type is required"),
   eventDate: z.string().min(1, "Event date is required"),
   photo: z.any().optional().refine((file) => !file || file instanceof File, { message: "Invalid file format" }),
@@ -300,6 +301,7 @@ export default function SpeakerProfile() {
       easeOfWorkingRating: 0,
       visualDesignRating: 0,
       comment: "",
+      eventName: "",
       eventType: "",
       eventDate: "",
       photo: undefined,
@@ -362,6 +364,7 @@ export default function SpeakerProfile() {
       // Create FormData to handle file upload
       const formData = new FormData();
       formData.append('reviewerName', data.reviewerName);
+      if (data.eventName) formData.append('eventName', data.eventName);
       formData.append('speakingStyleRating', data.speakingStyleRating.toString());
       formData.append('podiumPresenceRating', data.podiumPresenceRating.toString());
       formData.append('technicalProficiencyRating', data.technicalProficiencyRating.toString());
@@ -405,6 +408,7 @@ export default function SpeakerProfile() {
         easeOfWorkingRating: 0,
         visualDesignRating: 0,
         comment: "",
+        eventName: "",
         eventType: "",
         eventDate: "",
         photo: undefined,
@@ -1914,6 +1918,20 @@ export default function SpeakerProfile() {
                   />
                 </div>
               </div>
+
+              <FormField
+                control={reviewForm.control}
+                name="eventName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Event Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="e.g., Annual Healthcare Summit 2025" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField
