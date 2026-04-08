@@ -19,6 +19,7 @@ import {
   images,
   subscriptionFeatures,
   subscriptionTierFeatures,
+  subscriptionHistory,
   tierLimits,
   speakerEvents,
   type Speaker, 
@@ -382,14 +383,28 @@ export class DatabaseStorage implements IStorage {
   async deleteSpeaker(id: number, deletionType: "immediate" | "retention" = "retention"): Promise<boolean> {
     if (deletionType === "immediate") {
       try {
-        // Clean up associated data first
-        await db.delete(inquiries).where(eq(inquiries.speakerId, id));
-        await db.delete(reviews).where(eq(reviews.speakerId, id));
-        await db.delete(videos).where(eq(videos.speakerId, id));
-        await db.delete(speakerTopics).where(eq(speakerTopics.speakerId, id));
-        await db.delete(speakerContent).where(eq(speakerContent.speakerId, id));
+        // Get content IDs first so we can clean up access codes and downloads
+        const contentRows = await db.select({ id: speakerContent.id }).from(speakerContent).where(eq(speakerContent.speakerId, id));
+        const contentIds = contentRows.map(c => c.id);
+
+        // Clean up associated data
+        await db.delete(speakerEvents).where(eq(speakerEvents.speakerId, id));
+        await db.delete(speakerVideoLinks).where(eq(speakerVideoLinks.speakerId, id));
         await db.delete(speakerInteractions).where(eq(speakerInteractions.speakerId, id));
-        
+        await db.delete(speakerTopics).where(eq(speakerTopics.speakerId, id));
+        await db.delete(videos).where(eq(videos.speakerId, id));
+        await db.delete(reviews).where(eq(reviews.speakerId, id));
+        await db.delete(inquiries).where(eq(inquiries.speakerId, id));
+        await db.delete(userLikes).where(eq(userLikes.speakerId, id));
+        await db.delete(userBookmarks).where(eq(userBookmarks.speakerId, id));
+
+        // Clean up content-related data
+        if (contentIds.length > 0) {
+          await db.delete(contentDownloads).where(inArray(contentDownloads.contentId, contentIds));
+          await db.delete(contentAccessCodes).where(inArray(contentAccessCodes.contentId, contentIds));
+        }
+        await db.delete(speakerContent).where(eq(speakerContent.speakerId, id));
+
         // Permanently delete the speaker record
         const result = await db.delete(speakers).where(eq(speakers.id, id));
         return result.rowCount ? result.rowCount > 0 : false;
@@ -1018,7 +1033,10 @@ export class DatabaseStorage implements IStorage {
       await db.delete(userSessions).where(eq(userSessions.userId, userId));
       await db.delete(userLikes).where(eq(userLikes.userId, userId));
       await db.delete(userBookmarks).where(eq(userBookmarks.userId, userId));
-      
+      await db.delete(reviews).where(eq(reviews.userId, userId));
+      await db.delete(contentDownloads).where(eq(contentDownloads.userId, userId));
+      await db.delete(subscriptionHistory).where(eq(subscriptionHistory.userId, userId));
+
       // Clean up inquiries made by this user (as a client)
       if (userEmail) {
         await db.delete(inquiries).where(eq(inquiries.clientEmail, userEmail));
