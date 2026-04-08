@@ -190,7 +190,7 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Member of DevRight's Speaker Development Series
+                  Graduate of DevRight's Speaker Development Series
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
