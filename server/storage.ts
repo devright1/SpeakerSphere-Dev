@@ -245,7 +245,7 @@ export interface IStorage {
   // Content Download Tracking
   createContentDownload(download: InsertContentDownload): Promise<ContentDownload>;
   getContentDownloads(contentId: number): Promise<ContentDownload[]>;
-  getSpeakerContentDownloads(speakerId: number): Promise<ContentDownload[]>;
+  getSpeakerContentDownloads(speakerId: number): Promise<(ContentDownload & { fileName: string })[]>;
   getUserContentDownloads(userId: string): Promise<ContentDownload[]>;
   
   // Speaker Video Links
@@ -1631,14 +1631,16 @@ export class MemStorage implements IStorage {
       .sort((a, b) => b.downloadedAt.getTime() - a.downloadedAt.getTime());
   }
 
-  async getSpeakerContentDownloads(speakerId: number): Promise<ContentDownload[]> {
-    const speakerContent = Array.from(this.speakerContentMap.values())
-      .filter(content => content.speakerId === speakerId)
-      .map(content => content.id);
-    
+  async getSpeakerContentDownloads(speakerId: number): Promise<(ContentDownload & { fileName: string })[]> {
+    const contentMap = new Map(
+      Array.from(this.speakerContentMap.values())
+        .filter(content => content.speakerId === speakerId)
+        .map(content => [content.id, content.originalName])
+    );
     return Array.from(this.contentDownloads.values())
-      .filter(download => speakerContent.includes(download.contentId))
-      .sort((a, b) => b.downloadedAt.getTime() - a.downloadedAt.getTime());
+      .filter(download => contentMap.has(download.contentId))
+      .sort((a, b) => b.downloadedAt.getTime() - a.downloadedAt.getTime())
+      .map(download => ({ ...download, fileName: contentMap.get(download.contentId) || 'Unknown File' }));
   }
 
   async getUserContentDownloads(userId: string): Promise<ContentDownload[]> {

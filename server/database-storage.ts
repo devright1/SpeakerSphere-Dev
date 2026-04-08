@@ -1331,7 +1331,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(contentDownloads.downloadedAt));
   }
 
-  async getSpeakerContentDownloads(speakerId: number): Promise<ContentDownload[]> {
+  async getSpeakerContentDownloads(speakerId: number): Promise<(ContentDownload & { fileName: string })[]> {
     return await db
       .select({
         id: contentDownloads.id,
@@ -1344,6 +1344,7 @@ export class DatabaseStorage implements IStorage {
         downloadedAt: contentDownloads.downloadedAt,
         ipAddress: contentDownloads.ipAddress,
         userAgent: contentDownloads.userAgent,
+        fileName: speakerContent.originalName,
       })
       .from(contentDownloads)
       .innerJoin(speakerContent, eq(contentDownloads.contentId, speakerContent.id))

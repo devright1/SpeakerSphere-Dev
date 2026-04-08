@@ -3138,31 +3138,69 @@ export default function SpeakerDashboard() {
                 {/* Recent Downloads - Premier only */}
                 <Card className={(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' ? 'relative' : ''}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Download className="h-5 w-5 text-green-600" />
-                      Recent Downloads
-                      {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
-                        <Lock className="h-4 w-4 text-gray-400" />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Download className="h-5 w-5 text-green-600" />
+                          Recent Downloads
+                          {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                            <Lock className="h-4 w-4 text-gray-400" />
+                          )}
+                        </CardTitle>
+                        <CardDescription>Who downloaded content from your profile</CardDescription>
+                      </div>
+                      {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' && downloadAnalytics && downloadAnalytics.length > 0 && (
+                        <a
+                          href={`/api/speakers/${speakerProfile?.id}/downloads/export`}
+                          className="text-sm text-primary underline flex items-center gap-1"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Download className="h-3.5 w-3.5" /> Export CSV
+                        </a>
                       )}
-                    </CardTitle>
-                    <CardDescription>Content downloaded from your profile</CardDescription>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     {(speakerProfile?.subscriptionTier ?? 'basic') === 'premier' ? (
-                      userStats?.downloads && userStats.downloads.length > 0 ? (
+                      downloadAnalytics && downloadAnalytics.length > 0 ? (
                         <div className="space-y-3">
-                          {userStats.downloads.slice(0, 5).map((download: any, index: number) => (
-                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                              <div className="flex items-center gap-3">
-                                <FileText className="h-5 w-5 text-gray-500" />
-                                <div>
-                                  <div className="font-medium">{download.fileName || 'Unknown File'}</div>
-                                  <div className="text-sm text-gray-500">{download.downloadedAt || 'Recently'}</div>
+                          {downloadAnalytics.slice(0, 20).map((dl: any, index: number) => (
+                            <div key={dl.id ?? index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border">
+                              <div className="flex-shrink-0 mt-0.5">
+                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <User className="h-4 w-4 text-primary" />
                                 </div>
                               </div>
-                              <Badge variant="secondary">{download.count || 1} downloads</Badge>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-medium text-sm">
+                                    {dl.userName && dl.userName !== 'anonymous' && dl.userName !== 'guest' ? dl.userName : 'Anonymous'}
+                                  </span>
+                                  {dl.userEmail && dl.userEmail !== 'anonymous' && (
+                                    <span className="text-sm text-primary">{dl.userEmail}</span>
+                                  )}
+                                  {dl.userCompany && (
+                                    <span className="text-xs text-gray-500 bg-gray-200 rounded px-1.5 py-0.5">{dl.userCompany}</span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <FileText className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                                  <span className="text-sm text-gray-600 truncate">{dl.fileName || 'Unknown file'}</span>
+                                </div>
+                                <div className="text-xs text-gray-400 mt-0.5">
+                                  {dl.downloadedAt
+                                    ? new Date(dl.downloadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                    : 'Recently'}
+                                </div>
+                              </div>
                             </div>
                           ))}
+                          {downloadAnalytics.length > 20 && (
+                            <p className="text-sm text-center text-muted-foreground pt-2">
+                              Showing 20 of {downloadAnalytics.length} downloads — export CSV to see all
+                            </p>
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
@@ -3176,35 +3214,30 @@ export default function SpeakerDashboard() {
                         {/* Pro tier message */}
                         <Alert className="bg-amber-50 border-amber-200">
                           <Lock className="h-4 w-4 text-amber-600" />
-                          <AlertTitle className="text-amber-800">Download Analytics Not Available</AlertTitle>
+                          <AlertTitle className="text-amber-800">Download Tracking Not Available</AlertTitle>
                           <AlertDescription className="text-amber-700">
-                            As a Pro member, you can create and share Access Codes, but you cannot see who downloads your content. 
-                            <Link href="/subscription-upgrade" className="underline font-medium ml-1">Upgrade to Premier</Link> to unlock download tracking and see exactly who accesses your content.
+                            Upgrade to Premier to see exactly who downloads your content — including their name, email, and when they downloaded it.{' '}
+                            <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to Premier</Link>
                           </AlertDescription>
                         </Alert>
                         {/* Blurred placeholder */}
                         <div className="relative">
                           <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                              <div className="flex items-center gap-3">
-                                <FileText className="h-5 w-5 text-gray-400" />
+                            {[
+                              { name: 'Dr. Sarah Johnson', email: 'sarah@hospital.org', file: 'Clinical Guidelines.pdf', date: 'Jan 8, 2026' },
+                              { name: 'Michael Chen', email: 'mchen@clinic.com', file: 'Research Summary.pdf', date: 'Jan 7, 2026' },
+                            ].map((row, i) => (
+                              <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border">
+                                <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                  <User className="h-4 w-4 text-gray-400" />
+                                </div>
                                 <div>
-                                  <div className="font-medium text-gray-400">Sample Document.pdf</div>
-                                  <div className="text-sm text-gray-300">Dec 15, 2025</div>
+                                  <div className="font-medium text-sm text-gray-400">{row.name}</div>
+                                  <div className="text-sm text-gray-300">{row.email}</div>
+                                  <div className="text-xs text-gray-300">{row.file} · {row.date}</div>
                                 </div>
                               </div>
-                              <Badge variant="secondary" className="opacity-50">3 downloads</Badge>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                              <div className="flex items-center gap-3">
-                                <FileText className="h-5 w-5 text-gray-400" />
-                                <div>
-                                  <div className="font-medium text-gray-400">Presentation.pdf</div>
-                                  <div className="text-sm text-gray-300">Dec 14, 2025</div>
-                                </div>
-                              </div>
-                              <Badge variant="secondary" className="opacity-50">5 downloads</Badge>
-                            </div>
+                            ))}
                           </div>
                           <div className="absolute inset-0 flex items-center justify-center bg-white/60">
                             <div className="text-center p-4">
