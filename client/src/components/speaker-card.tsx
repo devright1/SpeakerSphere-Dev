@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Star, CheckCircle, Heart, UserPlus, LogIn } from "lucide-react";
 import { FaInstagram, FaLinkedin, FaFacebook, FaTwitter, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -167,14 +168,32 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
         <div className="flex gap-2 mb-3 flex-wrap">
           <TierBadge tier={speaker.subscriptionTier as "basic" | "pro" | "premier"} size="sm" />
           {speaker.sdsBadge === 'sds_faculty' && (
-            <Badge className="bg-purple-600 text-white hover:bg-purple-700">
-              SDS Faculty
-            </Badge>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge className="bg-purple-600 text-white hover:bg-purple-700 cursor-default">
+                    SDS Faculty
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  DevRight's Speaker Development Series Faculty member
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           {speaker.sdsBadge === 'sds' && (
-            <Badge className="bg-indigo-500 text-white hover:bg-indigo-600">
-              SDS
-            </Badge>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge className="bg-indigo-500 text-white hover:bg-indigo-600 cursor-default">
+                    SDS
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Member of DevRight's Speaker Development Series
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           {speaker.verified && (
             <Badge variant="default" className="bg-success text-white">
