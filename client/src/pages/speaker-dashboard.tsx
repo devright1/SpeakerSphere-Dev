@@ -245,6 +245,7 @@ export default function SpeakerDashboard() {
   const [eventForm, setEventForm] = useState({ eventName: '', eventDate: '', location: '', eventUrl: '', imageUrl: '' });
   const [eventImagePreview, setEventImagePreview] = useState<string | null>(null);
   const [eventImageUploading, setEventImageUploading] = useState(false);
+  const eventImageFileRef = useRef<HTMLInputElement>(null);
 
   // Analytics time range state
   const [analyticsTimeframe, setAnalyticsTimeframe] = useState<string>('all');
@@ -4050,21 +4051,28 @@ export default function SpeakerDashboard() {
                         </Button>
                       </div>
                     ) : (
-                      <label className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer hover:bg-muted/50 transition-colors ${eventImageUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                        <div className="flex flex-col items-center text-muted-foreground text-sm gap-1">
-                          {eventImageUploading ? (
-                            <><div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /><span>Uploading...</span></>
-                          ) : (
-                            <><Image className="h-5 w-5" /><span>Click to upload a banner image</span><span className="text-xs">JPEG, PNG, WebP up to 10MB</span></>
-                          )}
+                      <>
+                        <div
+                          className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer hover:bg-muted/50 transition-colors ${eventImageUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!eventImageUploading) eventImageFileRef.current?.click(); }}
+                        >
+                          <div className="flex flex-col items-center text-muted-foreground text-sm gap-1 pointer-events-none">
+                            {eventImageUploading ? (
+                              <><div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /><span>Uploading...</span></>
+                            ) : (
+                              <><Image className="h-5 w-5" /><span>Click to upload a banner image</span><span className="text-xs">JPEG, PNG, WebP up to 10MB</span></>
+                            )}
+                          </div>
                         </div>
                         <input
+                          ref={eventImageFileRef}
                           type="file"
                           className="hidden"
                           accept="image/jpeg,image/png,image/gif,image/webp"
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file || !speakerProfile?.id) return;
+                            e.target.value = '';
                             setEventImageUploading(true);
                             try {
                               const token = localStorage.getItem('userToken') || '';
@@ -4087,7 +4095,7 @@ export default function SpeakerDashboard() {
                             }
                           }}
                         />
-                      </label>
+                      </>
                     )}
                   </div>
                   <div className="flex gap-3 justify-end pt-2">
