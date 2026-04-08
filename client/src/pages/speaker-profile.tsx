@@ -1235,31 +1235,40 @@ export default function SpeakerProfile() {
                     <CardContent>
                       <div className="space-y-4">
                         {speakerUpcomingEvents.map((event: SpeakerEvent) => (
-                          <div key={event.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                            <div className="flex-shrink-0 text-center min-w-[60px]">
-                              <div className="bg-primary/10 rounded-lg p-2">
-                                <Calendar className="h-5 w-5 text-primary mx-auto" />
-                                <p className="text-xs font-medium text-primary mt-1">
-                                  {new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </p>
+                          <div key={event.id} className="border rounded-lg overflow-hidden">
+                            {(event as any).imageUrl && (
+                              <img
+                                src={(event as any).imageUrl}
+                                alt={event.eventName}
+                                className="w-full h-48 object-cover"
+                              />
+                            )}
+                            <div className="flex items-start gap-4 p-4">
+                              <div className="flex-shrink-0 text-center min-w-[60px]">
+                                <div className="bg-primary/10 rounded-lg p-2">
+                                  <Calendar className="h-5 w-5 text-primary mx-auto" />
+                                  <p className="text-xs font-medium text-primary mt-1">
+                                    {new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              <p className="font-semibold">{event.eventName}</p>
-                              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                <span>{new Date(event.eventDate + 'T00:00:00').getFullYear()}</span>
-                                {event.location && (
-                                  <span className="flex items-center gap-1">
-                                    <MapPin className="h-3.5 w-3.5" /> {event.location}
-                                  </span>
+                              <div className="flex-1 space-y-1">
+                                <p className="font-semibold">{event.eventName}</p>
+                                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                  <span>{new Date(event.eventDate + 'T00:00:00').getFullYear()}</span>
+                                  {event.location && (
+                                    <span className="flex items-center gap-1">
+                                      <MapPin className="h-3.5 w-3.5" /> {event.location}
+                                    </span>
+                                  )}
+                                </div>
+                                {event.eventUrl && (
+                                  <a href={event.eventUrl} target="_blank" rel="noopener noreferrer"
+                                    className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                                    <ExternalLink className="h-3.5 w-3.5" /> Event details
+                                  </a>
                                 )}
                               </div>
-                              {event.eventUrl && (
-                                <a href={event.eventUrl} target="_blank" rel="noopener noreferrer"
-                                  className="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                                  <ExternalLink className="h-3.5 w-3.5" /> Event details
-                                </a>
-                              )}
                             </div>
                           </div>
                         ))}

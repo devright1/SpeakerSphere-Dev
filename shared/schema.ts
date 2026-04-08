@@ -768,6 +768,7 @@ export const speakerEvents = pgTable("speaker_events", {
   eventDate: date("event_date").notNull(),
   location: text("location"),
   eventUrl: text("event_url"),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

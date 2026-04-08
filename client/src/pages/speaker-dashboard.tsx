@@ -242,7 +242,9 @@ export default function SpeakerDashboard() {
   // Events state
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<SpeakerEvent | null>(null);
-  const [eventForm, setEventForm] = useState({ eventName: '', eventDate: '', location: '', eventUrl: '' });
+  const [eventForm, setEventForm] = useState({ eventName: '', eventDate: '', location: '', eventUrl: '', imageUrl: '' });
+  const [eventImagePreview, setEventImagePreview] = useState<string | null>(null);
+  const [eventImageUploading, setEventImageUploading] = useState(false);
 
   // Analytics time range state
   const [analyticsTimeframe, setAnalyticsTimeframe] = useState<string>('all');
@@ -574,7 +576,13 @@ export default function SpeakerDashboard() {
 
   const eventLimit = speakerProfile?.subscriptionTier === 'premier' ? 5 : speakerProfile?.subscriptionTier === 'pro' ? 2 : 0;
 
-  type EventPayload = { eventName: string; eventDate: string; location?: string; eventUrl?: string };
+  type EventPayload = { eventName: string; eventDate: string; location?: string; eventUrl?: string; imageUrl?: string | null };
+
+  const resetEventForm = () => {
+    setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '', imageUrl: '' });
+    setEventImagePreview(null);
+    setEventImageUploading(false);
+  };
 
   const createEventMutation = useMutation<SpeakerEvent, Error, EventPayload>({
     mutationFn: async (data) => {
@@ -591,7 +599,7 @@ export default function SpeakerDashboard() {
     onSuccess: () => {
       refetchEvents();
       setShowEventDialog(false);
-      setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '' });
+      resetEventForm();
       toast({ title: 'Event added successfully' });
     },
     onError: (e) => toast({ title: 'Failed to add event', description: e.message, variant: 'destructive' }),
@@ -613,7 +621,7 @@ export default function SpeakerDashboard() {
       refetchEvents();
       setShowEventDialog(false);
       setEditingEvent(null);
-      setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '' });
+      resetEventForm();
       toast({ title: 'Event updated successfully' });
     },
     onError: (e) => toast({ title: 'Failed to update event', description: e.message, variant: 'destructive' }),
@@ -644,6 +652,7 @@ export default function SpeakerDashboard() {
       eventDate: eventForm.eventDate,
       ...(eventForm.location ? { location: eventForm.location } : {}),
       ...(eventForm.eventUrl ? { eventUrl: eventForm.eventUrl } : {}),
+      ...(eventForm.imageUrl ? { imageUrl: eventForm.imageUrl } : { imageUrl: null }),
     };
     if (editingEvent) { updateEventMutation.mutate({ id: editingEvent.id, data: payload }); }
     else { createEventMutation.mutate(payload); }
@@ -3916,7 +3925,7 @@ export default function SpeakerDashboard() {
                           size="sm"
                           onClick={() => {
                             setEditingEvent(null);
-                            setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '' });
+                            resetEventForm();
                             setShowEventDialog(true);
                           }}
                         >
@@ -3957,7 +3966,9 @@ export default function SpeakerDashboard() {
                                     eventDate: event.eventDate,
                                     location: event.location || '',
                                     eventUrl: event.eventUrl || '',
+                                    imageUrl: (event as any).imageUrl || '',
                                   });
+                                  setEventImagePreview((event as any).imageUrl || null);
                                   setShowEventDialog(true);
                                 }}>
                                 <Pencil className="h-4 w-4" />
@@ -3978,7 +3989,7 @@ export default function SpeakerDashboard() {
             </div>
 
             {/* Add/Edit Event Dialog */}
-            <Dialog open={showEventDialog} onOpenChange={(open) => { if (!open) { setShowEventDialog(false); setEditingEvent(null); } }}>
+            <Dialog open={showEventDialog} onOpenChange={(open) => { if (!open) { setShowEventDialog(false); setEditingEvent(null); resetEventForm(); } }}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>{editingEvent ? 'Edit Event' : 'Add Event'}</DialogTitle>
@@ -4023,9 +4034,65 @@ export default function SpeakerDashboard() {
                       onChange={e => setEventForm(f => ({ ...f, eventUrl: e.target.value }))}
                     />
                   </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Event Banner Image</label>
+                    {eventImagePreview ? (
+                      <div className="relative">
+                        <img src={eventImagePreview} alt="Event banner" className="w-full h-36 object-cover rounded-md border" />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 h-7 px-2 text-xs"
+                          onClick={() => { setEventImagePreview(null); setEventForm(f => ({ ...f, imageUrl: '' })); }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer hover:bg-muted/50 transition-colors ${eventImageUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <div className="flex flex-col items-center text-muted-foreground text-sm gap-1">
+                          {eventImageUploading ? (
+                            <><div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /><span>Uploading...</span></>
+                          ) : (
+                            <><Image className="h-5 w-5" /><span>Click to upload a banner image</span><span className="text-xs">JPEG, PNG, WebP up to 10MB</span></>
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/jpeg,image/png,image/gif,image/webp"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file || !speakerProfile?.id) return;
+                            setEventImageUploading(true);
+                            try {
+                              const token = localStorage.getItem('userToken') || '';
+                              const formData = new FormData();
+                              formData.append('image', file);
+                              const res = await fetch(`/api/speakers/${speakerProfile.id}/events/upload-image`, {
+                                method: 'POST',
+                                headers: { 'X-User-ID': token },
+                                credentials: 'include',
+                                body: formData,
+                              });
+                              if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Upload failed'); }
+                              const { imageUrl } = await res.json();
+                              setEventForm(f => ({ ...f, imageUrl }));
+                              setEventImagePreview(imageUrl);
+                            } catch (err: any) {
+                              toast({ title: 'Image upload failed', description: err.message, variant: 'destructive' });
+                            } finally {
+                              setEventImageUploading(false);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
                   <div className="flex gap-3 justify-end pt-2">
-                    <Button type="button" variant="outline" onClick={() => setShowEventDialog(false)}>Cancel</Button>
-                    <Button type="submit" disabled={createEventMutation.isPending || updateEventMutation.isPending}>
+                    <Button type="button" variant="outline" onClick={() => { setShowEventDialog(false); resetEventForm(); }}>Cancel</Button>
+                    <Button type="submit" disabled={createEventMutation.isPending || updateEventMutation.isPending || eventImageUploading}>
                       {editingEvent ? 'Save Changes' : 'Add Event'}
                     </Button>
                   </div>

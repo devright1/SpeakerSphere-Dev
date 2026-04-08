@@ -125,6 +125,62 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Speaker Events API
   // =====================
 
+  // POST /api/speakers/:id/events/upload-image — upload event banner image
+  app.post("/api/speakers/:id/events/upload-image", upload.single('image'), async (req: AuthenticatedRequest, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      if (isNaN(speakerId)) return res.status(400).json({ error: "Invalid speaker ID" });
+
+      const userId = await resolveUserId(req);
+      if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+      const user = await storage.getUserById(userId);
+      if (!user || user.speakerId !== speakerId) return res.status(403).json({ error: "Forbidden" });
+
+      if (!req.file) return res.status(400).json({ error: "No image uploaded" });
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ error: "Only JPEG, PNG, GIF, and WebP images are allowed" });
+      }
+
+      const timestamp = Date.now();
+      const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'jpg';
+      const filename = `event-${speakerId}-${timestamp}.${ext}`;
+
+      const objectStorageService = new ObjectStorageService();
+      const publicSearchPaths = objectStorageService.getPublicObjectSearchPaths();
+      const publicBase = publicSearchPaths[0]; // e.g. /bucket-name/public
+      const objectPath = `${publicBase}/event-images/${filename}`;
+      const { bucketName, objectName } = (() => {
+        const parts = objectPath.replace(/^\//, '').split('/');
+        return { bucketName: parts[0], objectName: parts.slice(1).join('/') };
+      })();
+
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+      await file.save(req.file.buffer, { metadata: { contentType: req.file.mimetype } });
+
+      return res.json({ imageUrl: `/api/event-images/${filename}` });
+    } catch (error) {
+      console.error("Event image upload error:", error);
+      return res.status(500).json({ error: "Failed to upload image" });
+    }
+  });
+
+  // GET /api/event-images/:filename — serve event banner images
+  app.get("/api/event-images/:filename", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const file = await objectStorageService.searchPublicObject(`event-images/${req.params.filename}`);
+      if (!file) return res.status(404).send('Image not found');
+      await objectStorageService.downloadObject(file, res, 86400);
+    } catch (error) {
+      console.error('Error serving event image:', error);
+      res.status(500).send('Error loading image');
+    }
+  });
+
   // GET /api/speakers/:id/events — public, upcoming only (for profile page)
   app.get("/api/speakers/:id/events", async (req, res) => {
     const speakerId = parseInt(req.params.id);
@@ -177,6 +233,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       location: z.string().optional(),
       eventUrl: z.string().url().optional().or(z.literal('')),
+      imageUrl: z.string().optional().nullable(),
     });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid event data", details: parsed.error.errors });
@@ -212,6 +269,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
       location: z.string().optional().nullable(),
       eventUrl: z.string().url().optional().nullable().or(z.literal('')),
+      imageUrl: z.string().optional().nullable(),
     });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid event data", details: parsed.error.errors });
