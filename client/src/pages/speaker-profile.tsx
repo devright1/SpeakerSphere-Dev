@@ -1263,8 +1263,12 @@ export default function SpeakerProfile() {
                                   )}
                                 </div>
                                 {event.eventUrl && (
-                                  <a href={event.eventUrl} target="_blank" rel="noopener noreferrer"
-                                    className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                                  <a
+                                    href={/^https?:\/\//i.test(event.eventUrl) ? event.eventUrl : `https://${event.eventUrl}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                                  >
                                     <ExternalLink className="h-3.5 w-3.5" /> Event details
                                   </a>
                                 )}
