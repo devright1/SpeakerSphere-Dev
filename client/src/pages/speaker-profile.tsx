@@ -251,10 +251,16 @@ export default function SpeakerProfile() {
   });
 
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [authDialogReason, setAuthDialogReason] = useState<'favorite' | 'download'>('favorite');
+
+  const requireAuth = (reason: 'favorite' | 'download' = 'favorite') => {
+    setAuthDialogReason(reason);
+    setShowAuthDialog(true);
+  };
 
   const handleFavoriteClick = () => {
     if (!isAuthenticated) {
-      setShowAuthDialog(true);
+      requireAuth('favorite');
       return;
     }
     
@@ -1081,12 +1087,7 @@ export default function SpeakerProfile() {
                               className="flex-shrink-0"
                               onClick={async () => {
                                 if (!isAuthenticated) {
-                                  toast({
-                                    title: "Login Required",
-                                    description: "Please sign in or create an account to download content.",
-                                    variant: "destructive",
-                                  });
-                                  window.location.href = '/auth';
+                                  requireAuth('download');
                                   return;
                                 }
                                 if (content.requiresAccessCode) {
@@ -1097,7 +1098,7 @@ export default function SpeakerProfile() {
                                 tracking.trackInteraction('resource_download', content.originalName);
                                 const userData = localStorage.getItem('userData');
                                 if (!userData) {
-                                  window.location.href = '/auth';
+                                  requireAuth('download');
                                   return;
                                 }
                                 let userId;
@@ -1105,7 +1106,7 @@ export default function SpeakerProfile() {
                                   const user = JSON.parse(userData);
                                   userId = user.id;
                                 } catch (error) {
-                                  window.location.href = '/auth';
+                                  requireAuth('download');
                                   return;
                                 }
                                 try {
@@ -1128,7 +1129,7 @@ export default function SpeakerProfile() {
                                     document.body.removeChild(link);
                                     window.URL.revokeObjectURL(url);
                                   } else if (response.status === 401) {
-                                    window.location.href = '/auth';
+                                    requireAuth('download');
                                   }
                                 } catch (error) {
                                   console.error('Download error:', error);
@@ -1309,12 +1310,7 @@ export default function SpeakerProfile() {
                                     size="sm"
                                     onClick={async () => {
                                       if (!isAuthenticated) {
-                                        toast({
-                                          title: "Login Required",
-                                          description: "Please sign in or create an account to download content.",
-                                          variant: "destructive",
-                                        });
-                                        window.location.href = '/auth';
+                                        requireAuth('download');
                                         return;
                                       }
                                       if (content.requiresAccessCode) {
@@ -1325,7 +1321,7 @@ export default function SpeakerProfile() {
                                       tracking.trackInteraction('resource_download', content.originalName);
                                       const userData = localStorage.getItem('userData');
                                       if (!userData) {
-                                        window.location.href = '/auth';
+                                        requireAuth('download');
                                         return;
                                       }
                                       let userId;
@@ -1333,8 +1329,7 @@ export default function SpeakerProfile() {
                                         const user = JSON.parse(userData);
                                         userId = user.id;
                                       } catch (error) {
-                                        console.error('Error parsing user data:', error);
-                                        window.location.href = '/auth';
+                                        requireAuth('download');
                                         return;
                                       }
                                       try {
@@ -1345,8 +1340,6 @@ export default function SpeakerProfile() {
                                         if (response.ok) {
                                           const contentType = response.headers.get('content-type');
                                           if (contentType && contentType.includes('application/json')) {
-                                            const errorData = await response.json();
-                                            console.error('Download error:', errorData.error);
                                             return;
                                           }
                                           const blob = await response.blob();
@@ -1358,12 +1351,10 @@ export default function SpeakerProfile() {
                                           link.click();
                                           document.body.removeChild(link);
                                           window.URL.revokeObjectURL(url);
+                                        } else if (response.status === 401) {
+                                          requireAuth('download');
                                         } else {
-                                          if (response.status === 401) {
-                                            window.location.href = '/auth';
-                                          } else {
-                                            console.error('Download failed:', response.statusText);
-                                          }
+                                          console.error('Download failed:', response.statusText);
                                         }
                                       } catch (error) {
                                         console.error('Download error:', error);
@@ -1372,7 +1363,7 @@ export default function SpeakerProfile() {
                                     className="flex items-center gap-0.5 mt-1.5 w-full justify-center text-[10px] h-6 px-1"
                                   >
                                     <Download className="h-2.5 w-2.5" />
-                                    {!isAuthenticated ? "Login" : content.requiresAccessCode ? "Access Code" : "Download"}
+                                    {!isAuthenticated ? "Sign In" : content.requiresAccessCode ? "Access Code" : "Download"}
                                   </Button>
                                 </div>
                               ))}
@@ -2265,18 +2256,30 @@ export default function SpeakerProfile() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Heart className="w-5 h-5 text-red-500" />
-              Save Your Favorite Speakers
+              {authDialogReason === 'download' ? (
+                <>
+                  <Download className="w-5 h-5 text-[#1e4347]" />
+                  Account Required to Download
+                </>
+              ) : (
+                <>
+                  <Heart className="w-5 h-5 text-red-500" />
+                  Save Your Favorite Speakers
+                </>
+              )}
             </DialogTitle>
             <DialogDescription>
-              Create an account or sign in to save speakers to your favorites and access them anytime.
+              {authDialogReason === 'download'
+                ? "You need a free account to download content from speaker profiles. Sign in or create an account to get started — it only takes a moment."
+                : "Create an account or sign in to save speakers to your favorites and access them anytime."}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 pt-4">
             <Button 
               onClick={() => window.location.href = '/auth'}
-              className="w-full bg-primary hover:bg-blue-700 text-white"
+              className="w-full text-white"
+              style={{ backgroundColor: '#1e4347' }}
             >
               <LogIn className="w-4 h-4 mr-2" />
               Sign In to Your Account
@@ -2296,19 +2299,30 @@ export default function SpeakerProfile() {
             <Button 
               onClick={() => window.location.href = '/auth'}
               variant="outline" 
-              className="w-full"
+              className="w-full border-[#1e4347] text-[#1e4347] hover:bg-[#1e4347] hover:text-white"
             >
               <UserPlus className="w-4 h-4 mr-2" />
-              Create New Account
+              Create a Free Account
             </Button>
             
             <div className="text-center text-sm text-gray-600">
-              <p>With an account you can:</p>
-              <ul className="mt-2 space-y-1 text-xs">
-                <li>• Save your favorite speakers</li>
-                <li>• Access speaker profiles anytime</li>
-                <li>• Get personalized recommendations</li>
-                <li>• Leave reviews and ratings</li>
+              <p>With a free account you can:</p>
+              <ul className="mt-2 space-y-1 text-xs text-left inline-block">
+                {authDialogReason === 'download' ? (
+                  <>
+                    <li>• Download resources from speaker profiles</li>
+                    <li>• Save your favorite speakers</li>
+                    <li>• Leave reviews and ratings</li>
+                    <li>• Track your download history</li>
+                  </>
+                ) : (
+                  <>
+                    <li>• Save your favorite speakers</li>
+                    <li>• Download speaker resources</li>
+                    <li>• Leave reviews and ratings</li>
+                    <li>• Get personalized recommendations</li>
+                  </>
+                )}
               </ul>
             </div>
           </div>

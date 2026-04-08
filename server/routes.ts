@@ -2284,14 +2284,14 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(403).json({ error: "Access denied to private content" });
       }
       
-      // For analytics, try to get user info but don't require it for public content
-      if (!authUser && content.isPublic) {
-        // Allow anonymous downloads of public content
-        authUser = { id: 'anonymous', email: 'anonymous@guest.user', firstName: 'Anonymous', lastName: 'User' };
-        userId = 'anonymous';
-      } else if (!authUser) {
-        console.log("- Authentication required for private content");
-        return res.status(401).json({ error: "Authentication required for content access" });
+      // All downloads require authentication — no anonymous access allowed
+      if (!authUser) {
+        console.log("- Authentication required: no authenticated user found");
+        return res.status(401).json({ 
+          error: "Authentication required", 
+          requiresAuth: true,
+          details: "Please sign in or create a free account to download content" 
+        });
       }
       
       console.log("- Download authorized for user:", userId, "own content:", isOwnContent);
