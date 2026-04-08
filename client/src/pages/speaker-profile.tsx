@@ -75,14 +75,12 @@ const inquirySchema = z.object({
 
 const reviewSchema = z.object({
   reviewerName: z.string().min(1, "Name is required"),
-  reviewerTitle: z.string().min(1, "Title is required"),
-  reviewerCompany: z.string().min(1, "Company is required"),
-  speakingStyleRating: z.number().min(1).max(5),
-  podiumPresenceRating: z.number().min(1).max(5),
-  technicalProficiencyRating: z.number().min(1).max(5),
-  contentRelevanceRating: z.number().min(1).max(5),
-  easeOfWorkingRating: z.number().min(1).max(5),
-  visualDesignRating: z.number().min(1).max(5),
+  speakingStyleRating: z.number().min(0).max(5),
+  podiumPresenceRating: z.number().min(0).max(5),
+  technicalProficiencyRating: z.number().min(0).max(5),
+  contentRelevanceRating: z.number().min(0).max(5),
+  easeOfWorkingRating: z.number().min(0).max(5),
+  visualDesignRating: z.number().min(0).max(5),
   comment: z.string().min(10, "Written review is required (minimum 10 characters)"),
   eventType: z.string().min(1, "Event type is required"),
   eventDate: z.string().min(1, "Event date is required"),
@@ -295,14 +293,12 @@ export default function SpeakerProfile() {
     resolver: zodResolver(reviewSchema),
     defaultValues: {
       reviewerName: "",
-      reviewerTitle: "",
-      reviewerCompany: "",
-      speakingStyleRating: 5,
-      podiumPresenceRating: 5,
-      technicalProficiencyRating: 5,
-      contentRelevanceRating: 5,
-      easeOfWorkingRating: 5,
-      visualDesignRating: 5,
+      speakingStyleRating: 0,
+      podiumPresenceRating: 0,
+      technicalProficiencyRating: 0,
+      contentRelevanceRating: 0,
+      easeOfWorkingRating: 0,
+      visualDesignRating: 0,
       comment: "",
       eventType: "",
       eventDate: "",
@@ -366,8 +362,6 @@ export default function SpeakerProfile() {
       // Create FormData to handle file upload
       const formData = new FormData();
       formData.append('reviewerName', data.reviewerName);
-      formData.append('reviewerTitle', data.reviewerTitle);
-      formData.append('reviewerCompany', data.reviewerCompany);
       formData.append('speakingStyleRating', data.speakingStyleRating.toString());
       formData.append('podiumPresenceRating', data.podiumPresenceRating.toString());
       formData.append('technicalProficiencyRating', data.technicalProficiencyRating.toString());
@@ -404,14 +398,12 @@ export default function SpeakerProfile() {
       setHoveredRating(0);
       reviewForm.reset({
         reviewerName: "",
-        reviewerTitle: "",
-        reviewerCompany: "",
-        speakingStyleRating: 5,
-        podiumPresenceRating: 5,
-        technicalProficiencyRating: 5,
-        contentRelevanceRating: 5,
-        easeOfWorkingRating: 5,
-        visualDesignRating: 5,
+        speakingStyleRating: 0,
+        podiumPresenceRating: 0,
+        technicalProficiencyRating: 0,
+        contentRelevanceRating: 0,
+        easeOfWorkingRating: 0,
+        visualDesignRating: 0,
         comment: "",
         eventType: "",
         eventDate: "",
@@ -1711,32 +1703,6 @@ export default function SpeakerProfile() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Your Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={reviewForm.control}
-                  name="reviewerTitle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Your Title</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={reviewForm.control}
-                  name="reviewerCompany"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
