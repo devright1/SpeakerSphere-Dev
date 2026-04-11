@@ -99,8 +99,8 @@ export const rateLimiters = {
   // Review submissions: 3 reviews per hour
   reviews: createRateLimit(60 * 60 * 1000, 3, 'Too many review submissions'),
   
-  // File uploads: 10 uploads per hour
-  uploads: createRateLimit(60 * 60 * 1000, 10, 'Too many file uploads'),
+  // File uploads: 100 uploads per hour
+  uploads: createRateLimit(60 * 60 * 1000, 100, 'Too many file uploads'),
   
   // Search: 100 searches per minute (increased for better UX)
   search: createRateLimit(60 * 1000, 100, 'Too many search requests'),

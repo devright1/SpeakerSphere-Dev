@@ -93,6 +93,7 @@ export default function SpeakerProfile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -995,7 +996,7 @@ export default function SpeakerProfile() {
             </Card>
 
             {/* Tabs */}
-            <Tabs defaultValue="overview" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               {(() => {
                 const hasEvents = speakerUpcomingEvents && speakerUpcomingEvents.length > 0;
                 // Use static Tailwind classes so purging doesn't remove them
@@ -1143,10 +1144,7 @@ export default function SpeakerProfile() {
                               variant="outline"
                               size="sm"
                               className="w-full"
-                              onClick={() => {
-                                const resourcesTab = document.querySelector('[value="resources"]') as HTMLButtonElement;
-                                resourcesTab?.click();
-                              }}
+                              onClick={() => setActiveTab("resources")}
                             >
                               View All {speakerContent.length} Resources
                             </Button>
@@ -1644,10 +1642,7 @@ export default function SpeakerProfile() {
                             variant="outline" 
                             size="sm"
                             className="w-full"
-                            onClick={() => {
-                              const reviewsTab = document.querySelector('[value="reviews"]') as HTMLButtonElement;
-                              reviewsTab?.click();
-                            }}
+                            onClick={() => setActiveTab("reviews")}
                           >
                             View All {reviews.length} Reviews
                           </Button>
