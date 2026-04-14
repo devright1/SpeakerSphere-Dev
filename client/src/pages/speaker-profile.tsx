@@ -6,6 +6,7 @@ import { useSpeakerTracking } from "@/hooks/useSpeakerTracking";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import TierBadge from "@/components/TierBadge";
+import { StarRating } from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -769,15 +770,8 @@ export default function SpeakerProfile() {
                     <div className="flex items-center justify-center md:justify-start gap-6 mb-4">
                       {!speaker.hideRatings && (
                         <div className="flex items-center">
-                          <div className="flex text-yellow-400 mr-2">
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={`w-5 h-5 ${i < Math.floor(parseFloat(speaker.overallRating || "0")) ? "fill-current" : ""}`} 
-                              />
-                            ))}
-                          </div>
-                          <span className="font-semibold">{speaker.overallRating}</span>
+                          <StarRating rating={speaker.overallRating || "0"} size="lg" className="mr-2" />
+                          <span className="font-semibold">{parseFloat(speaker.overallRating || "0").toFixed(1)}</span>
                           <span className="text-gray-600 ml-1">({speaker.reviewCount} reviews)</span>
                         </div>
                       )}
@@ -1511,11 +1505,7 @@ export default function SpeakerProfile() {
                                   )}
                                 </div>
                                 <div className="flex items-center">
-                                  <div className="flex text-yellow-400 mr-2">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star key={i} className={`w-4 h-4 ${i < Math.floor(parseFloat(review.overallRating || "0")) ? "fill-current" : ""}`} />
-                                    ))}
-                                  </div>
+                                  <StarRating rating={review.overallRating || "0"} size="md" className="mr-2" />
                                   <span className="text-sm font-medium">{parseFloat(review.overallRating || "0").toFixed(1)}/5</span>
                                 </div>
                               </div>
@@ -1617,11 +1607,7 @@ export default function SpeakerProfile() {
                               <p className="text-xs text-gray-600">{review.reviewerTitle}</p>
                             </div>
                             <div className="flex items-center">
-                              <div className="flex text-yellow-400 mr-1">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star key={i} className={`w-3 h-3 ${i < Math.floor(parseFloat(review.overallRating || "0")) ? "fill-current" : ""}`} />
-                                ))}
-                              </div>
+                              <StarRating rating={review.overallRating || "0"} size="sm" className="mr-1" />
                             </div>
                           </div>
                           <p className="text-gray-700 text-sm line-clamp-2">"{review.comment}"</p>

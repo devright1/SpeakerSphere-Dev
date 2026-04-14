@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { StarRating } from "@/components/star-rating";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -3730,13 +3731,8 @@ export default function AdminDashboard() {
                               <div className="flex items-center gap-2 mb-3">
                                 <Badge variant="secondary">Pending Review</Badge>
                                 <div className="flex items-center">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star 
-                                      key={i} 
-                                      className={`h-4 w-4 ${i < Math.floor(parseFloat(review.overallRating || "0")) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
-                                    />
-                                  ))}
-                                  <span className="text-sm text-gray-600 ml-2">
+                                  <StarRating rating={review.overallRating || "0"} size="md" className="mr-2" />
+                                  <span className="text-sm text-gray-600">
                                     {parseFloat(review.overallRating || "0").toFixed(1)}/5 stars
                                   </span>
                                 </div>

@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Star, CheckCircle, Heart, UserPlus, LogIn } from "lucide-react";
+import { StarRating } from "@/components/star-rating";
 import { FaInstagram, FaLinkedin, FaFacebook, FaTwitter, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { useState, useEffect } from "react";
@@ -207,12 +208,7 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
           {!speaker.hideRatings && (
             <div className="flex items-center">
               <div className="flex text-yellow-400 mr-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-4 h-4 ${i < Math.floor(parseFloat(speaker.overallRating || "0")) ? "fill-current" : ""}`} 
-                  />
-                ))}
+                <StarRating rating={speaker.overallRating || "0"} size="md" />
               </div>
               <span className="text-sm text-gray-600">{speaker.overallRating} ({speaker.reviewCount})</span>
             </div>

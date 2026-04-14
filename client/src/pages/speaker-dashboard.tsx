@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { StarRating } from "@/components/star-rating";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2603,16 +2604,7 @@ export default function SpeakerDashboard() {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                              <div className="flex">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`h-4 w-4 ${
-                                      star <= parseFloat(review.overallRating || "0") ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
+                              <StarRating rating={review.overallRating || "0"} size="md" />
                               <span className="font-semibold">{parseFloat(review.overallRating || "0").toFixed(1)}/5</span>
                               <span className="text-sm text-gray-600">by {review.reviewerName}</span>
                               <Badge 
