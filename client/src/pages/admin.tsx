@@ -300,6 +300,7 @@ export default function AdminDashboard() {
   const [isEditingApplication, setIsEditingApplication] = useState(false);
   const [editableApplicationData, setEditableApplicationData] = useState<any>(null);
   const [approvedApplicationCredentials, setApprovedApplicationCredentials] = useState<{[key: number]: {email: string, password: string}}>({});
+  const [reviewToDelete, setReviewToDelete] = useState<{ id: number; label: string } | null>(null);
   
   const { toast } = useToast();
 
@@ -3831,11 +3832,7 @@ export default function AdminDashboard() {
                                 size="sm" 
                                 variant="outline"
                                 className="text-red-600 border-red-600 hover:bg-red-50"
-                                onClick={() => {
-                                  if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
-                                    deleteReviewMutation.mutate(review.id);
-                                  }
-                                }}
+                                onClick={() => setReviewToDelete({ id: review.id, label: 'pending' })}
                               >
                                 <Trash2 className="h-4 w-4 mr-1" />
                                 Delete
@@ -3955,11 +3952,7 @@ export default function AdminDashboard() {
                                     size="sm" 
                                     variant="outline"
                                     className="text-red-600 border-red-600 hover:bg-red-50"
-                                    onClick={() => {
-                                      if (confirm('Are you sure you want to delete this approved review? This action cannot be undone.')) {
-                                        deleteReviewMutation.mutate(review.id);
-                                      }
-                                    }}
+                                    onClick={() => setReviewToDelete({ id: review.id, label: 'approved' })}
                                   >
                                     <Trash2 className="h-4 w-4 mr-1" />
                                     Delete
@@ -4078,11 +4071,7 @@ export default function AdminDashboard() {
                                     size="sm" 
                                     variant="outline"
                                     className="text-red-600 border-red-600 hover:bg-red-50"
-                                    onClick={() => {
-                                      if (confirm('Are you sure you want to delete this rejected review? This action cannot be undone.')) {
-                                        deleteReviewMutation.mutate(review.id);
-                                      }
-                                    }}
+                                    onClick={() => setReviewToDelete({ id: review.id, label: 'rejected' })}
                                   >
                                     <Trash2 className="h-4 w-4 mr-1" />
                                     Delete
@@ -4412,6 +4401,38 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Delete Review Confirmation Dialog */}
+        <Dialog open={!!reviewToDelete} onOpenChange={(open) => { if (!open) setReviewToDelete(null); }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <Trash2 className="h-5 w-5" />
+                Delete Review
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this {reviewToDelete?.label} review? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button variant="outline" onClick={() => setReviewToDelete(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (reviewToDelete) {
+                    deleteReviewMutation.mutate(reviewToDelete.id);
+                    setReviewToDelete(null);
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete Review
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Speaker Assignment Dialog */}
         {isAssignmentDialogOpen && speakerAssignmentCategory && (
