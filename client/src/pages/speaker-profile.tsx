@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -930,14 +931,32 @@ export default function SpeakerProfile() {
                       <div className="flex flex-wrap justify-center md:justify-start gap-2">
                         <TierBadge tier={speaker.subscriptionTier as "basic" | "pro" | "premier"} />
                         {speaker.sdsBadge === 'sds_faculty' && (
-                          <Badge className="bg-purple-600 text-white hover:bg-purple-700">
-                            SDS Faculty
-                          </Badge>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge className="bg-purple-600 text-white hover:bg-purple-700 cursor-default">
+                                  SDS Faculty
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                DevRight's Speaker Development Series Faculty member
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                         {speaker.sdsBadge === 'sds' && (
-                          <Badge className="bg-indigo-500 text-white hover:bg-indigo-600">
-                            SDS
-                          </Badge>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge className="bg-indigo-500 text-white hover:bg-indigo-600 cursor-default">
+                                  SDS
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Graduate of DevRight's Speaker Development Series
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                         {speaker.verified && (
                           <Badge variant="default" className="bg-success text-white">
