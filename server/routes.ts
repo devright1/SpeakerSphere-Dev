@@ -1978,7 +1978,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         images: ['image/jpeg', 'image/png', 'image/gif'],
       };
       const allowedMimes = sectionMimeRules[resolvedCategory];
-      if (allowedMimes && !allowedMimes.includes(req.file.mimetype)) {
+      if (allowedMimes && !allowedMimes.includes(mainFile.mimetype)) {
         return res.status(400).json({ 
           error: "Invalid file type", 
           message: `${resolvedCategory === 'images' ? 'Images' : 'This'} section only accepts ${resolvedCategory === 'images' ? 'JPG, PNG, or GIF' : 'PDF'} files.`
