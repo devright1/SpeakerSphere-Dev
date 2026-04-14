@@ -1594,7 +1594,7 @@ export function registerAdminRoutes(app: Express) {
         // No approved reviews left, reset rating
         await db.update(speakers)
           .set({ 
-            overallRating: "0.0"
+            overallRating: "0.00"
           })
           .where(eq(speakers.id, updatedReview.speakerId));
       }
