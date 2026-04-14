@@ -710,12 +710,14 @@ export default function SpeakerDashboard() {
       if (!response.ok) throw new Error('Failed to upload content');
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/speakers/content/all', speakerProfile?.id] });
       refetchContent();
       toast({
         title: "Content Uploaded",
-        description: "Your file has been uploaded successfully.",
+        description: data?.thumbnailPath
+          ? "Your file and custom thumbnail have been saved successfully."
+          : "Your file has been uploaded successfully.",
       });
     },
     onError: () => {
@@ -3579,6 +3581,7 @@ export default function SpeakerDashboard() {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   setContentThumbnailFile(file);
+                  setContentThumbnailBlob(null); // custom file overrides auto-blob
                   const url = URL.createObjectURL(file);
                   setContentThumbnailPreview(url);
                   e.target.value = '';
