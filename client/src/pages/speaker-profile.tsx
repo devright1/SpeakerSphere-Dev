@@ -97,16 +97,21 @@ const reviewSchema = z.object({
 
 function ReviewInteractions({ reviewId }: { reviewId: number }) {
   const { toast } = useToast();
-  const voterId = getVoterIdentifier();
+  const { user, isAuthenticated } = useAuth();
   const [showComments, setShowComments] = useState(false);
-  const [commenterName, setCommenterName] = useState("");
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const voterId = user?.id ?? null;
+  const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : "";
 
   const { data: reactionData, refetch: refetchReactions } = useQuery<{ likes: number; dislikes: number; userReaction: string | null }>({
     queryKey: ["/api/reviews", reviewId, "reactions", voterId],
     queryFn: async () => {
-      const res = await fetch(`/api/reviews/${reviewId}/reactions?voterId=${encodeURIComponent(voterId)}`);
+      const url = voterId
+        ? `/api/reviews/${reviewId}/reactions?voterId=${encodeURIComponent(voterId)}`
+        : `/api/reviews/${reviewId}/reactions`;
+      const res = await fetch(url);
       return res.json();
     },
   });
@@ -132,9 +137,21 @@ function ReviewInteractions({ reviewId }: { reviewId: number }) {
     onSuccess: () => refetchReactions(),
   });
 
+  const handleReaction = (reaction: string) => {
+    if (!isAuthenticated) {
+      toast({ title: "Please sign in to react to reviews", variant: "destructive" });
+      return;
+    }
+    reactionMutation.mutate(reaction);
+  };
+
   const handleComment = async () => {
-    if (!commenterName.trim() || !commentText.trim()) {
-      toast({ title: "Please fill in your name and comment", variant: "destructive" });
+    if (!isAuthenticated) {
+      toast({ title: "Please sign in to leave a comment", variant: "destructive" });
+      return;
+    }
+    if (!commentText.trim()) {
+      toast({ title: "Please write a comment", variant: "destructive" });
       return;
     }
     setSubmitting(true);
@@ -143,7 +160,7 @@ function ReviewInteractions({ reviewId }: { reviewId: number }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          commenterName: commenterName.trim(),
+          commenterName: displayName,
           comment: commentText.trim(),
           commenterIdentifier: voterId,
         }),
@@ -169,22 +186,28 @@ function ReviewInteractions({ reviewId }: { reviewId: number }) {
       <div className="flex items-center gap-4">
         <span className="text-xs text-gray-500">Helpful?</span>
         <button
-          onClick={() => reactionMutation.mutate("like")}
+          onClick={() => handleReaction("like")}
+          title={isAuthenticated ? "Like this review" : "Sign in to react"}
           className={`flex items-center gap-1 text-sm px-2 py-1 rounded-md transition-colors ${
             userReaction === "like"
               ? "bg-green-100 text-green-700 font-medium"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              : isAuthenticated
+              ? "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              : "text-gray-300 cursor-not-allowed"
           }`}
         >
           <ThumbsUp className="w-4 h-4" />
           <span>{likes}</span>
         </button>
         <button
-          onClick={() => reactionMutation.mutate("dislike")}
+          onClick={() => handleReaction("dislike")}
+          title={isAuthenticated ? "Dislike this review" : "Sign in to react"}
           className={`flex items-center gap-1 text-sm px-2 py-1 rounded-md transition-colors ${
             userReaction === "dislike"
               ? "bg-red-100 text-red-700 font-medium"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              : isAuthenticated
+              ? "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              : "text-gray-300 cursor-not-allowed"
           }`}
         >
           <ThumbsDown className="w-4 h-4" />
@@ -220,17 +243,14 @@ function ReviewInteractions({ reviewId }: { reviewId: number }) {
               ))}
             </div>
           )}
-          <div className="flex gap-2 mt-2">
-            <div className="flex-1 space-y-2">
-              <Input
-                placeholder="Your name"
-                value={commenterName}
-                onChange={e => setCommenterName(e.target.value)}
-                className="text-sm h-8"
-              />
-              <div className="flex gap-2">
+          {isAuthenticated ? (
+            <div className="flex gap-2 mt-2 items-center">
+              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0 text-xs font-semibold text-white">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex flex-1 gap-2">
                 <Input
-                  placeholder="Write a comment..."
+                  placeholder={`Comment as ${displayName}...`}
                   value={commentText}
                   onChange={e => setCommentText(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleComment(); } }}
@@ -246,21 +266,15 @@ function ReviewInteractions({ reviewId }: { reviewId: number }) {
                 </Button>
               </div>
             </div>
-          </div>
+          ) : (
+            <p className="text-xs text-gray-400 text-center py-1">
+              <a href="/auth" className="text-primary hover:underline font-medium">Sign in</a> to leave a comment
+            </p>
+          )}
         </div>
       )}
     </div>
   );
-}
-
-function getVoterIdentifier(): string {
-  const key = "ss_voter_id";
-  let id = localStorage.getItem(key);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(key, id);
-  }
-  return id;
 }
 
 export default function SpeakerProfile() {
