@@ -798,7 +798,7 @@ export default function SpeakerProfile() {
           <img
             src={previewUrl}
             alt={content.originalName}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         </div>

@@ -3429,7 +3429,7 @@ export default function SpeakerDashboard() {
                                       <img
                                         src={content.thumbnailPath ? `/api/content/${content.id}/thumbnail` : `/api/content/${content.id}/preview`}
                                         alt=""
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover object-top"
                                         onError={(e) => {
                                           const target = e.currentTarget as HTMLImageElement;
                                           target.style.display = 'none';
