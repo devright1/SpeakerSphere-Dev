@@ -3733,11 +3733,11 @@ export default function AdminDashboard() {
                                   {[...Array(5)].map((_, i) => (
                                     <Star 
                                       key={i} 
-                                      className={`h-4 w-4 ${i < review.overallRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                                      className={`h-4 w-4 ${i < Math.floor(parseFloat(review.overallRating || "0")) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
                                     />
                                   ))}
                                   <span className="text-sm text-gray-600 ml-2">
-                                    {review.overallRating}/5 stars
+                                    {parseFloat(review.overallRating || "0").toFixed(1)}/5 stars
                                   </span>
                                 </div>
                               </div>
@@ -3867,11 +3867,11 @@ export default function AdminDashboard() {
                                       {[...Array(5)].map((_, i) => (
                                         <Star 
                                           key={i} 
-                                          className={`h-4 w-4 ${i < review.overallRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                                          className={`h-4 w-4 ${i < Math.floor(parseFloat(review.overallRating || "0")) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
                                         />
                                       ))}
                                       <span className="text-sm text-gray-600 ml-2">
-                                        {review.overallRating}/5 stars
+                                        {parseFloat(review.overallRating || "0").toFixed(1)}/5 stars
                                       </span>
                                     </div>
                                   </div>
@@ -3986,11 +3986,11 @@ export default function AdminDashboard() {
                                       {[...Array(5)].map((_, i) => (
                                         <Star 
                                           key={i} 
-                                          className={`h-4 w-4 ${i < review.overallRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                                          className={`h-4 w-4 ${i < Math.floor(parseFloat(review.overallRating || "0")) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
                                         />
                                       ))}
                                       <span className="text-sm text-gray-600 ml-2">
-                                        {review.overallRating}/5 stars
+                                        {parseFloat(review.overallRating || "0").toFixed(1)}/5 stars
                                       </span>
                                     </div>
                                   </div>

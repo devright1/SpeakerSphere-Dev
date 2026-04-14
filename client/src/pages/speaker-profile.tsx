@@ -1513,10 +1513,10 @@ export default function SpeakerProfile() {
                                 <div className="flex items-center">
                                   <div className="flex text-yellow-400 mr-2">
                                     {[...Array(5)].map((_, i) => (
-                                      <Star key={i} className={`w-4 h-4 ${i < review.overallRating ? "fill-current" : ""}`} />
+                                      <Star key={i} className={`w-4 h-4 ${i < Math.floor(parseFloat(review.overallRating || "0")) ? "fill-current" : ""}`} />
                                     ))}
                                   </div>
-                                  <span className="text-sm font-medium">{review.overallRating}/5</span>
+                                  <span className="text-sm font-medium">{parseFloat(review.overallRating || "0").toFixed(1)}/5</span>
                                 </div>
                               </div>
                               <p className="text-gray-700 mb-3">{review.comment}</p>
@@ -1619,7 +1619,7 @@ export default function SpeakerProfile() {
                             <div className="flex items-center">
                               <div className="flex text-yellow-400 mr-1">
                                 {[...Array(5)].map((_, i) => (
-                                  <Star key={i} className={`w-3 h-3 ${i < review.overallRating ? "fill-current" : ""}`} />
+                                  <Star key={i} className={`w-3 h-3 ${i < Math.floor(parseFloat(review.overallRating || "0")) ? "fill-current" : ""}`} />
                                 ))}
                               </div>
                             </div>

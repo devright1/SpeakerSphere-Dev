@@ -1530,12 +1530,12 @@ export function registerAdminRoutes(app: Express) {
       ));
 
       if (approvedReviewsForSpeaker.length > 0) {
-        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + review.overallRating, 0) / approvedReviewsForSpeaker.length;
+        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + parseFloat(review.overallRating as unknown as string), 0) / approvedReviewsForSpeaker.length;
         
         // Update speaker's overall rating
         await db.update(speakers)
           .set({ 
-            overallRating: avgRating.toFixed(1) // Store as string with 1 decimal place
+            overallRating: avgRating.toFixed(2)
           })
           .where(eq(speakers.id, updatedReview.speakerId));
       }
@@ -1582,12 +1582,12 @@ export function registerAdminRoutes(app: Express) {
       ));
 
       if (approvedReviewsForSpeaker.length > 0) {
-        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + review.overallRating, 0) / approvedReviewsForSpeaker.length;
+        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + parseFloat(review.overallRating as unknown as string), 0) / approvedReviewsForSpeaker.length;
         
         // Update speaker's overall rating
         await db.update(speakers)
           .set({ 
-            overallRating: avgRating.toFixed(1) // Store as string with 1 decimal place
+            overallRating: avgRating.toFixed(2)
           })
           .where(eq(speakers.id, updatedReview.speakerId));
       } else {

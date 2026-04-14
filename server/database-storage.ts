@@ -2157,7 +2157,7 @@ export class DatabaseStorage implements IStorage {
     // Calculate average rating from overall ratings
     let overallRating = "0.00";
     if (reviewCount > 0) {
-      const totalRating = approvedReviews.reduce((sum, r) => sum + r.overallRating, 0);
+      const totalRating = approvedReviews.reduce((sum, r) => sum + parseFloat(r.overallRating as unknown as string), 0);
       overallRating = (totalRating / reviewCount).toFixed(2);
     }
     

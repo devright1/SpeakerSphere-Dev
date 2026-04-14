@@ -2608,12 +2608,12 @@ export default function SpeakerDashboard() {
                                   <Star
                                     key={star}
                                     className={`h-4 w-4 ${
-                                      star <= review.overallRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      star <= parseFloat(review.overallRating || "0") ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
                                     }`}
                                   />
                                 ))}
                               </div>
-                              <span className="font-semibold">{review.overallRating}/5</span>
+                              <span className="font-semibold">{parseFloat(review.overallRating || "0").toFixed(1)}/5</span>
                               <span className="text-sm text-gray-600">by {review.reviewerName}</span>
                               <Badge 
                                 variant={review.approvalStatus === 'approved' ? 'default' : 'secondary'}
