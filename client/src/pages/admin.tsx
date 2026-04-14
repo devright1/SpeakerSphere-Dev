@@ -3759,7 +3759,7 @@ export default function AdminDashboard() {
                                     )}
                                   </div>
                                   <div>
-                                    <p className="font-medium text-blue-900">{review.speakerName}</p>
+                                    <p className="font-medium text-blue-900">{review.speakerName || <span className="italic text-blue-500">Unknown Speaker</span>}</p>
                                     <p className="text-xs text-blue-700">Speaker ID: {review.speakerId}</p>
                                   </div>
                                 </div>
@@ -3897,7 +3897,7 @@ export default function AdminDashboard() {
                                         )}
                                       </div>
                                       <div>
-                                        <p className="font-medium text-green-900">{review.speakerName}</p>
+                                        <p className="font-medium text-green-900">{review.speakerName || <span className="italic text-green-600">Unknown Speaker</span>}</p>
                                         <p className="text-xs text-green-700">Speaker ID: {review.speakerId}</p>
                                       </div>
                                     </div>
@@ -4020,7 +4020,7 @@ export default function AdminDashboard() {
                                         )}
                                       </div>
                                       <div>
-                                        <p className="font-medium text-red-900">{review.speakerName}</p>
+                                        <p className="font-medium text-red-900">{review.speakerName || <span className="italic text-red-500">Unknown Speaker</span>}</p>
                                         <p className="text-xs text-red-700">Speaker ID: {review.speakerId}</p>
                                       </div>
                                     </div>
