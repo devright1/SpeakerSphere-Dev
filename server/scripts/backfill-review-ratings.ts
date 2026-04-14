@@ -10,8 +10,14 @@
  */
 
 import { db } from "../db";
-import { reviews, speakers } from "../../shared/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { speakers } from "../../shared/schema";
+import { eq, sql } from "drizzle-orm";
+
+interface SpeakerRatingRow {
+  speaker_id: number;
+  avg_rating: string;
+  review_count: string;
+}
 
 async function backfillReviewRatings() {
   console.log("Starting review rating backfill...");
@@ -39,7 +45,7 @@ async function backfillReviewRatings() {
   `);
 
   let speakerUpdateCount = 0;
-  for (const row of speakersWithApprovedReviews.rows as any[]) {
+  for (const row of speakersWithApprovedReviews.rows as SpeakerRatingRow[]) {
     await db.update(speakers)
       .set({
         overallRating: String(row.avg_rating),

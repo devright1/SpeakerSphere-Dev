@@ -1530,7 +1530,7 @@ export function registerAdminRoutes(app: Express) {
       ));
 
       if (approvedReviewsForSpeaker.length > 0) {
-        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + parseFloat(review.overallRating as unknown as string), 0) / approvedReviewsForSpeaker.length;
+        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + Number(review.overallRating), 0) / approvedReviewsForSpeaker.length;
         
         // Update speaker's overall rating
         await db.update(speakers)
@@ -1582,7 +1582,7 @@ export function registerAdminRoutes(app: Express) {
       ));
 
       if (approvedReviewsForSpeaker.length > 0) {
-        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + parseFloat(review.overallRating as unknown as string), 0) / approvedReviewsForSpeaker.length;
+        const avgRating = approvedReviewsForSpeaker.reduce((sum, review) => sum + Number(review.overallRating), 0) / approvedReviewsForSpeaker.length;
         
         // Update speaker's overall rating
         await db.update(speakers)
