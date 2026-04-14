@@ -1952,8 +1952,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.post("/api/speakers/:speakerId/content", 
     rateLimiters.uploads,
     validators.id,
-    upload.single('file'), 
-    validateFileUpload,
+    upload.fields([{ name: 'file', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]),
     async (req: AuthenticatedRequest, res: Response) => {
     try {
       const speakerId = parseInt(req.params.speakerId);
@@ -1964,7 +1963,11 @@ export async function registerRoutes(app: Express): Promise<Express> {
         ? section 
         : (category && validSections.includes(category) ? category : 'documents');
       
-      if (!req.file) {
+      const uploadedFiles = req.files as Record<string, Express.Multer.File[]>;
+      const mainFile = uploadedFiles?.file?.[0];
+      const thumbnailFile = uploadedFiles?.thumbnail?.[0];
+
+      if (!mainFile) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
@@ -1991,9 +1994,9 @@ export async function registerRoutes(app: Express): Promise<Express> {
         sessionKeys: Object.keys((req as any).session || {}),
         userIdHeader: req.headers['x-user-id'],
         speakerId: speakerId,
-        fileUploaded: !!req.file,
-        fileName: req.file?.filename,
-        filePath: req.file?.path
+        fileUploaded: !!mainFile,
+        fileName: mainFile?.originalname,
+        hasThumbnail: !!thumbnailFile,
       });
       
       // Fallback: Check if there's user data in another format
@@ -2041,7 +2044,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
       
       // Check individual file size limit
-      const fileSizeMB = req.file.size / (1024 * 1024);
+      const fileSizeMB = mainFile.size / (1024 * 1024);
       if (fileSizeMB > tierLimits.maxFileSizeMb) {
         return res.status(400).json({ 
           error: "File too large", 
@@ -2061,7 +2064,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       
       // Generate a unique filename for the uploaded file
       const timestamp = Date.now();
-      const sanitizedOriginalName = SecurityUtils.sanitizeFileName(req.file.originalname);
+      const sanitizedOriginalName = SecurityUtils.sanitizeFileName(mainFile.originalname);
       const finalFileName = `${timestamp}_${sanitizedOriginalName}`;
       
       // Use object storage service to save the file
@@ -2069,31 +2072,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
       const privateDir = objectStorage.getPrivateObjectDir();
       const uploadPath = `${privateDir}/${speakerId}/${finalFileName}`;
       
-      try {
-        // Parse the object path to get bucket and object names
-        const parseObjectPath = (path: string) => {
-          if (!path.startsWith("/")) {
-            path = `/${path}`;
-          }
-          const pathParts = path.split("/");
-          if (pathParts.length < 3) {
-            throw new Error("Invalid path: must contain at least a bucket name");
-          }
-          const bucketName = pathParts[1];
-          const objectName = pathParts.slice(2).join("/");
-          return { bucketName, objectName };
-        };
+      const parseObjectPath = (path: string) => {
+        if (!path.startsWith("/")) path = `/${path}`;
+        const pathParts = path.split("/");
+        if (pathParts.length < 3) throw new Error("Invalid path: must contain at least a bucket name");
+        return { bucketName: pathParts[1], objectName: pathParts.slice(2).join("/") };
+      };
 
+      try {
         const { bucketName, objectName } = parseObjectPath(uploadPath);
-        
-        // Upload file buffer to object storage using the client directly
         const bucket = objectStorageClient.bucket(bucketName);
         const file = bucket.file(objectName);
         
-        await file.save(req.file.buffer, {
-          metadata: {
-            contentType: req.file.mimetype,
-          },
+        await file.save(mainFile.buffer, {
+          metadata: { contentType: mainFile.mimetype },
         });
         
         console.log(`File uploaded to object storage: ${uploadPath}`);
@@ -2102,25 +2094,46 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(500).json({ error: "Failed to upload file to storage" });
       }
 
+      // Handle optional thumbnail upload
+      let thumbnailUrl: string | null = null;
+      if (thumbnailFile) {
+        try {
+          const thumbExt = thumbnailFile.mimetype === 'image/png' ? 'png' : 'jpg';
+          const thumbFileName = `${timestamp}_thumb.${thumbExt}`;
+          const thumbPath = `${privateDir}/${speakerId}/thumbs/${thumbFileName}`;
+          const { bucketName: tBucket, objectName: tObject } = parseObjectPath(thumbPath);
+          const thumbBucket = objectStorageClient.bucket(tBucket);
+          const thumbFileObj = thumbBucket.file(tObject);
+          await thumbFileObj.save(thumbnailFile.buffer, {
+            metadata: { contentType: thumbnailFile.mimetype },
+          });
+          thumbnailUrl = thumbPath;
+          console.log(`Thumbnail uploaded to object storage: ${thumbPath}`);
+        } catch (error) {
+          console.error('Failed to upload thumbnail (non-fatal):', error);
+        }
+      }
+
       // Create content record
       const copyrightAcknowledged = req.body.copyrightAcknowledged === 'true';
       const contentData = {
         speakerId,
         fileName: finalFileName,
-        originalName: req.file.originalname,
-        fileSize: req.file.size,
-        fileType: req.file.mimetype,
+        originalName: mainFile.originalname,
+        fileSize: mainFile.size,
+        fileType: mainFile.mimetype,
         category: resolvedCategory,
         description: description || '',
         isPublic: isPublic === 'true',
         uploadPath: uploadPath,
+        thumbnailUrl: thumbnailUrl,
         copyrightAcknowledgedAt: copyrightAcknowledged ? new Date() : null,
       };
 
       const content = await storage.createSpeakerContent(contentData);
       
       // Update speaker's storage usage
-      const newStorageUsed = (speaker.storageUsedBytes || 0) + req.file.size;
+      const newStorageUsed = (speaker.storageUsedBytes || 0) + mainFile.size;
       await storage.updateSpeaker(speakerId, {
         storageUsedBytes: newStorageUsed
       });
@@ -2308,6 +2321,40 @@ export async function registerRoutes(app: Express): Promise<Express> {
     } catch (error) {
       console.error("Content preview error:", error);
       res.status(500).json({ error: "Failed to load preview" });
+    }
+  });
+
+  // Serve stored thumbnail for a content item
+  app.get("/api/content/:contentId/thumbnail", async (req: any, res) => {
+    try {
+      const contentId = parseInt(req.params.contentId);
+      const content = await storage.getSpeakerContentById(contentId);
+      if (!content || !content.thumbnailUrl) {
+        return res.status(404).json({ error: "Thumbnail not found" });
+      }
+
+      const thumbPath = content.thumbnailUrl.startsWith('/') ? content.thumbnailUrl : `/${content.thumbnailUrl}`;
+      const pathParts = thumbPath.split('/').filter((p: string) => p.length > 0);
+      if (pathParts.length < 2) return res.status(404).json({ error: "Invalid thumbnail path" });
+
+      const bucketName = pathParts[0];
+      const objectName = pathParts.slice(1).join('/');
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+
+      const [exists] = await file.exists();
+      if (!exists) return res.status(404).json({ error: "Thumbnail file not found" });
+
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      const stream = file.createReadStream();
+      stream.on('error', (err: any) => {
+        if (!res.headersSent) res.status(500).json({ error: "Thumbnail stream failed" });
+      });
+      stream.pipe(res);
+    } catch (error) {
+      console.error("Content thumbnail error:", error);
+      res.status(500).json({ error: "Failed to load thumbnail" });
     }
   });
 

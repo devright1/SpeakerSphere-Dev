@@ -1344,10 +1344,11 @@ export default function SpeakerDashboard() {
     setIsEditing(false);
   };
 
-  // File upload handling
-  const handleSectionFileUpload = (event: React.ChangeEvent<HTMLInputElement>, sectionCategory: string) => {
+  // File upload handling — step 1: validate file + generate thumbnail preview
+  const handleSectionFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, sectionCategory: string) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    event.target.value = '';
 
     const totalStorageBytes = speakerContent?.reduce((sum: number, content: any) => sum + (content.fileSize || 0), 0) || 0;
     const totalStorageMB = totalStorageBytes / (1024 * 1024);
@@ -1360,19 +1361,90 @@ export default function SpeakerDashboard() {
         description: `This file would exceed your ${storageLimitMb} MB storage limit. You have ${remainingMB} MB remaining. Delete some files or upgrade your plan.`,
         variant: "destructive",
       });
-      event.target.value = '';
       return;
     }
 
+    setPendingContentFile(file);
+    setPendingContentSection(sectionCategory);
+    setContentThumbnailFile(null);
+    setContentThumbnailBlob(null);
+    setContentThumbnailPreview(null);
+    setIsGeneratingThumbnail(true);
+    setShowUploadPreviewDialog(true);
+
+    const isPdf = file.type === 'application/pdf';
+    const isImage = file.type.startsWith('image/');
+
+    if (isImage) {
+      // Use the image itself as the thumbnail
+      const url = URL.createObjectURL(file);
+      setContentThumbnailPreview(url);
+      setIsGeneratingThumbnail(false);
+    } else if (isPdf) {
+      // Render first page of PDF using pdfjs-dist
+      try {
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+        const arrayBuffer = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 1 });
+        const scale = 300 / viewport.width;
+        const scaledViewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+          // Convert canvas to blob (to upload as thumbnail)
+          const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.85));
+          const url = canvas.toDataURL('image/jpeg', 0.85);
+          setContentThumbnailBlob(blob);
+          setContentThumbnailPreview(url);
+        }
+      } catch (err) {
+        console.error('PDF thumbnail generation failed:', err);
+        // Fall through without thumbnail preview
+      } finally {
+        setIsGeneratingThumbnail(false);
+      }
+    } else {
+      setIsGeneratingThumbnail(false);
+    }
+  };
+
+  // File upload handling — step 2: perform the actual upload with thumbnail
+  const handleConfirmContentUpload = () => {
+    if (!pendingContentFile || !pendingContentSection) return;
+
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('description', `${file.name}`);
-    formData.append('section', sectionCategory);
+    formData.append('file', pendingContentFile);
+    formData.append('description', pendingContentFile.name);
+    formData.append('section', pendingContentSection);
     formData.append('isPublic', 'true');
     formData.append('copyrightAcknowledged', 'true');
 
+    // Include thumbnail: custom file takes precedence, then auto-generated blob
+    if (contentThumbnailFile) {
+      formData.append('thumbnail', contentThumbnailFile, contentThumbnailFile.name);
+    } else if (contentThumbnailBlob) {
+      formData.append('thumbnail', contentThumbnailBlob, 'thumbnail.jpg');
+    }
+    // For images with no custom thumbnail, send the image itself as thumbnail
+    if (!contentThumbnailFile && !contentThumbnailBlob && pendingContentSection === 'images') {
+      formData.append('thumbnail', pendingContentFile, pendingContentFile.name);
+    }
+
+    setShowUploadPreviewDialog(false);
+    setPendingContentFile(null);
+    setPendingContentSection(null);
+    setContentThumbnailFile(null);
+    setContentThumbnailBlob(null);
+    setContentThumbnailPreview(null);
+
     uploadContentMutation.mutate(formData);
-    event.target.value = '';
   };
 
   const contentSections = [
@@ -1386,6 +1458,15 @@ export default function SpeakerDashboard() {
   const [contentRightsDialogOpen, setContentRightsDialogOpen] = useState(false);
   const [contentRightsConfirmed, setContentRightsConfirmed] = useState(false);
   const [pendingUploadSection, setPendingUploadSection] = useState<string | null>(null);
+
+  // Upload preview / thumbnail state
+  const [pendingContentFile, setPendingContentFile] = useState<File | null>(null);
+  const [pendingContentSection, setPendingContentSection] = useState<string | null>(null);
+  const [contentThumbnailFile, setContentThumbnailFile] = useState<File | null>(null);
+  const [contentThumbnailBlob, setContentThumbnailBlob] = useState<Blob | null>(null);
+  const [contentThumbnailPreview, setContentThumbnailPreview] = useState<string | null>(null);
+  const [showUploadPreviewDialog, setShowUploadPreviewDialog] = useState(false);
+  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
 
   const toggleSectionCollapse = (key: string) => {
     setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
@@ -3340,9 +3421,26 @@ export default function SpeakerDashboard() {
                                   )}
                                 </div>
                                 <div className="flex-1 flex flex-col items-center justify-center w-full pt-3">
-                                  <div className="p-1 bg-white rounded-md shadow-sm mb-1">
-                                    {getFileIcon(content.category)}
-                                  </div>
+                                  {/* Thumbnail or icon */}
+                                  {(content.thumbnailUrl || content.category === 'images') ? (
+                                    <div className="w-full h-14 rounded overflow-hidden bg-gray-100 mb-1 flex items-center justify-center">
+                                      <img
+                                        src={content.thumbnailUrl ? `/api/content/${content.id}/thumbnail` : `/api/content/${content.id}/preview`}
+                                        alt=""
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          const target = e.currentTarget as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          const parent = target.parentElement;
+                                          if (parent) parent.innerHTML = `<div class="flex items-center justify-center w-full h-full text-gray-400">${content.category === 'images' ? '🖼️' : '📄'}</div>`;
+                                        }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="p-1 bg-white rounded-md shadow-sm mb-1">
+                                      {getFileIcon(content.category)}
+                                    </div>
+                                  )}
                                   <h4 className="font-medium text-gray-900 text-[11px] text-center line-clamp-2 w-full leading-tight">{content.originalName}</h4>
                                   <span className="text-[9px] text-gray-500 mt-0.5">{formatFileSize(content.fileSize)}</span>
                                 </div>
@@ -3466,6 +3564,98 @@ export default function SpeakerDashboard() {
                     >
                       <Upload className="h-4 w-4 mr-2" />
                       Proceed to Upload
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Upload Preview Dialog — shows auto-generated thumbnail and lets user change it */}
+              <input
+                type="file"
+                id="content-custom-thumbnail-input"
+                className="hidden"
+                accept=".jpg,.jpeg,.png"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setContentThumbnailFile(file);
+                  const url = URL.createObjectURL(file);
+                  setContentThumbnailPreview(url);
+                  e.target.value = '';
+                }}
+              />
+              <Dialog open={showUploadPreviewDialog} onOpenChange={(open) => {
+                if (!open) {
+                  setShowUploadPreviewDialog(false);
+                  setPendingContentFile(null);
+                  setPendingContentSection(null);
+                  setContentThumbnailFile(null);
+                  setContentThumbnailBlob(null);
+                  setContentThumbnailPreview(null);
+                  setIsGeneratingThumbnail(false);
+                }
+              }}>
+                <DialogContent className="sm:max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Preview &amp; Upload</DialogTitle>
+                    <DialogDescription>
+                      {pendingContentFile?.name} &mdash; {pendingContentFile ? (pendingContentFile.size / (1024 * 1024)).toFixed(2) + ' MB' : ''}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="flex flex-col items-center gap-3 py-2">
+                    {/* Thumbnail preview */}
+                    <div className="w-full aspect-[4/3] rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center relative">
+                      {isGeneratingThumbnail ? (
+                        <div className="flex flex-col items-center gap-2 text-gray-400">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e4347]" />
+                          <span className="text-xs">Generating preview…</span>
+                        </div>
+                      ) : contentThumbnailPreview ? (
+                        <img src={contentThumbnailPreview} alt="Thumbnail preview" className="w-full h-full object-contain" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-gray-400">
+                          {getFileIcon(pendingContentSection || 'documents')}
+                          <span className="text-xs">No preview available</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => document.getElementById('content-custom-thumbnail-input')?.click()}
+                    >
+                      <Camera className="h-3.5 w-3.5 mr-1.5" />
+                      {contentThumbnailPreview ? 'Change Thumbnail' : 'Add Custom Thumbnail'}
+                    </Button>
+                    {contentThumbnailFile && (
+                      <p className="text-xs text-green-600 text-center">Custom thumbnail selected: {contentThumbnailFile.name}</p>
+                    )}
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowUploadPreviewDialog(false);
+                        setPendingContentFile(null);
+                        setPendingContentSection(null);
+                        setContentThumbnailFile(null);
+                        setContentThumbnailBlob(null);
+                        setContentThumbnailPreview(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      disabled={isGeneratingThumbnail || uploadContentMutation.isPending}
+                      onClick={handleConfirmContentUpload}
+                      className="bg-[#1e4347] hover:bg-[#2a5a5f] text-white"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {uploadContentMutation.isPending ? 'Uploading…' : 'Upload'}
                     </Button>
                   </DialogFooter>
                 </DialogContent>

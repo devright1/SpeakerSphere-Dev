@@ -743,8 +743,15 @@ export default function SpeakerProfile() {
     const isPdf = content.fileType === 'application/pdf';
     const isImage = content.category === 'images' || content.fileType?.startsWith('image/');
     const previewUrl = `/api/content/${content.id}/preview`;
+    const thumbnailApiUrl = content.thumbnailUrl ? `/api/content/${content.id}/thumbnail` : null;
 
     useEffect(() => {
+      // If a stored thumbnail is available for PDFs, use it directly
+      if (isPdf && thumbnailApiUrl) {
+        setImgSrc(thumbnailApiUrl);
+        setLoading(false);
+        return;
+      }
       if (!isPdf) return;
       let cancelled = false;
 
@@ -783,7 +790,7 @@ export default function SpeakerProfile() {
       })();
 
       return () => { cancelled = true; };
-    }, [isPdf, previewUrl]);
+    }, [isPdf, previewUrl, thumbnailApiUrl]);
 
     if (isImage) {
       return (
