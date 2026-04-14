@@ -3422,10 +3422,10 @@ export default function SpeakerDashboard() {
                                 </div>
                                 <div className="flex-1 flex flex-col items-center justify-center w-full pt-3">
                                   {/* Thumbnail or icon */}
-                                  {(content.thumbnailUrl || content.category === 'images') ? (
+                                  {(content.thumbnailPath || content.category === 'images') ? (
                                     <div className="w-full h-14 rounded overflow-hidden bg-gray-100 mb-1 flex items-center justify-center">
                                       <img
-                                        src={content.thumbnailUrl ? `/api/content/${content.id}/thumbnail` : `/api/content/${content.id}/preview`}
+                                        src={content.thumbnailPath ? `/api/content/${content.id}/thumbnail` : `/api/content/${content.id}/preview`}
                                         alt=""
                                         className="w-full h-full object-cover"
                                         onError={(e) => {

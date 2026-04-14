@@ -2095,20 +2095,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       // Handle optional thumbnail upload
-      let thumbnailUrl: string | null = null;
+      let thumbnailPath: string | null = null;
       if (thumbnailFile) {
         try {
           const thumbExt = thumbnailFile.mimetype === 'image/png' ? 'png' : 'jpg';
           const thumbFileName = `${timestamp}_thumb.${thumbExt}`;
-          const thumbPath = `${privateDir}/${speakerId}/thumbs/${thumbFileName}`;
-          const { bucketName: tBucket, objectName: tObject } = parseObjectPath(thumbPath);
+          const thumbStoragePath = `${privateDir}/${speakerId}/thumbs/${thumbFileName}`;
+          const { bucketName: tBucket, objectName: tObject } = parseObjectPath(thumbStoragePath);
           const thumbBucket = objectStorageClient.bucket(tBucket);
           const thumbFileObj = thumbBucket.file(tObject);
           await thumbFileObj.save(thumbnailFile.buffer, {
             metadata: { contentType: thumbnailFile.mimetype },
           });
-          thumbnailUrl = thumbPath;
-          console.log(`Thumbnail uploaded to object storage: ${thumbPath}`);
+          thumbnailPath = thumbStoragePath;
+          console.log(`Thumbnail uploaded to object storage: ${thumbStoragePath}`);
         } catch (error) {
           console.error('Failed to upload thumbnail (non-fatal):', error);
         }
@@ -2126,7 +2126,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         description: description || '',
         isPublic: isPublic === 'true',
         uploadPath: uploadPath,
-        thumbnailUrl: thumbnailUrl,
+        thumbnailPath: thumbnailPath,
         copyrightAcknowledgedAt: copyrightAcknowledged ? new Date() : null,
       };
 
@@ -2329,11 +2329,11 @@ export async function registerRoutes(app: Express): Promise<Express> {
     try {
       const contentId = parseInt(req.params.contentId);
       const content = await storage.getSpeakerContentById(contentId);
-      if (!content || !content.thumbnailUrl) {
+      if (!content || !content.thumbnailPath) {
         return res.status(404).json({ error: "Thumbnail not found" });
       }
 
-      const thumbPath = content.thumbnailUrl.startsWith('/') ? content.thumbnailUrl : `/${content.thumbnailUrl}`;
+      const thumbPath = content.thumbnailPath.startsWith('/') ? content.thumbnailPath : `/${content.thumbnailPath}`;
       const pathParts = thumbPath.split('/').filter((p: string) => p.length > 0);
       if (pathParts.length < 2) return res.status(404).json({ error: "Invalid thumbnail path" });
 

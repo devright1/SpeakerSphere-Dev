@@ -743,7 +743,7 @@ export default function SpeakerProfile() {
     const isPdf = content.fileType === 'application/pdf';
     const isImage = content.category === 'images' || content.fileType?.startsWith('image/');
     const previewUrl = `/api/content/${content.id}/preview`;
-    const thumbnailApiUrl = content.thumbnailUrl ? `/api/content/${content.id}/thumbnail` : null;
+    const thumbnailApiUrl = content.thumbnailPath ? `/api/content/${content.id}/thumbnail` : null;
 
     useEffect(() => {
       // If a stored thumbnail is available for PDFs, use it directly
