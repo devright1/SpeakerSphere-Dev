@@ -1368,6 +1368,70 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Review Reactions
+  app.get("/api/reviews/:reviewId/reactions", async (req: any, res: any) => {
+    try {
+      const reviewId = parseInt(req.params.reviewId);
+      const voterIdentifier = (req.query.voterId as string) || "";
+      const counts = await storage.getReviewReactionCounts(reviewId);
+      const userReaction = voterIdentifier ? await storage.getUserReviewReaction(reviewId, voterIdentifier) : null;
+      res.json({ ...counts, userReaction });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch reactions" });
+    }
+  });
+
+  app.post("/api/reviews/:reviewId/reactions", async (req: any, res: any) => {
+    try {
+      const reviewId = parseInt(req.params.reviewId);
+      const { reaction, voterId } = req.body;
+      if (!voterId || !["like", "dislike"].includes(reaction)) {
+        return res.status(400).json({ message: "Invalid reaction or missing voterId" });
+      }
+      const current = await storage.getUserReviewReaction(reviewId, voterId);
+      if (current === reaction) {
+        await storage.removeReviewReaction(reviewId, voterId);
+      } else {
+        await storage.upsertReviewReaction(reviewId, voterId, reaction);
+      }
+      const counts = await storage.getReviewReactionCounts(reviewId);
+      const userReaction = await storage.getUserReviewReaction(reviewId, voterId);
+      res.json({ ...counts, userReaction });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update reaction" });
+    }
+  });
+
+  // Review Comments
+  app.get("/api/reviews/:reviewId/comments", async (req: any, res: any) => {
+    try {
+      const reviewId = parseInt(req.params.reviewId);
+      const comments = await storage.getReviewComments(reviewId);
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/reviews/:reviewId/comments", async (req: any, res: any) => {
+    try {
+      const reviewId = parseInt(req.params.reviewId);
+      const { commenterName, comment, commenterIdentifier } = req.body;
+      if (!commenterName?.trim() || !comment?.trim()) {
+        return res.status(400).json({ message: "Name and comment are required" });
+      }
+      const newComment = await storage.addReviewComment({
+        reviewId,
+        commenterName: commenterName.trim(),
+        comment: comment.trim(),
+        commenterIdentifier: commenterIdentifier || null,
+      });
+      res.status(201).json(newComment);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to add comment" });
+    }
+  });
+
   // Submit review for specific speaker (with file upload support)
   app.post("/api/speakers/:speakerId/reviews", (req, res, next) => {
     upload.single('photo')(req, res, (err) => {

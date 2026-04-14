@@ -52,11 +52,17 @@ import {
   GraduationCap,
   Newspaper,
   MapPin,
-  ExternalLink
+  ExternalLink,
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
+  Send,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { FaInstagram, FaLinkedin, FaFacebook, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import type { Speaker, Review, SpeakerEvent } from "@shared/schema";
+import type { Speaker, Review, SpeakerEvent, ReviewComment } from "@shared/schema";
 import { SEOHead, generateSpeakerStructuredData, generateBreadcrumbStructuredData } from "@/components/seo-head";
 import { SocialShare } from "@/components/social-share";
 import { GA_EVENTS } from "@/lib/analytics";
@@ -88,6 +94,174 @@ const reviewSchema = z.object({
   eventDate: z.string().min(1, "Event date is required"),
   photo: z.any().optional().refine((file) => !file || file instanceof File, { message: "Invalid file format" }),
 });
+
+function ReviewInteractions({ reviewId }: { reviewId: number }) {
+  const { toast } = useToast();
+  const voterId = getVoterIdentifier();
+  const [showComments, setShowComments] = useState(false);
+  const [commenterName, setCommenterName] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const { data: reactionData, refetch: refetchReactions } = useQuery<{ likes: number; dislikes: number; userReaction: string | null }>({
+    queryKey: ["/api/reviews", reviewId, "reactions", voterId],
+    queryFn: async () => {
+      const res = await fetch(`/api/reviews/${reviewId}/reactions?voterId=${encodeURIComponent(voterId)}`);
+      return res.json();
+    },
+  });
+
+  const { data: comments, refetch: refetchComments } = useQuery<ReviewComment[]>({
+    queryKey: ["/api/reviews", reviewId, "comments"],
+    queryFn: async () => {
+      const res = await fetch(`/api/reviews/${reviewId}/comments`);
+      return res.json();
+    },
+    enabled: showComments,
+  });
+
+  const reactionMutation = useMutation({
+    mutationFn: async (reaction: string) => {
+      const res = await fetch(`/api/reviews/${reviewId}/reactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reaction, voterId }),
+      });
+      return res.json();
+    },
+    onSuccess: () => refetchReactions(),
+  });
+
+  const handleComment = async () => {
+    if (!commenterName.trim() || !commentText.trim()) {
+      toast({ title: "Please fill in your name and comment", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/reviews/${reviewId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          commenterName: commenterName.trim(),
+          comment: commentText.trim(),
+          commenterIdentifier: voterId,
+        }),
+      });
+      if (res.ok) {
+        setCommentText("");
+        refetchComments();
+        toast({ title: "Comment added!" });
+      } else {
+        toast({ title: "Failed to add comment", variant: "destructive" });
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const likes = reactionData?.likes ?? 0;
+  const dislikes = reactionData?.dislikes ?? 0;
+  const userReaction = reactionData?.userReaction ?? null;
+
+  return (
+    <div className="mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center gap-4">
+        <span className="text-xs text-gray-500">Helpful?</span>
+        <button
+          onClick={() => reactionMutation.mutate("like")}
+          className={`flex items-center gap-1 text-sm px-2 py-1 rounded-md transition-colors ${
+            userReaction === "like"
+              ? "bg-green-100 text-green-700 font-medium"
+              : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          }`}
+        >
+          <ThumbsUp className="w-4 h-4" />
+          <span>{likes}</span>
+        </button>
+        <button
+          onClick={() => reactionMutation.mutate("dislike")}
+          className={`flex items-center gap-1 text-sm px-2 py-1 rounded-md transition-colors ${
+            userReaction === "dislike"
+              ? "bg-red-100 text-red-700 font-medium"
+              : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          }`}
+        >
+          <ThumbsDown className="w-4 h-4" />
+          <span>{dislikes}</span>
+        </button>
+        <button
+          onClick={() => setShowComments(v => !v)}
+          className="flex items-center gap-1 text-sm px-2 py-1 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors ml-auto"
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>{comments?.length ?? 0} {comments?.length === 1 ? "comment" : "comments"}</span>
+          {showComments ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+      </div>
+
+      {showComments && (
+        <div className="mt-3 space-y-3">
+          {comments && comments.length > 0 && (
+            <div className="space-y-2">
+              {comments.map((c) => (
+                <div key={c.id} className="flex gap-2">
+                  <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-gray-600 mt-0.5">
+                    {c.commenterName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-semibold text-gray-800">{c.commenterName}</span>
+                      <span className="text-xs text-gray-400">{new Date(c.createdAt!).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-sm text-gray-700 mt-0.5">{c.comment}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-2 mt-2">
+            <div className="flex-1 space-y-2">
+              <Input
+                placeholder="Your name"
+                value={commenterName}
+                onChange={e => setCommenterName(e.target.value)}
+                className="text-sm h-8"
+              />
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Write a comment..."
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleComment(); } }}
+                  className="text-sm h-8 flex-1"
+                />
+                <Button
+                  size="sm"
+                  className="h-8 px-3"
+                  onClick={handleComment}
+                  disabled={submitting}
+                >
+                  <Send className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getVoterIdentifier(): string {
+  const key = "ss_voter_id";
+  let id = localStorage.getItem(key);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(key, id);
+  }
+  return id;
+}
 
 export default function SpeakerProfile() {
   const { name } = useParams();
@@ -1519,6 +1693,7 @@ export default function SpeakerProfile() {
                                   </span>
                                 )}
                               </div>
+                              <ReviewInteractions reviewId={review.id} />
                             </CardContent>
                           </Card>
                         )) || []}

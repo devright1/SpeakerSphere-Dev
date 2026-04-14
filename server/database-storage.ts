@@ -66,6 +66,10 @@ import {
   type InsertTierLimit,
   type SpeakerEvent,
   type InsertSpeakerEvent,
+  type ReviewComment,
+  type InsertReviewComment,
+  reviewReactions,
+  reviewComments,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, gte, lte, sql, isNotNull, isNull, inArray } from "drizzle-orm";
@@ -2605,6 +2609,60 @@ export class DatabaseStorage implements IStorage {
 
   async getSpeakerEventById(eventId: number): Promise<SpeakerEvent | undefined> {
     const result = await db.select().from(speakerEvents).where(eq(speakerEvents.id, eventId));
+    return result[0];
+  }
+
+  // Review Reactions
+  async getReviewReactionCounts(reviewId: number): Promise<{ likes: number; dislikes: number }> {
+    const rows = await db
+      .select()
+      .from(reviewReactions)
+      .where(eq(reviewReactions.reviewId, reviewId));
+    const likes = rows.filter(r => r.reaction === 'like').length;
+    const dislikes = rows.filter(r => r.reaction === 'dislike').length;
+    return { likes, dislikes };
+  }
+
+  async getUserReviewReaction(reviewId: number, voterIdentifier: string): Promise<string | null> {
+    const rows = await db
+      .select()
+      .from(reviewReactions)
+      .where(and(eq(reviewReactions.reviewId, reviewId), eq(reviewReactions.voterIdentifier, voterIdentifier)));
+    return rows[0]?.reaction ?? null;
+  }
+
+  async upsertReviewReaction(reviewId: number, voterIdentifier: string, reaction: string): Promise<void> {
+    const existing = await db
+      .select()
+      .from(reviewReactions)
+      .where(and(eq(reviewReactions.reviewId, reviewId), eq(reviewReactions.voterIdentifier, voterIdentifier)));
+    if (existing.length > 0) {
+      await db
+        .update(reviewReactions)
+        .set({ reaction })
+        .where(and(eq(reviewReactions.reviewId, reviewId), eq(reviewReactions.voterIdentifier, voterIdentifier)));
+    } else {
+      await db.insert(reviewReactions).values({ reviewId, voterIdentifier, reaction });
+    }
+  }
+
+  async removeReviewReaction(reviewId: number, voterIdentifier: string): Promise<void> {
+    await db
+      .delete(reviewReactions)
+      .where(and(eq(reviewReactions.reviewId, reviewId), eq(reviewReactions.voterIdentifier, voterIdentifier)));
+  }
+
+  // Review Comments
+  async getReviewComments(reviewId: number): Promise<ReviewComment[]> {
+    return db
+      .select()
+      .from(reviewComments)
+      .where(eq(reviewComments.reviewId, reviewId))
+      .orderBy(reviewComments.createdAt);
+  }
+
+  async addReviewComment(data: InsertReviewComment): Promise<ReviewComment> {
+    const result = await db.insert(reviewComments).values(data).returning();
     return result[0];
   }
 }

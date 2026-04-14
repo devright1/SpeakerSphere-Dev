@@ -788,3 +788,36 @@ export const EVENT_LIMITS = {
   pro: 2,
   premier: 5,
 } as const;
+
+// Review reactions (like / dislike)
+export const reviewReactions = pgTable("review_reactions", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("review_id").notNull(),
+  voterIdentifier: text("voter_identifier").notNull(), // localStorage UUID or session token
+  reaction: text("reaction").notNull(), // 'like' | 'dislike'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertReviewReactionSchema = createInsertSchema(reviewReactions).omit({
+  id: true,
+  createdAt: true,
+});
+export type ReviewReaction = typeof reviewReactions.$inferSelect;
+export type InsertReviewReaction = z.infer<typeof insertReviewReactionSchema>;
+
+// Review comments
+export const reviewComments = pgTable("review_comments", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("review_id").notNull(),
+  commenterName: text("commenter_name").notNull(),
+  commenterIdentifier: text("commenter_identifier"), // localStorage UUID for tracking
+  comment: text("comment").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertReviewCommentSchema = createInsertSchema(reviewComments).omit({
+  id: true,
+  createdAt: true,
+});
+export type ReviewComment = typeof reviewComments.$inferSelect;
+export type InsertReviewComment = z.infer<typeof insertReviewCommentSchema>;

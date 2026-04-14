@@ -65,6 +65,10 @@ import {
   type InsertTierLimit,
   type SpeakerEvent,
   type InsertSpeakerEvent,
+  type ReviewComment,
+  type InsertReviewComment,
+  reviewReactions,
+  reviewComments,
 } from "@shared/schema";
 import { officialSpeakers } from "./official-speakers";
 
@@ -102,6 +106,16 @@ export interface IStorage {
   // Reviews
   getReviewsBySpeakerId(speakerId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
+
+  // Review Reactions
+  getReviewReactionCounts(reviewId: number): Promise<{ likes: number; dislikes: number }>;
+  getUserReviewReaction(reviewId: number, voterIdentifier: string): Promise<string | null>;
+  upsertReviewReaction(reviewId: number, voterIdentifier: string, reaction: string): Promise<void>;
+  removeReviewReaction(reviewId: number, voterIdentifier: string): Promise<void>;
+
+  // Review Comments
+  getReviewComments(reviewId: number): Promise<ReviewComment[]>;
+  addReviewComment(data: InsertReviewComment): Promise<ReviewComment>;
   
   // Inquiries
   createInquiry(inquiry: InsertInquiry): Promise<Inquiry>;
@@ -1868,6 +1882,16 @@ export class MemStorage implements IStorage {
   async updateSpeakerEvent(_eventId: number, _updates: Partial<InsertSpeakerEvent>): Promise<SpeakerEvent | undefined> { return undefined; }
   async deleteSpeakerEvent(_eventId: number): Promise<boolean> { return false; }
   async getSpeakerEventById(_eventId: number): Promise<SpeakerEvent | undefined> { return undefined; }
+
+  // Review Reactions (MemStorage stubs)
+  async getReviewReactionCounts(_reviewId: number): Promise<{ likes: number; dislikes: number }> { return { likes: 0, dislikes: 0 }; }
+  async getUserReviewReaction(_reviewId: number, _voterIdentifier: string): Promise<string | null> { return null; }
+  async upsertReviewReaction(_reviewId: number, _voterIdentifier: string, _reaction: string): Promise<void> {}
+  async removeReviewReaction(_reviewId: number, _voterIdentifier: string): Promise<void> {}
+
+  // Review Comments (MemStorage stubs)
+  async getReviewComments(_reviewId: number): Promise<ReviewComment[]> { return []; }
+  async addReviewComment(data: InsertReviewComment): Promise<ReviewComment> { return { ...data, id: 1, createdAt: new Date() } as ReviewComment; }
 }
 
 import { DatabaseStorage } from "./database-storage";
