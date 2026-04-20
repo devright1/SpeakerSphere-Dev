@@ -1251,9 +1251,32 @@ export default function SpeakerProfile() {
                           )}
                         </div>
                       </div>
-                      
 
+                      {speaker.languages && speaker.languages.length > 0 && (
+                        <div>
+                          <h3 className="font-semibold text-gray-900 mb-3">Languages</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {speaker.languages.map((language, index) => (
+                              <Badge key={index} variant="outline">{language}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
+
+                    {speaker.achievements && speaker.achievements.length > 0 && (
+                      <div className="mt-6">
+                        <h3 className="font-semibold text-gray-900 mb-3">Achievements</h3>
+                        <ul className="space-y-2">
+                          {speaker.achievements.map((achievement, index) => (
+                            <li key={index} className="flex items-start">
+                              <Award className="w-4 h-4 text-accent mt-1 mr-2 flex-shrink-0" />
+                              <span className="text-gray-700">{achievement}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
