@@ -1206,20 +1206,12 @@ export default function SpeakerProfile() {
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               {(() => {
-                const hasEvents = speakerUpcomingEvents && speakerUpcomingEvents.length > 0;
-                // Use static Tailwind classes so purging doesn't remove them
-                const colsClass =
-                  speaker.hideRatings && !hasEvents ? 'grid-cols-4'
-                  : !speaker.hideRatings && !hasEvents ? 'grid-cols-5'
-                  : speaker.hideRatings && hasEvents ? 'grid-cols-5'
-                  : 'grid-cols-6'; // !hideRatings && hasEvents
+                const colsClass = speaker.hideRatings ? 'grid-cols-3' : 'grid-cols-4';
                 return (
                   <TabsList className={`grid w-full ${colsClass}`}>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="experience">Experience</TabsTrigger>
-                    <TabsTrigger value="topics">Topics</TabsTrigger>
-                    <TabsTrigger value="resources">Speaker Resources</TabsTrigger>
-                    {hasEvents && <TabsTrigger value="events">Events</TabsTrigger>}
+                    <TabsTrigger value="resources">Resources</TabsTrigger>
+                    <TabsTrigger value="events">Upcoming Events</TabsTrigger>
                     {!speaker.hideRatings && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
                   </TabsList>
                 );
@@ -1365,76 +1357,18 @@ export default function SpeakerProfile() {
 
               </TabsContent>
 
-              <TabsContent value="experience">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Professional Experience</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">Achievements</h3>
-                      <ul className="space-y-2">
-                        {speaker.achievements?.map((achievement, index) => (
-                          <li key={index} className="flex items-start">
-                            <Award className="w-4 h-4 text-accent mt-1 mr-2 flex-shrink-0" />
-                            <span className="text-gray-700">{achievement}</span>
-                          </li>
-                        )) || []}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">Languages</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {speaker.languages?.map((language, index) => (
-                          <Badge key={index} variant="outline">{language}</Badge>
-                        )) || []}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="topics">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Speaking Topics</CardTitle>
-                    <p className="text-muted-foreground">Areas of expertise and specialized knowledge</p>
-                  </CardHeader>
-                  <CardContent>
-                    {topicsLoading ? (
-                      <div className="flex justify-center items-center py-8">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                        <span className="ml-2 text-muted-foreground">Loading topics...</span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {speakerTopics?.map((topic: any) => (
-                          <Badge key={topic.id} variant="secondary" className="text-sm px-3 py-1">
-                            {topic.name}
-                          </Badge>
-                        )) || []}
-                        {(!speakerTopics || speakerTopics.length === 0) && (
-                          <p className="text-muted-foreground">No specific topics available for this speaker.</p>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
               {/* Upcoming Events Tab */}
-              {speakerUpcomingEvents && speakerUpcomingEvents.length > 0 && (
-                <TabsContent value="events">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5" />
-                        Upcoming Events
-                      </CardTitle>
-                      <p className="text-muted-foreground">Speaking engagements and upcoming appearances</p>
-                    </CardHeader>
-                    <CardContent>
+              <TabsContent value="events">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Upcoming Events
+                    </CardTitle>
+                    <p className="text-muted-foreground">Speaking engagements and upcoming appearances</p>
+                  </CardHeader>
+                  <CardContent>
+                    {speakerUpcomingEvents && speakerUpcomingEvents.length > 0 ? (
                       <div className="space-y-4">
                         {speakerUpcomingEvents.map((event: SpeakerEvent) => (
                           <div key={event.id} className="border rounded-lg overflow-hidden">
@@ -1479,10 +1413,16 @@ export default function SpeakerProfile() {
                           </div>
                         ))}
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              )}
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                        <Calendar className="h-10 w-10 mb-3 opacity-30" />
+                        <p className="text-sm">No upcoming events scheduled at this time.</p>
+                        <p className="text-xs mt-1">Check back soon for new speaking engagements.</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
               <TabsContent value="resources">
                 <div className="space-y-6">
