@@ -22,7 +22,6 @@ import {
 } from "./security";
 import { authRoutes } from "./auth-routes";
 import Stripe from "stripe";
-import * as XLSX from "xlsx";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -2926,28 +2925,22 @@ export async function registerRoutes(app: Express): Promise<Express> {
       // Create content ID to name mapping
       const contentMap = new Map(speakerContent.map(c => [c.id, c.originalName]));
 
-      // Build Excel data
-      const excelData = downloads.map(d => ({
-        'Downloaded File': contentMap.get(d.contentId) || 'Unknown',
-        'Downloader Name': d.userName,
-        'Email': d.userEmail,
-        'Company': d.userCompany || '',
-        'Download Date': d.downloadedAt ? new Date(d.downloadedAt).toLocaleString() : '',
-        'Used Access Code': d.accessCodeId ? 'Yes' : 'No'
-      }));
-
-      // Create workbook
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Download Analytics');
-
-      // Generate buffer
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      // Build CSV data
+      const headers = ['Downloaded File', 'Downloader Name', 'Email', 'Company', 'Download Date', 'Used Access Code'];
+      const csvRows = downloads.map(d => [
+        contentMap.get(d.contentId) || 'Unknown',
+        d.userName,
+        d.userEmail,
+        d.userCompany || '',
+        d.downloadedAt ? new Date(d.downloadedAt).toLocaleString() : '',
+        d.accessCodeId ? 'Yes' : 'No'
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+      const csvContent = [headers.join(','), ...csvRows].join('\r\n');
 
       // Send file
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename="download-analytics-${new Date().toISOString().split('T')[0]}.xlsx"`);
-      res.send(buffer);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="download-analytics-${new Date().toISOString().split('T')[0]}.csv"`);
+      res.send(csvContent);
     } catch (error) {
       console.error("Export downloads error:", error);
       res.status(500).json({ error: "Failed to export download analytics" });

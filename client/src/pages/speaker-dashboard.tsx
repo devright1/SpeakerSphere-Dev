@@ -5039,7 +5039,7 @@ export default function SpeakerDashboard() {
                         const url = window.URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = `download-analytics-${new Date().toISOString().split('T')[0]}.xlsx`;
+                        a.download = `download-analytics-${new Date().toISOString().split('T')[0]}.csv`;
                         document.body.appendChild(a);
                         a.click();
                         window.URL.revokeObjectURL(url);

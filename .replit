@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["python311Packages.pillow", "python311Packages.python-docx"]
+packages = ["python311Packages.pillow", "python311Packages.python-docx", "xcodebuild", "zlib"]
 
 [deployment]
 deploymentTarget = "autoscale"
