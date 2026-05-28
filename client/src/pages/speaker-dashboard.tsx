@@ -1910,7 +1910,7 @@ export default function SpeakerDashboard() {
                           <div className="flex items-center justify-between">
                             <div>
                               <h4 className="font-medium text-blue-900">Social Media Platform</h4>
-                              <p className="text-sm text-blue-700">Pro members can select one social media platform. <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to Premier</Link> for all platforms.</p>
+                              <p className="text-sm text-blue-700">Pro members can select 1 social media platform. <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to Premier</Link> for all platforms.</p>
                             </div>
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
