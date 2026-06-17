@@ -49,3 +49,8 @@ defaultBucketID = "replit-objstore-b2538833-2c0e-4f8b-ac68-5d4359557493"
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.production]
+PROD_DATABASE_URL = "postgresql://neondb_owner:npg_lUOc4MdWBa6x@ep-gentle-term-ahnvun5c-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
