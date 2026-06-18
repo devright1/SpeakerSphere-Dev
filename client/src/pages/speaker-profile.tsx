@@ -737,10 +737,41 @@ export default function SpeakerProfile() {
   };
 
   const ContentPreview = ({ content, className = "" }: { content: any; className?: string }) => {
+    const [canvasDataUrl, setCanvasDataUrl] = useState<string | null>(null);
+    const [pdfError, setPdfError] = useState(false);
     const isPdf = content.fileType === 'application/pdf';
     const isImage = content.category === 'images' || content.fileType?.startsWith('image/');
     const previewUrl = `/api/content/${content.id}/preview`;
     const thumbnailUrl = content.thumbnailPath ? `/api/content/${content.id}/thumbnail` : null;
+
+    useEffect(() => {
+      if (!isPdf || thumbnailUrl || canvasDataUrl || pdfError) return;
+      let cancelled = false;
+
+      (async () => {
+        try {
+          const pdfjsLib = await import('pdfjs-dist');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.v4.10.38.min.mjs';
+
+          const pdf = await pdfjsLib.getDocument(previewUrl).promise;
+          const page = await pdf.getPage(1);
+          const viewport = page.getViewport({ scale: 1 });
+          const scale = 300 / viewport.width;
+          const scaled = page.getViewport({ scale });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = scaled.width;
+          canvas.height = scaled.height;
+          const ctx = canvas.getContext('2d')!;
+          await page.render({ canvasContext: ctx, viewport: scaled }).promise;
+          if (!cancelled) setCanvasDataUrl(canvas.toDataURL('image/png'));
+        } catch {
+          if (!cancelled) setPdfError(true);
+        }
+      })();
+
+      return () => { cancelled = true; };
+    }, [isPdf, previewUrl, thumbnailUrl]);
 
     if (isImage) {
       return (
@@ -756,31 +787,24 @@ export default function SpeakerProfile() {
     }
 
     if (isPdf) {
-      if (thumbnailUrl) {
+      const imgSrc = thumbnailUrl || canvasDataUrl;
+      if (imgSrc) {
         return (
           <div className={`overflow-hidden rounded-md bg-gray-100 ${className}`}>
-            <img src={thumbnailUrl} alt={content.originalName} className="w-full h-full object-cover object-top" />
+            <img src={imgSrc} alt={content.originalName} className="w-full h-full object-cover object-top" />
+          </div>
+        );
+      }
+      if (pdfError) {
+        return (
+          <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
+            <FileText className="h-8 w-8 text-gray-400" />
           </div>
         );
       }
       return (
-        <div className={`overflow-hidden rounded-md bg-white relative ${className}`} style={{ pointerEvents: 'none' }}>
-          <iframe
-            src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-            title={content.originalName}
-            loading="lazy"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '400%',
-              height: '400%',
-              transform: 'scale(0.25)',
-              transformOrigin: 'top left',
-              border: 'none',
-              pointerEvents: 'none',
-            }}
-          />
+        <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
+          <div className="animate-pulse"><FileText className="h-8 w-8 text-gray-300" /></div>
         </div>
       );
     }
