@@ -737,60 +737,10 @@ export default function SpeakerProfile() {
   };
 
   const ContentPreview = ({ content, className = "" }: { content: any; className?: string }) => {
-    const [imgSrc, setImgSrc] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
     const isPdf = content.fileType === 'application/pdf';
     const isImage = content.category === 'images' || content.fileType?.startsWith('image/');
     const previewUrl = `/api/content/${content.id}/preview`;
-    const thumbnailApiUrl = content.thumbnailPath ? `/api/content/${content.id}/thumbnail` : null;
-
-    useEffect(() => {
-      // If a stored thumbnail is available for PDFs, use it directly
-      if (isPdf && thumbnailApiUrl) {
-        setImgSrc(thumbnailApiUrl);
-        setLoading(false);
-        return;
-      }
-      if (!isPdf) return;
-      let cancelled = false;
-
-      (async () => {
-        try {
-          const pdfjsLib = await import('pdfjs-dist');
-          pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-
-          const loadingTask = pdfjsLib.getDocument(previewUrl);
-          const pdf = await loadingTask.promise;
-          const page = await pdf.getPage(1);
-          const viewport = page.getViewport({ scale: 1 });
-
-          const scale = 200 / viewport.width;
-          const scaledViewport = page.getViewport({ scale });
-
-          const canvas = document.createElement('canvas');
-          canvas.width = scaledViewport.width;
-          canvas.height = scaledViewport.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx || cancelled) return;
-
-          await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
-          if (cancelled) return;
-
-          const dataUrl = canvas.toDataURL('image/png');
-          setImgSrc(dataUrl);
-          setLoading(false);
-        } catch (err: any) {
-          console.error('PDF preview error:', err?.message || err?.name || JSON.stringify(err) || err);
-          if (!cancelled) {
-            setError(true);
-            setLoading(false);
-          }
-        }
-      })();
-
-      return () => { cancelled = true; };
-    }, [isPdf, previewUrl, thumbnailApiUrl]);
+    const thumbnailUrl = content.thumbnailPath ? `/api/content/${content.id}/thumbnail` : null;
 
     if (isImage) {
       return (
@@ -806,23 +756,31 @@ export default function SpeakerProfile() {
     }
 
     if (isPdf) {
-      if (error) {
+      if (thumbnailUrl) {
         return (
-          <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
-            <FileText className="h-8 w-8 text-red-400" />
-          </div>
-        );
-      }
-      if (imgSrc) {
-        return (
-          <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
-            <img src={imgSrc} alt={content.originalName} className="w-full h-full object-cover" />
+          <div className={`overflow-hidden rounded-md bg-gray-100 ${className}`}>
+            <img src={thumbnailUrl} alt={content.originalName} className="w-full h-full object-cover object-top" />
           </div>
         );
       }
       return (
-        <div className={`overflow-hidden rounded-md bg-gray-100 flex items-center justify-center ${className}`}>
-          <div className="animate-pulse"><FileText className="h-8 w-8 text-gray-300" /></div>
+        <div className={`overflow-hidden rounded-md bg-white relative ${className}`} style={{ pointerEvents: 'none' }}>
+          <iframe
+            src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+            title={content.originalName}
+            loading="lazy"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '400%',
+              height: '400%',
+              transform: 'scale(0.25)',
+              transformOrigin: 'top left',
+              border: 'none',
+              pointerEvents: 'none',
+            }}
+          />
         </div>
       );
     }
