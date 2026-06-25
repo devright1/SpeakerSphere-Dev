@@ -1,24 +1,35 @@
 import { db } from "./db";
 import { disciplines, categories, speakers } from "../shared/schema";
-import { eq, isNull, or } from "drizzle-orm";
+import { eq, isNull, or, and, inArray, sql } from "drizzle-orm";
 
-// Two-level taxonomy seed data: discipline -> its categories
+/**
+ * Two-level taxonomy — exact names taken from the Excel proposal.
+ * Each discipline's category list is the authoritative source: on every
+ * startup, categories that no longer appear here are removed from the DB
+ * (and from speakers.speakerCategoryIds), and new ones are inserted.
+ */
 const DISCIPLINE_DATA: { name: string; categories: string[] }[] = [
   {
     name: "Endodontics",
     categories: [
       "Public Health & Community Dentistry",
-      "Wellness & Ergonomics",
-      "Practice Management & Risk Mitigation",
+      "Wellness, Ergonomics & Professional Burnout",
+      "Articulators & Jaw Motion Simulation",
+      "Practice Management and Risk Mitigation",
       "Digital Workflows",
       "Dental Radiology & Imaging",
-      "Infection Control & Safety",
-      "Foundational / Core Science",
+      "Infection Control & Laboratory Safety",
+      "Dental procedure workflows",
+      "Care for Special Needs or Medically Compromised",
+      "Foundational / Core Science Topics",
       "Microscope Dentistry",
-      "Emerging Technologies",
+      "Emerging Technologies & Innovations",
       "Oral Pathology",
+      "Laboratory Workflow & Case Management",
       "Dental Materials",
+      "Ceramic Layering & Finishing Techniques",
       "Dental Anatomy & Occlusion",
+      "Quality Control & Fit Accuracy",
       "Technology & Innovation",
     ],
   },
@@ -28,90 +39,130 @@ const DISCIPLINE_DATA: { name: string; categories: string[] }[] = [
       "Public Health & Community Dentistry",
       "Medical Emergencies & Basic Life Support",
       "Dental Trauma Management",
-      "Clinical Procedures",
+      "Clinical Procedures & Chairside Assisting",
       "Dental Radiology & Imaging",
+      "Regenerative Endodontics",
       "Esthetic Procedures",
+      "Evidence-Based Endodontics",
       "Implant Dentistry",
+      "Surgical Endodontics (Apical Surgery)",
+      "Laboratory Procedures",
       "Laser Procedures",
       "Microscope Dentistry",
       "Minimally Invasive Procedures",
       "Oral Pathology",
+      "Laboratory Workflow & Case Management",
       "Dental Materials",
-      "Pain Management",
-      "Anesthesia & Sedation",
+      "Nonsurgical Root Canal Therapy",
+      "Endodontic Retreatment",
+      "Pain Management, Anesthesia & Sedation",
       "Sleep Disorders",
     ],
   },
   {
     name: "Oral Surgery",
     categories: [
-      "Core Clinical Oral Surgery",
-      "Orthognathic & Craniofacial Surgery",
-      "Trauma & Reconstruction",
-      "Facial Aesthetics & Cosmetic Procedures",
-      "Oral Pathology & Oncology",
-      "Anesthesia & Sedation",
-      "Implant Surgery & Bone/Tissue Regeneration",
+      "Geriatric Dentistry",
+      "Interdisciplinary Topics",
+      "Education, Research & Evidence-Based Practice",
+      "Research, Evidence-Based & Public Health",
+      "Emerging Technology & Advanced Topics",
+      "Interdisciplinary & Systemic Topics",
+      "Evidence-Based Practice and Research",
+      "Regulatory & Compliance Topics",
       "Laser Procedures",
-      "Medically Complex Patient Management",
-      "Patient Care & Communication",
-      "Interdisciplinary Treatment",
-      "Emerging Technology",
+      "Restorative/Adhesive Dentistry",
+      "Interdisciplinary Care",
+      "Education and Training and Hands-On Workshops",
+      "Peri-implantitis",
       "Diagnosis, Prevention & Patient Care",
-      "Regulatory & Compliance",
+      "Patient Care & Communication",
+      "Sleep Disorders",
+      "Core Clinical Oral Surgery",
     ],
   },
   {
     name: "Periodontics",
     categories: [
-      "Non-Surgical Periodontal Therapy",
-      "Surgical Periodontics",
-      "Hard & Soft Tissue Grafting",
-      "Implant Dentistry (Perio-Implant Interface)",
-      "Peri-implantitis",
-      "Regenerative Periodontics",
-      "Esthetic Periodontics",
-      "Systemic Health & Periodontal Medicine",
-      "Digital Dentistry & Workflows",
-      "Laser Procedures",
       "Anesthesia & Sedation",
-      "Practice Management & Clinical Efficiency",
-      "Evidence-Based Periodontology",
+      "Technology & Digital Dentistry",
+      "Practice Management and Risk Mitigation",
+      "Digital Workflows",
+      "Hard & Soft Tissue Grafting Principles & Techniques",
+      "Temporomandibular Joint (TMJ) Disorders",
+      "Implant Surgery and Bone/Tissue Regeneration",
+      "Emerging and Future Topics",
+      "Anesthesia, Pain Management and Sedation",
+      "Interdisciplinary Treatment",
+      "Laser Procedures",
+      "Medically Complex Patient Management",
       "Oral Pathology",
+      "Peri-implantitis",
+      "Orthognathic and Craniofacial Surgery",
+      "Patient Care & Communication",
+      "Facial Aesthetics and Cosmetic Procedures",
+      "Trauma and Reconstruction",
+      "Oral Pathology and Oncology",
+      "Technology & Innovation",
+      "Tissue Regeneration",
     ],
   },
   {
     name: "Orthodontics",
     categories: [
       "Aligner Therapy",
+      "Surgical Periodontics",
+      "Professional Development & Career Advancement",
       "Diagnosis & Treatment Planning",
-      "Digital Orthodontics & Technology",
-      "Interdisciplinary Orthodontics",
-      "Growth, Development & Orthodontic Concepts",
-      "Esthetic Orthodontics",
-      "Complications & Risk Management",
+      "Wellness, Ergonomics & Burnout Prevention",
+      "Digital Dentistry & Workflows",
       "Evidence-Based Dentistry",
       "Foundational & Biological Sciences",
-      "Practice Management & Ethics",
-      "Professional Development & Career Advancement",
-      "Wellness & Burnout Prevention",
+      "Esthetic Periodontics",
+      "Non-Surgical Periodontal Therapy",
+      "Oral Pathology",
+      "Dental Materials",
+      "Complications & Risk Management",
+      "Sleep Disorders",
+      "Education, Training & Hands-On/Workshops",
+      "Technology & Innovation",
     ],
   },
   {
     name: "Prosthodontics",
     categories: [
-      "Fixed Prosthodontics & Restorative Techniques",
-      "Removable Prosthodontics",
+      "Public Health & Community Dentistry",
+      "Professional Development",
+      "Growth, Development & Orthodontic Concepts",
+      "Practice Management & Ethics",
+      "Sedation, Pain Control & Anesthesia",
+      "Dental Radiology & Imaging",
+      "Preventive Dentistry & Public Health",
+      "Clinical Pediatric Dentistry",
+      "Oral Medicine, Pathology & Systemic Health",
+      "Special Health Care Needs (SHCN)",
+      "Interdisciplinary Treatment",
+      "Hard and Soft Tissue Grafting",
+      "Minimally Invasive Procedures",
+      "Oral Pathology",
+      "Interdisciplinary and Collaborative Care",
+      "Professional Development & Wellness",
+      "Evidence-Based Dentistry & Research",
+      "Foundational / Core Knowledge Updates",
+      "Sleep Disorders",
+      "Digital Dentistry & Emerging Technologies",
+      "Tissue Regeneration",
       "Implant Prosthodontics",
       "Full Mouth Rehabilitation & Complex Cases",
-      "Esthetic Dentistry & Smile Design",
-      "Digital Dentistry & CAD/CAM Technologies",
-      "Dental Materials",
-      "Occlusion & Temporomandibular Disorders",
-      "Complications & Risk Management",
-      "Practice Management & Economics",
-      "Evidence-Based Dentistry & Research",
-      "Oral Pathology",
+      "Clinical Techniques",
+      "Clinical Complications & Risk Management",
+      "Removable Prosthodontics",
+      "Patient-Centered Care & Treatment Planning",
+      "Esthetic Dentistry",
+      "Research, Innovation & Evidence-Based Updates",
+      "Patient Assessment",
+      "Practice Management & Prosthodontics Economics",
+      "Education, Training & Hands-on Workshops",
     ],
   },
   {
@@ -122,11 +173,13 @@ const DISCIPLINE_DATA: { name: string; categories: string[] }[] = [
       "Esthetics & Smile Design",
       "Ceramic Layering & Finishing",
       "Implantology for Technicians",
-      "Dentist–Technician Communication",
+      "Dentist–Technician Communication & Collaboration",
       "Laboratory Workflow & Case Management",
       "Quality Control & Fit Accuracy",
       "Regulatory & Compliance",
       "Professional Development",
+      "Fixed Prosthodontics & Restorative Techniques",
+      "Digital Dentistry & CAD/CAM Technologies",
     ],
   },
   {
@@ -148,16 +201,22 @@ const DISCIPLINE_DATA: { name: string; categories: string[] }[] = [
   {
     name: "Dental Assisting",
     categories: [
-      "Clinical Procedures & Chairside Assisting",
-      "Expanded Function",
-      "Infection Control & Patient Safety",
-      "Dental Radiology & Imaging",
+      "Regulatory, Compliance & Quality Assurance",
       "Behavior Guidance & Patient Management",
+      "Expanded Function",
+      "Communication Skills",
+      "Laboratory Management & Business Skills",
       "Emergency & Trauma Care",
-      "Pharmacology & Medical Considerations",
-      "Regulatory & Compliance",
-      "Office Culture & Practice Management",
+      "Research & Academic-Oriented Lectures",
       "Professional Development & Career Growth",
+      "Subspecialty & Patient-Specific Care",
+      "Ethics, Wellness & Professional Responsibility",
+      "Oral Pathology & Disease Recognition",
+      "Practice Management & Clinical Efficiency",
+      "Oral-Systemic Health Connections",
+      "Education, Training & Hands-On / Skills-Based Workshops",
+      "Pharmacology & Medical Considerations",
+      "Infection Control & Patient Safety",
     ],
   },
   {
@@ -186,12 +245,19 @@ function slugify(text: string): string {
 }
 
 /**
- * Idempotently seed the disciplines table and per-discipline categories.
- * Safe to run on every startup.
+ * Idempotently seed disciplines and sync categories.
+ * - New categories in DISCIPLINE_DATA are inserted.
+ * - Categories removed from DISCIPLINE_DATA are deleted from the DB and
+ *   stripped from speakers.speakerCategoryIds.
+ * - When any category change is detected, all non-confirmed speakers are
+ *   reset to "flagged" so the migration re-populates their speakerCategoryIds
+ *   with the updated category IDs.
  */
 export async function seedDisciplines(): Promise<void> {
   const existingDisciplines = await db.select().from(disciplines);
   const disciplineByName = new Map(existingDisciplines.map((d) => [d.name, d]));
+
+  let anyChange = false;
 
   for (let i = 0; i < DISCIPLINE_DATA.length; i++) {
     const { name, categories: catNames } = DISCIPLINE_DATA[i];
@@ -204,69 +270,112 @@ export async function seedDisciplines(): Promise<void> {
         .returning();
       discipline = inserted[0];
       disciplineByName.set(name, discipline);
+      anyChange = true;
+    } else {
+      await db
+        .update(disciplines)
+        .set({ sortOrder: i })
+        .where(eq(disciplines.id, discipline.id));
     }
 
-    // Seed categories for this discipline (idempotent by name + disciplineId)
     const existingCats = await db
       .select()
       .from(categories)
       .where(eq(categories.disciplineId, discipline.id));
-    const existingCatNames = new Set(existingCats.map((c) => c.name));
 
+    const existingCatNames = new Set(existingCats.map((c) => c.name));
+    const newCatNames = new Set(catNames);
+
+    // Delete categories removed from this discipline
+    const toDelete = existingCats.filter((c) => !newCatNames.has(c.name));
+    if (toDelete.length > 0) {
+      const idsToDelete = toDelete.map((c) => c.id);
+      await db.delete(categories).where(inArray(categories.id, idsToDelete));
+      // Strip those IDs from speakers.speakerCategoryIds
+      await db.execute(
+        sql`UPDATE speakers
+            SET speaker_category_ids = ARRAY(
+              SELECT unnest(speaker_category_ids)
+              EXCEPT ALL
+              SELECT unnest(ARRAY[${sql.join(idsToDelete, sql`, `)}]::integer[])
+            )
+            WHERE speaker_category_ids && ARRAY[${sql.join(idsToDelete, sql`, `)}]::integer[]`
+      );
+      anyChange = true;
+    }
+
+    // Insert new categories
     const toInsert = catNames
-      .map((catName, idx) => ({ catName, idx }))
-      .filter(({ catName }) => !existingCatNames.has(catName))
-      .map(({ catName, idx }) => ({
+      .filter((catName) => !existingCatNames.has(catName))
+      .map((catName) => ({
         name: catName,
         description: "",
         disciplineId: discipline!.id,
-        sortOrder: idx,
+        sortOrder: catNames.indexOf(catName),
         speakerCount: 0,
       }));
 
     if (toInsert.length > 0) {
       await db.insert(categories).values(toInsert);
+      anyChange = true;
     }
   }
 
-  console.log(`[seed-disciplines] Seeded ${DISCIPLINE_DATA.length} disciplines and their categories.`);
+  // When the category list changed, mark all non-confirmed speakers as flagged
+  // so the migration re-runs and repopulates speakerCategoryIds with the new IDs.
+  if (anyChange) {
+    await db.execute(
+      sql`UPDATE speakers
+          SET discipline_migration_status = 'flagged',
+              speaker_category_ids = '{}'
+          WHERE discipline_migration_status IS DISTINCT FROM 'confirmed'`
+    );
+    console.log("[seed-disciplines] Category changes detected — reset non-confirmed speakers for re-migration.");
+  }
+
+  console.log(`[seed-disciplines] Synced ${DISCIPLINE_DATA.length} disciplines and their categories.`);
 }
 
-// Keyword rules for known legacy category strings.
-// Keys are lowercased legacy values; values are substrings to match against
-// new category names (case-insensitive).
+// ---------------------------------------------------------------------------
+// Legacy-category translation keywords
+// Keys are lowercased legacy category strings; values are substrings to match
+// against new category names (case-insensitive, curated before exact match).
+// ---------------------------------------------------------------------------
 const LEGACY_KEYWORDS: Record<string, string[]> = {
   "practice management": ["practice management"],
   "education & training": ["education"],
-  "implant dentistry": ["implant"],
-  "leadership": ["leadership"],
-  "digital dentistry": ["digital"],
-  "esthetic dentistry": ["esthetic"],
-  "ai & innovation": ["ai &"],
+  "implant dentistry":   ["implant"],
+  "leadership":          ["leadership"],
+  "digital dentistry":   ["digital"],
+  "esthetic dentistry":  ["esthetic"],
+  "ai & innovation":     ["ai &"],
   "full arch rehabilitation": ["rehabilitation", "full mouth"],
-  "technology & innovation": ["technology & innovation"],
-  "anesthesia & sedation": ["anesthesia", "sedation"],
-  "research": ["research & evidence-based"],
+  "technology & innovation":  ["technology & innovation"],
+  "anesthesia & sedation":    ["anesthesia", "sedation"],
+  "research":                 ["research & evidence-based"],
   "bone grafting & regeneration": ["graft", "regenerat"],
 };
 
-// Words too common to use as fallback keywords when matching category names
 const GENERIC_WORDS = new Set([
   "dental", "dentistry", "oral", "health", "patient", "clinical", "procedures",
   "care", "based", "management", "practice",
 ]);
 
 /**
- * Auto-map existing speakers to a discipline based on their legacy `categories`
- * array.  Processes both NULL (never migrated) and "flagged" speakers, so
- * admins can click "Re-run Migration" and see the list shrink.
+ * Auto-map speakers to disciplines using their legacy `categories` array.
+ *
+ * Processes:
+ *  - disciplineMigrationStatus IS NULL  (never migrated)
+ *  - disciplineMigrationStatus = 'flagged'  (previous attempt failed)
+ *  - disciplineMigrationStatus = 'auto' AND speakerCategoryIds is empty
+ *    (first-pass migration set disciplineId but never populated the category IDs)
  *
  * Logic per speaker:
- *  1. If a legacy category string is a discipline name → vote for that discipline
- *  2. Otherwise match against new category rows via curated keywords or fallback
- *     word matching → collect category IDs + vote for each matched category's discipline
- *  3. Discipline with most votes wins.  Tie / no match → Miscellaneous.
- *  4. Write disciplineId, speakerCategoryIds, disciplineMigrationStatus="auto".
+ *  1. Legacy value is a discipline name → vote for that discipline (weight 2)
+ *  2. Otherwise match against category rows using curated keywords or fallback
+ *     word search → collect category IDs + vote per matched category's discipline
+ *  3. Most-voted discipline wins; ties → Miscellaneous; no match → Miscellaneous
+ *  4. Write disciplineId, speakerCategoryIds, disciplineMigrationStatus = "auto"
  */
 export async function migrateSpeakerDisciplines(): Promise<void> {
   const allDisciplines = await db.select().from(disciplines);
@@ -279,13 +388,11 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
   );
   const miscDiscipline = allDisciplines.find((d) => d.name === "Miscellaneous");
 
-  /** Return new category IDs that match a single legacy category string. */
   function matchCategoryIds(legacyCat: string): number[] {
     const lower = legacyCat.toLowerCase().trim();
 
-    // 1. Curated keyword rules first — these intentionally capture all related
-    //    categories across disciplines (e.g. "Implant Dentistry" → every
-    //    implant-type category, not just the first exact name match).
+    // 1. Curated keywords first (intentionally matches ALL related categories
+    //    across disciplines, e.g. "Implant Dentistry" → every implant category)
     const keywords = LEGACY_KEYWORDS[lower];
     if (keywords) {
       return allCategories
@@ -293,11 +400,13 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
         .map((c) => c.id);
     }
 
-    // 2. Exact match (for strings not in LEGACY_KEYWORDS)
-    const exact = allCategories.find((c) => c.name.toLowerCase().trim() === lower);
+    // 2. Exact match
+    const exact = allCategories.find(
+      (c) => c.name.toLowerCase().trim() === lower
+    );
     if (exact) return [exact.id];
 
-    // 3. Fallback: use significant words from the legacy string
+    // 3. Fallback: significant words from the legacy string
     const words = lower
       .split(/[\s&,/]+/)
       .filter((w) => w.length >= 5 && !GENERIC_WORDS.has(w));
@@ -310,14 +419,22 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
     return [];
   }
 
-  // Process both NULL and "flagged" speakers
+  // Include speakers whose speakerCategoryIds is empty even if status = 'auto'
+  // (these were migrated by an earlier pass that only set disciplineId)
   const pending = await db
     .select()
     .from(speakers)
     .where(
       or(
         isNull(speakers.disciplineMigrationStatus),
-        eq(speakers.disciplineMigrationStatus, "flagged")
+        eq(speakers.disciplineMigrationStatus, "flagged"),
+        and(
+          eq(speakers.disciplineMigrationStatus, "auto"),
+          or(
+            isNull(speakers.speakerCategoryIds),
+            sql`array_length(${speakers.speakerCategoryIds}, 1) IS NULL`
+          )
+        )
       )
     );
 
@@ -327,23 +444,28 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
   for (const speaker of pending) {
     const legacyCats = speaker.categories || [];
     const matchedCategoryIds = new Set<number>();
-    const disciplineVotes = new Map<number, number>(); // disciplineId → votes
+    const disciplineVotes = new Map<number, number>();
 
     for (const legacyCat of legacyCats) {
       const lower = legacyCat.toLowerCase().trim();
 
-      // Check if the legacy value IS a discipline name
       const discMatch = disciplineByLowerName.get(lower);
       if (discMatch) {
-        // Weight discipline-name matches more heavily
         disciplineVotes.set(
           discMatch.id,
           (disciplineVotes.get(discMatch.id) || 0) + 2
         );
+        // Add all categories from the matched discipline so the speaker
+        // appears in multi-discipline searches (not just via disciplineId)
+        const discCats = allCategories.filter(
+          (c) => c.disciplineId === discMatch.id
+        );
+        for (const cat of discCats) {
+          matchedCategoryIds.add(cat.id);
+        }
         continue;
       }
 
-      // Translate to category IDs
       const catIds = matchCategoryIds(legacyCat);
       for (const catId of catIds) {
         matchedCategoryIds.add(catId);
@@ -357,7 +479,7 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
       }
     }
 
-    // Pick the discipline with the most votes; ties → Miscellaneous
+    // Pick discipline with most votes; ties and no-matches → Miscellaneous
     let winningDisciplineId: number | null = null;
     let maxVotes = 0;
     let tieDetected = false;
@@ -370,8 +492,6 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
         tieDetected = true;
       }
     }
-
-    // Ties and no-matches both fall back to Miscellaneous
     if ((tieDetected || winningDisciplineId === null) && miscDiscipline) {
       winningDisciplineId = miscDiscipline.id;
     }
