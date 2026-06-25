@@ -31,6 +31,11 @@ export const speakers = pgTable("speakers", {
   featured: boolean("featured").default(false),
   isFeaturedOverride: boolean("is_featured_override").default(false),
   categories: text("categories").array().default([]),
+  // New two-level taxonomy: discipline + per-discipline category IDs
+  disciplineId: integer("discipline_id"),
+  speakerCategoryIds: integer("speaker_category_ids").array().default([]),
+  // Migration status: "auto" | "flagged" | "confirmed" | "manual"
+  disciplineMigrationStatus: varchar("discipline_migration_status", { length: 20 }),
   achievements: text("achievements").array().notNull(),
   lectures: text("lectures").array().notNull(),
   eventPhotos: text("event_photos").array(),
@@ -118,11 +123,23 @@ export const inquiries = pgTable("inquiries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Disciplines: broadest level of the speaker taxonomy (e.g. Endodontics, Oral Surgery)
+export const disciplines = pgTable("disciplines", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  sortOrder: integer("sort_order").default(0),
+});
+
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
   speakerCount: integer("speaker_count").default(0),
+  // Discipline this category belongs to. NULL = legacy flat category.
+  disciplineId: integer("discipline_id"),
+  sortOrder: integer("sort_order").default(0),
 });
 
 export const videos = pgTable("videos", {
@@ -187,6 +204,9 @@ export const speakerApplications = pgTable("speaker_applications", {
   // Speaking Information
   selectedCategories: text("selected_categories").array().default([]), // Array of selected official categories (legacy field)
   selectedTopicIds: integer("selected_topic_ids").array().default([]), // Array of selected speaking topic IDs (max 3)
+  // New two-level taxonomy selection
+  selectedDisciplineId: integer("selected_discipline_id"),
+  selectedCategoryIds: integer("selected_category_ids").array().default([]),
   specificTopics: text("specific_topics").notNull(), // Detailed list of specific expertise topics
   previousExperience: text("previous_experience").notNull(),
   availableFormats: text("available_formats").array().notNull(),
@@ -249,6 +269,10 @@ export const insertInquirySchema = createInsertSchema(inquiries).omit({
   id: true,
   status: true,
   createdAt: true,
+});
+
+export const insertDisciplineSchema = createInsertSchema(disciplines).omit({
+  id: true,
 });
 
 export const insertCategorySchema = createInsertSchema(categories).omit({
@@ -498,6 +522,8 @@ export type Inquiry = typeof inquiries.$inferSelect;
 export type InsertInquiry = typeof inquiries.$inferInsert;
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = typeof categories.$inferInsert;
+export type Discipline = typeof disciplines.$inferSelect;
+export type InsertDiscipline = z.infer<typeof insertDisciplineSchema>;
 export type Video = typeof videos.$inferSelect;
 export type InsertVideo = typeof videos.$inferInsert;
 export type SpeakerApplication = typeof speakerApplications.$inferSelect;

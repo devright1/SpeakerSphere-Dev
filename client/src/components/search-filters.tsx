@@ -2,57 +2,74 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import type { Category } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface DisciplineWithCounts {
+  id: number;
+  name: string;
+  categoryCount: number;
+  speakerCount: number;
+}
+
+interface CategoryItem {
+  id: number;
+  name: string;
+}
 
 interface SearchFiltersProps {
   onFilterChange: (filters: any) => void;
 }
 
 export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedDisciplineId, setSelectedDisciplineId] = useState<number | null>(null);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [priceRange, setPriceRange] = useState("");
-
   const [showFeeRange, setShowFeeRange] = useState(false);
 
-  // Fee range is permanently disabled
   useEffect(() => {
     setShowFeeRange(false);
   }, []);
 
-  const { data: categories } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
+  const { data: disciplines } = useQuery<DisciplineWithCounts[]>({
+    queryKey: ["/api/disciplines"],
+  });
+
+  const { data: categories } = useQuery<CategoryItem[]>({
+    queryKey: ["/api/disciplines", selectedDisciplineId, "categories"],
     queryFn: async () => {
-      const response = await fetch("/api/categories");
+      const response = await fetch(`/api/disciplines/${selectedDisciplineId}/categories`);
       if (!response.ok) throw new Error("Failed to fetch categories");
       return response.json();
     },
+    enabled: selectedDisciplineId != null,
   });
 
-  // Sort categories by speaker count (descending) to show most popular first
-  const sortedCategories = categories?.slice().sort((a, b) => (b.speakerCount || 0) - (a.speakerCount || 0)) || [];
+  const handleDisciplineChange = (value: string) => {
+    const id = parseInt(value);
+    setSelectedDisciplineId(isNaN(id) ? null : id);
+    setSelectedCategoryIds([]);
+  };
 
-  const handleCategoryChange = (category: string, checked: boolean) => {
-    let newCategories;
-    if (checked) {
-      newCategories = [...selectedCategories, category];
-    } else {
-      newCategories = selectedCategories.filter(c => c !== category);
-    }
-    setSelectedCategories(newCategories);
+  const handleCategoryChange = (categoryId: number, checked: boolean) => {
+    setSelectedCategoryIds((prev) =>
+      checked ? [...prev, categoryId] : prev.filter((id) => id !== categoryId)
+    );
   };
 
   const applyFilters = () => {
     const filters: any = {};
-    
-    if (selectedCategories.length > 0) {
-      filters.categories = selectedCategories; // Send all selected categories
+
+    if (selectedDisciplineId != null) {
+      filters.disciplineId = selectedDisciplineId;
+      if (selectedCategoryIds.length > 0) {
+        filters.categoryIds = selectedCategoryIds;
+      }
     }
-    
+
     if (priceRange) {
       switch (priceRange) {
         case "under-5000":
@@ -71,12 +88,13 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
           break;
       }
     }
-    
+
     onFilterChange(filters);
   };
 
   const clearFilters = () => {
-    setSelectedCategories([]);
+    setSelectedDisciplineId(null);
+    setSelectedCategoryIds([]);
     setPriceRange("");
     onFilterChange({});
   };
@@ -92,37 +110,58 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-8 max-h-[70vh] scrollable-filters px-6 pb-6">
-        {/* Categories */}
+        {/* Discipline */}
         <div>
-          <h4 className="font-semibold text-gray-900 mb-4 text-lg">Categories</h4>
-          <div className="space-y-3">
-            {sortedCategories?.map((category) => (
-              <div key={category.id} className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+          <h4 className="font-semibold text-gray-900 mb-4 text-lg">Discipline</h4>
+          <Select
+            value={selectedDisciplineId != null ? String(selectedDisciplineId) : ""}
+            onValueChange={handleDisciplineChange}
+          >
+            <SelectTrigger data-testid="select-filter-discipline">
+              <SelectValue placeholder="All disciplines" />
+            </SelectTrigger>
+            <SelectContent>
+              {(disciplines || [])
+                .slice()
+                .sort((a, b) => (b.speakerCount || 0) - (a.speakerCount || 0))
+                .map((d) => (
+                  <SelectItem key={d.id} value={String(d.id)}>
+                    {d.name} ({d.speakerCount})
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Categories (dynamic) */}
+        {selectedDisciplineId != null && (categories || []).length > 0 && (
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-4 text-lg">Categories</h4>
+            <div className="space-y-3">
+              {(categories || []).map((category) => (
+                <div key={category.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`category-${category.id}`}
-                    checked={selectedCategories.includes(category.name)}
-                    onCheckedChange={(checked) => 
-                      handleCategoryChange(category.name, checked as boolean)
+                    checked={selectedCategoryIds.includes(category.id)}
+                    onCheckedChange={(checked) =>
+                      handleCategoryChange(category.id, checked as boolean)
                     }
                   />
-                  <Label 
+                  <Label
                     htmlFor={`category-${category.id}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-sm font-medium leading-none"
                   >
                     {category.name}
                   </Label>
                 </div>
-                <span className="text-gray-500 text-sm">({category.speakerCount})</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {showFeeRange && (
           <>
             <Separator />
-            {/* Price Range */}
             <div>
               <h4 className="font-semibold text-gray-900 mb-3">Fee Range</h4>
               <RadioGroup value={priceRange} onValueChange={setPriceRange}>
@@ -147,9 +186,10 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
           </>
         )}
 
-
-
-        <Button onClick={applyFilters} className="w-full bg-primary hover:bg-blue-700 py-3 text-lg font-semibold clean-transition">
+        <Button
+          onClick={applyFilters}
+          className="w-full bg-primary hover:bg-blue-700 py-3 text-lg font-semibold clean-transition"
+        >
           Apply Filters
         </Button>
       </CardContent>

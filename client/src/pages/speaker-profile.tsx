@@ -373,6 +373,26 @@ export default function SpeakerProfile() {
     enabled: !!speaker?.id,
   });
 
+  // Fetch disciplines (for discipline name) and the speaker's discipline categories
+  const { data: allDisciplines } = useQuery<any[]>({
+    queryKey: ["/api/disciplines"],
+  });
+
+  const { data: disciplineCategories } = useQuery<any[]>({
+    queryKey: ["/api/disciplines", speaker?.disciplineId, "categories"],
+    queryFn: async () => {
+      const response = await fetch(`/api/disciplines/${speaker?.disciplineId}/categories`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!speaker?.disciplineId,
+  });
+
+  const speakerDiscipline = allDisciplines?.find((d) => d.id === speaker?.disciplineId);
+  const speakerCategoryNames = (disciplineCategories || [])
+    .filter((c) => (speaker?.speakerCategoryIds || []).includes(c.id))
+    .map((c) => c.name);
+
   // Initialize speaker tracking (auto-tracks profile view) - only for Premier tier
   const tracking = useSpeakerTracking(speaker?.id || 0, speaker?.subscriptionTier, discoverySource);
 
@@ -1207,6 +1227,22 @@ export default function SpeakerProfile() {
                   <CardContent>
                     <p className="text-gray-700 leading-relaxed mb-6">{speaker.bio}</p>
                     
+                    {speakerDiscipline && (
+                      <div className="mb-6">
+                        <h3 className="font-semibold text-gray-900 mb-3">Discipline</h3>
+                        <div className="flex flex-wrap gap-2 items-center">
+                          <Badge className="bg-primary text-white hover:bg-primary/90">
+                            {speakerDiscipline.name}
+                          </Badge>
+                          {speakerCategoryNames.map((catName) => (
+                            <Badge key={catName} variant="outline">
+                              {catName}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-3">Speaking Topics</h3>

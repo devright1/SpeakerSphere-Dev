@@ -991,6 +991,279 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // ===== Disciplines & two-level taxonomy =====
+
+  // Get all disciplines (with category + speaker counts)
+  app.get("/api/disciplines", async (req, res) => {
+    try {
+      const result = await storage.getDisciplines();
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching disciplines:", error);
+      res.status(500).json({ message: "Failed to fetch disciplines" });
+    }
+  });
+
+  // Get categories for a discipline
+  app.get("/api/disciplines/:id/categories", async (req, res) => {
+    try {
+      const disciplineId = parseInt(req.params.id);
+      if (isNaN(disciplineId)) {
+        return res.status(400).json({ message: "Invalid discipline ID" });
+      }
+      const cats = await storage.getCategoriesByDiscipline(disciplineId);
+      res.json(cats);
+    } catch (error) {
+      console.error("Error fetching discipline categories:", error);
+      res.status(500).json({ message: "Failed to fetch discipline categories" });
+    }
+  });
+
+  // Create a discipline (admin)
+  app.post("/api/disciplines", async (req, res) => {
+    try {
+      const { name, description } = req.body;
+      if (!name || typeof name !== "string" || !name.trim()) {
+        return res.status(400).json({ message: "Name is required" });
+      }
+      const slug = name
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      const existing = await storage.getDisciplines();
+      if (existing.some((d) => d.name.toLowerCase() === name.toLowerCase())) {
+        return res.status(400).json({ message: "Discipline with this name already exists" });
+      }
+      const sortOrder = existing.length;
+      const newDiscipline = await storage.createDiscipline({
+        name: name.trim(),
+        slug,
+        description: description || null,
+        sortOrder,
+      });
+      res.status(201).json(newDiscipline);
+    } catch (error) {
+      console.error("Error creating discipline:", error);
+      res.status(500).json({ message: "Failed to create discipline" });
+    }
+  });
+
+  // Update a discipline (admin)
+  app.put("/api/disciplines/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid discipline ID" });
+      }
+      const { name, description, sortOrder } = req.body;
+      const updates: any = {};
+      if (name !== undefined) {
+        updates.name = name;
+        updates.slug = String(name)
+          .toLowerCase()
+          .normalize("NFKD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+      if (description !== undefined) updates.description = description;
+      if (sortOrder !== undefined) updates.sortOrder = sortOrder;
+      const updated = await storage.updateDiscipline(id, updates);
+      if (!updated) return res.status(404).json({ message: "Discipline not found" });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating discipline:", error);
+      res.status(500).json({ message: "Failed to update discipline" });
+    }
+  });
+
+  // Delete a discipline (admin)
+  app.delete("/api/disciplines/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid discipline ID" });
+      }
+      const success = await storage.deleteDiscipline(id);
+      if (success) {
+        res.json({ message: "Discipline deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Discipline not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting discipline:", error);
+      res.status(500).json({ message: "Failed to delete discipline" });
+    }
+  });
+
+  // Create a category within a discipline (admin)
+  app.post("/api/disciplines/:id/categories", async (req, res) => {
+    try {
+      const disciplineId = parseInt(req.params.id);
+      if (isNaN(disciplineId)) {
+        return res.status(400).json({ message: "Invalid discipline ID" });
+      }
+      const { name, description } = req.body;
+      if (!name || typeof name !== "string" || !name.trim()) {
+        return res.status(400).json({ message: "Name is required" });
+      }
+      const existing = await storage.getCategoriesByDiscipline(disciplineId);
+      if (existing.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
+        return res.status(400).json({ message: "Category with this name already exists in this discipline" });
+      }
+      const newCategory = await storage.createCategoryForDiscipline(disciplineId, name.trim(), description || "");
+      res.status(201).json(newCategory);
+    } catch (error) {
+      console.error("Error creating category for discipline:", error);
+      res.status(500).json({ message: "Failed to create category" });
+    }
+  });
+
+  // Update a category (admin)
+  app.put("/api/categories/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+      const { name, description, sortOrder, disciplineId } = req.body;
+      const updates: any = {};
+      if (name !== undefined) updates.name = name;
+      if (description !== undefined) updates.description = description;
+      if (sortOrder !== undefined) updates.sortOrder = sortOrder;
+      if (disciplineId !== undefined) updates.disciplineId = disciplineId;
+      const updated = await storage.updateCategory(id, updates);
+      if (!updated) return res.status(404).json({ message: "Category not found" });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating category:", error);
+      res.status(500).json({ message: "Failed to update category" });
+    }
+  });
+
+  // Update a speaker's discipline + categories
+  app.put("/api/speakers/:id/discipline", async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      if (isNaN(speakerId)) {
+        return res.status(400).json({ message: "Invalid speaker ID" });
+      }
+      const { disciplineId, categoryIds, status } = req.body;
+      const normalizedDisciplineId =
+        disciplineId === null || disciplineId === undefined ? null : parseInt(disciplineId);
+      const normalizedCategoryIds = Array.isArray(categoryIds)
+        ? categoryIds.map((c: any) => parseInt(c)).filter((n: number) => !isNaN(n))
+        : [];
+      const updated = await storage.updateSpeakerDiscipline(
+        speakerId,
+        normalizedDisciplineId,
+        normalizedCategoryIds,
+        status || "manual"
+      );
+      if (!updated) return res.status(404).json({ message: "Speaker not found" });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating speaker discipline:", error);
+      res.status(500).json({ message: "Failed to update speaker discipline" });
+    }
+  });
+
+  // Admin: speakers needing migration review (flagged)
+  app.get("/api/admin/migration-review", async (req, res) => {
+    try {
+      const status = (req.query.status as string) || "flagged";
+      const speakersList = await storage.getSpeakersByMigrationStatus(status);
+      res.json(speakersList);
+    } catch (error) {
+      console.error("Error fetching migration review speakers:", error);
+      res.status(500).json({ message: "Failed to fetch migration review speakers" });
+    }
+  });
+
+  // Admin: manually re-run discipline seed + speaker migration
+  app.post("/api/admin/migrate-disciplines", async (req, res) => {
+    try {
+      const { seedAndMigrateDisciplines } = await import("./seed-disciplines");
+      await seedAndMigrateDisciplines();
+      res.json({ message: "Disciplines seeded and speakers migrated" });
+    } catch (error) {
+      console.error("Error running discipline migration:", error);
+      res.status(500).json({ message: "Failed to run discipline migration" });
+    }
+  });
+
+  // Get speakers by discipline (+ optional category IDs)
+  app.get("/api/disciplines/:id/speakers", async (req, res) => {
+    try {
+      const disciplineId = parseInt(req.params.id);
+      if (isNaN(disciplineId)) {
+        return res.status(400).json({ message: "Invalid discipline ID" });
+      }
+
+      const categoryIds = req.query.categoryIds
+        ? String(req.query.categoryIds)
+            .split(",")
+            .map((c) => parseInt(c.trim()))
+            .filter((n) => !isNaN(n))
+        : [];
+
+      const { db } = await import("./db");
+      const { speakers } = await import("../shared/schema");
+      const { and, like, sql, eq, or, isNull } = await import("drizzle-orm");
+
+      const conditions: any[] = [eq(speakers.disciplineId, disciplineId)];
+      conditions.push(or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)));
+
+      if (categoryIds.length > 0) {
+        conditions.push(sql`${speakers.speakerCategoryIds} && ARRAY[${sql.join(categoryIds, sql`, `)}]::integer[]`);
+      }
+
+      if (req.query.search) {
+        const searchTerm = `%${String(req.query.search).toLowerCase()}%`;
+        conditions.push(
+          or(
+            like(sql`LOWER(${speakers.name})`, searchTerm),
+            like(sql`LOWER(${speakers.title})`, searchTerm),
+            like(sql`LOWER(${speakers.bio})`, searchTerm)
+          )
+        );
+      }
+
+      if (req.query.verified !== undefined) {
+        conditions.push(eq(speakers.verified, req.query.verified === "true"));
+      }
+
+      if (req.query.featured !== undefined) {
+        conditions.push(eq(speakers.featured, req.query.featured === "true"));
+      }
+
+      if (req.query.location) {
+        const locationTerm = `%${String(req.query.location).toLowerCase()}%`;
+        conditions.push(like(sql`LOWER(${speakers.location})`, locationTerm));
+      }
+
+      if (req.query.minRating) {
+        const minRating = parseFloat(String(req.query.minRating));
+        if (!isNaN(minRating)) {
+          conditions.push(sql`CAST(${speakers.overallRating} AS DECIMAL) >= ${minRating}`);
+        }
+      }
+
+      const filteredSpeakers = await db
+        .select()
+        .from(speakers)
+        .where(and(...conditions))
+        .orderBy(speakers.name);
+
+      res.json(filteredSpeakers);
+    } catch (error) {
+      console.error("Error fetching speakers by discipline:", error);
+      res.status(500).json({ message: "Failed to fetch speakers by discipline" });
+    }
+  });
+
   // Get all speaking topics
   app.get("/api/topics", async (req, res) => {
     try {

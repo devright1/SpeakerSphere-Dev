@@ -16,6 +16,8 @@ import type { Speaker } from "@shared/schema";
 interface FilterState {
   category?: string;
   categories?: string[];
+  disciplineId?: number;
+  categoryIds?: number[];
   topics?: string[];
   location?: string;
   minRating?: number;
@@ -63,6 +65,34 @@ export default function Speakers() {
   const { data: speakers, isLoading, error } = useQuery<Speaker[]>({
     queryKey: ["/api/speakers", filters],
     queryFn: async () => {
+      // New two-level taxonomy: filter by discipline (+ optional categories)
+      if (filters.disciplineId != null) {
+        const params = new URLSearchParams();
+        if (filters.categoryIds && filters.categoryIds.length > 0) {
+          params.append("categoryIds", filters.categoryIds.join(","));
+        }
+        Object.entries(filters).forEach(([key, value]) => {
+          if (
+            key !== "disciplineId" &&
+            key !== "categoryIds" &&
+            key !== "categories" &&
+            key !== "category" &&
+            value !== undefined &&
+            value !== ""
+          ) {
+            if (Array.isArray(value)) {
+              value.forEach((item) => params.append(key, item.toString()));
+            } else {
+              params.append(key, value.toString());
+            }
+          }
+        });
+        const url = `/api/disciplines/${filters.disciplineId}/speakers${params.toString() ? "?" + params.toString() : ""}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch speakers for discipline");
+        return response.json();
+      }
+
       // Normalize single category to array for consistent handling
       const selectedCategories = filters.categories || (filters.category ? [filters.category] : []);
       

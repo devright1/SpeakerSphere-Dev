@@ -29,6 +29,8 @@ import {
   type InsertInquiry,
   type Category,
   type InsertCategory,
+  type Discipline,
+  type InsertDiscipline,
   type Video,
   type InsertVideo,
   type SpeakingTopic,
@@ -129,6 +131,18 @@ export interface IStorage {
   getCategories(): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
   deleteCategory(id: number): Promise<boolean>;
+
+  // Disciplines & two-level taxonomy
+  getDisciplines(): Promise<(Discipline & { categoryCount: number; speakerCount: number })[]>;
+  getDiscipline(id: number): Promise<Discipline | undefined>;
+  createDiscipline(discipline: InsertDiscipline): Promise<Discipline>;
+  updateDiscipline(id: number, updates: Partial<InsertDiscipline>): Promise<Discipline | undefined>;
+  deleteDiscipline(id: number): Promise<boolean>;
+  getCategoriesByDiscipline(disciplineId: number): Promise<Category[]>;
+  createCategoryForDiscipline(disciplineId: number, name: string, description?: string): Promise<Category>;
+  updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | undefined>;
+  updateSpeakerDiscipline(speakerId: number, disciplineId: number | null, categoryIds: number[], status?: string): Promise<Speaker | undefined>;
+  getSpeakersByMigrationStatus(status: string): Promise<Speaker[]>;
   
   // Speaking Topics
   getSpeakingTopics(): Promise<SpeakingTopic[]>;
@@ -843,6 +857,8 @@ export class MemStorage implements IStorage {
 
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
     const category: Category = { 
+      disciplineId: null,
+      sortOrder: 0,
       ...insertCategory, 
       id: this.currentCategoryId++,
       speakerCount: 0
@@ -857,6 +873,73 @@ export class MemStorage implements IStorage {
 
     this.categories.delete(id);
     return true;
+  }
+
+  // Disciplines & two-level taxonomy (in-memory; primarily handled by DatabaseStorage)
+  private disciplines: Map<number, Discipline> = new Map();
+  private currentDisciplineId: number = 1;
+
+  async getDisciplines(): Promise<(Discipline & { categoryCount: number; speakerCount: number })[]> {
+    return Array.from(this.disciplines.values()).map((d) => ({
+      ...d,
+      categoryCount: Array.from(this.categories.values()).filter((c) => c.disciplineId === d.id).length,
+      speakerCount: Array.from(this.speakers.values()).filter((s) => s.disciplineId === d.id).length,
+    }));
+  }
+
+  async getDiscipline(id: number): Promise<Discipline | undefined> {
+    return this.disciplines.get(id);
+  }
+
+  async createDiscipline(discipline: InsertDiscipline): Promise<Discipline> {
+    const d: Discipline = {
+      description: null,
+      sortOrder: 0,
+      ...discipline,
+      id: this.currentDisciplineId++,
+    };
+    this.disciplines.set(d.id, d);
+    return d;
+  }
+
+  async updateDiscipline(id: number, updates: Partial<InsertDiscipline>): Promise<Discipline | undefined> {
+    const d = this.disciplines.get(id);
+    if (!d) return undefined;
+    const updated = { ...d, ...updates };
+    this.disciplines.set(id, updated);
+    return updated;
+  }
+
+  async deleteDiscipline(id: number): Promise<boolean> {
+    return this.disciplines.delete(id);
+  }
+
+  async getCategoriesByDiscipline(disciplineId: number): Promise<Category[]> {
+    return Array.from(this.categories.values()).filter((c) => c.disciplineId === disciplineId);
+  }
+
+  async createCategoryForDiscipline(disciplineId: number, name: string, description: string = ""): Promise<Category> {
+    return this.createCategory({ name, description, disciplineId, sortOrder: 0 } as InsertCategory);
+  }
+
+  async updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | undefined> {
+    const c = this.categories.get(id);
+    if (!c) return undefined;
+    const updated = { ...c, ...updates };
+    this.categories.set(id, updated);
+    return updated;
+  }
+
+  async updateSpeakerDiscipline(speakerId: number, disciplineId: number | null, categoryIds: number[], status: string = "manual"): Promise<Speaker | undefined> {
+    const s = this.speakers.get(speakerId);
+    if (!s) return undefined;
+    const updated = { ...s, disciplineId, speakerCategoryIds: categoryIds, disciplineMigrationStatus: status };
+    this.speakers.set(speakerId, updated);
+    return updated;
+  }
+
+  async getSpeakersByMigrationStatus(status: string): Promise<Speaker[]> {
+    return Array.from(this.speakers.values()).filter((s) => s.disciplineMigrationStatus === status);
   }
 
   // Speaking Topics Methods

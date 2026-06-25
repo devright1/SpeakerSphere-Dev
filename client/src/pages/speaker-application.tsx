@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, CheckCircle2, Loader2, Send, User, FileText, Briefcase, Globe } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { TopicSelector } from "@/components/topic-selector";
+import { DisciplineCategorySelector } from "@/components/discipline-category-selector";
 
 // Validation schema for speaker application
 const speakerApplicationSchema = z.object({
@@ -41,7 +41,9 @@ const speakerApplicationSchema = z.object({
   
   // Speaking Information
   selectedCategories: z.array(z.string()).optional().default([]), // Optional for backward compatibility
-  selectedTopicIds: z.array(z.number()).length(3, "Please select exactly 3 speaking topics"),
+  selectedTopicIds: z.array(z.number()).optional().default([]), // Legacy, no longer required
+  selectedDisciplineId: z.number({ required_error: "Please select a discipline" }),
+  selectedCategoryIds: z.array(z.number()).min(1, "Please select at least one category").max(3, "Please select up to 3 categories"),
   specificTopics: z.string().min(10, "Please provide specific topics (at least 10 characters)"),
   previousExperience: z.string().min(1, "Previous speaking experience is required"),
   availableFormats: z.array(z.string()).min(1, "Please select at least one format"),
@@ -99,6 +101,8 @@ export default function SpeakerApplicationPage() {
       credentials: "",
       selectedCategories: [],
       selectedTopicIds: [],
+      selectedDisciplineId: undefined,
+      selectedCategoryIds: [],
       specificTopics: "",
       previousExperience: "",
       availableFormats: [],
@@ -422,11 +426,18 @@ export default function SpeakerApplicationPage() {
                       </div>
 
                       {/* Topic Selection */}
-                      <TopicSelector
-                        selectedTopicIds={form.watch("selectedTopicIds")}
-                        onChange={(topicIds) => form.setValue("selectedTopicIds", topicIds)}
-                        maxTopics={3}
-                        error={form.formState.errors.selectedTopicIds?.message}
+                      <DisciplineCategorySelector
+                        selectedDisciplineId={form.watch("selectedDisciplineId") ?? null}
+                        selectedCategoryIds={form.watch("selectedCategoryIds") || []}
+                        onChange={(disciplineId, categoryIds) => {
+                          form.setValue("selectedDisciplineId", disciplineId ?? (undefined as any), { shouldValidate: true });
+                          form.setValue("selectedCategoryIds", categoryIds, { shouldValidate: true });
+                        }}
+                        maxCategories={3}
+                        error={
+                          form.formState.errors.selectedDisciplineId?.message ||
+                          form.formState.errors.selectedCategoryIds?.message
+                        }
                       />
 
                       {/* Specific Topics */}

@@ -3,6 +3,7 @@ import {
   reviews, 
   inquiries, 
   categories,
+  disciplines,
   speakingTopics,
   speakerTopics,
   videos,
@@ -30,6 +31,8 @@ import {
   type InsertInquiry,
   type Category,
   type InsertCategory,
+  type Discipline,
+  type InsertDiscipline,
   type SpeakingTopic,
   type InsertSpeakingTopic,
   type SpeakerTopic,
@@ -520,8 +523,9 @@ export class DatabaseStorage implements IStorage {
 
   // Categories
   async getCategories(): Promise<Category[]> {
-    // Get base categories
-    const result = await db.select().from(categories);
+    // Only legacy flat categories (no discipline). Discipline-scoped categories
+    // are served via getCategoriesByDiscipline.
+    const result = await db.select().from(categories).where(isNull(categories.disciplineId));
     
     // Deduplicate categories by name (merge duplicates)
     const categoryMap = new Map<string, Category>();
@@ -563,6 +567,96 @@ export class DatabaseStorage implements IStorage {
   async deleteCategory(id: number): Promise<boolean> {
     const result = await db.delete(categories).where(eq(categories.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // ===== Disciplines & two-level taxonomy =====
+  async getDisciplines(): Promise<(Discipline & { categoryCount: number; speakerCount: number })[]> {
+    const allDisciplines = await db.select().from(disciplines).orderBy(disciplines.sortOrder, disciplines.name);
+
+    const result = [];
+    for (const d of allDisciplines) {
+      const catCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(categories)
+        .where(eq(categories.disciplineId, d.id));
+      const spkCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(speakers)
+        .where(eq(speakers.disciplineId, d.id));
+      result.push({
+        ...d,
+        categoryCount: parseInt(catCount[0].count as any) || 0,
+        speakerCount: parseInt(spkCount[0].count as any) || 0,
+      });
+    }
+    return result;
+  }
+
+  async getDiscipline(id: number): Promise<Discipline | undefined> {
+    const result = await db.select().from(disciplines).where(eq(disciplines.id, id));
+    return result[0];
+  }
+
+  async createDiscipline(discipline: InsertDiscipline): Promise<Discipline> {
+    const result = await db.insert(disciplines).values(discipline).returning();
+    return result[0];
+  }
+
+  async updateDiscipline(id: number, updates: Partial<InsertDiscipline>): Promise<Discipline | undefined> {
+    const result = await db.update(disciplines).set(updates).where(eq(disciplines.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteDiscipline(id: number): Promise<boolean> {
+    // Remove discipline link from its categories and speakers first
+    await db.update(categories).set({ disciplineId: null }).where(eq(categories.disciplineId, id));
+    await db.update(speakers).set({ disciplineId: null }).where(eq(speakers.disciplineId, id));
+    const result = await db.delete(disciplines).where(eq(disciplines.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getCategoriesByDiscipline(disciplineId: number): Promise<Category[]> {
+    return db
+      .select()
+      .from(categories)
+      .where(eq(categories.disciplineId, disciplineId))
+      .orderBy(categories.sortOrder, categories.name);
+  }
+
+  async createCategoryForDiscipline(disciplineId: number, name: string, description: string = ""): Promise<Category> {
+    const existing = await db
+      .select({ max: sql<number>`coalesce(max(${categories.sortOrder}), -1)` })
+      .from(categories)
+      .where(eq(categories.disciplineId, disciplineId));
+    const nextSort = (parseInt(existing[0].max as any) || -1) + 1;
+    const result = await db
+      .insert(categories)
+      .values({ name, description, disciplineId, sortOrder: nextSort, speakerCount: 0 })
+      .returning();
+    return result[0];
+  }
+
+  async updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | undefined> {
+    const result = await db.update(categories).set(updates).where(eq(categories.id, id)).returning();
+    return result[0];
+  }
+
+  async updateSpeakerDiscipline(
+    speakerId: number,
+    disciplineId: number | null,
+    categoryIds: number[],
+    status: string = "manual"
+  ): Promise<Speaker | undefined> {
+    const result = await db
+      .update(speakers)
+      .set({ disciplineId, speakerCategoryIds: categoryIds, disciplineMigrationStatus: status })
+      .where(eq(speakers.id, speakerId))
+      .returning();
+    return result[0];
+  }
+
+  async getSpeakersByMigrationStatus(status: string): Promise<Speaker[]> {
+    return db.select().from(speakers).where(eq(speakers.disciplineMigrationStatus, status));
   }
 
   // Speaking Topics
@@ -811,6 +905,9 @@ export class DatabaseStorage implements IStorage {
       verified: true, // Set to true so Speaker Resources tab appears
       featured: false,
       categories: application.selectedCategories,
+      disciplineId: application.selectedDisciplineId ?? null,
+      speakerCategoryIds: application.selectedCategoryIds || [],
+      disciplineMigrationStatus: application.selectedDisciplineId ? "confirmed" : null,
       achievements: [],
       lectures: [],
       eventPhotos: [],

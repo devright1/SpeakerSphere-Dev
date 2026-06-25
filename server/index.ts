@@ -72,6 +72,10 @@ app.use((req, res, next) => {
   const { migrateContentCategories } = await import("./migrate-content-categories");
   await migrateContentCategories();
 
+  // Seed disciplines + per-discipline categories, then auto-map speakers
+  const { seedAndMigrateDisciplines } = await import("./seed-disciplines");
+  await seedAndMigrateDisciplines();
+
   await registerRoutes(app);
 
   // Security error handling middleware

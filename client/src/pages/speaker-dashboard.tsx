@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import StorageUsage from "@/components/StorageUsage";
+import { DisciplineCategorySelector, DisciplineSummary } from "@/components/discipline-category-selector";
 import { useTierLimit, useTierLimits, getTierLimitValue, isWithinLimit, isNearLimit, getUsagePercentage, formatTierLimit } from "@/hooks/useTierLimits";
 import { cn } from "@/lib/utils";
 // import { useAuth } from "@/providers/AuthProvider";
@@ -211,6 +212,11 @@ export default function SpeakerDashboard() {
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
   const [topicSearchTerm, setTopicSearchTerm] = useState('');
   const [topicCategoryFilter, setTopicCategoryFilter] = useState<string>('all');
+
+  // Discipline & categories management state
+  const [isEditingDiscipline, setIsEditingDiscipline] = useState(false);
+  const [selectedDisciplineId, setSelectedDisciplineId] = useState<number | null>(null);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   
   // New achievement state
   const [newAchievement, setNewAchievement] = useState('');
@@ -1124,6 +1130,33 @@ export default function SpeakerDashboard() {
     },
   });
 
+  const updateDisciplineMutation = useMutation({
+    mutationFn: async ({ disciplineId, categoryIds }: { disciplineId: number; categoryIds: number[] }) => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/discipline`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ disciplineId, categoryIds }),
+      });
+      if (!response.ok) throw new Error('Failed to update discipline');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/speakers/by-user', user?.id] });
+      setIsEditingDiscipline(false);
+      toast({
+        title: "Discipline Updated",
+        description: "Your discipline and categories have been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update discipline. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Toggle content visibility
   const toggleContentVisibility = (contentId: number, isPublic: boolean) => {
     updateContentMutation.mutate({ contentId, isPublic });
@@ -1144,6 +1177,14 @@ export default function SpeakerDashboard() {
       setSelectedTopics(speakerTopics.map((topic: any) => topic.id));
     }
   }, [speakerTopics, isEditingTopics]);
+
+  // Initialize discipline selection from the speaker profile
+  useEffect(() => {
+    if (speakerProfile && !isEditingDiscipline) {
+      setSelectedDisciplineId(speakerProfile.disciplineId ?? null);
+      setSelectedCategoryIds(speakerProfile.speakerCategoryIds || []);
+    }
+  }, [speakerProfile, isEditingDiscipline]);
 
   // Topics management handlers
   const handleEditTopics = () => {
@@ -2394,6 +2435,81 @@ export default function SpeakerDashboard() {
                     </CardContent>
                   </Card>
                 )}
+
+                {/* Discipline & Categories */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <BookOpen className="h-5 w-5 mr-2" />
+                        Discipline & Categories
+                      </div>
+                      {!isEditingDiscipline && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsEditingDiscipline(true)}
+                          data-testid="button-edit-discipline"
+                        >
+                          <Edit3 className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {isEditingDiscipline ? (
+                      <div className="space-y-4">
+                        <DisciplineCategorySelector
+                          selectedDisciplineId={selectedDisciplineId}
+                          selectedCategoryIds={selectedCategoryIds}
+                          onChange={(disciplineId, categoryIds) => {
+                            setSelectedDisciplineId(disciplineId);
+                            setSelectedCategoryIds(categoryIds);
+                          }}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => {
+                              if (selectedDisciplineId == null) {
+                                toast({
+                                  title: "Discipline Required",
+                                  description: "Please select a discipline before saving.",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              updateDisciplineMutation.mutate({
+                                disciplineId: selectedDisciplineId,
+                                categoryIds: selectedCategoryIds,
+                              });
+                            }}
+                            disabled={updateDisciplineMutation.isPending}
+                            data-testid="button-save-discipline"
+                          >
+                            {updateDisciplineMutation.isPending ? "Saving..." : "Save"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsEditingDiscipline(false);
+                              setSelectedDisciplineId(speakerProfile?.disciplineId ?? null);
+                              setSelectedCategoryIds(speakerProfile?.speakerCategoryIds || []);
+                            }}
+                            data-testid="button-cancel-discipline"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <DisciplineSummary
+                        disciplineId={speakerProfile?.disciplineId ?? null}
+                        categoryIds={speakerProfile?.speakerCategoryIds || []}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
 
                 {/* Speaking Topics */}
                 <Card>
