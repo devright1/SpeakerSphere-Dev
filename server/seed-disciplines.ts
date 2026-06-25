@@ -242,11 +242,11 @@ const LEGACY_KEYWORDS: Record<string, string[]> = {
   "leadership": ["leadership"],
   "digital dentistry": ["digital"],
   "esthetic dentistry": ["esthetic"],
-  "ai & innovation": ["ai &", "innovation"],
+  "ai & innovation": ["ai &"],
   "full arch rehabilitation": ["rehabilitation", "full mouth"],
   "technology & innovation": ["technology & innovation"],
   "anesthesia & sedation": ["anesthesia", "sedation"],
-  "research": ["research", "evidence-based"],
+  "research": ["research & evidence-based"],
   "bone grafting & regeneration": ["graft", "regenerat"],
 };
 
@@ -357,18 +357,22 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
       }
     }
 
-    // Pick the discipline with the most votes
+    // Pick the discipline with the most votes; ties → Miscellaneous
     let winningDisciplineId: number | null = null;
     let maxVotes = 0;
+    let tieDetected = false;
     for (const [dId, votes] of disciplineVotes) {
       if (votes > maxVotes) {
         maxVotes = votes;
         winningDisciplineId = dId;
+        tieDetected = false;
+      } else if (votes === maxVotes) {
+        tieDetected = true;
       }
     }
 
-    // Fall back to Miscellaneous if nothing matched
-    if (winningDisciplineId === null && miscDiscipline) {
+    // Ties and no-matches both fall back to Miscellaneous
+    if ((tieDetected || winningDisciplineId === null) && miscDiscipline) {
       winningDisciplineId = miscDiscipline.id;
     }
 
