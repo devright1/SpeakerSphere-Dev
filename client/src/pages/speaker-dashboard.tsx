@@ -1139,7 +1139,7 @@ export default function SpeakerDashboard() {
       setIsEditingDiscipline(false);
       toast({
         title: "Discipline Updated",
-        description: "Your discipline and categories have been updated successfully.",
+        description: "Your discipline and topics have been updated successfully.",
       });
     },
     onError: () => {
@@ -2436,7 +2436,7 @@ export default function SpeakerDashboard() {
                     <CardTitle className="flex items-center justify-between">
                       <div className="flex items-center">
                         <BookOpen className="h-5 w-5 mr-2" />
-                        Discipline & Categories
+                        Discipline & Topics
                       </div>
                       {!isEditingDiscipline && (
                         <Button

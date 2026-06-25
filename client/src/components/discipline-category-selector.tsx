@@ -102,9 +102,9 @@ export function DisciplineCategorySelector({
       {selectedDisciplineId != null && (
         <div className="space-y-3">
           <div>
-            <Label>Categories (Select up to {maxCategories})</Label>
+            <Label>Topics (Select up to {maxCategories})</Label>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Pick the categories within this discipline that match your expertise
+              Pick the topics within this discipline that match your expertise
             </p>
           </div>
 
@@ -131,9 +131,9 @@ export function DisciplineCategorySelector({
 
           <ScrollArea className="h-[260px] border rounded-lg p-4 bg-slate-50 dark:bg-slate-800">
             {categoriesLoading ? (
-              <div className="text-center text-gray-500 py-8">Loading categories...</div>
+              <div className="text-center text-gray-500 py-8">Loading topics...</div>
             ) : (categories || []).length === 0 ? (
-              <div className="text-center text-gray-500 py-8">No categories found</div>
+              <div className="text-center text-gray-500 py-8">No topics found</div>
             ) : (
               <div className="space-y-2">
                 {(categories || []).map((cat) => {
@@ -197,7 +197,7 @@ export function DisciplineSummary({ disciplineId, categoryIds }: DisciplineSumma
   if (disciplineId == null || !discipline) {
     return (
       <p className="text-sm text-muted-foreground">
-        No discipline selected yet. Click Edit to choose your discipline and categories.
+        No discipline selected yet. Click Edit to choose your discipline and topics.
       </p>
     );
   }
@@ -210,7 +210,7 @@ export function DisciplineSummary({ disciplineId, categoryIds }: DisciplineSumma
       </div>
       {selectedCategories.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-gray-500 mb-1">Categories</p>
+          <p className="text-xs font-medium text-gray-500 mb-1">Topics</p>
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map((cat) => (
               <Badge key={cat.id} variant="outline">

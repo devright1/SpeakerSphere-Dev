@@ -96,9 +96,9 @@ function CategoriesEditor({ disciplineId }: { disciplineId: number }) {
     onSuccess: () => {
       invalidate();
       setNewCategoryName("");
-      toast({ title: "Category added" });
+      toast({ title: "Topic added" });
     },
-    onError: (e: Error) => toast({ title: e.message || "Failed to add category", variant: "destructive" }),
+    onError: (e: Error) => toast({ title: e.message || "Failed to add topic", variant: "destructive" }),
   });
 
   const updateCategoryMutation = useMutation({
@@ -108,27 +108,27 @@ function CategoriesEditor({ disciplineId }: { disciplineId: number }) {
       invalidate();
       setEditingId(null);
       setEditingName("");
-      toast({ title: "Category updated" });
+      toast({ title: "Topic updated" });
     },
-    onError: (e: Error) => toast({ title: e.message || "Failed to update category", variant: "destructive" }),
+    onError: (e: Error) => toast({ title: e.message || "Failed to update topic", variant: "destructive" }),
   });
 
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: number) => adminRequest("DELETE", `/api/categories/${id}`),
     onSuccess: () => {
       invalidate();
-      toast({ title: "Category deleted" });
+      toast({ title: "Topic deleted" });
     },
-    onError: (e: Error) => toast({ title: e.message || "Failed to delete category", variant: "destructive" }),
+    onError: (e: Error) => toast({ title: e.message || "Failed to delete topic", variant: "destructive" }),
   });
 
   return (
     <div className="space-y-3 pt-3">
       <div className="flex flex-col gap-2">
         {isLoading ? (
-          <span className="text-sm text-muted-foreground">Loading categories...</span>
+          <span className="text-sm text-muted-foreground">Loading topics...</span>
         ) : (categories || []).length === 0 ? (
-          <span className="text-sm text-muted-foreground">No categories yet</span>
+          <span className="text-sm text-muted-foreground">No topics yet</span>
         ) : (
           (categories || []).map((cat) => (
             <div
@@ -193,7 +193,7 @@ function CategoriesEditor({ disciplineId }: { disciplineId: number }) {
                       variant="ghost"
                       className="h-8 w-8 text-destructive"
                       onClick={() => {
-                        if (confirm(`Delete category "${cat.name}"?`)) deleteCategoryMutation.mutate(cat.id);
+                        if (confirm(`Delete topic "${cat.name}"?`)) deleteCategoryMutation.mutate(cat.id);
                       }}
                       disabled={deleteCategoryMutation.isPending}
                       data-testid={`button-delete-category-${cat.id}`}
@@ -209,7 +209,7 @@ function CategoriesEditor({ disciplineId }: { disciplineId: number }) {
       </div>
       <div className="flex gap-2">
         <Input
-          placeholder="New category name"
+          placeholder="New topic name"
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
           data-testid={`input-new-category-${disciplineId}`}
@@ -581,7 +581,7 @@ export function AdminDisciplines() {
                         >
                           <p className="font-medium">{d.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {d.categoryCount} categories · {d.speakerCount} speakers
+                            {d.categoryCount} topics · {d.speakerCount} speakers
                           </p>
                         </button>
                         <div className="flex items-center gap-1">

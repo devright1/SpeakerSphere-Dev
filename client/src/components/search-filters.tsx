@@ -133,10 +133,10 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
           </Select>
         </div>
 
-        {/* Categories (dynamic) */}
+        {/* Topics (dynamic) */}
         {selectedDisciplineId != null && (categories || []).length > 0 && (
           <div>
-            <h4 className="font-semibold text-gray-900 mb-4 text-lg">Categories</h4>
+            <h4 className="font-semibold text-gray-900 mb-4 text-lg">Topics</h4>
             <div className="space-y-3">
               {(categories || []).map((category) => (
                 <div key={category.id} className="flex items-center space-x-2">
