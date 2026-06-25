@@ -1705,7 +1705,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10 bg-gray-100 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-9 bg-gray-100 p-1 rounded-lg">
             <TabsTrigger 
               value="analytics"
               className="data-[state=active]:bg-blue-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
@@ -1748,12 +1748,6 @@ export default function AdminDashboard() {
               data-testid="tab-subscriptions"
             >
               Subscriptions
-            </TabsTrigger>
-            <TabsTrigger 
-              value="categories"
-              className="data-[state=active]:bg-orange-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
-            >
-              Categories
             </TabsTrigger>
             <TabsTrigger 
               value="disciplines"
@@ -3427,154 +3421,6 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </TabsContent>
-
-          <TabsContent value="categories" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Category Management</CardTitle>
-                <CardDescription>
-                  Manage speaker categories and organize content
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Add New Category */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-3">Add New Category</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <Input
-                        placeholder="Category Name"
-                        value={newCategory.name}
-                        onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
-                      />
-                      <Input
-                        placeholder="Description"
-                        value={newCategory.description}
-                        onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
-                      />
-                      <Button 
-                        onClick={() => addCategoryMutation.mutate(newCategory)}
-                        disabled={!newCategory.name || !newCategory.description || addCategoryMutation.isPending}
-                      >
-                        {addCategoryMutation.isPending ? "Adding..." : "Add Category"}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Current Categories</h3>
-                  </div>
-                  
-                  <div className="grid gap-4">
-                    {categoriesArray.map((category: any) => {
-                      const categoryId = category.id || category.name;
-                      const speakersInCategory = getSpeakersInCategory(category.name);
-                      const isExpanded = expandedCategories.has(categoryId);
-                      
-                      return (
-                        <div key={categoryId} className="border rounded-lg">
-                          <div className="flex items-center justify-between p-4">
-                            <div className="flex items-center space-x-4">
-                              <button
-                                onClick={() => toggleCategoryExpansion(categoryId)}
-                                className="text-primary hover:text-primary/80 transition-colors"
-                              >
-                                <FolderOpen className="h-8 w-8" />
-                              </button>
-                              <div>
-                                <h4 className="font-medium">{category.name}</h4>
-                                <p className="text-sm text-gray-600">{category.description}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Badge variant="outline">
-                                {speakersInCategory.length} speakers
-                              </Badge>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => toggleCategoryExpansion(categoryId)}
-                              >
-                                {isExpanded ? 'Collapse' : 'View Speakers'}
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleSpeakerAssignment(category)}
-                              >
-                                Manage
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleEditCategory(category)}
-                              >
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="text-red-600 border-red-600 hover:bg-red-50"
-                                onClick={() => handleDeleteCategory(category)}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          {isExpanded && (
-                            <div className="border-t bg-gray-50 p-4">
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between mb-4">
-                                  <h5 className="font-medium text-sm">Speakers in {category.name}</h5>
-                                  <Button 
-                                    size="sm" 
-                                    onClick={() => handleSpeakerAssignment(category)}
-                                    className="bg-primary text-white"
-                                  >
-                                    Add/Remove Speakers
-                                  </Button>
-                                </div>
-                                
-                                {speakersInCategory.length > 0 ? (
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                                    {speakersInCategory.map((speaker: any) => (
-                                      <div key={speaker.id} className="flex items-center justify-between bg-white p-3 rounded border text-sm">
-                                        <div className="flex items-center space-x-2">
-                                          <UserCheck className="h-4 w-4 text-green-600" />
-                                          <span className="font-medium">{speaker.name}</span>
-                                        </div>
-                                        <Badge variant="outline" className="text-xs">
-                                          {speaker.verified ? 'Verified' : 'Unverified'}
-                                        </Badge>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="text-center py-8 text-gray-500">
-                                    <Users className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                                    <p className="text-sm">No speakers assigned to this category</p>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline" 
-                                      className="mt-2"
-                                      onClick={() => handleSpeakerAssignment(category)}
-                                    >
-                                      Add Speakers
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Disciplines Management */}
           <TabsContent value="disciplines" className="space-y-6">
