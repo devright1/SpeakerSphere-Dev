@@ -1267,10 +1267,27 @@ export async function registerRoutes(app: Express): Promise<Express> {
         : [];
 
       const { db } = await import("./db");
-      const { speakers } = await import("../shared/schema");
+      const { speakers, categories } = await import("../shared/schema");
       const { and, like, sql, eq, or, isNull } = await import("drizzle-orm");
 
-      const conditions: any[] = [eq(speakers.disciplineId, disciplineId)];
+      // Fetch all category IDs that belong to this discipline so we can match
+      // speakers whose speakerCategoryIds overlap — this lets a speaker appear
+      // in every discipline they have categories for.
+      const disciplineCategories = await db
+        .select({ id: categories.id })
+        .from(categories)
+        .where(eq(categories.disciplineId, disciplineId));
+      const disciplineCatIds = disciplineCategories.map((c) => c.id);
+
+      const disciplineCondition =
+        disciplineCatIds.length > 0
+          ? or(
+              eq(speakers.disciplineId, disciplineId),
+              sql`${speakers.speakerCategoryIds} && ARRAY[${sql.join(disciplineCatIds, sql`, `)}]::integer[]`
+            )
+          : eq(speakers.disciplineId, disciplineId);
+
+      const conditions: any[] = [disciplineCondition!];
       conditions.push(or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)));
 
       if (categoryIds.length > 0) {

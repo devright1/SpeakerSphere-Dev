@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { disciplines, categories, speakers } from "../shared/schema";
-import { eq, isNull, and, sql } from "drizzle-orm";
+import { eq, isNull, or } from "drizzle-orm";
 
 // Two-level taxonomy seed data: discipline -> its categories
 const DISCIPLINE_DATA: { name: string; categories: string[] }[] = [
@@ -232,59 +232,163 @@ export async function seedDisciplines(): Promise<void> {
   console.log(`[seed-disciplines] Seeded ${DISCIPLINE_DATA.length} disciplines and their categories.`);
 }
 
+// Keyword rules for known legacy category strings.
+// Keys are lowercased legacy values; values are substrings to match against
+// new category names (case-insensitive).
+const LEGACY_KEYWORDS: Record<string, string[]> = {
+  "practice management": ["practice management"],
+  "education & training": ["education"],
+  "implant dentistry": ["implant"],
+  "leadership": ["leadership"],
+  "digital dentistry": ["digital"],
+  "esthetic dentistry": ["esthetic"],
+  "ai & innovation": ["ai &", "innovation"],
+  "full arch rehabilitation": ["rehabilitation", "full mouth"],
+  "technology & innovation": ["technology & innovation"],
+  "anesthesia & sedation": ["anesthesia", "sedation"],
+  "research": ["research", "evidence-based"],
+  "bone grafting & regeneration": ["graft", "regenerat"],
+};
+
+// Words too common to use as fallback keywords when matching category names
+const GENERIC_WORDS = new Set([
+  "dental", "dentistry", "oral", "health", "patient", "clinical", "procedures",
+  "care", "based", "management", "practice",
+]);
+
 /**
  * Auto-map existing speakers to a discipline based on their legacy `categories`
- * array. Only runs for speakers that have not yet been assigned a migration
- * status (disciplineMigrationStatus IS NULL).
+ * array.  Processes both NULL (never migrated) and "flagged" speakers, so
+ * admins can click "Re-run Migration" and see the list shrink.
  *
- * - Exactly one discipline name matches -> set disciplineId, status "auto"
- * - No match or ambiguous -> status "flagged"
+ * Logic per speaker:
+ *  1. If a legacy category string is a discipline name → vote for that discipline
+ *  2. Otherwise match against new category rows via curated keywords or fallback
+ *     word matching → collect category IDs + vote for each matched category's discipline
+ *  3. Discipline with most votes wins.  Tie / no match → Miscellaneous.
+ *  4. Write disciplineId, speakerCategoryIds, disciplineMigrationStatus="auto".
  */
 export async function migrateSpeakerDisciplines(): Promise<void> {
   const allDisciplines = await db.select().from(disciplines);
   if (allDisciplines.length === 0) return;
 
+  const allCategories = await db.select().from(categories);
+
   const disciplineByLowerName = new Map(
     allDisciplines.map((d) => [d.name.toLowerCase().trim(), d])
   );
+  const miscDiscipline = allDisciplines.find((d) => d.name === "Miscellaneous");
 
-  // Only process speakers that haven't been migrated yet
+  /** Return new category IDs that match a single legacy category string. */
+  function matchCategoryIds(legacyCat: string): number[] {
+    const lower = legacyCat.toLowerCase().trim();
+
+    // 1. Curated keyword rules first — these intentionally capture all related
+    //    categories across disciplines (e.g. "Implant Dentistry" → every
+    //    implant-type category, not just the first exact name match).
+    const keywords = LEGACY_KEYWORDS[lower];
+    if (keywords) {
+      return allCategories
+        .filter((c) => keywords.some((kw) => c.name.toLowerCase().includes(kw)))
+        .map((c) => c.id);
+    }
+
+    // 2. Exact match (for strings not in LEGACY_KEYWORDS)
+    const exact = allCategories.find((c) => c.name.toLowerCase().trim() === lower);
+    if (exact) return [exact.id];
+
+    // 3. Fallback: use significant words from the legacy string
+    const words = lower
+      .split(/[\s&,/]+/)
+      .filter((w) => w.length >= 5 && !GENERIC_WORDS.has(w));
+    if (words.length > 0) {
+      return allCategories
+        .filter((c) => words.some((w) => c.name.toLowerCase().includes(w)))
+        .map((c) => c.id);
+    }
+
+    return [];
+  }
+
+  // Process both NULL and "flagged" speakers
   const pending = await db
     .select()
     .from(speakers)
-    .where(isNull(speakers.disciplineMigrationStatus));
+    .where(
+      or(
+        isNull(speakers.disciplineMigrationStatus),
+        eq(speakers.disciplineMigrationStatus, "flagged")
+      )
+    );
 
   let autoCount = 0;
-  let flaggedCount = 0;
+  let stillFlagged = 0;
 
   for (const speaker of pending) {
-    const speakerCats = (speaker.categories || []).map((c) => c.toLowerCase().trim());
-    const matched = new Set<number>();
+    const legacyCats = speaker.categories || [];
+    const matchedCategoryIds = new Set<number>();
+    const disciplineVotes = new Map<number, number>(); // disciplineId → votes
 
-    for (const cat of speakerCats) {
-      const d = disciplineByLowerName.get(cat);
-      if (d) matched.add(d.id);
+    for (const legacyCat of legacyCats) {
+      const lower = legacyCat.toLowerCase().trim();
+
+      // Check if the legacy value IS a discipline name
+      const discMatch = disciplineByLowerName.get(lower);
+      if (discMatch) {
+        // Weight discipline-name matches more heavily
+        disciplineVotes.set(
+          discMatch.id,
+          (disciplineVotes.get(discMatch.id) || 0) + 2
+        );
+        continue;
+      }
+
+      // Translate to category IDs
+      const catIds = matchCategoryIds(legacyCat);
+      for (const catId of catIds) {
+        matchedCategoryIds.add(catId);
+        const cat = allCategories.find((c) => c.id === catId);
+        if (cat?.disciplineId) {
+          disciplineVotes.set(
+            cat.disciplineId,
+            (disciplineVotes.get(cat.disciplineId) || 0) + 1
+          );
+        }
+      }
     }
 
-    if (matched.size === 1) {
-      const disciplineId = Array.from(matched)[0];
-      await db
-        .update(speakers)
-        .set({ disciplineId, disciplineMigrationStatus: "auto" })
-        .where(eq(speakers.id, speaker.id));
-      autoCount++;
-    } else {
-      await db
-        .update(speakers)
-        .set({ disciplineMigrationStatus: "flagged" })
-        .where(eq(speakers.id, speaker.id));
-      flaggedCount++;
+    // Pick the discipline with the most votes
+    let winningDisciplineId: number | null = null;
+    let maxVotes = 0;
+    for (const [dId, votes] of disciplineVotes) {
+      if (votes > maxVotes) {
+        maxVotes = votes;
+        winningDisciplineId = dId;
+      }
     }
+
+    // Fall back to Miscellaneous if nothing matched
+    if (winningDisciplineId === null && miscDiscipline) {
+      winningDisciplineId = miscDiscipline.id;
+    }
+
+    const newStatus = winningDisciplineId !== null ? "auto" : "flagged";
+    if (newStatus === "auto") autoCount++;
+    else stillFlagged++;
+
+    await db
+      .update(speakers)
+      .set({
+        disciplineId: winningDisciplineId,
+        speakerCategoryIds: Array.from(matchedCategoryIds),
+        disciplineMigrationStatus: newStatus,
+      })
+      .where(eq(speakers.id, speaker.id));
   }
 
   if (pending.length > 0) {
     console.log(
-      `[migrate-disciplines] Processed ${pending.length} speakers: ${autoCount} auto-mapped, ${flaggedCount} flagged for review.`
+      `[migrate-disciplines] Processed ${pending.length} speakers: ${autoCount} auto-mapped, ${stillFlagged} still flagged.`
     );
   }
 }
