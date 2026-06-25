@@ -903,6 +903,9 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Delete category
   app.delete("/api/categories/:id", async (req, res) => {
     try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
       const categoryId = parseInt(req.params.id);
       
       if (isNaN(categoryId)) {
@@ -1022,6 +1025,9 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Create a discipline (admin)
   app.post("/api/disciplines", async (req, res) => {
     try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
       const { name, description } = req.body;
       if (!name || typeof name !== "string" || !name.trim()) {
         return res.status(400).json({ message: "Name is required" });
@@ -1053,6 +1059,9 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Update a discipline (admin)
   app.put("/api/disciplines/:id", async (req, res) => {
     try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid discipline ID" });
@@ -1082,6 +1091,9 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Delete a discipline (admin)
   app.delete("/api/disciplines/:id", async (req, res) => {
     try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid discipline ID" });
@@ -1101,6 +1113,9 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Create a category within a discipline (admin)
   app.post("/api/disciplines/:id/categories", async (req, res) => {
     try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
       const disciplineId = parseInt(req.params.id);
       if (isNaN(disciplineId)) {
         return res.status(400).json({ message: "Invalid discipline ID" });
@@ -1124,6 +1139,9 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Update a category (admin)
   app.put("/api/categories/:id", async (req, res) => {
     try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid category ID" });
@@ -1150,6 +1168,20 @@ export async function registerRoutes(app: Express): Promise<Express> {
       if (isNaN(speakerId)) {
         return res.status(400).json({ message: "Invalid speaker ID" });
       }
+
+      // Authorization: must be an admin OR the speaker editing their own profile
+      let authorized = isAdminRequest(req);
+      if (!authorized) {
+        const token = req.headers["x-user-id"] as string;
+        if (token) {
+          const user = await storage.getUserByToken(token);
+          if (user && user.speakerId === speakerId) authorized = true;
+        }
+      }
+      if (!authorized) {
+        return res.status(403).json({ message: "Not authorized to update this speaker" });
+      }
+
       const { disciplineId, categoryIds, status } = req.body;
       const normalizedDisciplineId =
         disciplineId === null || disciplineId === undefined ? null : parseInt(disciplineId);
@@ -1170,9 +1202,12 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
-  // Admin: speakers needing migration review (flagged)
+  // Admin: speakers needing migration review (status = "flagged" or "auto")
   app.get("/api/admin/migration-review", async (req, res) => {
     try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
       const status = (req.query.status as string) || "flagged";
       const speakersList = await storage.getSpeakersByMigrationStatus(status);
       res.json(speakersList);
@@ -1182,9 +1217,31 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // Admin: bulk-confirm all auto-matched speakers
+  app.post("/api/admin/migration-review/confirm-auto", async (req, res) => {
+    try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const autoSpeakers = await storage.getSpeakersByMigrationStatus("auto");
+      let confirmed = 0;
+      for (const speaker of autoSpeakers) {
+        await storage.updateSpeaker(speaker.id, { disciplineMigrationStatus: "confirmed" });
+        confirmed += 1;
+      }
+      res.json({ message: `Confirmed ${confirmed} auto-matched speakers`, confirmed });
+    } catch (error) {
+      console.error("Error confirming auto-matched speakers:", error);
+      res.status(500).json({ message: "Failed to confirm auto-matched speakers" });
+    }
+  });
+
   // Admin: manually re-run discipline seed + speaker migration
   app.post("/api/admin/migrate-disciplines", async (req, res) => {
     try {
+      if (!isAdminRequest(req)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
       const { seedAndMigrateDisciplines } = await import("./seed-disciplines");
       await seedAndMigrateDisciplines();
       res.json({ message: "Disciplines seeded and speakers migrated" });

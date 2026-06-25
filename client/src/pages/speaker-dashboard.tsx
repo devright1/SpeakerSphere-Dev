@@ -1132,13 +1132,7 @@ export default function SpeakerDashboard() {
 
   const updateDisciplineMutation = useMutation({
     mutationFn: async ({ disciplineId, categoryIds }: { disciplineId: number; categoryIds: number[] }) => {
-      const response = await fetch(`/api/speakers/${speakerProfile?.id}/discipline`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ disciplineId, categoryIds }),
-      });
-      if (!response.ok) throw new Error('Failed to update discipline');
-      return response.json();
+      return apiRequest('PUT', `/api/speakers/${speakerProfile?.id}/discipline`, { disciplineId, categoryIds });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/speakers/by-user', user?.id] });
