@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "s9iO0vawSe7ob6bqk8hCv"
+uri = "file://speakers_list.csv"
+type = "table"
+title = "All Speakers — Names & Titles"
