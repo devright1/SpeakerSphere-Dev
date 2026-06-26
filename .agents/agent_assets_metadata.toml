@@ -6,3 +6,9 @@ id = "s9iO0vawSe7ob6bqk8hCv"
 uri = "file://speakers_list.csv"
 type = "table"
 title = "All Speakers — Names & Titles"
+
+[[outputs]]
+id = "X9A3hG2QMfbuQw1o2XYdC"
+uri = "file://speakers_list.xlsx"
+type = "table"
+title = "All Speakers — Names & Titles"
