@@ -1303,15 +1303,21 @@ export default function SpeakerDashboard() {
   const renderTopicUsage = (variant: 'edit' | 'view') => {
     const topicCount = variant === 'edit' ? selectedTopics.length : (speakerTopics?.length || 0);
     const limit = topicLimit;
-    const approachingLimit = limit !== null && topicCount >= Math.max(1, limit - 1);
+    const atLimit = limit !== null && topicCount >= limit;
     const overLimit = limit !== null && topicCount > limit;
+    const nearLimit = limit !== null && !atLimit && topicCount >= Math.max(1, limit - 1);
+    const isNonPremier = (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier';
+
     const statusColor = limit === null
       ? 'text-emerald-600'
       : overLimit
         ? 'text-red-600'
-        : approachingLimit
-          ? 'text-amber-500'
-          : 'text-emerald-600';
+        : atLimit
+          ? 'text-amber-600'
+          : nearLimit
+            ? 'text-amber-500'
+            : 'text-emerald-600';
+
     const label = limit === null
       ? `${topicCount} topics`
       : `${topicCount} / ${limit} topics`;
@@ -1320,20 +1326,42 @@ export default function SpeakerDashboard() {
       <div className="space-y-2">
         <p className={cn('text-sm font-medium', statusColor)} data-testid={`text-topic-usage-${variant}`}>
           {label}
-          {limit !== null && overLimit && ` — over by ${topicCount - limit}`}
+          {overLimit && ` — over by ${topicCount - limit!}`}
         </p>
-        {variant === 'edit' && (approachingLimit || overLimit) && (
-          <Alert variant={overLimit ? 'destructive' : 'default'} data-testid="alert-topic-limit">
-            <AlertTitle>{overLimit ? 'Topic limit exceeded' : 'Approaching your topic limit'}</AlertTitle>
-            <AlertDescription>
+
+        {/* At or over limit — show upgrade prompt in both view and edit */}
+        {atLimit && isNonPremier && (
+          <Alert className="border-amber-400 bg-amber-50" data-testid="alert-topic-limit">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-900">
+              {overLimit ? 'Topic limit exceeded' : 'All topic slots used'}
+            </AlertTitle>
+            <AlertDescription className="text-amber-800">
               {overLimit
-                ? `Your ${speakerProfile?.subscriptionTier ?? 'current'} plan allows ${limit} topics. Remove ${topicCount - limit} topic${topicCount - limit > 1 ? 's' : ''} or `
-                : 'You have one slot left. '} 
-              {speakerProfile?.subscriptionTier !== 'premier' && (
-                <Link href="/subscription-upgrade" className="underline font-medium" data-testid="link-upgrade-plan">
-                  Upgrade your plan
-                </Link>
-              )}
+                ? `Your plan allows ${limit} topic${limit !== 1 ? 's' : ''}. Remove ${topicCount - limit!} to get back in range, or `
+                : `You've filled all ${limit} topic slot${limit !== 1 ? 's' : ''} on your current plan. `}
+              <Link
+                href="/subscription-upgrade"
+                className="underline font-semibold text-amber-900 hover:text-amber-700"
+                data-testid="link-upgrade-plan"
+              >
+                Upgrade your subscription
+              </Link>
+              {' '}to unlock more topics and access topics across additional disciplines.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Near limit (one slot left) — edit mode only */}
+        {nearLimit && !atLimit && variant === 'edit' && isNonPremier && (
+          <Alert className="border-blue-300 bg-blue-50">
+            <AlertTitle className="text-blue-900">One slot remaining</AlertTitle>
+            <AlertDescription className="text-blue-800">
+              You have 1 topic slot left.{' '}
+              <Link href="/subscription-upgrade" className="underline font-medium text-blue-900">
+                Upgrade your plan
+              </Link>
+              {' '}to add more.
             </AlertDescription>
           </Alert>
         )}
