@@ -414,151 +414,134 @@ export default function ProfilePage() {
           {/* Welcome Section */}
           <motion.div variants={itemVariants}>
             <Card className="overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-32"></div>
-              <CardContent className="relative px-6 pb-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16">
+              {/* Gradient banner — name, title, company all on color */}
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-white">
+                    {user.firstName} {user.lastName}
+                  </h1>
+                  {user.title && (
+                    <p className="text-blue-100 text-lg mt-0.5">{user.title}</p>
+                  )}
+                  {user.company && (
+                    <p className="text-blue-200 text-sm mt-0.5">{user.company}</p>
+                  )}
+                </div>
+                {!isEditingProfile && (
+                  <Button
+                    variant="outline"
+                    className="self-start sm:self-auto border-white/40 text-white bg-white/10 hover:bg-white/20 hover:text-white"
+                    onClick={() => setIsEditingProfile(true)}
+                  >
+                    <Edit3 className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                )}
+              </div>
 
-                  {/* User Info */}
-                  <div className="flex-1 min-w-0">
-                    {!isEditingProfile ? (
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <div>
-                          <h1 className="text-2xl font-bold text-gray-900">
-                            {user.firstName} {user.lastName}
-                          </h1>
-                          {user.title && (
-                            <p className="text-lg text-gray-600">{user.title}</p>
-                          )}
-                          {user.company && (
-                            <p className="text-sm text-gray-500">{user.company}</p>
-                          )}
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="self-start sm:self-auto"
-                          onClick={() => setIsEditingProfile(true)}
-                        >
-                          <Edit3 className="h-4 w-4 mr-2" />
-                          Edit Profile
-                        </Button>
+              <CardContent className="px-6 pb-6 pt-4">
+                {isEditingProfile ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 mb-2 block">
+                          First Name *
+                        </Label>
+                        <Input
+                          id="firstName"
+                          type="text"
+                          value={profileData.firstName}
+                          onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                          placeholder="Enter your first name"
+                          className="w-full"
+                        />
                       </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 mb-2 block">
-                              First Name *
-                            </Label>
-                            <Input
-                              id="firstName"
-                              type="text"
-                              value={profileData.firstName}
-                              onChange={(e) => setProfileData({
-                                ...profileData,
-                                firstName: e.target.value
-                              })}
-                              placeholder="Enter your first name"
-                              className="w-full"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="lastName" className="text-sm font-medium text-gray-700 mb-2 block">
-                              Last Name *
-                            </Label>
-                            <Input
-                              id="lastName"
-                              type="text"
-                              value={profileData.lastName}
-                              onChange={(e) => setProfileData({
-                                ...profileData,
-                                lastName: e.target.value
-                              })}
-                              placeholder="Enter your last name"
-                              className="w-full"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="title" className="text-sm font-medium text-gray-700 mb-2 block">
-                            Job Title
-                          </Label>
-                          <Input
-                            id="title"
-                            type="text"
-                            value={profileData.title}
-                            onChange={(e) => setProfileData({
-                              ...profileData,
-                              title: e.target.value
-                            })}
-                            placeholder="Enter your job title"
-                            className="w-full"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="company" className="text-sm font-medium text-gray-700 mb-2 block">
-                            Company
-                          </Label>
-                          <Input
-                            id="company"
-                            type="text"
-                            value={profileData.company}
-                            onChange={(e) => setProfileData({
-                              ...profileData,
-                              company: e.target.value
-                            })}
-                            placeholder="Enter your company name"
-                            className="w-full"
-                          />
-                        </div>
+                      <div>
+                        <Label htmlFor="lastName" className="text-sm font-medium text-gray-700 mb-2 block">
+                          Last Name *
+                        </Label>
+                        <Input
+                          id="lastName"
+                          type="text"
+                          value={profileData.lastName}
+                          onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                          placeholder="Enter your last name"
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
 
-                        <div className="flex gap-3 pt-2">
-                          <Button
-                            onClick={() => updateProfileMutation.mutate()}
-                            disabled={updateProfileMutation.isPending}
-                            className="flex items-center gap-2"
-                          >
-                            {updateProfileMutation.isPending ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            ) : (
-                              <UserCheck className="h-4 w-4" />
-                            )}
-                            Save Changes
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setIsEditingProfile(false);
-                              // Reset form data to original values
-                              setProfileData({
-                                firstName: user.firstName || "",
-                                lastName: user.lastName || "",
-                                title: user.title || "",
-                                company: user.company || "",
-                              });
-                            }}
-                          >
-                            <X className="h-4 w-4 mr-2" />
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        <User className="h-3 w-3 mr-1" />
-                        Member since {formatDate(user.createdAt)}
-                      </Badge>
-                      {user.lastLoginAt && (
-                        <Badge variant="outline" className="text-xs">
-                          Last active {formatDate(user.lastLoginAt)}
-                        </Badge>
-                      )}
+                    <div>
+                      <Label htmlFor="title" className="text-sm font-medium text-gray-700 mb-2 block">
+                        Job Title
+                      </Label>
+                      <Input
+                        id="title"
+                        type="text"
+                        value={profileData.title}
+                        onChange={(e) => setProfileData({ ...profileData, title: e.target.value })}
+                        placeholder="Enter your job title"
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="company" className="text-sm font-medium text-gray-700 mb-2 block">
+                        Company
+                      </Label>
+                      <Input
+                        id="company"
+                        type="text"
+                        value={profileData.company}
+                        onChange={(e) => setProfileData({ ...profileData, company: e.target.value })}
+                        placeholder="Enter your company name"
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <Button
+                        onClick={() => updateProfileMutation.mutate()}
+                        disabled={updateProfileMutation.isPending}
+                        className="flex items-center gap-2"
+                      >
+                        {updateProfileMutation.isPending ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : (
+                          <UserCheck className="h-4 w-4" />
+                        )}
+                        Save Changes
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsEditingProfile(false);
+                          setProfileData({
+                            firstName: user.firstName || "",
+                            lastName: user.lastName || "",
+                            title: user.title || "",
+                            company: user.company || "",
+                          });
+                        }}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      <User className="h-3 w-3 mr-1" />
+                      Member since {formatDate(user.createdAt)}
+                    </Badge>
+                    {user.lastLoginAt && (
+                      <Badge variant="outline" className="text-xs">
+                        Last active {formatDate(user.lastLoginAt)}
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
