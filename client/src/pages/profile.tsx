@@ -47,7 +47,21 @@ interface UserProfile {
   lastLoginAt?: string;
   speakerId?: number;
   accountType?: string;
+  bannerColor?: string;
 }
+
+const BANNER_PRESETS = [
+  { label: "Blue → Purple",  value: "linear-gradient(to right, #2563eb, #9333ea)" },
+  { label: "Teal → Cyan",    value: "linear-gradient(to right, #0d9488, #0891b2)" },
+  { label: "Navy → Blue",    value: "linear-gradient(to right, #1e3a8a, #2563eb)" },
+  { label: "Red → Orange",   value: "linear-gradient(to right, #dc2626, #ea580c)" },
+  { label: "Rose → Pink",    value: "linear-gradient(to right, #e11d48, #db2777)" },
+  { label: "Green → Teal",   value: "linear-gradient(to right, #16a34a, #0d9488)" },
+  { label: "Indigo → Violet",value: "linear-gradient(to right, #4338ca, #7c3aed)" },
+  { label: "Slate Dark",     value: "linear-gradient(to right, #1e293b, #334155)" },
+  { label: "Emerald → Blue", value: "linear-gradient(to right, #059669, #2563eb)" },
+  { label: "Amber → Orange", value: "linear-gradient(to right, #b45309, #ea580c)" },
+];
 
 interface UserStats {
   favoritesCount: number;
@@ -96,6 +110,7 @@ export default function ProfilePage() {
     lastName: "",
     title: "",
     company: "",
+    bannerColor: "",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -143,18 +158,20 @@ export default function ProfilePage() {
         if (prevData.firstName !== (user.firstName || "") ||
             prevData.lastName !== (user.lastName || "") ||
             prevData.title !== (user.title || "") ||
-            prevData.company !== (user.company || "")) {
+            prevData.company !== (user.company || "") ||
+            prevData.bannerColor !== (user.bannerColor || "")) {
           return {
             firstName: user.firstName || "",
             lastName: user.lastName || "",
             title: user.title || "",
             company: user.company || "",
+            bannerColor: user.bannerColor || "",
           };
         }
         return prevData;
       });
     }
-  }, [user?.firstName, user?.lastName, user?.title, user?.company]);
+  }, [user?.firstName, user?.lastName, user?.title, user?.company, user?.bannerColor]);
 
   // Fetch user activity stats
   const { data: userStats, isLoading: statsLoading } = useQuery<UserStats>({
@@ -415,7 +432,10 @@ export default function ProfilePage() {
           <motion.div variants={itemVariants}>
             <Card className="overflow-hidden">
               {/* Gradient banner — name, title, company all on color */}
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div
+                className="px-6 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                style={{ background: profileData.bannerColor || user?.bannerColor || "linear-gradient(to right, #2563eb, #9333ea)" }}
+              >
                 <div>
                   <h1 className="text-2xl font-bold text-white">
                     {user.firstName} {user.lastName}
@@ -499,6 +519,27 @@ export default function ProfilePage() {
                       />
                     </div>
 
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                        Banner Color
+                      </Label>
+                      <div className="flex flex-wrap gap-2">
+                        {BANNER_PRESETS.map((preset) => {
+                          const isSelected = (profileData.bannerColor || BANNER_PRESETS[0].value) === preset.value;
+                          return (
+                            <button
+                              key={preset.value}
+                              type="button"
+                              title={preset.label}
+                              onClick={() => setProfileData({ ...profileData, bannerColor: preset.value })}
+                              className={`w-9 h-9 rounded-full border-2 transition-transform ${isSelected ? "border-gray-900 scale-110 shadow-md" : "border-transparent hover:scale-105"}`}
+                              style={{ background: preset.value }}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <div className="flex gap-3 pt-2">
                       <Button
                         onClick={() => updateProfileMutation.mutate()}
@@ -521,6 +562,7 @@ export default function ProfilePage() {
                             lastName: user.lastName || "",
                             title: user.title || "",
                             company: user.company || "",
+                            bannerColor: user.bannerColor || "",
                           });
                         }}
                       >

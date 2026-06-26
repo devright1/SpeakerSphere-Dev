@@ -332,6 +332,7 @@ export const users = pgTable("users", {
   identityVerifiedAt: timestamp("identity_verified_at"),
   tempPassword: varchar("temp_password", { length: 255 }),
   userPasswordHash: varchar("user_password_hash", { length: 255 }),
+  bannerColor: text("banner_color"),
 });
 
 // User session management
