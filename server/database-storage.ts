@@ -807,6 +807,12 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async updateUserBannerColor(id: string, bannerColor: string | null): Promise<void> {
+    await db.execute(
+      sql`UPDATE users SET banner_color = ${bannerColor} WHERE id = ${id}`
+    );
+  }
+
   async updateUserAccountType(id: string, accountType: string): Promise<User> {
     const result = await db.update(users)
       .set({ accountType })

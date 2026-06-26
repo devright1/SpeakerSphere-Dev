@@ -4088,7 +4088,6 @@ export async function registerRoutes(app: Express): Promise<Express> {
     try {
       const userId = req.params.userId;
       const { firstName, lastName, title, company, bannerColor } = req.body;
-      
       // Validate required fields
       if (!firstName || !lastName) {
         return res.status(400).json({ 
@@ -4096,22 +4095,27 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
 
-      // Update user profile
+      // Update core profile fields
       const updatedUser = await storage.updateUser(userId, {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         title: title?.trim() || null,
         company: company?.trim() || null,
-        bannerColor: bannerColor || null,
       });
 
       if (!updatedUser) {
         return res.status(404).json({ error: "User not found" });
       }
 
+      // Update banner color via raw SQL to avoid ORM column-mapping issues
+      await storage.updateUserBannerColor(userId, bannerColor || null);
+
+      // Return the fully updated user
+      const finalUser = await storage.getUserById(userId);
+
       res.status(200).json({
         success: true,
-        user: updatedUser,
+        user: { ...finalUser, bannerColor: bannerColor || null },
         message: "Profile updated successfully"
       });
     } catch (error) {

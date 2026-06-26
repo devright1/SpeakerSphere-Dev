@@ -174,6 +174,7 @@ export interface IStorage {
   updateUserLastLogin(userId: string): Promise<void>;
   getUserById(id: string): Promise<User | undefined>;
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
+  updateUserBannerColor(id: string, bannerColor: string | null): Promise<void>;
   updateUserAccountType(id: string, accountType: string): Promise<User>;
   updateUserPassword(userId: string, passwordHash: string, tempPassword?: string): Promise<void>;
   updateUserSetPassword(userId: string, userPasswordHash: string): Promise<void>;
@@ -1080,6 +1081,13 @@ export class MemStorage implements IStorage {
     };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async updateUserBannerColor(id: string, bannerColor: string | null): Promise<void> {
+    const user = this.users.get(id);
+    if (user) {
+      this.users.set(id, { ...user, bannerColor, updatedAt: new Date() });
+    }
   }
 
   async updateUserAccountType(id: string, accountType: string): Promise<User> {
