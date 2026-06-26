@@ -4087,7 +4087,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.put("/api/users/:userId/profile", async (req, res) => {
     try {
       const userId = req.params.userId;
-      const { firstName, lastName, title, company } = req.body;
+      const { firstName, lastName, title, company, bannerColor } = req.body;
       
       // Validate required fields
       if (!firstName || !lastName) {
@@ -4102,6 +4102,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         lastName: lastName.trim(),
         title: title?.trim() || null,
         company: company?.trim() || null,
+        bannerColor: bannerColor || null,
       });
 
       if (!updatedUser) {
