@@ -380,7 +380,8 @@ export default function ForSpeakers() {
                 <h3 className="text-2xl font-bold">Pro Speaker</h3>
                 <p className="text-sm text-gray-600 mt-1">Enhanced Visibility</p>
                 <div className="mt-4">
-                  <span className="text-3xl font-bold">Contact Us</span>
+                  <span className="text-3xl font-bold">$29</span>
+                  <span className="text-gray-500 text-base font-normal">/mo</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -428,7 +429,8 @@ export default function ForSpeakers() {
                 <h3 className="text-2xl font-bold">Premier Speaker</h3>
                 <p className="text-sm text-gray-600 mt-1">Maximum Exposure</p>
                 <div className="mt-4">
-                  <span className="text-3xl font-bold">Contact Us</span>
+                  <span className="text-3xl font-bold">$99</span>
+                  <span className="text-gray-500 text-base font-normal">/mo</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
