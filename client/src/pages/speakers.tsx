@@ -293,7 +293,7 @@ export default function Speakers() {
                   </h2>
                   {filters.category && (
                     <p className="text-lg text-gray-600">
-                      Category: <span className="font-medium text-primary">{filters.category}</span>
+                      Discipline: <span className="font-medium text-primary">{filters.category}</span>
                     </p>
                   )}
                   {!isLoading && speakers && speakers.length > SPEAKERS_PER_PAGE && (

@@ -43,7 +43,7 @@ const speakerApplicationSchema = z.object({
   selectedCategories: z.array(z.string()).optional().default([]), // Optional for backward compatibility
   selectedTopicIds: z.array(z.number()).optional().default([]), // Legacy, no longer required
   selectedDisciplineId: z.number({ required_error: "Please select a discipline" }),
-  selectedCategoryIds: z.array(z.number()).min(1, "Please select at least one category").max(3, "Please select up to 3 categories"),
+  selectedCategoryIds: z.array(z.number()).min(1, "Please select at least one discipline").max(3, "Please select up to 3 disciplines"),
   specificTopics: z.string().min(10, "Please provide specific topics (at least 10 characters)"),
   previousExperience: z.string().min(1, "Previous speaking experience is required"),
   availableFormats: z.array(z.string()).min(1, "Please select at least one format"),

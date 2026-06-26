@@ -1876,7 +1876,7 @@ export default function SpeakerProfile() {
           <DialogHeader>
             <DialogTitle>Leave a Review for {speaker?.name}</DialogTitle>
             <DialogDescription>
-              Please rate the speaker in each category and provide detailed feedback about your experience.
+              Please rate the speaker in each area and provide detailed feedback about your experience.
             </DialogDescription>
           </DialogHeader>
           <Form {...reviewForm}>
@@ -1895,9 +1895,9 @@ export default function SpeakerProfile() {
                     </FormItem>
                   )}
                 />
-                {/* Rating Categories */}
+                {/* Rating Areas */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Rate Each Category *</h3>
+                  <h3 className="font-semibold text-lg">Rate Each Area *</h3>
                   <p className="text-sm text-gray-600">Please rate the speaker in each of the following areas:</p>
                   
                   {/* Speaking Style Rating */}
