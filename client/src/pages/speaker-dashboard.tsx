@@ -21,6 +21,21 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import StorageUsage from "@/components/StorageUsage";
 import { DisciplineCategorySelector, DisciplineSummary } from "@/components/discipline-category-selector";
+
+// Maps discipline IDs to the relevant speaking_topics categories shown in that discipline
+const DISCIPLINE_TOPIC_CATEGORIES: Record<number, string[] | null> = {
+  1:  ['Endodontics', 'Anesthesia & Sedation', 'Technology & Innovation', 'Research', 'Education & Training'],
+  2:  ['Practice Management', 'Digital Dentistry', 'Esthetic Dentistry', 'Implant Dentistry', 'Technology & Innovation', 'Education & Training', 'Leadership', 'AI & Innovation', 'Research'],
+  3:  ['Oral Surgery', 'Anesthesia & Sedation', 'Bone Grafting & Regeneration', 'Implant Dentistry', 'Technology & Innovation', 'Research', 'Education & Training'],
+  4:  ['Periodontics', 'Bone Grafting & Regeneration', 'Implant Dentistry', 'Technology & Innovation', 'Research', 'Education & Training'],
+  5:  ['Orthodontics', 'Technology & Innovation', 'Digital Dentistry', 'Education & Training', 'Research'],
+  6:  ['Prosthodontics', 'Full Arch Rehabilitation', 'Esthetic Dentistry', 'Implant Dentistry', 'Digital Dentistry', 'Technology & Innovation', 'Education & Training'],
+  7:  ['Digital Dentistry', 'Technology & Innovation', 'Prosthodontics', 'Education & Training', 'AI & Innovation', 'Research'],
+  8:  ['Periodontics', 'Education & Training', 'Practice Management', 'Research', 'Leadership'],
+  9:  ['Education & Training', 'Practice Management', 'Research', 'Leadership', 'Anesthesia & Sedation'],
+  10: null, // Miscellaneous → show all
+  12: ['Education & Training', 'Practice Management', 'Anesthesia & Sedation', 'Orthodontics', 'Research', 'Esthetic Dentistry'],
+};
 import { useTierLimit, useTierLimits, getTierLimitValue, isWithinLimit, isNearLimit, getUsagePercentage, formatTierLimit } from "@/hooks/useTierLimits";
 import { cn } from "@/lib/utils";
 // import { useAuth } from "@/providers/AuthProvider";
@@ -467,6 +482,11 @@ export default function SpeakerDashboard() {
       if (!response.ok) throw new Error('Failed to fetch topics');
       return response.json();
     },
+  });
+
+  // Fetch all disciplines (for the discipline selector)
+  const { data: allDisciplines } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ['/api/disciplines'],
   });
 
   // Fetch speaker content
@@ -2430,253 +2450,283 @@ export default function SpeakerDashboard() {
                   </Card>
                 )}
 
-                {/* Discipline & Categories */}
+                {/* Discipline & Speaking Topics — unified card */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <BookOpen className="h-5 w-5 mr-2" />
-                        Discipline & Topics
-                      </div>
-                      {!isEditingDiscipline && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsEditingDiscipline(true)}
-                          data-testid="button-edit-discipline"
-                        >
-                          <Edit3 className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                      )}
+                    <CardTitle className="flex items-center">
+                      <BookOpen className="h-5 w-5 mr-2" />
+                      Discipline &amp; Speaking Topics
                     </CardTitle>
+                    <CardDescription>
+                      Choose your discipline, then pick up to {topicLimit ?? 3} speaking topics within it.
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    {isEditingDiscipline ? (
-                      <div className="space-y-4">
-                        <DisciplineCategorySelector
-                          selectedDisciplineId={selectedDisciplineId}
-                          selectedCategoryIds={selectedCategoryIds}
-                          onChange={(disciplineId, categoryIds) => {
-                            setSelectedDisciplineId(disciplineId);
-                            setSelectedCategoryIds(categoryIds);
-                          }}
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => {
-                              if (selectedDisciplineId == null) {
-                                toast({
-                                  title: "Discipline Required",
-                                  description: "Please select a discipline before saving.",
-                                  variant: "destructive",
-                                });
-                                return;
-                              }
-                              updateDisciplineMutation.mutate({
-                                disciplineId: selectedDisciplineId,
-                                categoryIds: selectedCategoryIds,
-                              });
-                            }}
-                            disabled={updateDisciplineMutation.isPending}
-                            data-testid="button-save-discipline"
-                          >
-                            {updateDisciplineMutation.isPending ? "Saving..." : "Save"}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setIsEditingDiscipline(false);
-                              setSelectedDisciplineId(speakerProfile?.disciplineId ?? null);
-                              setSelectedCategoryIds(speakerProfile?.speakerCategoryIds || []);
-                            }}
-                            data-testid="button-cancel-discipline"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <DisciplineSummary
-                        disciplineId={speakerProfile?.disciplineId ?? null}
-                        categoryIds={speakerProfile?.speakerCategoryIds || []}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
+                  <CardContent className="space-y-6">
 
-                {/* Speaking Topics */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <BookOpen className="h-5 w-5 mr-2" />
-                        Speaking Topics
+                    {/* ── Discipline section ── */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-semibold text-gray-700">Your Discipline</h4>
+                        {!isEditingDiscipline && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsEditingDiscipline(true)}
+                            data-testid="button-edit-discipline"
+                          >
+                            <Edit3 className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
                       </div>
-                      {!isEditingTopics && (
-                        <Button variant="ghost" size="sm" onClick={handleEditTopics}>
-                          <Edit3 className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
+
+                      {isEditingDiscipline ? (
+                        <div className="space-y-3">
+                          <Select
+                            value={selectedDisciplineId != null ? String(selectedDisciplineId) : ''}
+                            onValueChange={(val) => {
+                              setSelectedDisciplineId(Number(val));
+                              setSelectedCategoryIds([]);
+                            }}
+                          >
+                            <SelectTrigger data-testid="select-discipline">
+                              <SelectValue placeholder="Select a discipline…" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(allDisciplines || []).map((d) => (
+                                <SelectItem key={d.id} value={String(d.id)}>
+                                  {d.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                if (selectedDisciplineId == null) {
+                                  toast({
+                                    title: "Discipline Required",
+                                    description: "Please select a discipline before saving.",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                updateDisciplineMutation.mutate({
+                                  disciplineId: selectedDisciplineId,
+                                  categoryIds: selectedCategoryIds,
+                                });
+                              }}
+                              disabled={updateDisciplineMutation.isPending}
+                              data-testid="button-save-discipline"
+                            >
+                              {updateDisciplineMutation.isPending ? "Saving…" : "Save Discipline"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setIsEditingDiscipline(false);
+                                setSelectedDisciplineId(speakerProfile?.disciplineId ?? null);
+                                setSelectedCategoryIds(speakerProfile?.speakerCategoryIds || []);
+                              }}
+                              data-testid="button-cancel-discipline"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          {speakerProfile?.disciplineId ? (
+                            <Badge className="text-sm px-3 py-1">
+                              {(allDisciplines || []).find((d) => d.id === speakerProfile.disciplineId)?.name ?? `Discipline #${speakerProfile.disciplineId}`}
+                            </Badge>
+                          ) : (
+                            <p className="text-sm text-gray-500">No discipline assigned yet.</p>
+                          )}
+                        </div>
                       )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {isEditingTopics ? (
-                      <div className="space-y-4">
-                        {/* Search and Category Filter */}
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </div>
+
+                    <Separator />
+
+                    {/* ── Speaking Topics section ── */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-700">Speaking Topics</h4>
+                          {speakerProfile?.disciplineId && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              Showing topics for{' '}
+                              <span className="font-medium">
+                                {(allDisciplines || []).find((d) => d.id === speakerProfile.disciplineId)?.name ?? 'your discipline'}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                        {!isEditingTopics && (
+                          <Button variant="ghost" size="sm" onClick={handleEditTopics}>
+                            <Edit3 className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                      </div>
+
+                      {isEditingTopics ? (
+                        <div className="space-y-4">
+                          {/* Search */}
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
-                              placeholder="Search topics..."
+                              placeholder="Search topics…"
                               value={topicSearchTerm}
                               onChange={(e) => setTopicSearchTerm(e.target.value)}
                               className="pl-9"
                               data-testid="input-topic-search"
                             />
                           </div>
-                          <Select value={topicCategoryFilter} onValueChange={setTopicCategoryFilter}>
-                            <SelectTrigger className="w-full sm:w-[200px]" data-testid="select-topic-category">
-                              <SelectValue placeholder="Filter by category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Categories</SelectItem>
-                              {(Array.from(new Set(allTopics?.map((t: any) => t.category).filter(Boolean) || [])) as string[]).sort().map((category: string) => (
-                                <SelectItem key={category} value={category}>
-                                  {category}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        {/* Selected Topics Chips */}
-                        {selectedTopics.length > 0 && (
-                          <div className="border rounded-lg p-3 bg-gray-50">
-                            <p className="text-xs font-medium text-gray-500 mb-2">Selected Topics ({selectedTopics.length}{topicLimit !== null ? `/${topicLimit}` : ''}):</p>
-                            <div className="flex flex-wrap gap-2">
-                              {selectedTopics.map((topicId) => {
-                                const topic = allTopics?.find((t: any) => t.id === topicId);
-                                if (!topic) return null;
+
+                          {/* Selected chips */}
+                          {selectedTopics.length > 0 && (
+                            <div className="border rounded-lg p-3 bg-gray-50">
+                              <p className="text-xs font-medium text-gray-500 mb-2">
+                                Selected ({selectedTopics.length}{topicLimit !== null ? `/${topicLimit}` : ''}):
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {selectedTopics.map((topicId) => {
+                                  const topic = allTopics?.find((t: any) => t.id === topicId);
+                                  if (!topic) return null;
+                                  return (
+                                    <span
+                                      key={topicId}
+                                      className="inline-flex items-center gap-1 px-2 py-1 bg-white border rounded-full text-xs"
+                                    >
+                                      {topic.name}
+                                      <button
+                                        type="button"
+                                        onClick={() => handleTopicToggle(topicId)}
+                                        className="ml-0.5 hover:bg-gray-200 rounded-full p-0.5"
+                                      >
+                                        <X className="h-3 w-3 text-gray-500" />
+                                      </button>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Filtered topic list */}
+                          <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
+                            {(() => {
+                              const activeDisciplineId = selectedDisciplineId ?? speakerProfile?.disciplineId ?? null;
+                              const allowedCategories: string[] | null =
+                                activeDisciplineId != null
+                                  ? (DISCIPLINE_TOPIC_CATEGORIES[activeDisciplineId] ?? null)
+                                  : null;
+
+                              const filteredTopics = (allTopics || []).filter((topic: any) => {
+                                const matchesSearch =
+                                  !topicSearchTerm ||
+                                  topic.name.toLowerCase().includes(topicSearchTerm.toLowerCase());
+                                const matchesDiscipline =
+                                  allowedCategories === null ||
+                                  allowedCategories.includes(topic.category);
+                                return matchesSearch && matchesDiscipline;
+                              });
+
+                              if (filteredTopics.length === 0) {
                                 return (
-                                  <span
-                                    key={topicId}
-                                    className="inline-flex items-center gap-1 px-2 py-1 bg-white border rounded-full text-xs"
+                                  <p className="text-sm text-gray-500 text-center py-4">
+                                    No topics found. Try a different search.
+                                  </p>
+                                );
+                              }
+
+                              return filteredTopics.map((topic: any) => (
+                                <div key={topic.id} className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    id={`topic-${topic.id}`}
+                                    checked={selectedTopics.includes(topic.id)}
+                                    onChange={() => handleTopicToggle(topic.id)}
+                                    className="rounded border-gray-300"
+                                  />
+                                  <label
+                                    htmlFor={`topic-${topic.id}`}
+                                    className="text-sm cursor-pointer flex-1"
                                   >
                                     {topic.name}
-                                    <button
-                                      type="button"
-                                      onClick={() => handleTopicToggle(topicId)}
-                                      className="ml-0.5 hover:bg-gray-200 rounded-full p-0.5"
-                                    >
-                                      <X className="h-3 w-3 text-gray-500" />
-                                    </button>
-                                  </span>
-                                );
-                              })}
-                            </div>
+                                    {topic.category && (
+                                      <span className="text-xs text-gray-400 ml-2">
+                                        ({topic.category})
+                                      </span>
+                                    )}
+                                  </label>
+                                </div>
+                              ));
+                            })()}
                           </div>
-                        )}
 
-                        {/* Topics List */}
-                        <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
-                          {(() => {
-                            const filteredTopics = allTopics?.filter((topic: any) => {
-                              const matchesSearch = !topicSearchTerm || 
-                                topic.name.toLowerCase().includes(topicSearchTerm.toLowerCase());
-                              const matchesCategory = topicCategoryFilter === 'all' || 
-                                topic.category === topicCategoryFilter;
-                              return matchesSearch && matchesCategory;
-                            }) || [];
-                            
-                            if (filteredTopics.length === 0) {
-                              return (
-                                <p className="text-sm text-gray-500 text-center py-4">
-                                  No topics found matching your search.
-                                </p>
-                              );
-                            }
-                            
-                            return filteredTopics.map((topic: any) => (
-                              <div key={topic.id} className="flex items-center space-x-2">
-                                <input
-                                  type="checkbox"
-                                  id={`topic-${topic.id}`}
-                                  checked={selectedTopics.includes(topic.id)}
-                                  onChange={() => handleTopicToggle(topic.id)}
-                                  className="rounded border-gray-300"
-                                />
-                                <label
-                                  htmlFor={`topic-${topic.id}`}
-                                  className="text-sm cursor-pointer flex-1"
-                                >
-                                  {topic.name}
-                                  {topic.category && (
-                                    <span className="text-xs text-gray-500 ml-2">
-                                      ({topic.category})
-                                    </span>
-                                  )}
-                                </label>
-                              </div>
-                            ));
-                          })()}
-                        </div>
-                        {/* Near-limit warning for topics */}
-                        {topicLimit !== null && isNearLimit(selectedTopics.length, topicLimit) && selectedTopics.length < topicLimit && (
-                          <Alert className="border-amber-500 bg-amber-50">
-                            <AlertTriangle className="h-4 w-4 text-amber-600" />
-                            <AlertTitle className="text-amber-900">Approaching Topic Limit</AlertTitle>
-                            <AlertDescription className="text-amber-800">
-                              You have {topicLimit - selectedTopics.length} topic{topicLimit - selectedTopics.length !== 1 ? 's' : ''} remaining on your {speakerProfile?.subscriptionTier || 'Basic'} plan.
-                              {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
-                                <> <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to add more topics</Link>.</>
+                          {/* Near-limit warning */}
+                          {topicLimit !== null && isNearLimit(selectedTopics.length, topicLimit) && selectedTopics.length < topicLimit && (
+                            <Alert className="border-amber-500 bg-amber-50">
+                              <AlertTriangle className="h-4 w-4 text-amber-600" />
+                              <AlertTitle className="text-amber-900">Approaching Topic Limit</AlertTitle>
+                              <AlertDescription className="text-amber-800">
+                                {topicLimit - selectedTopics.length} topic{topicLimit - selectedTopics.length !== 1 ? 's' : ''} remaining on your {speakerProfile?.subscriptionTier || 'Basic'} plan.
+                                {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                                  <> <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to add more</Link>.</>
+                                )}
+                              </AlertDescription>
+                            </Alert>
+                          )}
+
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              onClick={handleSaveTopics}
+                              disabled={updateTopicsMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700"
+                              data-testid="button-save-topics"
+                            >
+                              {updateTopicsMutation.isPending ? (
+                                <>
+                                  <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                                  Saving…
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="h-4 w-4 mr-1" />
+                                  Save Topics
+                                </>
                               )}
-                            </AlertDescription>
-                          </Alert>
-                        )}
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={handleSaveTopics}
-                            disabled={updateTopicsMutation.isPending}
-                            className="bg-green-600 hover:bg-green-700"
-                            data-testid="button-save-topics"
-                          >
-                            {updateTopicsMutation.isPending ? (
-                              <>
-                                <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
-                                Saving...
-                              </>
-                            ) : (
-                              <>
-                                <Save className="h-4 w-4 mr-1" />
-                                Save
-                              </>
-                            )}
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={handleCancelTopicsEdit}>
-                            Cancel
-                          </Button>
-                        </div>
-                        {renderTopicUsage('edit')}
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {speakerTopics && speakerTopics.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {speakerTopics.map((topic: any) => (
-                              <Badge key={topic.id} variant="outline" className="text-xs">
-                                {topic.name}
-                              </Badge>
-                            ))}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={handleCancelTopicsEdit}>
+                              Cancel
+                            </Button>
                           </div>
-                        ) : (
-                          <p className="text-sm text-gray-500">No speaking topics selected</p>
-                        )}
-                        {renderTopicUsage('view')}
-                      </div>
-                    )}
+                          {renderTopicUsage('edit')}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {speakerTopics && speakerTopics.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {speakerTopics.map((topic: any) => (
+                                <Badge key={topic.id} variant="outline" className="text-xs">
+                                  {topic.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">No speaking topics selected yet. Click Edit to add some.</p>
+                          )}
+                          {renderTopicUsage('view')}
+                        </div>
+                      )}
+                    </div>
+
                   </CardContent>
                 </Card>
               </div>
