@@ -17,6 +17,7 @@ interface FilterState {
   category?: string;
   categories?: string[];
   disciplineId?: number;
+  disciplineIds?: number[];
   categoryIds?: number[];
   topics?: string[];
   location?: string;
@@ -65,15 +66,19 @@ export default function Speakers() {
   const { data: speakers, isLoading, error } = useQuery<Speaker[]>({
     queryKey: ["/api/speakers", filters],
     queryFn: async () => {
-      // New two-level taxonomy: filter by discipline (+ optional categories)
-      if (filters.disciplineId != null) {
-        const params = new URLSearchParams();
-        if (filters.categoryIds && filters.categoryIds.length > 0) {
-          params.append("categoryIds", filters.categoryIds.join(","));
-        }
+      // Multi-discipline checkbox filter
+      const activeDisciplineIds = filters.disciplineIds && filters.disciplineIds.length > 0
+        ? filters.disciplineIds
+        : filters.disciplineId != null
+          ? [filters.disciplineId]
+          : [];
+
+      if (activeDisciplineIds.length > 0) {
+        const extraParams = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
           if (
             key !== "disciplineId" &&
+            key !== "disciplineIds" &&
             key !== "categoryIds" &&
             key !== "categories" &&
             key !== "category" &&
@@ -81,16 +86,30 @@ export default function Speakers() {
             value !== ""
           ) {
             if (Array.isArray(value)) {
-              value.forEach((item) => params.append(key, item.toString()));
+              value.forEach((item) => extraParams.append(key, item.toString()));
             } else {
-              params.append(key, value.toString());
+              extraParams.append(key, value.toString());
             }
           }
         });
-        const url = `/api/disciplines/${filters.disciplineId}/speakers${params.toString() ? "?" + params.toString() : ""}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Failed to fetch speakers for discipline");
-        return response.json();
+
+        const fetches = activeDisciplineIds.map((dId) => {
+          const url = `/api/disciplines/${dId}/speakers${extraParams.toString() ? "?" + extraParams.toString() : ""}`;
+          return fetch(url).then((r) => r.ok ? r.json() : []);
+        });
+
+        const results: Speaker[][] = await Promise.all(fetches);
+        const seen = new Set<number>();
+        const merged: Speaker[] = [];
+        for (const list of results) {
+          for (const s of list) {
+            if (!seen.has(s.id)) {
+              seen.add(s.id);
+              merged.push(s);
+            }
+          }
+        }
+        return merged;
       }
 
       // Normalize single category to array for consistent handling

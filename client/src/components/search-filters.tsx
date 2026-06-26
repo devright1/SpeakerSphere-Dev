@@ -6,7 +6,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DisciplineWithCounts {
   id: number;
@@ -15,18 +14,12 @@ interface DisciplineWithCounts {
   speakerCount: number;
 }
 
-interface CategoryItem {
-  id: number;
-  name: string;
-}
-
 interface SearchFiltersProps {
   onFilterChange: (filters: any) => void;
 }
 
 export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
-  const [selectedDisciplineId, setSelectedDisciplineId] = useState<number | null>(null);
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [selectedDisciplineIds, setSelectedDisciplineIds] = useState<number[]>([]);
   const [priceRange, setPriceRange] = useState("");
   const [showFeeRange, setShowFeeRange] = useState(false);
 
@@ -38,36 +31,17 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
     queryKey: ["/api/disciplines"],
   });
 
-  const { data: categories } = useQuery<CategoryItem[]>({
-    queryKey: ["/api/disciplines", selectedDisciplineId, "categories"],
-    queryFn: async () => {
-      const response = await fetch(`/api/disciplines/${selectedDisciplineId}/categories`);
-      if (!response.ok) throw new Error("Failed to fetch categories");
-      return response.json();
-    },
-    enabled: selectedDisciplineId != null,
-  });
-
-  const handleDisciplineChange = (value: string) => {
-    const id = parseInt(value);
-    setSelectedDisciplineId(isNaN(id) ? null : id);
-    setSelectedCategoryIds([]);
-  };
-
-  const handleCategoryChange = (categoryId: number, checked: boolean) => {
-    setSelectedCategoryIds((prev) =>
-      checked ? [...prev, categoryId] : prev.filter((id) => id !== categoryId)
+  const handleDisciplineToggle = (id: number, checked: boolean) => {
+    setSelectedDisciplineIds((prev) =>
+      checked ? [...prev, id] : prev.filter((d) => d !== id)
     );
   };
 
   const applyFilters = () => {
     const filters: any = {};
 
-    if (selectedDisciplineId != null) {
-      filters.disciplineId = selectedDisciplineId;
-      if (selectedCategoryIds.length > 0) {
-        filters.categoryIds = selectedCategoryIds;
-      }
+    if (selectedDisciplineIds.length > 0) {
+      filters.disciplineIds = selectedDisciplineIds;
     }
 
     if (priceRange) {
@@ -93,11 +67,14 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
   };
 
   const clearFilters = () => {
-    setSelectedDisciplineId(null);
-    setSelectedCategoryIds([]);
+    setSelectedDisciplineIds([]);
     setPriceRange("");
     onFilterChange({});
   };
+
+  const sortedDisciplines = (disciplines || [])
+    .slice()
+    .sort((a, b) => (b.speakerCount || 0) - (a.speakerCount || 0));
 
   return (
     <Card className="sticky top-6 shadow-lg border-0">
@@ -113,51 +90,29 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
         {/* Discipline */}
         <div>
           <h4 className="font-semibold text-gray-900 mb-4 text-lg">Discipline</h4>
-          <Select
-            value={selectedDisciplineId != null ? String(selectedDisciplineId) : ""}
-            onValueChange={handleDisciplineChange}
-          >
-            <SelectTrigger data-testid="select-filter-discipline">
-              <SelectValue placeholder="All disciplines" />
-            </SelectTrigger>
-            <SelectContent>
-              {(disciplines || [])
-                .slice()
-                .sort((a, b) => (b.speakerCount || 0) - (a.speakerCount || 0))
-                .map((d) => (
-                  <SelectItem key={d.id} value={String(d.id)}>
-                    {d.name} ({d.speakerCount})
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Topics (dynamic) */}
-        {selectedDisciplineId != null && (categories || []).length > 0 && (
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-4 text-lg">Topics</h4>
-            <div className="space-y-3">
-              {(categories || []).map((category) => (
-                <div key={category.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`category-${category.id}`}
-                    checked={selectedCategoryIds.includes(category.id)}
-                    onCheckedChange={(checked) =>
-                      handleCategoryChange(category.id, checked as boolean)
-                    }
-                  />
-                  <Label
-                    htmlFor={`category-${category.id}`}
-                    className="text-sm font-medium leading-none"
-                  >
-                    {category.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
+          <div className="space-y-3">
+            {sortedDisciplines.map((d) => (
+              <div key={d.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`discipline-${d.id}`}
+                  checked={selectedDisciplineIds.includes(d.id)}
+                  onCheckedChange={(checked) =>
+                    handleDisciplineToggle(d.id, checked as boolean)
+                  }
+                />
+                <Label
+                  htmlFor={`discipline-${d.id}`}
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  {d.name}
+                  {d.speakerCount > 0 && (
+                    <span className="ml-1 text-gray-400 font-normal">({d.speakerCount})</span>
+                  )}
+                </Label>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
 
         {showFeeRange && (
           <>
