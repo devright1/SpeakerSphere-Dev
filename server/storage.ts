@@ -145,7 +145,7 @@ export interface IStorage {
   getSpeakersByMigrationStatus(status: string): Promise<Speaker[]>;
   
   // Speaking Topics
-  getSpeakingTopics(): Promise<SpeakingTopic[]>;
+  getSpeakingTopics(disciplineId?: number): Promise<SpeakingTopic[]>;
   createSpeakingTopic(topic: InsertSpeakingTopic): Promise<SpeakingTopic>;
   getSpeakingTopicByName(name: string): Promise<SpeakingTopic | undefined>;
   updateTopicSpeakerCount(topicId: number): Promise<void>;

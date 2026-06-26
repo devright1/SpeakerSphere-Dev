@@ -660,9 +660,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Speaking Topics
-  async getSpeakingTopics(): Promise<SpeakingTopic[]> {
+  async getSpeakingTopics(disciplineId?: number): Promise<SpeakingTopic[]> {
+    const conditions = [eq(speakingTopics.isActive, true)];
+    if (disciplineId !== undefined) {
+      conditions.push(eq(speakingTopics.disciplineId, disciplineId));
+    }
     const result = await db.select().from(speakingTopics)
-      .where(eq(speakingTopics.isActive, true))
+      .where(and(...conditions))
       .orderBy(speakingTopics.name);
     return result;
   }

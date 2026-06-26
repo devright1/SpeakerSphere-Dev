@@ -22,20 +22,6 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import StorageUsage from "@/components/StorageUsage";
 import { DisciplineCategorySelector, DisciplineSummary } from "@/components/discipline-category-selector";
 
-// Maps discipline IDs to the relevant speaking_topics categories shown in that discipline
-const DISCIPLINE_TOPIC_CATEGORIES: Record<number, string[] | null> = {
-  1:  ['Endodontics', 'Anesthesia & Sedation', 'Technology & Innovation', 'Research', 'Education & Training'],
-  2:  ['Practice Management', 'Digital Dentistry', 'Esthetic Dentistry', 'Implant Dentistry', 'Technology & Innovation', 'Education & Training', 'Leadership', 'AI & Innovation', 'Research'],
-  3:  ['Oral Surgery', 'Anesthesia & Sedation', 'Bone Grafting & Regeneration', 'Implant Dentistry', 'Technology & Innovation', 'Research', 'Education & Training'],
-  4:  ['Periodontics', 'Bone Grafting & Regeneration', 'Implant Dentistry', 'Technology & Innovation', 'Research', 'Education & Training'],
-  5:  ['Orthodontics', 'Technology & Innovation', 'Digital Dentistry', 'Education & Training', 'Research'],
-  6:  ['Prosthodontics', 'Full Arch Rehabilitation', 'Esthetic Dentistry', 'Implant Dentistry', 'Digital Dentistry', 'Technology & Innovation', 'Education & Training'],
-  7:  ['Digital Dentistry', 'Technology & Innovation', 'Prosthodontics', 'Education & Training', 'AI & Innovation', 'Research'],
-  8:  ['Periodontics', 'Education & Training', 'Practice Management', 'Research', 'Leadership'],
-  9:  ['Education & Training', 'Practice Management', 'Research', 'Leadership', 'Anesthesia & Sedation'],
-  10: null, // Miscellaneous → show all
-  12: ['Education & Training', 'Practice Management', 'Anesthesia & Sedation', 'Orthodontics', 'Research', 'Esthetic Dentistry'],
-};
 import { useTierLimit, useTierLimits, getTierLimitValue, isWithinLimit, isNearLimit, getUsagePercentage, formatTierLimit } from "@/hooks/useTierLimits";
 import { cn } from "@/lib/utils";
 // import { useAuth } from "@/providers/AuthProvider";
@@ -474,11 +460,15 @@ export default function SpeakerDashboard() {
     enabled: !!speakerProfile?.id,
   });
 
-  // Fetch all available topics
+  // Fetch topics filtered to the speaker's discipline (re-fetches when discipline changes)
+  const activeDisciplineId = speakerProfile?.disciplineId ?? null;
   const { data: allTopics } = useQuery({
-    queryKey: ['/api/topics'],
+    queryKey: ['/api/topics', activeDisciplineId],
     queryFn: async () => {
-      const response = await fetch('/api/topics');
+      const url = activeDisciplineId
+        ? `/api/topics?disciplineId=${activeDisciplineId}`
+        : '/api/topics';
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch topics');
       return response.json();
     },
@@ -2617,24 +2607,13 @@ export default function SpeakerDashboard() {
                             </div>
                           )}
 
-                          {/* Filtered topic list */}
+                          {/* Topic list — already filtered by discipline via the API */}
                           <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
                             {(() => {
-                              const activeDisciplineId = selectedDisciplineId ?? speakerProfile?.disciplineId ?? null;
-                              const allowedCategories: string[] | null =
-                                activeDisciplineId != null
-                                  ? (DISCIPLINE_TOPIC_CATEGORIES[activeDisciplineId] ?? null)
-                                  : null;
-
-                              const filteredTopics = (allTopics || []).filter((topic: any) => {
-                                const matchesSearch =
-                                  !topicSearchTerm ||
-                                  topic.name.toLowerCase().includes(topicSearchTerm.toLowerCase());
-                                const matchesDiscipline =
-                                  allowedCategories === null ||
-                                  allowedCategories.includes(topic.category);
-                                return matchesSearch && matchesDiscipline;
-                              });
+                              const filteredTopics = (allTopics || []).filter((topic: any) =>
+                                !topicSearchTerm ||
+                                topic.name.toLowerCase().includes(topicSearchTerm.toLowerCase())
+                              );
 
                               if (filteredTopics.length === 0) {
                                 return (

@@ -1341,7 +1341,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Get all speaking topics
   app.get("/api/topics", async (req, res) => {
     try {
-      const topics = await storage.getSpeakingTopics();
+      const disciplineId = req.query.disciplineId ? parseInt(req.query.disciplineId as string) : undefined;
+      const topics = await storage.getSpeakingTopics(disciplineId);
       res.json(topics);
     } catch (error) {
       console.error("Error fetching topics:", error);

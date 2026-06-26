@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid, customType, bigint, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, uuid, customType, bigint, date, unique } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -163,14 +163,18 @@ export const videos = pgTable("videos", {
 // Speaking topics table for organizing topics from CSV
 export const speakingTopics = pgTable("speaking_topics", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull(),
   description: text("description"),
   speakerCount: integer("speaker_count").default(0),
-  category: text("category"), // Optional grouping for similar topics
+  category: text("category"), // Discipline name this topic belongs to
+  disciplineId: integer("discipline_id"), // FK to disciplines table
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  disciplineNameUnique: unique("speaking_topics_discipline_name_unique").on(t.disciplineId, t.name),
+  disciplineSlugUnique: unique("speaking_topics_discipline_slug_unique").on(t.disciplineId, t.slug),
+}));
 
 // Junction table linking speakers to their speaking topics
 export const speakerTopics = pgTable("speaker_topics", {
