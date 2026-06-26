@@ -262,6 +262,45 @@ The SpeakerSphere Team`
     return await this.sendEmail(template);
   }
 
+  async sendResetCode(email: string, firstName: string, code: string): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: email,
+      from: FROM_EMAIL,
+      subject: 'SpeakerSphere - Your Password Reset Code',
+      html: getEmailWrapper(`
+          <h2 style="color: #1e4347; margin-top: 0; font-size: 22px;">Password Reset Code</h2>
+          
+          <p style="color: #3a3a3a; line-height: 1.6;">Hi ${firstName},</p>
+          
+          <p style="color: #3a3a3a; line-height: 1.6;">We received a request to reset your SpeakerSphere password. Use the code below — it expires in <strong>15 minutes</strong>.</p>
+          
+          <div style="background-color: #eef4f5; padding: 28px; border-radius: 8px; margin: 24px 0; text-align: center; border-left: 4px solid #1e4347;">
+            <p style="color: #6b8285; font-size: 13px; margin: 0 0 12px 0; letter-spacing: 0.5px; text-transform: uppercase;">Your reset code</p>
+            <span style="font-family: 'Courier New', monospace; font-size: 38px; font-weight: 700; letter-spacing: 10px; color: #1e4347; display: inline-block; padding: 8px 16px; background: #fff; border-radius: 6px; border: 2px solid #1e4347;">${code}</span>
+            <p style="color: #8b6914; font-size: 12px; margin: 16px 0 0 0;">Expires in 15 minutes. Do not share this code with anyone.</p>
+          </div>
+          
+          <p style="color: #3a3a3a; line-height: 1.6;">Enter this code on the SpeakerSphere login page along with your new password to complete the reset.</p>
+          
+          <p style="color: #6b8285; font-size: 12px;">If you did not request a password reset, you can safely ignore this email. Your account remains secure.</p>
+          
+          <p style="color: #3a3a3a;">Best regards,<br><strong style="color: #1e4347;">The SpeakerSphere Team</strong></p>
+      `),
+      text: `SpeakerSphere Password Reset
+
+Hi ${firstName},
+
+Your password reset code is: ${code}
+
+This code expires in 15 minutes. Do not share it with anyone.
+
+If you didn't request this, you can safely ignore this email.
+
+The SpeakerSphere Team`
+    };
+    return await this.sendEmail(template);
+  }
+
   async sendPasswordReset(email: string, firstName: string, temporaryPassword: string): Promise<boolean> {
     const template: EmailTemplate = {
       to: email,

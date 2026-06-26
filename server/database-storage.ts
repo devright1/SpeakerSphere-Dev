@@ -23,6 +23,7 @@ import {
   subscriptionHistory,
   tierLimits,
   speakerEvents,
+  passwordResetCodes,
   type Speaker, 
   type InsertSpeaker, 
   type Review, 
@@ -2200,6 +2201,31 @@ export class DatabaseStorage implements IStorage {
   async invalidateAllUserSessions(userId: string): Promise<void> {
     await db.delete(userSessions)
       .where(eq(userSessions.userId, userId));
+  }
+
+  async savePasswordResetCode(userId: string, codeHash: string, expiresAt: Date): Promise<void> {
+    await db.delete(passwordResetCodes).where(eq(passwordResetCodes.userId, userId));
+    await db.insert(passwordResetCodes).values({ userId, codeHash, expiresAt });
+  }
+
+  async verifyAndConsumeResetCode(userId: string, codeHash: string): Promise<boolean> {
+    const result = await db.select().from(passwordResetCodes)
+      .where(and(
+        eq(passwordResetCodes.userId, userId),
+        eq(passwordResetCodes.codeHash, codeHash),
+        gte(passwordResetCodes.expiresAt, new Date()),
+        isNull(passwordResetCodes.usedAt)
+      ))
+      .limit(1);
+    if (!result[0]) return false;
+    await db.update(passwordResetCodes)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResetCodes.id, result[0].id));
+    return true;
+  }
+
+  async deletePasswordResetCodes(userId: string): Promise<void> {
+    await db.delete(passwordResetCodes).where(eq(passwordResetCodes.userId, userId));
   }
 
   // Review management methods

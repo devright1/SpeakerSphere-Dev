@@ -114,6 +114,10 @@ export default function ForSpeakers() {
   const [activeTab, setActiveTab] = useState("signin");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [resetStep, setResetStep] = useState<'email' | 'code' | 'done'>('email');
+  const [resetCode, setResetCode] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetConfirm, setResetConfirm] = useState('');
 
   // Sign In Form
   const signInForm = useForm<SignInForm>({
@@ -174,27 +178,50 @@ export default function ForSpeakers() {
     },
   });
 
-  // Forgot Password Mutation
-  const forgotPasswordMutation = useMutation({
-    mutationFn: async (email: string) => {
-      return apiRequest("POST", "/api/auth/forgot-password", { email });
-    },
+  // Step 1 — send 6-digit code
+  const sendCodeMutation = useMutation({
+    mutationFn: async (email: string) =>
+      apiRequest("POST", "/api/auth/send-reset-code", { email }),
     onSuccess: () => {
-      toast({
-        title: "Check Your Email",
-        description: "If an account exists with that email, a new temporary password has been sent.",
-      });
-      setShowForgotPassword(false);
-      setForgotEmail("");
+      setResetStep('code');
     },
     onError: () => {
+      toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" });
+    },
+  });
+
+  // Step 2 — verify code + set new password
+  const confirmResetMutation = useMutation({
+    mutationFn: async () =>
+      apiRequest("POST", "/api/auth/confirm-reset", {
+        email: forgotEmail,
+        code: resetCode,
+        password: resetPassword,
+        confirmPassword: resetConfirm,
+      }),
+    onSuccess: () => {
+      setResetStep('done');
+      toast({ title: "Password Updated!", description: "You can now sign in with your new password." });
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setResetStep('email');
+        setForgotEmail('');
+        setResetCode('');
+        setResetPassword('');
+        setResetConfirm('');
+      }, 2500);
+    },
+    onError: (error: any) => {
       toast({
-        title: "Something went wrong",
-        description: "Please try again later.",
+        title: "Reset Failed",
+        description: error.message || "Invalid or expired code. Please try again.",
         variant: "destructive",
       });
     },
   });
+
+  // Keep legacy name alias for any remaining references
+  const forgotPasswordMutation = sendCodeMutation;
 
   // Application Submission Mutation
   const applicationMutation = useMutation({
@@ -579,33 +606,122 @@ export default function ForSpeakers() {
 
                   {showForgotPassword && (
                     <div className="mt-6 max-w-md mx-auto p-6 bg-gray-50 rounded-lg border">
-                      <h3 className="text-lg font-semibold mb-2">Reset Your Password</h3>
-                      <p className="text-sm text-gray-600 mb-4">
-                        Enter your email address and we'll send you a new temporary password.
-                      </p>
-                      <div className="space-y-3">
-                        <Input
-                          type="email"
-                          placeholder="your.email@example.com"
-                          value={forgotEmail}
-                          onChange={(e) => setForgotEmail(e.target.value)}
-                        />
-                        <div className="flex gap-3">
-                          <Button
-                            className="flex-1"
-                            onClick={() => forgotPasswordMutation.mutate(forgotEmail)}
-                            disabled={!forgotEmail || forgotPasswordMutation.isPending}
-                          >
-                            {forgotPasswordMutation.isPending ? "Sending..." : "Send New Password"}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => { setShowForgotPassword(false); setForgotEmail(""); }}
-                          >
-                            Cancel
-                          </Button>
+                      {resetStep === 'email' && (
+                        <>
+                          <h3 className="text-lg font-semibold mb-1">Reset Your Password</h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Enter your email and we'll send a 6-digit code to verify it's you.
+                          </p>
+                          <div className="space-y-3">
+                            <Input
+                              type="email"
+                              placeholder="your.email@example.com"
+                              value={forgotEmail}
+                              onChange={(e) => setForgotEmail(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && forgotEmail && sendCodeMutation.mutate(forgotEmail)}
+                            />
+                            <div className="flex gap-3">
+                              <Button
+                                className="flex-1"
+                                onClick={() => sendCodeMutation.mutate(forgotEmail)}
+                                disabled={!forgotEmail || sendCodeMutation.isPending}
+                              >
+                                {sendCodeMutation.isPending ? "Sending..." : "Send Code"}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => { setShowForgotPassword(false); setForgotEmail(""); setResetStep('email'); }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {resetStep === 'code' && (
+                        <>
+                          <h3 className="text-lg font-semibold mb-1">Enter Your Code</h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            We sent a 6-digit code to <strong>{forgotEmail}</strong>. It expires in 15 minutes.
+                          </p>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-sm font-medium text-gray-700 block mb-1">6-Digit Code</label>
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={6}
+                                placeholder="123456"
+                                value={resetCode}
+                                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                className="text-center text-2xl tracking-widest font-mono"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-700 block mb-1">New Password</label>
+                              <Input
+                                type="password"
+                                placeholder="At least 8 characters"
+                                value={resetPassword}
+                                onChange={(e) => setResetPassword(e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-700 block mb-1">Confirm New Password</label>
+                              <Input
+                                type="password"
+                                placeholder="Repeat your new password"
+                                value={resetConfirm}
+                                onChange={(e) => setResetConfirm(e.target.value)}
+                              />
+                            </div>
+                            {resetPassword && resetConfirm && resetPassword !== resetConfirm && (
+                              <p className="text-xs text-red-600">Passwords don't match.</p>
+                            )}
+                            <div className="flex gap-3">
+                              <Button
+                                className="flex-1"
+                                onClick={() => confirmResetMutation.mutate()}
+                                disabled={
+                                  resetCode.length !== 6 ||
+                                  resetPassword.length < 8 ||
+                                  resetPassword !== resetConfirm ||
+                                  confirmResetMutation.isPending
+                                }
+                              >
+                                {confirmResetMutation.isPending ? "Saving..." : "Set New Password"}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => { setResetStep('email'); setResetCode(''); setResetPassword(''); setResetConfirm(''); }}
+                              >
+                                Back
+                              </Button>
+                            </div>
+                            <p className="text-xs text-gray-500 text-center">
+                              Didn't receive it?{' '}
+                              <button
+                                className="underline text-blue-600"
+                                onClick={() => sendCodeMutation.mutate(forgotEmail)}
+                                disabled={sendCodeMutation.isPending}
+                              >
+                                Resend code
+                              </button>
+                            </p>
+                          </div>
+                        </>
+                      )}
+
+                      {resetStep === 'done' && (
+                        <div className="text-center py-4">
+                          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <CheckCircle className="h-6 w-6 text-green-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-green-800 mb-1">Password Updated!</h3>
+                          <p className="text-sm text-gray-600">Closing in a moment — you can now sign in.</p>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>

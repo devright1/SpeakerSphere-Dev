@@ -191,6 +191,11 @@ export interface IStorage {
   getUserByPasswordResetToken(tokenHash: string): Promise<User | undefined>;
   clearPasswordResetToken(userId: string): Promise<User | undefined>;
   invalidateAllUserSessions(userId: string): Promise<void>;
+
+  // OTP reset code operations
+  savePasswordResetCode(userId: string, codeHash: string, expiresAt: Date): Promise<void>;
+  verifyAndConsumeResetCode(userId: string, codeHash: string): Promise<boolean>;
+  deletePasswordResetCodes(userId: string): Promise<void>;
   
   // Speaker Application Methods
   createSpeakerApplication(application: InsertSpeakerApplication): Promise<SpeakerApplication>;
@@ -1495,6 +1500,27 @@ export class MemStorage implements IStorage {
       user.updatedAt = new Date();
       this.users.set(userId, user);
     }
+  }
+
+  // OTP reset codes (in-memory store: userId -> {codeHash, expiresAt})
+  private resetCodes = new Map<string, { codeHash: string; expiresAt: Date; usedAt: Date | null }>();
+
+  async savePasswordResetCode(userId: string, codeHash: string, expiresAt: Date): Promise<void> {
+    this.resetCodes.set(userId, { codeHash, expiresAt, usedAt: null });
+  }
+
+  async verifyAndConsumeResetCode(userId: string, codeHash: string): Promise<boolean> {
+    const entry = this.resetCodes.get(userId);
+    if (!entry || entry.usedAt || entry.codeHash !== codeHash || entry.expiresAt < new Date()) {
+      return false;
+    }
+    entry.usedAt = new Date();
+    this.resetCodes.set(userId, entry);
+    return true;
+  }
+
+  async deletePasswordResetCodes(userId: string): Promise<void> {
+    this.resetCodes.delete(userId);
   }
 
   async updateUserSubscription(userId: string, subscriptionData: Partial<User>): Promise<User> {

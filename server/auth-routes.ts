@@ -271,64 +271,125 @@ router.post("/login",
   }
 );
 
-// Forgot password endpoint
-router.post("/forgot-password",
-  rateLimiters.auth, // Rate limit: 10 attempts per 15 minutes
+// Send OTP reset code to speaker's email
+router.post("/send-reset-code",
+  rateLimiters.auth,
   [
-    body('email')
-      .isEmail()
-      .withMessage('Please provide a valid email address'),
+    body('email').isEmail().withMessage('Please provide a valid email address'),
+  ],
+  async (req: Request, res: Response) => {
+    const genericOk = { success: true, message: "If an account with that email exists, a 6-digit code has been sent." };
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ message: "Please provide a valid email address" });
+      }
+
+      const { email } = req.body;
+      const user = await storage.getUserByEmail(email);
+
+      if (user) {
+        // Generate a 6-digit numeric code
+        const code = String(crypto.randomInt(100000, 999999));
+        const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+        await storage.savePasswordResetCode(user.id, codeHash, expiresAt);
+
+        const emailService = EmailService.getInstance();
+        const sent = await emailService.sendResetCode(user.email, user.firstName, code);
+        if (!sent) {
+          console.error('Failed to send reset code email to:', email);
+        } else {
+          console.log(`📧 Reset code sent to ${user.email}`);
+        }
+      }
+
+      res.json(genericOk);
+    } catch (error) {
+      console.error('Send reset code error:', error);
+      res.json(genericOk); // Always return generic message
+    }
+  }
+);
+
+// Verify OTP code and set new password
+router.post("/confirm-reset",
+  rateLimiters.auth,
+  [
+    body('email').isEmail().withMessage('Valid email required'),
+    body('code').isLength({ min: 6, max: 6 }).isNumeric().withMessage('6-digit code required'),
+    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('confirmPassword').custom((value, { req }) => {
+      if (value !== req.body.password) throw new Error('Passwords do not match');
+      return true;
+    }),
   ],
   async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          message: "Please provide a valid email address",
-          errors: errors.array()
-        });
+        return res.status(400).json({ message: errors.array()[0].msg });
       }
 
-      const { email } = req.body;
+      const { email, code, password } = req.body;
 
-      const successMessage = "If an account with this email exists, a new temporary password has been sent.";
-
-      try {
-        const user = await storage.getUserByEmail(email);
-        
-        if (user) {
-          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-          const randomBytes = crypto.randomBytes(12);
-          let temporaryPassword = '';
-          for (let i = 0; i < 12; i++) {
-            temporaryPassword += chars.charAt(randomBytes[i] % chars.length);
-          }
-
-          const emailService = EmailService.getInstance();
-          const emailSent = await emailService.sendPasswordReset(user.email, user.firstName, temporaryPassword);
-
-          if (emailSent) {
-            const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
-            await storage.resetUserPasswords(user.id, hashedPassword, temporaryPassword);
-            console.log(`🔑 Password reset for ${user.email}`);
-          } else {
-            console.error('Failed to send password reset email to:', email);
-          }
-        }
-      } catch (error) {
-        console.error('Password reset error:', error);
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired reset code." });
       }
 
-      res.json({
-        success: true,
-        message: successMessage
-      });
+      const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+      const valid = await storage.verifyAndConsumeResetCode(user.id, codeHash);
+      if (!valid) {
+        return res.status(400).json({ message: "Invalid or expired reset code. Please request a new one." });
+      }
+
+      // Update password — set as user-set password, clear temp password
+      const passwordHash = await bcrypt.hash(password, 12);
+      await storage.updateUserPassword(user.id, passwordHash);
+
+      // Invalidate all existing sessions for security
+      await storage.invalidateAllUserSessions(user.id);
+
+      console.log(`🔒 Password successfully reset for ${user.email}`);
+      res.json({ success: true, message: "Password reset successful. You can now sign in with your new password." });
 
     } catch (error) {
+      console.error('Confirm reset error:', error);
+      res.status(500).json({ message: "Password reset failed. Please try again." });
+    }
+  }
+);
+
+// Legacy forgot password endpoint (kept for compatibility)
+router.post("/forgot-password",
+  rateLimiters.auth,
+  [
+    body('email').isEmail().withMessage('Please provide a valid email address'),
+  ],
+  async (req: Request, res: Response) => {
+    const genericOk = { success: true, message: "If an account with this email exists, a reset code has been sent." };
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(400).json({ message: "Please provide a valid email address" });
+
+      const { email } = req.body;
+      const user = await storage.getUserByEmail(email);
+
+      if (user) {
+        const code = String(crypto.randomInt(100000, 999999));
+        const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        await storage.savePasswordResetCode(user.id, codeHash, expiresAt);
+        const emailService = EmailService.getInstance();
+        await emailService.sendResetCode(user.email, user.firstName, code);
+      }
+
+      res.json(genericOk);
+    } catch (error) {
       console.error('Forgot password error:', error);
-      res.status(500).json({
-        message: "Password reset request failed. Please try again."
-      });
+      res.json(genericOk);
     }
   }
 );
