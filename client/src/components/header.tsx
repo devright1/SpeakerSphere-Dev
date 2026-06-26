@@ -37,7 +37,7 @@ export default function Header() {
 
   const navigationItems = [
     { href: "/speakers", label: "Find Speakers" },
-    { href: "/categories", label: "Categories" },
+    { href: "/categories", label: "Disciplines" },
     { href: "/how-it-works", label: "How It Works" },
     { href: "/for-speakers", label: "For Speakers" },
   ];
