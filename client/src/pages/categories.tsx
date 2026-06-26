@@ -6,66 +6,27 @@ import Footer from "@/components/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FolderOpen, Users, ArrowRight, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, ArrowRight } from "lucide-react";
 import { SEOHead } from "@/components/seo-head";
 
-interface Category {
+interface Discipline {
   id: number;
   name: string;
   slug: string;
   description: string | null;
   speakerCount: number;
-  isActive: boolean;
-  createdAt: Date;
 }
 
 export default function Categories() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("speakerCount");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
-  
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
+  const { data: disciplines = [], isLoading } = useQuery<Discipline[]>({
+    queryKey: ["/api/disciplines"],
   });
 
-  // Filter and sort categories
-  const filteredAndSortedCategories = categories
-    .filter(category => 
-      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "speakerCount":
-          return b.speakerCount - a.speakerCount;
-        case "name":
-          return a.name.localeCompare(b.name);
-        default:
-          return 0;
-      }
-    });
+  const sorted = disciplines
+    .slice()
+    .sort((a, b) => (b.speakerCount || 0) - (a.speakerCount || 0));
 
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredAndSortedCategories.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedCategories = filteredAndSortedCategories.slice(startIndex, endIndex);
-
-  // Reset to page 1 when search term changes
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  const handleSortChange = (value: string) => {
-    setSortBy(value);
-    setCurrentPage(1);
-  };
-
-  if (categoriesLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -73,7 +34,7 @@ export default function Categories() {
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading categories...</p>
+              <p className="text-muted-foreground">Loading disciplines...</p>
             </div>
           </div>
         </div>
@@ -85,180 +46,75 @@ export default function Categories() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Browse Healthcare Speakers by Specialty"
-        description="Explore healthcare speakers organized by medical specialty. Find expert speakers in implant dentistry, periodontics, oral surgery, digital dentistry, and 14 more specialties for your healthcare events."
-        keywords="healthcare speaker categories, medical specialties, dental speakers, medical conference speakers, healthcare event speakers, speaker specialties"
+        title="Browse Dental Speakers by Discipline"
+        description="Explore dental speakers organized by discipline. Find expert speakers in Periodontics, Prosthodontics, Oral Surgery, General Dentistry, and more for your events."
+        keywords="dental speaker disciplines, periodontics speakers, oral surgery speakers, prosthodontics speakers, dental conference speakers"
         ogType="website"
       />
       <Header />
-      
+
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/10 to-accent/10 py-16">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Speaker Categories
+              Browse by Discipline
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
-              Discover world-class speakers organized by their areas of expertise across 18 medical specialties. 
-              Find the perfect match for your event's needs.
+            <p className="text-xl text-muted-foreground">
+              Find the right speaker for your event by exploring our {sorted.length} dental disciplines.
             </p>
-            
-            {/* Search and Filter Controls */}
-            <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search categories..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger className="w-full md:w-48">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="speakerCount">Most Speakers</SelectItem>
-                  <SelectItem value="name">Alphabetical</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Topics Grid */}
+      {/* Disciplines Grid */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          {/* Results Summary */}
-          <div className="mb-6">
-            <p className="text-muted-foreground">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedCategories.length)} of {filteredAndSortedCategories.length} categories
-              {searchTerm && ` matching "${searchTerm}"`}
-            </p>
-          </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedCategories.map((category) => (
-              <Card key={category.id} className="group hover:shadow-lg transition-shadow duration-300">
+            {sorted.map((discipline) => (
+              <Card key={discipline.id} className="group hover:shadow-lg transition-shadow duration-300">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                      <FolderOpen className="h-6 w-6" />
-                    </div>
                     <div className="flex-1">
                       <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {category.name}
+                        {discipline.name}
                       </CardTitle>
                       <div className="flex items-center space-x-2 mt-1">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <Badge variant="secondary" className="text-xs">
-                          {category.speakerCount} {category.speakerCount === 1 ? 'speaker' : 'speakers'}
+                          {discipline.speakerCount || 0} {discipline.speakerCount === 1 ? "speaker" : "speakers"}
                         </Badge>
                       </div>
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="pt-0">
-                  <CardDescription className="text-muted-foreground mb-4 line-clamp-3">
-                    {category.description || `Speakers who specialize in ${category.name}`}
-                  </CardDescription>
-                  
-                  <div className="flex justify-between items-center">
-                    <Link href={`/speakers?category=${encodeURIComponent(category.name)}`}>
-                      <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        View Speakers
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </Link>
-                  </div>
+                  {discipline.description && (
+                    <CardDescription className="text-muted-foreground mb-4 line-clamp-3">
+                      {discipline.description}
+                    </CardDescription>
+                  )}
+
+                  <Link href={`/speakers?disciplineId=${discipline.id}`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      disabled={!discipline.speakerCount}
+                    >
+                      View Speakers
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && filteredAndSortedCategories.length > 0 && (
-            <div className="mt-8 flex justify-center items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-              </Button>
-              
-              <div className="flex space-x-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNumber = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + i;
-                  } else {
-                    pageNumber = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <Button
-                      key={pageNumber}
-                      variant={currentPage === pageNumber ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentPage(pageNumber)}
-                      className="w-10"
-                    >
-                      {pageNumber}
-                    </Button>
-                  );
-                })}
-                
-                {totalPages > 5 && currentPage < totalPages - 2 && (
-                  <>
-                    <span className="px-2 py-1 text-muted-foreground">...</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(totalPages)}
-                      className="w-10"
-                    >
-                      {totalPages}
-                    </Button>
-                  </>
-                )}
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-
-          {filteredAndSortedCategories.length === 0 && (
+          {sorted.length === 0 && (
             <div className="text-center py-16">
-              <FolderOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">
-                {searchTerm ? "No Categories Found" : "No Categories Available"}
-              </h3>
-              <p className="text-muted-foreground">
-                {searchTerm 
-                  ? `No categories match "${searchTerm}". Try a different search term.`
-                  : "Categories are currently being updated. Please check back soon."
-                }
-              </p>
+              <p className="text-muted-foreground">No disciplines found.</p>
             </div>
           )}
         </div>
@@ -268,24 +124,16 @@ export default function Categories() {
       <section className="bg-muted/30 py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Can't Find What You're Looking For?
+            Not sure which discipline to browse?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Our speaker network is constantly growing. Let us help you find the perfect speaker 
-            for your specific event requirements.
+            Search all speakers at once and use the discipline checkboxes to narrow your results.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/speakers">
-              <Button size="lg" className="bg-primary hover:bg-primary/90">
-                Browse All Speakers
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button variant="outline" size="lg">
-                Contact Our Team
-              </Button>
-            </Link>
-          </div>
+          <Link href="/speakers">
+            <Button size="lg" className="bg-primary hover:bg-primary/90">
+              Browse All Speakers
+            </Button>
+          </Link>
         </div>
       </section>
 

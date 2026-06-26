@@ -51,6 +51,11 @@ export default function Speakers() {
       initialFilters.topics = [urlParams.get('topic')!];
     }
 
+    if (urlParams.get('disciplineId')) {
+      const dId = parseInt(urlParams.get('disciplineId')!);
+      if (!isNaN(dId)) initialFilters.disciplineIds = [dId];
+    }
+
     if (urlParams.get('search')) {
       initialFilters.search = urlParams.get('search')!;
     }
