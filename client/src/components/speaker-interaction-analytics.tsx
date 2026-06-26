@@ -291,23 +291,6 @@ export function SpeakerInteractionAnalytics({ speakerId, speakerName }: SpeakerI
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Tablet className="h-4 w-4 text-purple-500" />
-                  <div>
-                    <p className="text-sm font-medium">Tablet</p>
-                    <p className="text-2xl font-bold">{analytics.deviceBreakdown.tablet}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {analytics.totalInteractions > 0 
-                        ? `${Math.round((analytics.deviceBreakdown.tablet / analytics.totalInteractions) * 100)}%`
-                        : '0%'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </TabsContent>
 
