@@ -73,8 +73,12 @@ app.use((req, res, next) => {
   await migrateContentCategories();
 
   // Seed disciplines + per-discipline categories, then auto-map speakers
-  const { seedAndMigrateDisciplines } = await import("./seed-disciplines");
-  await seedAndMigrateDisciplines();
+  try {
+    const { seedAndMigrateDisciplines } = await import("./seed-disciplines");
+    await seedAndMigrateDisciplines();
+  } catch (err) {
+    console.error("[seed-disciplines] Failed (schema may not be ready yet):", err);
+  }
 
   await registerRoutes(app);
 

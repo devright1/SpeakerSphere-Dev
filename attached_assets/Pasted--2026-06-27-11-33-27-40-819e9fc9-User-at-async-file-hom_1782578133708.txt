@@ -1,0 +1,246 @@
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+at async file:///home/runner/workspace/dist/index.js:18711:3 {
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+code: '42P01',
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+DrizzleQueryError: Failed query: select "id", "name", "slug", "description", "sort_order" from "disciplines"
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+position: '63',
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+length: 110,
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+... 2 lines matching cause stack trace ...
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+hint: undefined,
+
+2026-06-27 11:33:27.40
+819e9fc9
+User
+at NeonPreparedQuery.queryWithCache (file:///home/runner/workspace/node_modules/drizzle-orm/pg-core/session.js:41:15)
+
+2026-06-27 11:33:31.46
+819e9fc9
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+
+2026-06-27 11:33:31.46
+819e9fc9
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+
+2026-06-27 11:33:31.46
+819e9fc9
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+2026-06-27 11:33:31.46
+819e9fc9
+User
+at async NeonPreparedQuery.queryWithCache (file:///home/runner/workspace/node_modules/drizzle-orm/pg-core/session.js:39:16)
+
+2026-06-27 11:33:31.46
+819e9fc9
+User
+Failed to check migration status: DrizzleQueryError: Failed query: select "id", "name", "slug", "title", "bio", "expertise", "location", "overall_rating", "review_count", "image_url", "verified", "featured", "is_featured_override", "categories", "discipline_id", "speaker_category_ids", "discipline_migration_status", "achievements", "lectures", "event_photos", "speaking_videos", "email", "phone", "website", "social_media", "instagram_handle", "facebook_handle", "x_handle", "linkedin_handle", "tiktok_handle", "selected_social_platform", "languages", "medical_specialties", "speaker_type", "fee", "experience", "education", "certifications", "affiliations", "publications", "subscription_tier", "stripe_customer_id", "stripe_subscription_id", "subscription_status", "subscription_period_end", "cancellation_reason", "cancelled_at", "hide_profile", "hide_ratings", "hide_social", "hide_contact", "deleted_at", "storage_used_bytes", "video_count", "sds_badge" from "speakers" where ("speakers"."hide_profile" = $1 or "speakers"."hide_profile" is null) order by CASE "speakers"."subscription_tier" WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END, CASE "speakers"."sds_badge" WHEN 'sds_faculty' THEN 1 WHEN 'sds' THEN 2 ELSE 3 END, RANDOM(), "speakers"."id"
+
+2026-06-27 11:33:31.46
+819e9fc9
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:109:20)
+
+2026-06-27 11:33:31.46
+819e9fc9
+User
+internalPosition: undefined,
+
+2026-06-27 11:33:36.12
+819e9fc9
+User
+Category Digital Dentistry might already exist, continuing...
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+params: [],
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+at async seedDisciplines (file:///home/runner/workspace/dist/index.js:1468:31)
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+... 2 lines matching cause stack trace ...
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+length: 110,
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+DrizzleQueryError: Failed query: select "id", "name", "slug", "description", "sort_order" from "disciplines"
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+^
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+params:
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+throw new DrizzleQueryError(queryString, params, e);
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+detail: undefined,
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+internalQuery: undefined,
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+at async seedAndMigrateDisciplines (file:///home/runner/workspace/dist/index.js:1625:3)
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+cause: error: relation "disciplines" does not exist
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+file:///home/runner/workspace/node_modules/drizzle-orm/pg-core/session.js:41
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+hint: undefined,
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+position: '63',
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+at async file:///home/runner/workspace/dist/index.js:18711:3 {
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+severity: 'ERROR',
+
+2026-06-27 11:33:36.20
+819e9fc9
+User
+code: '42P01',
+
+2026-06-27 11:33:41.57
+819e9fc9
+User
+> rest-express@1.0.0 start
+
+2026-06-27 11:33:41.57
+819e9fc9
+User
+> NODE_ENV=production node dist/index.js
+
+2026-06-27 11:33:42.63
+819e9fc9
+System
+healthcheck failed error=healthcheck / returned status 500
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+Subscription plans already exist
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+length: 114,
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+Failed to check migration status: DrizzleQueryError: Failed query: select "id", "name", "slug", "title", "bio", "expertise", "location", "overall_rating", "review_count", "image_url", "verified", "featured", "is_featured_override", "categories", "discipline_id", "speaker_category_ids", "discipline_migration_status", "achievements", "lectures", "event_photos", "speaking_videos", "email", "phone", "website", "social_media", "instagram_handle", "facebook_handle", "x_handle", "linkedin_handle", "tiktok_handle", "selected_social_platform", "languages", "medical_specialties", "speaker_type", "fee", "experience", "education", "certifications", "affiliations", "publications", "subscription_tier", "stripe_customer_id", "stripe_subscription_id", "subscription_status", "subscription_period_end", "cancellation_reason", "cancelled_at", "hide_profile", "hide_ratings", "hide_social", "hide_contact", "deleted_at", "storage_used_bytes", "video_count", "sds_badge" from "speakers" where ("speakers"."hide_profile" = $1 or "speakers"."hide_profile" is null) order by CASE "speakers"."subscription_tier" WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END, CASE "speakers"."sds_badge" WHEN 'sds_faculty' THEN 1 WHEN 'sds' THEN 2 ELSE 3 END, RANDOM(), "speakers"."id"
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+at async NeonPreparedQuery.queryWithCache (file:///home/runner/workspace/node_modules/drizzle-orm/pg-core/session.js:39:16)
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+params: [ false ],
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+at async DatabaseStorage.getSpeakers (file:///home/runner/workspace/dist/index.js:4620:20)
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:109:20)
+
+2026-06-27 11:33:43.12
+819e9fc9
+User
+at async DataMigration.checkMigrationStatus (file:///home/runner/workspace/dist/index.js:6569:25) {
