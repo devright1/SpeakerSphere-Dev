@@ -28,6 +28,7 @@ const tierConfig = {
 };
 
 export default function TierBadge({ tier, showIcon = true, size = "md" }: TierBadgeProps) {
+  if (tier === "basic") return null;
   const config = tierConfig[tier];
   const Icon = config.icon;
   

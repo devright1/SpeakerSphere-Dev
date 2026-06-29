@@ -3984,19 +3984,15 @@ export async function registerRoutes(app: Express): Promise<Express> {
       
       if (!user) {
         const token = req.headers['x-user-id'] as string;
-        console.log("[headshot] token from header:", token?.substring(0, 8));
         if (token) {
           const session = await storage.getUserSession(token);
-          console.log("[headshot] session found:", !!session, "userId:", session?.userId);
           if (session) {
             user = await storage.getUserById(session.userId);
-            console.log("[headshot] user found:", !!user, "speakerId:", user?.speakerId);
           }
         }
       }
 
       // Verify user has access to update this speaker
-      console.log("[headshot] auth check — user:", !!user, "user.speakerId:", user?.speakerId, "target:", speakerId, "isAdmin:", user?.isAdmin);
       if (!user || (user.speakerId !== speakerId && !user.isAdmin)) {
         return res.status(403).json({ error: "Access denied" });
       }
