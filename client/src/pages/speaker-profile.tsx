@@ -278,6 +278,44 @@ function ReviewInteractions({ reviewId }: { reviewId: number }) {
   );
 }
 
+function DisciplineProfileBlock({ disciplineId, disciplineName, speakerCategoryIds }: {
+  disciplineId: number;
+  disciplineName: string;
+  speakerCategoryIds: number[];
+}) {
+  const { data: categories } = useQuery<any[]>({
+    queryKey: ["/api/disciplines", disciplineId, "categories"],
+    queryFn: async () => {
+      const res = await fetch(`/api/disciplines/${disciplineId}/categories`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  const selectedCategoryNames = (categories || [])
+    .filter((c) => speakerCategoryIds.includes(c.id))
+    .map((c) => c.name);
+
+  return (
+    <div className="space-y-2">
+      <div>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Discipline</p>
+        <Badge className="bg-primary text-white hover:bg-primary/90">{disciplineName}</Badge>
+      </div>
+      {selectedCategoryNames.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Topics</p>
+          <div className="flex flex-wrap gap-2">
+            {selectedCategoryNames.map((name) => (
+              <Badge key={name} variant="outline">{name}</Badge>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SpeakerProfile() {
   const { name } = useParams();
   const { toast } = useToast();
@@ -1227,28 +1265,31 @@ export default function SpeakerProfile() {
                   <CardContent>
                     <p className="text-gray-700 leading-relaxed mb-6">{speaker.bio}</p>
                     
-                    {speakerDiscipline && (
-                      <div className="mb-6 space-y-4">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 mb-2">Discipline</h3>
-                          <Badge className="bg-primary text-white hover:bg-primary/90">
-                            {speakerDiscipline.name}
-                          </Badge>
+                    {(() => {
+                      const allDisciplineIds: number[] = (speaker as any)?.speakerDisciplineIds?.length
+                        ? (speaker as any).speakerDisciplineIds
+                        : speaker?.disciplineId
+                        ? [speaker.disciplineId]
+                        : [];
+                      const categoryIds: number[] = (speaker as any)?.speakerCategoryIds || [];
+                      if (allDisciplineIds.length === 0) return null;
+                      return (
+                        <div className="mb-6 space-y-5">
+                          {allDisciplineIds.map((dId: number) => {
+                            const disc = (allDisciplines || []).find((d) => d.id === dId);
+                            if (!disc) return null;
+                            return (
+                              <DisciplineProfileBlock
+                                key={dId}
+                                disciplineId={dId}
+                                disciplineName={disc.name}
+                                speakerCategoryIds={categoryIds}
+                              />
+                            );
+                          })}
                         </div>
-                        {speakerCategoryNames.length > 0 && (
-                          <div>
-                            <h3 className="font-semibold text-gray-900 mb-2">Topics</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {speakerCategoryNames.map((catName) => (
-                                <Badge key={catName} variant="outline">
-                                  {catName}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
