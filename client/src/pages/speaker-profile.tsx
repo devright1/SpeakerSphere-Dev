@@ -1228,18 +1228,25 @@ export default function SpeakerProfile() {
                     <p className="text-gray-700 leading-relaxed mb-6">{speaker.bio}</p>
                     
                     {speakerDiscipline && (
-                      <div className="mb-6">
-                        <h3 className="font-semibold text-gray-900 mb-3">Discipline</h3>
-                        <div className="flex flex-wrap gap-2 items-center">
+                      <div className="mb-6 space-y-4">
+                        <div>
+                          <h3 className="font-semibold text-gray-900 mb-2">Discipline</h3>
                           <Badge className="bg-primary text-white hover:bg-primary/90">
                             {speakerDiscipline.name}
                           </Badge>
-                          {speakerCategoryNames.map((catName) => (
-                            <Badge key={catName} variant="outline">
-                              {catName}
-                            </Badge>
-                          ))}
                         </div>
+                        {speakerCategoryNames.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold text-gray-900 mb-2">Topics</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {speakerCategoryNames.map((catName) => (
+                                <Badge key={catName} variant="outline">
+                                  {catName}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
