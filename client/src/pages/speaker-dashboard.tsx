@@ -1311,7 +1311,7 @@ export default function SpeakerDashboard() {
 
   // Render topic usage status with color-coded feedback
   const renderTopicUsage = (variant: 'edit' | 'view') => {
-    const topicCount = variant === 'edit' ? selectedTopics.length : (speakerTopics?.length || 0);
+    const topicCount = variant === 'edit' ? selectedTopics.length : selectedCategoryIds.length;
     const limit = topicLimit;
     const atLimit = limit !== null && topicCount >= limit;
     const overLimit = limit !== null && topicCount > limit;
