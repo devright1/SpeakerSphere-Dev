@@ -1253,6 +1253,7 @@ export default function SpeakerDashboard() {
   const handleAddAchievement = () => {
     if (newAchievement.trim()) {
       const currentAchievements = editForm.achievements || [];
+      if (currentAchievements.length >= 5) return;
       setEditForm({
         ...editForm,
         achievements: [...currentAchievements, newAchievement.trim()]
@@ -2307,9 +2308,14 @@ export default function SpeakerDashboard() {
                     {/* Professional Achievements Section */}
                     <div className="pt-6 border-t">
                       <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                          <Award className="h-5 w-5 mr-2" />
-                          Professional Achievements
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center justify-between">
+                          <span className="flex items-center">
+                            <Award className="h-5 w-5 mr-2" />
+                            Professional Achievements
+                          </span>
+                          <span className="text-sm font-normal text-gray-500">
+                            {(isEditing ? editForm.achievements : speakerProfile.achievements)?.length || 0}/5
+                          </span>
                         </h3>
                         
                         {/* Display achievements */}
@@ -2342,27 +2348,31 @@ export default function SpeakerDashboard() {
                         {/* Add achievement form when editing */}
                         {isEditing && (
                           <div className="border-t pt-4">
-                            <div className="flex space-x-2">
-                              <Input
-                                placeholder="Enter a new achievement..."
-                                value={newAchievement}
-                                onChange={(e) => setNewAchievement(e.target.value)}
-                                onKeyPress={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    handleAddAchievement();
-                                  }
-                                }}
-                              />
-                              <Button
-                                onClick={handleAddAchievement}
-                                disabled={!newAchievement.trim()}
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add
-                              </Button>
-                            </div>
+                            {(editForm.achievements?.length || 0) >= 5 ? (
+                              <p className="text-sm text-gray-500 italic">Maximum of 5 achievements reached.</p>
+                            ) : (
+                              <div className="flex space-x-2">
+                                <Input
+                                  placeholder="Enter a new achievement..."
+                                  value={newAchievement}
+                                  onChange={(e) => setNewAchievement(e.target.value)}
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      handleAddAchievement();
+                                    }
+                                  }}
+                                />
+                                <Button
+                                  onClick={handleAddAchievement}
+                                  disabled={!newAchievement.trim()}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
