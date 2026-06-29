@@ -644,13 +644,19 @@ export class DatabaseStorage implements IStorage {
 
   async updateSpeakerDiscipline(
     speakerId: number,
-    disciplineId: number | null,
+    disciplineIds: number[],
     categoryIds: number[],
     status: string = "manual"
   ): Promise<Speaker | undefined> {
+    const primaryDisciplineId = disciplineIds.length > 0 ? disciplineIds[0] : null;
     const result = await db
       .update(speakers)
-      .set({ disciplineId, speakerCategoryIds: categoryIds, disciplineMigrationStatus: status })
+      .set({
+        disciplineId: primaryDisciplineId,
+        speakerDisciplineIds: disciplineIds,
+        speakerCategoryIds: categoryIds,
+        disciplineMigrationStatus: status,
+      })
       .where(eq(speakers.id, speakerId))
       .returning();
     return result[0];

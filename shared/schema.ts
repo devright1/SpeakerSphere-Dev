@@ -34,6 +34,7 @@ export const speakers = pgTable("speakers", {
   // New two-level taxonomy: discipline + per-discipline category IDs
   disciplineId: integer("discipline_id"),
   speakerCategoryIds: integer("speaker_category_ids").array().default([]),
+  speakerDisciplineIds: integer("speaker_discipline_ids").array().default([]),
   // Migration status: "auto" | "flagged" | "confirmed" | "manual"
   disciplineMigrationStatus: varchar("discipline_migration_status", { length: 20 }),
   achievements: text("achievements").array().notNull(),
@@ -818,6 +819,13 @@ export const EVENT_LIMITS = {
   basic: 0,
   pro: 2,
   premier: 5,
+} as const;
+
+// Discipline + topic limits per tier
+export const DISCIPLINE_TOPIC_LIMITS = {
+  basic:   { maxDisciplines: 1, topicsPerDiscipline: 3 },
+  pro:     { maxDisciplines: 2, topicsPerDiscipline: 5 },
+  premier: { maxDisciplines: 3, topicsPerDiscipline: 7 },
 } as const;
 
 // Review reactions (like / dislike)

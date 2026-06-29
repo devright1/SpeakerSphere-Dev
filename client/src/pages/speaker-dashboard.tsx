@@ -20,7 +20,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import StorageUsage from "@/components/StorageUsage";
-import { DisciplineCategorySelector, DisciplineSummary } from "@/components/discipline-category-selector";
+import { MultiDisciplineSelector, DisciplineSummary } from "@/components/discipline-category-selector";
+import { DISCIPLINE_TOPIC_LIMITS } from "../../../shared/schema";
 
 import { useTierLimit, useTierLimits, getTierLimitValue, isWithinLimit, isNearLimit, getUsagePercentage, formatTierLimit } from "@/hooks/useTierLimits";
 import { cn } from "@/lib/utils";
@@ -216,7 +217,7 @@ export default function SpeakerDashboard() {
 
   // Discipline & categories management state
   const [isEditingDiscipline, setIsEditingDiscipline] = useState(false);
-  const [selectedDisciplineId, setSelectedDisciplineId] = useState<number | null>(null);
+  const [selectedDisciplineIds, setSelectedDisciplineIds] = useState<number[]>([]);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   
   // New achievement state
@@ -1141,21 +1142,21 @@ export default function SpeakerDashboard() {
   });
 
   const updateDisciplineMutation = useMutation({
-    mutationFn: async ({ disciplineId, categoryIds }: { disciplineId: number; categoryIds: number[] }) => {
-      return apiRequest('PUT', `/api/speakers/${speakerProfile?.id}/discipline`, { disciplineId, categoryIds });
+    mutationFn: async ({ disciplineIds, categoryIds }: { disciplineIds: number[]; categoryIds: number[] }) => {
+      return apiRequest('PUT', `/api/speakers/${speakerProfile?.id}/discipline`, { disciplineIds, categoryIds });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/speakers/by-user', user?.id] });
       setIsEditingDiscipline(false);
       toast({
-        title: "Discipline Updated",
-        description: "Your discipline and topics have been updated successfully.",
+        title: "Disciplines Updated",
+        description: "Your disciplines and topics have been updated successfully.",
       });
     },
     onError: () => {
       toast({
         title: "Update Failed",
-        description: "Failed to update discipline. Please try again.",
+        description: "Failed to update disciplines. Please try again.",
         variant: "destructive",
       });
     },
@@ -1185,7 +1186,12 @@ export default function SpeakerDashboard() {
   // Initialize discipline selection from the speaker profile
   useEffect(() => {
     if (speakerProfile && !isEditingDiscipline) {
-      setSelectedDisciplineId(speakerProfile.disciplineId ?? null);
+      const dIds = (speakerProfile as any).speakerDisciplineIds?.length
+        ? (speakerProfile as any).speakerDisciplineIds
+        : speakerProfile.disciplineId
+        ? [speakerProfile.disciplineId]
+        : [];
+      setSelectedDisciplineIds(dIds);
       setSelectedCategoryIds(speakerProfile.speakerCategoryIds || []);
     }
   }, [speakerProfile, isEditingDiscipline]);
@@ -2473,18 +2479,22 @@ export default function SpeakerDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <BookOpen className="h-5 w-5 mr-2" />
-                      Discipline &amp; Speaking Topics
+                      Disciplines &amp; Topics
                     </CardTitle>
                     <CardDescription>
-                      Choose your discipline, then pick up to {topicLimit ?? 3} speaking topics within it.
+                      {(() => {
+                        const tier = (speakerProfile?.subscriptionTier ?? 'basic') as keyof typeof DISCIPLINE_TOPIC_LIMITS;
+                        const limits = DISCIPLINE_TOPIC_LIMITS[tier] ?? DISCIPLINE_TOPIC_LIMITS.basic;
+                        return `Your ${tier} plan allows ${limits.maxDisciplines} discipline${limits.maxDisciplines > 1 ? 's' : ''} with up to ${limits.topicsPerDiscipline} topics each.`;
+                      })()}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
 
-                    {/* ── Discipline section ── */}
+                    {/* ── Disciplines & Categories section ── */}
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-gray-700">Your Discipline</h4>
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-gray-700">Your Disciplines &amp; Topics</h4>
                         {!isEditingDiscipline && (
                           <Button
                             variant="ghost"
@@ -2500,52 +2510,55 @@ export default function SpeakerDashboard() {
 
                       {isEditingDiscipline ? (
                         <div className="space-y-3">
-                          <Select
-                            value={selectedDisciplineId != null ? String(selectedDisciplineId) : ''}
-                            onValueChange={(val) => {
-                              setSelectedDisciplineId(Number(val));
-                              setSelectedCategoryIds([]);
-                            }}
-                          >
-                            <SelectTrigger data-testid="select-discipline">
-                              <SelectValue placeholder="Select a discipline…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {(allDisciplines || []).map((d) => (
-                                <SelectItem key={d.id} value={String(d.id)}>
-                                  {d.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <div className="flex gap-2">
+                          {(() => {
+                            const tier = (speakerProfile?.subscriptionTier ?? 'basic') as keyof typeof DISCIPLINE_TOPIC_LIMITS;
+                            const limits = DISCIPLINE_TOPIC_LIMITS[tier] ?? DISCIPLINE_TOPIC_LIMITS.basic;
+                            return (
+                              <MultiDisciplineSelector
+                                selectedDisciplineIds={selectedDisciplineIds}
+                                selectedCategoryIds={selectedCategoryIds}
+                                onChange={(dIds, catIds) => {
+                                  setSelectedDisciplineIds(dIds);
+                                  setSelectedCategoryIds(catIds);
+                                }}
+                                maxDisciplines={limits.maxDisciplines}
+                                topicsPerDiscipline={limits.topicsPerDiscipline}
+                              />
+                            );
+                          })()}
+                          <div className="flex gap-2 pt-1">
                             <Button
                               size="sm"
                               onClick={() => {
-                                if (selectedDisciplineId == null) {
+                                if (selectedDisciplineIds.length === 0) {
                                   toast({
                                     title: "Discipline Required",
-                                    description: "Please select a discipline before saving.",
+                                    description: "Please select at least one discipline before saving.",
                                     variant: "destructive",
                                   });
                                   return;
                                 }
                                 updateDisciplineMutation.mutate({
-                                  disciplineId: selectedDisciplineId,
+                                  disciplineIds: selectedDisciplineIds,
                                   categoryIds: selectedCategoryIds,
                                 });
                               }}
                               disabled={updateDisciplineMutation.isPending}
                               data-testid="button-save-discipline"
                             >
-                              {updateDisciplineMutation.isPending ? "Saving…" : "Save Discipline"}
+                              {updateDisciplineMutation.isPending ? "Saving…" : "Save"}
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => {
                                 setIsEditingDiscipline(false);
-                                setSelectedDisciplineId(speakerProfile?.disciplineId ?? null);
+                                const dIds = (speakerProfile as any)?.speakerDisciplineIds?.length
+                                  ? (speakerProfile as any).speakerDisciplineIds
+                                  : speakerProfile?.disciplineId
+                                  ? [speakerProfile.disciplineId]
+                                  : [];
+                                setSelectedDisciplineIds(dIds);
                                 setSelectedCategoryIds(speakerProfile?.speakerCategoryIds || []);
                               }}
                               data-testid="button-cancel-discipline"
@@ -2555,13 +2568,24 @@ export default function SpeakerDashboard() {
                           </div>
                         </div>
                       ) : (
-                        <div>
-                          {speakerProfile?.disciplineId ? (
-                            <Badge className="text-sm px-3 py-1">
-                              {(allDisciplines || []).find((d) => d.id === speakerProfile.disciplineId)?.name ?? `Discipline #${speakerProfile.disciplineId}`}
-                            </Badge>
+                        <div className="space-y-3">
+                          {selectedDisciplineIds.length === 0 ? (
+                            <p className="text-sm text-gray-500">No discipline assigned yet. Click Edit to choose your disciplines and topics.</p>
                           ) : (
-                            <p className="text-sm text-gray-500">No discipline assigned yet.</p>
+                            selectedDisciplineIds.map((dId) => {
+                              const dName = (allDisciplines || []).find((d) => d.id === dId)?.name ?? `Discipline #${dId}`;
+                              const dCatIds = selectedCategoryIds; // shown per block
+                              return (
+                                <div key={dId} className="space-y-1.5">
+                                  <Badge className="text-sm px-3 py-1">{dName}</Badge>
+                                  {dCatIds.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 pl-1">
+                                      {/* Categories displayed after edit — full list, not filtered per discipline */}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })
                           )}
                         </div>
                       )}

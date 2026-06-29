@@ -141,7 +141,7 @@ export interface IStorage {
   getCategoriesByDiscipline(disciplineId: number): Promise<Category[]>;
   createCategoryForDiscipline(disciplineId: number, name: string, description?: string): Promise<Category>;
   updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | undefined>;
-  updateSpeakerDiscipline(speakerId: number, disciplineId: number | null, categoryIds: number[], status?: string): Promise<Speaker | undefined>;
+  updateSpeakerDiscipline(speakerId: number, disciplineIds: number[], categoryIds: number[], status?: string): Promise<Speaker | undefined>;
   getSpeakersByMigrationStatus(status: string): Promise<Speaker[]>;
   
   // Speaking Topics
@@ -936,10 +936,11 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
-  async updateSpeakerDiscipline(speakerId: number, disciplineId: number | null, categoryIds: number[], status: string = "manual"): Promise<Speaker | undefined> {
+  async updateSpeakerDiscipline(speakerId: number, disciplineIds: number[], categoryIds: number[], status: string = "manual"): Promise<Speaker | undefined> {
     const s = this.speakers.get(speakerId);
     if (!s) return undefined;
-    const updated = { ...s, disciplineId, speakerCategoryIds: categoryIds, disciplineMigrationStatus: status };
+    const primaryDisciplineId = disciplineIds.length > 0 ? disciplineIds[0] : null;
+    const updated = { ...s, disciplineId: primaryDisciplineId, speakerDisciplineIds: disciplineIds, speakerCategoryIds: categoryIds, disciplineMigrationStatus: status };
     this.speakers.set(speakerId, updated);
     return updated;
   }

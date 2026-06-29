@@ -1182,15 +1182,22 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(403).json({ message: "Not authorized to update this speaker" });
       }
 
-      const { disciplineId, categoryIds, status } = req.body;
-      const normalizedDisciplineId =
-        disciplineId === null || disciplineId === undefined ? null : parseInt(disciplineId);
+      const { disciplineId, disciplineIds, categoryIds, status } = req.body;
+      // Accept either disciplineIds[] (new multi-discipline) or disciplineId (legacy single)
+      let normalizedDisciplineIds: number[];
+      if (Array.isArray(disciplineIds)) {
+        normalizedDisciplineIds = disciplineIds.map((d: any) => parseInt(d)).filter((n: number) => !isNaN(n));
+      } else if (disciplineId !== null && disciplineId !== undefined) {
+        normalizedDisciplineIds = [parseInt(disciplineId)].filter((n) => !isNaN(n));
+      } else {
+        normalizedDisciplineIds = [];
+      }
       const normalizedCategoryIds = Array.isArray(categoryIds)
         ? categoryIds.map((c: any) => parseInt(c)).filter((n: number) => !isNaN(n))
         : [];
       const updated = await storage.updateSpeakerDiscipline(
         speakerId,
-        normalizedDisciplineId,
+        normalizedDisciplineIds,
         normalizedCategoryIds,
         status || "manual"
       );

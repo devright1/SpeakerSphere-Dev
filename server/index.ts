@@ -5,6 +5,8 @@ import { setupVite, serveStatic, log } from "./vite";
 import { helmetConfig, rateLimiters, handleValidationError } from "./security";
 import { validateStripeSubscriptions } from "./validate-subscriptions";
 import path from "path";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 const app = express();
 
@@ -64,6 +66,13 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // One-time schema migrations (safe: IF NOT EXISTS)
+  try {
+    await db.execute(sql`ALTER TABLE speakers ADD COLUMN IF NOT EXISTS speaker_discipline_ids integer[] DEFAULT '{}'`);
+  } catch (err) {
+    console.error("[migration] Could not add speaker_discipline_ids column:", err);
+  }
+
   // Seed subscription plans
   const { seedSubscriptionPlans } = await import("./seed-subscriptions");
   await seedSubscriptionPlans();
