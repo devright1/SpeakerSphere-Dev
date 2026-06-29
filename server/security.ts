@@ -117,8 +117,8 @@ export const helmetConfig = helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https:"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"], // Allow Stripe.js
-      connectSrc: ["'self'", "ws:", "wss:", "https://api.stripe.com"], // Allow Stripe API and WebSocket
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
+      connectSrc: ["'self'", "ws:", "wss:", "https://api.stripe.com", "https://www.google-analytics.com", "https://analytics.google.com", "https://www.googletagmanager.com"],
       frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"], // Allow Stripe iframes
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
