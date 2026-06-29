@@ -3979,16 +3979,15 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
 
-      // Authentication using same pattern as downloads
+      // Resolve user from session or X-User-ID session token
       let user = (req as any).session?.user;
       
-      // Fallback: Check if there's user data from X-User-ID header
       if (!user) {
-        const userIdHeader = req.headers['x-user-id'] as string;
-        if (userIdHeader) {
-          const userData = await storage.getUserById(userIdHeader);
-          if (userData) {
-            user = userData;
+        const token = req.headers['x-user-id'] as string;
+        if (token) {
+          const session = await storage.getUserSession(token);
+          if (session) {
+            user = await storage.getUserById(session.userId);
           }
         }
       }
