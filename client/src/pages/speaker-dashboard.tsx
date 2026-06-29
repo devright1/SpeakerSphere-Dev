@@ -366,8 +366,12 @@ export default function SpeakerDashboard() {
   const bioOverLimit = bioWordLimit !== null && !isWithinLimit(bioWordCount, bioWordLimit);
   const bioNearLimit = bioWordLimit !== null && isNearLimit(bioWordCount, bioWordLimit, 0.9);
 
-  // Get topic count and limit
-  const topicLimit = getTierLimitValue(tierLimits, 'topicLimit');
+  // Get topic count and limit — computed from DISCIPLINE_TOPIC_LIMITS (maxDisciplines × topicsPerDiscipline)
+  const topicLimit = (() => {
+    const t = (speakerProfile?.subscriptionTier ?? 'basic') as keyof typeof DISCIPLINE_TOPIC_LIMITS;
+    const dtl = DISCIPLINE_TOPIC_LIMITS[t] ?? DISCIPLINE_TOPIC_LIMITS.basic;
+    return dtl.maxDisciplines * dtl.topicsPerDiscipline;
+  })();
   
   // Get upload limit (count calculated after speakerContent query)
   const uploadLimit = getTierLimitValue(tierLimits, 'uploadLimit');
@@ -2572,20 +2576,9 @@ export default function SpeakerDashboard() {
                           {selectedDisciplineIds.length === 0 ? (
                             <p className="text-sm text-gray-500">No discipline assigned yet. Click Edit to choose your disciplines and topics.</p>
                           ) : (
-                            selectedDisciplineIds.map((dId) => {
-                              const dName = (allDisciplines || []).find((d) => d.id === dId)?.name ?? `Discipline #${dId}`;
-                              const dCatIds = selectedCategoryIds; // shown per block
-                              return (
-                                <div key={dId} className="space-y-1.5">
-                                  <Badge className="text-sm px-3 py-1">{dName}</Badge>
-                                  {dCatIds.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5 pl-1">
-                                      {/* Categories displayed after edit — full list, not filtered per discipline */}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })
+                            selectedDisciplineIds.map((dId) => (
+                              <DisciplineSummary key={dId} disciplineId={dId} categoryIds={selectedCategoryIds} />
+                            ))
                           )}
                         </div>
                       )}
