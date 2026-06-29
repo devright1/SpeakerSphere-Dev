@@ -1291,44 +1291,16 @@ export default function SpeakerProfile() {
                       );
                     })()}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-3">Speaking Topics</h3>
+                    {speaker.languages && speaker.languages.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="font-semibold text-gray-900 mb-3">Languages</h3>
                         <div className="flex flex-wrap gap-2">
-                          {topicsLoading ? (
-                            <div className="flex items-center space-x-2">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                              <span className="text-sm text-muted-foreground">Loading...</span>
-                            </div>
-                          ) : (
-                            speakerTopics?.map((topic: any) => (
-                              <Badge 
-                                key={topic.id} 
-                                variant="secondary"
-                                className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                                onClick={() => tracking.trackTagClick(topic.name)}
-                              >
-                                {topic.name}
-                              </Badge>
-                            )) || []
-                          )}
-                          {(!topicsLoading && (!speakerTopics || speakerTopics.length === 0)) && (
-                            <span className="text-sm text-muted-foreground">No topics available</span>
-                          )}
+                          {speaker.languages.map((language, index) => (
+                            <Badge key={index} variant="outline">{language}</Badge>
+                          ))}
                         </div>
                       </div>
-
-                      {speaker.languages && speaker.languages.length > 0 && (
-                        <div>
-                          <h3 className="font-semibold text-gray-900 mb-3">Languages</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {speaker.languages.map((language, index) => (
-                              <Badge key={index} variant="outline">{language}</Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    )}
 
                     {speaker.achievements && speaker.achievements.length > 0 && (
                       <div className="mt-6">
