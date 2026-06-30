@@ -66,11 +66,38 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // One-time schema migrations (safe: IF NOT EXISTS)
-  try {
-    await db.execute(sql`ALTER TABLE speakers ADD COLUMN IF NOT EXISTS speaker_discipline_ids integer[] DEFAULT '{}'`);
-  } catch (err) {
-    console.error("[migration] Could not add speaker_discipline_ids column:", err);
+  // One-time schema migrations (safe: IF NOT EXISTS / CREATE IF NOT EXISTS)
+  const schemaMigrations: Array<[string, string]> = [
+    // disciplines table
+    [
+      "create disciplines table",
+      `CREATE TABLE IF NOT EXISTS disciplines (
+        id serial PRIMARY KEY,
+        name text NOT NULL UNIQUE,
+        slug text NOT NULL UNIQUE,
+        description text,
+        sort_order integer DEFAULT 0
+      )`
+    ],
+    // categories new columns
+    ["categories.discipline_id", `ALTER TABLE categories ADD COLUMN IF NOT EXISTS discipline_id integer`],
+    ["categories.sort_order",    `ALTER TABLE categories ADD COLUMN IF NOT EXISTS sort_order integer DEFAULT 0`],
+    // speakers new columns
+    ["speakers.discipline_id",             `ALTER TABLE speakers ADD COLUMN IF NOT EXISTS discipline_id integer`],
+    ["speakers.speaker_category_ids",      `ALTER TABLE speakers ADD COLUMN IF NOT EXISTS speaker_category_ids integer[] DEFAULT '{}'`],
+    ["speakers.speaker_discipline_ids",    `ALTER TABLE speakers ADD COLUMN IF NOT EXISTS speaker_discipline_ids integer[] DEFAULT '{}'`],
+    ["speakers.discipline_migration_status", `ALTER TABLE speakers ADD COLUMN IF NOT EXISTS discipline_migration_status varchar(20)`],
+    // applications new columns
+    ["applications.selected_discipline_id",  `ALTER TABLE applications ADD COLUMN IF NOT EXISTS selected_discipline_id integer`],
+    ["applications.selected_category_ids",   `ALTER TABLE applications ADD COLUMN IF NOT EXISTS selected_category_ids integer[] DEFAULT '{}'`],
+  ];
+
+  for (const [label, statement] of schemaMigrations) {
+    try {
+      await db.execute(sql.raw(statement));
+    } catch (err) {
+      console.error(`[migration] Failed — ${label}:`, err);
+    }
   }
 
   // Seed subscription plans
