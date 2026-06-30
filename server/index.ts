@@ -108,6 +108,22 @@ app.use((req, res, next) => {
   const { migrateContentCategories } = await import("./migrate-content-categories");
   await migrateContentCategories();
 
+  // One-time: reset speakers that were migrated by the old broad-matching algorithm
+  // (identified by discipline_migration_status = 'auto' but speaker_discipline_ids still empty).
+  // After the fixed migration runs, speaker_discipline_ids will be non-empty, so this is idempotent.
+  try {
+    await db.execute(sql`
+      UPDATE speakers
+      SET discipline_migration_status = NULL,
+          speaker_category_ids = '{}',
+          speaker_discipline_ids = '{}'
+      WHERE discipline_migration_status = 'auto'
+        AND (speaker_discipline_ids IS NULL OR array_length(speaker_discipline_ids, 1) IS NULL)
+    `);
+  } catch (err) {
+    console.error("[migration] Could not reset stale discipline mappings:", err);
+  }
+
   // Seed disciplines + per-discipline categories, then auto-map speakers
   try {
     const { seedAndMigrateDisciplines } = await import("./seed-disciplines");
