@@ -1,2 +1,3 @@
 - [Speaker application validation](speaker-application-validation.md) — application has TWO validation layers (express-validator in security.ts + zod schema in routes.ts); changing required fields means updating BOTH.
 - [Admin route auth convention](admin-auth-convention.md) — admin guarded via isAdminRequest (session role OR spoofable x-admin-email header); apiRequest sends X-User-ID only, so admin clients must add X-Admin-Email; self-service speaker routes use owner-OR-admin.
+- [Speaker discipline migration status gotcha](discipline-migration-status.md) — re-migration resets must include "confirmed" status too, not just "auto"/flagged/null, or bulk-confirmed speakers stay stuck on stale tags forever.

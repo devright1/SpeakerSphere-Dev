@@ -404,44 +404,23 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
 
   const allCategories = await db.select().from(categories);
 
+  // Map discipline names (lowercase) → discipline object
   const disciplineByLowerName = new Map(
     allDisciplines.map((d) => [d.name.toLowerCase().trim(), d])
   );
   const miscDiscipline = allDisciplines.find((d) => d.name === "Miscellaneous");
 
-  function matchCategoryIds(legacyCat: string): number[] {
-    const lower = legacyCat.toLowerCase().trim();
-
-    // 1. Curated keywords first (intentionally matches ALL related categories
-    //    across disciplines, e.g. "Implant Dentistry" → every implant category)
-    const keywords = LEGACY_KEYWORDS[lower];
-    if (keywords) {
-      return allCategories
-        .filter((c) => keywords.some((kw) => c.name.toLowerCase().includes(kw)))
-        .map((c) => c.id);
-    }
-
-    // 2. Exact match
-    const exact = allCategories.find(
-      (c) => c.name.toLowerCase().trim() === lower
-    );
-    if (exact) return [exact.id];
-
-    // 3. Fallback: significant words from the legacy string
-    const words = lower
-      .split(/[\s&,/]+/)
-      .filter((w) => w.length >= 5 && !GENERIC_WORDS.has(w));
-    if (words.length > 0) {
-      return allCategories
-        .filter((c) => words.some((w) => c.name.toLowerCase().includes(w)))
-        .map((c) => c.id);
-    }
-
-    return [];
+  // Pre-build: disciplineId → category IDs for fast lookup
+  const catIdsByDisciplineId = new Map<number, number[]>();
+  for (const cat of allCategories) {
+    if (cat.disciplineId == null) continue;
+    const arr = catIdsByDisciplineId.get(cat.disciplineId) ?? [];
+    arr.push(cat.id);
+    catIdsByDisciplineId.set(cat.disciplineId, arr);
   }
 
-  // Include speakers whose speakerCategoryIds is empty even if status = 'auto'
-  // (these were migrated by an earlier pass that only set disciplineId)
+  // Process speakers that haven't been migrated yet, are flagged,
+  // OR were migrated by an old pass that left speakerDisciplineIds empty.
   const pending = await db
     .select()
     .from(speakers)
@@ -451,10 +430,7 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
         eq(speakers.disciplineMigrationStatus, "flagged"),
         and(
           eq(speakers.disciplineMigrationStatus, "auto"),
-          or(
-            isNull(speakers.speakerCategoryIds),
-            sql`array_length(${speakers.speakerCategoryIds}, 1) IS NULL`
-          )
+          sql`array_length(${speakers.speakerDisciplineIds}, 1) IS NULL`
         )
       )
     );
@@ -464,68 +440,46 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
 
   for (const speaker of pending) {
     const legacyCats = speaker.categories || [];
-    const matchedCategoryIds = new Set<number>();
-    const disciplineVotes = new Map<number, number>();
+
+    // Collect ALL disciplines this speaker belongs to via EXACT discipline-name match only.
+    // Using exact matching prevents generic topics ("Practice Management") from
+    // incorrectly associating a speaker with every discipline that has a similar category.
+    const matchedDisciplineIds: number[] = [];
+    const seenDisciplineIds = new Set<number>();
 
     for (const legacyCat of legacyCats) {
       const lower = legacyCat.toLowerCase().trim();
-
       const discMatch = disciplineByLowerName.get(lower);
-      if (discMatch) {
-        disciplineVotes.set(
-          discMatch.id,
-          (disciplineVotes.get(discMatch.id) || 0) + 2
-        );
-        // Add all categories from the matched discipline so the speaker
-        // appears in multi-discipline searches (not just via disciplineId)
-        const discCats = allCategories.filter(
-          (c) => c.disciplineId === discMatch.id
-        );
-        for (const cat of discCats) {
-          matchedCategoryIds.add(cat.id);
-        }
-        continue;
-      }
-
-      const catIds = matchCategoryIds(legacyCat);
-      for (const catId of catIds) {
-        matchedCategoryIds.add(catId);
-        const cat = allCategories.find((c) => c.id === catId);
-        if (cat?.disciplineId) {
-          disciplineVotes.set(
-            cat.disciplineId,
-            (disciplineVotes.get(cat.disciplineId) || 0) + 1
-          );
-        }
+      if (discMatch && !seenDisciplineIds.has(discMatch.id)) {
+        matchedDisciplineIds.push(discMatch.id);
+        seenDisciplineIds.add(discMatch.id);
       }
     }
 
-    // Pick discipline with most votes; ties and no-matches → Miscellaneous
-    let winningDisciplineId: number | null = null;
-    let maxVotes = 0;
-    let tieDetected = false;
-    for (const [dId, votes] of disciplineVotes) {
-      if (votes > maxVotes) {
-        maxVotes = votes;
-        winningDisciplineId = dId;
-        tieDetected = false;
-      } else if (votes === maxVotes) {
-        tieDetected = true;
-      }
-    }
-    if ((tieDetected || winningDisciplineId === null) && miscDiscipline) {
-      winningDisciplineId = miscDiscipline.id;
+    // If no exact discipline match found, fall back to Miscellaneous
+    if (matchedDisciplineIds.length === 0 && miscDiscipline) {
+      matchedDisciplineIds.push(miscDiscipline.id);
     }
 
-    const newStatus = winningDisciplineId !== null ? "auto" : "flagged";
+    // speakerCategoryIds = all categories across every matched discipline
+    const speakerCategoryIds: number[] = [];
+    for (const dId of matchedDisciplineIds) {
+      for (const catId of catIdsByDisciplineId.get(dId) ?? []) {
+        speakerCategoryIds.push(catId);
+      }
+    }
+
+    const primaryDisciplineId = matchedDisciplineIds[0] ?? null;
+    const newStatus = primaryDisciplineId !== null ? "auto" : "flagged";
     if (newStatus === "auto") autoCount++;
     else stillFlagged++;
 
     await db
       .update(speakers)
       .set({
-        disciplineId: winningDisciplineId,
-        speakerCategoryIds: Array.from(matchedCategoryIds),
+        disciplineId: primaryDisciplineId,
+        speakerDisciplineIds: matchedDisciplineIds,
+        speakerCategoryIds,
         disciplineMigrationStatus: newStatus,
       })
       .where(eq(speakers.id, speaker.id));

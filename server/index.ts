@@ -108,6 +108,30 @@ app.use((req, res, next) => {
   const { migrateContentCategories } = await import("./migrate-content-categories");
   await migrateContentCategories();
 
+  // One-time: reset speakers that were migrated/confirmed by the old broad-matching algorithm
+  // (identified by speaker_discipline_ids still empty — that column never existed/was never
+  // populated before the exact-match fix, so any speaker missing it was tagged under the old
+  // logic, regardless of whether it's "auto" or was later bulk-"confirmed" via the admin
+  // migration-review tool). Speakers approved through the application flow with an explicit
+  // selectedDisciplineId are excluded so their human-chosen discipline is preserved.
+  // After the fixed migration runs, speaker_discipline_ids will be non-empty, so this is idempotent.
+  try {
+    await db.execute(sql`
+      UPDATE speakers
+      SET discipline_migration_status = NULL,
+          speaker_category_ids = '{}',
+          speaker_discipline_ids = '{}'
+      WHERE discipline_migration_status IN ('auto', 'confirmed')
+        AND (speaker_discipline_ids IS NULL OR array_length(speaker_discipline_ids, 1) IS NULL)
+        AND id NOT IN (
+          SELECT created_speaker_id FROM speaker_applications
+          WHERE created_speaker_id IS NOT NULL AND selected_discipline_id IS NOT NULL
+        )
+    `);
+  } catch (err) {
+    console.error("[migration] Could not reset stale discipline mappings:", err);
+  }
+
   // Seed disciplines + per-discipline categories, then auto-map speakers
   try {
     const { seedAndMigrateDisciplines } = await import("./seed-disciplines");
