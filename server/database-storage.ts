@@ -574,20 +574,55 @@ export class DatabaseStorage implements IStorage {
   async getDisciplines(): Promise<(Discipline & { categoryCount: number; speakerCount: number })[]> {
     const allDisciplines = await db.select().from(disciplines).orderBy(disciplines.sortOrder, disciplines.name);
 
+    // Get all category IDs grouped by discipline in one query
+    const allCats = await db.select({ id: categories.id, disciplineId: categories.disciplineId }).from(categories);
+    const catIdsByDiscipline = new Map<number, number[]>();
+    for (const c of allCats) {
+      if (c.disciplineId == null) continue;
+      const arr = catIdsByDiscipline.get(c.disciplineId) ?? [];
+      arr.push(c.id);
+      catIdsByDiscipline.set(c.disciplineId, arr);
+    }
+
     const result = [];
     for (const d of allDisciplines) {
-      const catCount = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(categories)
-        .where(eq(categories.disciplineId, d.id));
-      const spkCount = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(speakers)
-        .where(eq(speakers.disciplineId, d.id));
+      const discCatIds = catIdsByDiscipline.get(d.id) ?? [];
+      const catCount = discCatIds.length;
+
+      // Count speakers that appear in this discipline either via disciplineId
+      // OR via speakerCategoryIds overlap — matching the same logic as the browse query.
+      let spkCount = 0;
+      if (discCatIds.length > 0) {
+        const countRow = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(speakers)
+          .where(
+            and(
+              or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)),
+              or(
+                eq(speakers.disciplineId, d.id),
+                sql`${speakers.speakerCategoryIds} && ARRAY[${sql.join(discCatIds, sql`, `)}]::integer[]`
+              )
+            )
+          );
+        spkCount = parseInt(countRow[0].count as any) || 0;
+      } else {
+        const countRow = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(speakers)
+          .where(
+            and(
+              or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)),
+              eq(speakers.disciplineId, d.id)
+            )
+          );
+        spkCount = parseInt(countRow[0].count as any) || 0;
+      }
+
       result.push({
         ...d,
-        categoryCount: parseInt(catCount[0].count as any) || 0,
-        speakerCount: parseInt(spkCount[0].count as any) || 0,
+        categoryCount: catCount,
+        speakerCount: spkCount,
       });
     }
     return result;

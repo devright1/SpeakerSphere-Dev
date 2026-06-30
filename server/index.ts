@@ -87,9 +87,9 @@ app.use((req, res, next) => {
     ["speakers.speaker_category_ids",      `ALTER TABLE speakers ADD COLUMN IF NOT EXISTS speaker_category_ids integer[] DEFAULT '{}'`],
     ["speakers.speaker_discipline_ids",    `ALTER TABLE speakers ADD COLUMN IF NOT EXISTS speaker_discipline_ids integer[] DEFAULT '{}'`],
     ["speakers.discipline_migration_status", `ALTER TABLE speakers ADD COLUMN IF NOT EXISTS discipline_migration_status varchar(20)`],
-    // applications new columns
-    ["applications.selected_discipline_id",  `ALTER TABLE applications ADD COLUMN IF NOT EXISTS selected_discipline_id integer`],
-    ["applications.selected_category_ids",   `ALTER TABLE applications ADD COLUMN IF NOT EXISTS selected_category_ids integer[] DEFAULT '{}'`],
+    // speaker_applications new columns
+    ["speaker_applications.selected_discipline_id",  `ALTER TABLE speaker_applications ADD COLUMN IF NOT EXISTS selected_discipline_id integer`],
+    ["speaker_applications.selected_category_ids",   `ALTER TABLE speaker_applications ADD COLUMN IF NOT EXISTS selected_category_ids integer[] DEFAULT '{}'`],
   ];
 
   for (const [label, statement] of schemaMigrations) {
