@@ -209,6 +209,12 @@ export default function SpeakerDashboard() {
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
   const reviewsPerPage = 10;
   
+  // Topics management state
+  const [isEditingTopics, setIsEditingTopics] = useState(false);
+  const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
+  const [topicSearchTerm, setTopicSearchTerm] = useState('');
+  const [topicCategoryFilter, setTopicCategoryFilter] = useState<string>('all');
+
   // Discipline & categories management state
   const [isEditingDiscipline, setIsEditingDiscipline] = useState(false);
   const [selectedDisciplineIds, setSelectedDisciplineIds] = useState<number[]>([]);
@@ -360,6 +366,13 @@ export default function SpeakerDashboard() {
   const bioOverLimit = bioWordLimit !== null && !isWithinLimit(bioWordCount, bioWordLimit);
   const bioNearLimit = bioWordLimit !== null && isNearLimit(bioWordCount, bioWordLimit, 0.9);
 
+  // Get topic count and limit — computed from DISCIPLINE_TOPIC_LIMITS (maxDisciplines × topicsPerDiscipline)
+  const topicLimit = (() => {
+    const t = (speakerProfile?.subscriptionTier ?? 'basic') as keyof typeof DISCIPLINE_TOPIC_LIMITS;
+    const dtl = DISCIPLINE_TOPIC_LIMITS[t] ?? DISCIPLINE_TOPIC_LIMITS.basic;
+    return dtl.maxDisciplines * dtl.topicsPerDiscipline;
+  })();
+  
   // Get upload limit (count calculated after speakerContent query)
   const uploadLimit = getTierLimitValue(tierLimits, 'uploadLimit');
   
@@ -439,6 +452,31 @@ export default function SpeakerDashboard() {
       return response.json();
     },
     enabled: !!speakerProfile?.id,
+  });
+
+  // Fetch speaker topics
+  const { data: speakerTopics, refetch: refetchSpeakerTopics } = useQuery({
+    queryKey: ['/api/speakers/topics', speakerProfile?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/topics`);
+      if (!response.ok) throw new Error('Failed to fetch speaker topics');
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id,
+  });
+
+  // Fetch topics filtered to the speaker's discipline (re-fetches when discipline changes)
+  const activeDisciplineId = speakerProfile?.disciplineId ?? null;
+  const { data: allTopics } = useQuery({
+    queryKey: ['/api/topics', activeDisciplineId],
+    queryFn: async () => {
+      const url = activeDisciplineId
+        ? `/api/topics?disciplineId=${activeDisciplineId}`
+        : '/api/topics';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch topics');
+      return response.json();
+    },
   });
 
   // Fetch all disciplines (for the discipline selector)
@@ -1076,6 +1114,37 @@ export default function SpeakerDashboard() {
     },
   });
 
+  // Update speaker topics mutation
+  const updateTopicsMutation = useMutation({
+    mutationFn: async (topicIds: number[]) => {
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/topics`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topicIds }),
+      });
+      if (!response.ok) throw new Error('Failed to update topics');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/speakers/topics', speakerProfile?.id] });
+      refetchSpeakerTopics();
+      setIsEditingTopics(false);
+      toast({
+        title: "Topics Updated",
+        description: "Your speaking topics have been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update topics. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const updateDisciplineMutation = useMutation({
     mutationFn: async ({ disciplineIds, categoryIds }: { disciplineIds: number[]; categoryIds: number[] }) => {
       return apiRequest('PUT', `/api/speakers/${speakerProfile?.id}/discipline`, { disciplineIds, categoryIds });
@@ -1111,6 +1180,13 @@ export default function SpeakerDashboard() {
     }
   }, [speakerProfile]);
 
+  // Initialize selected topics when speaker topics are loaded
+  useEffect(() => {
+    if (speakerTopics && !isEditingTopics) {
+      setSelectedTopics(speakerTopics.map((topic: any) => topic.id));
+    }
+  }, [speakerTopics, isEditingTopics]);
+
   // Initialize discipline selection from the speaker profile
   useEffect(() => {
     if (speakerProfile && !isEditingDiscipline) {
@@ -1123,6 +1199,56 @@ export default function SpeakerDashboard() {
       setSelectedCategoryIds(speakerProfile.speakerCategoryIds || []);
     }
   }, [speakerProfile, isEditingDiscipline]);
+
+  // Topics management handlers
+  const handleEditTopics = () => {
+    setIsEditingTopics(true);
+    setSelectedTopics(speakerTopics?.map((topic: any) => topic.id) || []);
+  };
+
+  const handleTopicToggle = (topicId: number) => {
+    setSelectedTopics(prev => {
+      const isRemoving = prev.includes(topicId);
+      
+      // Allow removal
+      if (isRemoving) {
+        return prev.filter(id => id !== topicId);
+      }
+      
+      // Check limit when adding
+      const currentCount = prev.length;
+      if (topicLimit !== null && currentCount >= topicLimit) {
+        toast({
+          title: "Topic Limit Reached",
+          description: `You've reached the ${topicLimit}-topic limit for your ${speakerProfile?.subscriptionTier || 'Basic'} tier. Remove a topic or upgrade to add more.`,
+          variant: "destructive",
+        });
+        return prev;
+      }
+      
+      return [...prev, topicId];
+    });
+  };
+
+  const handleCancelTopicsEdit = () => {
+    setIsEditingTopics(false);
+    setSelectedTopics(speakerTopics?.map((topic: any) => topic.id) || []);
+    setTopicSearchTerm('');
+    setTopicCategoryFilter('all');
+  };
+
+  const handleSaveTopics = () => {
+    // Defensive check: prevent saving when over limit
+    if (topicLimit !== null && selectedTopics.length > topicLimit) {
+      toast({
+        title: "Too Many Topics",
+        description: `You have ${selectedTopics.length} topics selected, but your ${speakerProfile?.subscriptionTier || 'Basic'} tier allows only ${topicLimit}. Please remove ${selectedTopics.length - topicLimit} topic(s) before saving.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    updateTopicsMutation.mutate(selectedTopics);
+  };
 
   const handleAddAchievement = () => {
     if (newAchievement.trim()) {
@@ -1177,6 +1303,76 @@ export default function SpeakerDashboard() {
                   Upgrade your plan
                 </Link>
               )}
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
+    );
+  };
+
+  // Render topic usage status with color-coded feedback
+  const renderTopicUsage = (variant: 'edit' | 'view') => {
+    const topicCount = variant === 'edit' ? selectedTopics.length : selectedCategoryIds.length;
+    const limit = topicLimit;
+    const atLimit = limit !== null && topicCount >= limit;
+    const overLimit = limit !== null && topicCount > limit;
+    const nearLimit = limit !== null && !atLimit && topicCount >= Math.max(1, limit - 1);
+    const isNonPremier = (speakerProfile?.subscriptionTier ?? 'basic') !== 'premier';
+
+    const statusColor = limit === null
+      ? 'text-emerald-600'
+      : overLimit
+        ? 'text-red-600'
+        : atLimit
+          ? 'text-amber-600'
+          : nearLimit
+            ? 'text-amber-500'
+            : 'text-emerald-600';
+
+    const label = limit === null
+      ? `${topicCount} topics`
+      : `${topicCount} / ${limit} topics`;
+
+    return (
+      <div className="space-y-2">
+        <p className={cn('text-sm font-medium', statusColor)} data-testid={`text-topic-usage-${variant}`}>
+          {label}
+          {overLimit && ` — over by ${topicCount - limit!}`}
+        </p>
+
+        {/* At or over limit — show upgrade prompt in both view and edit */}
+        {atLimit && isNonPremier && (
+          <Alert className="border-amber-400 bg-amber-50" data-testid="alert-topic-limit">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-900">
+              {overLimit ? 'Topic limit exceeded' : 'All topic slots used'}
+            </AlertTitle>
+            <AlertDescription className="text-amber-800">
+              {overLimit
+                ? `Your plan allows ${limit} topic${limit !== 1 ? 's' : ''}. Remove ${topicCount - limit!} to get back in range, or `
+                : `You've filled all ${limit} topic slot${limit !== 1 ? 's' : ''} on your current plan. `}
+              <Link
+                href="/subscription-upgrade"
+                className="underline font-semibold text-amber-900 hover:text-amber-700"
+                data-testid="link-upgrade-plan"
+              >
+                Upgrade your subscription
+              </Link>
+              {' '}to unlock more topics and access topics across additional disciplines.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Near limit (one slot left) — edit mode only */}
+        {nearLimit && !atLimit && variant === 'edit' && isNonPremier && (
+          <Alert className="border-blue-300 bg-blue-50">
+            <AlertTitle className="text-blue-900">One slot remaining</AlertTitle>
+            <AlertDescription className="text-blue-800">
+              You have 1 topic slot left.{' '}
+              <Link href="/subscription-upgrade" className="underline font-medium text-blue-900">
+                Upgrade your plan
+              </Link>
+              {' '}to add more.
             </AlertDescription>
           </Alert>
         )}
@@ -2394,6 +2590,173 @@ export default function SpeakerDashboard() {
                               <DisciplineSummary key={dId} disciplineId={dId} categoryIds={selectedCategoryIds} />
                             ))
                           )}
+                        </div>
+                      )}
+                    </div>
+
+                    <Separator />
+
+                    {/* ── Speaking Topics section ── */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-700">Speaking Topics</h4>
+                          {speakerProfile?.disciplineId && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              Showing topics for{' '}
+                              <span className="font-medium">
+                                {(allDisciplines || []).find((d) => d.id === speakerProfile.disciplineId)?.name ?? 'your discipline'}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                        {!isEditingTopics && (
+                          <Button variant="ghost" size="sm" onClick={handleEditTopics}>
+                            <Edit3 className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                      </div>
+
+                      {isEditingTopics ? (
+                        <div className="space-y-4">
+                          {/* Search */}
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                              placeholder="Search topics…"
+                              value={topicSearchTerm}
+                              onChange={(e) => setTopicSearchTerm(e.target.value)}
+                              className="pl-9"
+                              data-testid="input-topic-search"
+                            />
+                          </div>
+
+                          {/* Selected chips */}
+                          {selectedTopics.length > 0 && (
+                            <div className="border rounded-lg p-3 bg-gray-50">
+                              <p className="text-xs font-medium text-gray-500 mb-2">
+                                Selected ({selectedTopics.length}{topicLimit !== null ? `/${topicLimit}` : ''}):
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {selectedTopics.map((topicId) => {
+                                  const topic = allTopics?.find((t: any) => t.id === topicId);
+                                  if (!topic) return null;
+                                  return (
+                                    <span
+                                      key={topicId}
+                                      className="inline-flex items-center gap-1 px-2 py-1 bg-white border rounded-full text-xs"
+                                    >
+                                      {topic.name}
+                                      <button
+                                        type="button"
+                                        onClick={() => handleTopicToggle(topicId)}
+                                        className="ml-0.5 hover:bg-gray-200 rounded-full p-0.5"
+                                      >
+                                        <X className="h-3 w-3 text-gray-500" />
+                                      </button>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Topic list — already filtered by discipline via the API */}
+                          <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
+                            {(() => {
+                              const filteredTopics = (allTopics || []).filter((topic: any) =>
+                                !topicSearchTerm ||
+                                topic.name.toLowerCase().includes(topicSearchTerm.toLowerCase())
+                              );
+
+                              if (filteredTopics.length === 0) {
+                                return (
+                                  <p className="text-sm text-gray-500 text-center py-4">
+                                    No topics found. Try a different search.
+                                  </p>
+                                );
+                              }
+
+                              return filteredTopics.map((topic: any) => (
+                                <div key={topic.id} className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    id={`topic-${topic.id}`}
+                                    checked={selectedTopics.includes(topic.id)}
+                                    onChange={() => handleTopicToggle(topic.id)}
+                                    className="rounded border-gray-300"
+                                  />
+                                  <label
+                                    htmlFor={`topic-${topic.id}`}
+                                    className="text-sm cursor-pointer flex-1"
+                                  >
+                                    {topic.name}
+                                    {topic.category && (
+                                      <span className="text-xs text-gray-400 ml-2">
+                                        ({topic.category})
+                                      </span>
+                                    )}
+                                  </label>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+
+                          {/* Near-limit warning */}
+                          {topicLimit !== null && isNearLimit(selectedTopics.length, topicLimit) && selectedTopics.length < topicLimit && (
+                            <Alert className="border-amber-500 bg-amber-50">
+                              <AlertTriangle className="h-4 w-4 text-amber-600" />
+                              <AlertTitle className="text-amber-900">Approaching Topic Limit</AlertTitle>
+                              <AlertDescription className="text-amber-800">
+                                {topicLimit - selectedTopics.length} topic{topicLimit - selectedTopics.length !== 1 ? 's' : ''} remaining on your {speakerProfile?.subscriptionTier || 'Basic'} plan.
+                                {(speakerProfile?.subscriptionTier ?? 'basic') !== 'premier' && (
+                                  <> <Link href="/subscription-upgrade" className="underline font-medium">Upgrade to add more</Link>.</>
+                                )}
+                              </AlertDescription>
+                            </Alert>
+                          )}
+
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              onClick={handleSaveTopics}
+                              disabled={updateTopicsMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700"
+                              data-testid="button-save-topics"
+                            >
+                              {updateTopicsMutation.isPending ? (
+                                <>
+                                  <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                                  Saving…
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="h-4 w-4 mr-1" />
+                                  Save Topics
+                                </>
+                              )}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={handleCancelTopicsEdit}>
+                              Cancel
+                            </Button>
+                          </div>
+                          {renderTopicUsage('edit')}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {speakerTopics && speakerTopics.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {speakerTopics.map((topic: any) => (
+                                <Badge key={topic.id} variant="outline" className="text-xs">
+                                  {topic.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">No speaking topics selected yet. Click Edit to add some.</p>
+                          )}
+                          {renderTopicUsage('view')}
                         </div>
                       )}
                     </div>

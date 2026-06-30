@@ -589,19 +589,35 @@ export class DatabaseStorage implements IStorage {
       const discCatIds = catIdsByDiscipline.get(d.id) ?? [];
       const catCount = discCatIds.length;
 
-      // Count visible speakers whose speakerDisciplineIds includes this discipline.
-      // speakerDisciplineIds is populated by the auto-migration and contains all
-      // disciplines a speaker belongs to (one or more exact matches).
-      const countRow = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(speakers)
-        .where(
-          and(
-            or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)),
-            sql`${speakers.speakerDisciplineIds} && ARRAY[${d.id}]::integer[]`
-          )
-        );
-      const spkCount = parseInt(countRow[0].count as any) || 0;
+      // Count speakers that appear in this discipline either via disciplineId
+      // OR via speakerCategoryIds overlap — matching the same logic as the browse query.
+      let spkCount = 0;
+      if (discCatIds.length > 0) {
+        const countRow = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(speakers)
+          .where(
+            and(
+              or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)),
+              or(
+                eq(speakers.disciplineId, d.id),
+                sql`${speakers.speakerCategoryIds} && ARRAY[${sql.join(discCatIds, sql`, `)}]::integer[]`
+              )
+            )
+          );
+        spkCount = parseInt(countRow[0].count as any) || 0;
+      } else {
+        const countRow = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(speakers)
+          .where(
+            and(
+              or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile)),
+              eq(speakers.disciplineId, d.id)
+            )
+          );
+        spkCount = parseInt(countRow[0].count as any) || 0;
+      }
 
       result.push({
         ...d,
