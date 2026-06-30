@@ -132,6 +132,23 @@ app.use((req, res, next) => {
     console.error("[migration] Could not reset stale discipline mappings:", err);
   }
 
+  // One-time backfill: speakers approved via the application flow (excluded above to preserve
+  // their human-chosen discipline) may still have an empty speaker_discipline_ids if they were
+  // created before speakerDisciplineIds was populated at approval time. Backfill from their
+  // existing discipline_id so they keep showing up in discipline browse/count endpoints, which
+  // now read exclusively from speaker_discipline_ids. Idempotent — once backfilled, the WHERE
+  // clause no longer matches.
+  try {
+    await db.execute(sql`
+      UPDATE speakers
+      SET speaker_discipline_ids = ARRAY[discipline_id]
+      WHERE discipline_id IS NOT NULL
+        AND (speaker_discipline_ids IS NULL OR array_length(speaker_discipline_ids, 1) IS NULL)
+    `);
+  } catch (err) {
+    console.error("[migration] Could not backfill speaker_discipline_ids from discipline_id:", err);
+  }
+
   // Seed disciplines + per-discipline categories, then auto-map speakers
   try {
     const { seedAndMigrateDisciplines } = await import("./seed-disciplines");

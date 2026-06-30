@@ -943,6 +943,7 @@ export class DatabaseStorage implements IStorage {
       categories: application.selectedCategories,
       disciplineId: application.selectedDisciplineId ?? null,
       speakerCategoryIds: application.selectedCategoryIds || [],
+      speakerDisciplineIds: application.selectedDisciplineId ? [application.selectedDisciplineId] : [],
       disciplineMigrationStatus: application.selectedDisciplineId ? "confirmed" : null,
       achievements: [],
       lectures: [],
