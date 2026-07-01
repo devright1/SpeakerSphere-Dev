@@ -1141,7 +1141,7 @@ export default function SpeakerDashboard() {
   const handleAddAchievement = () => {
     if (newAchievement.trim()) {
       const currentAchievements = editForm.achievements || [];
-      if (currentAchievements.length >= 5) return;
+      if (!isPremier && currentAchievements.length >= 5) return;
       setEditForm({
         ...editForm,
         achievements: [...currentAchievements, newAchievement.trim()]
@@ -2132,7 +2132,9 @@ export default function SpeakerDashboard() {
                             Professional Achievements
                           </span>
                           <span className="text-sm font-normal text-gray-500">
-                            {(isEditing ? editForm.achievements : speakerProfile.achievements)?.length || 0}/5
+                            {isPremier
+                              ? `${(isEditing ? editForm.achievements : speakerProfile.achievements)?.length || 0}`
+                              : `${(isEditing ? editForm.achievements : speakerProfile.achievements)?.length || 0}/5`}
                           </span>
                         </h3>
                         
@@ -2166,7 +2168,7 @@ export default function SpeakerDashboard() {
                         {/* Add achievement form when editing */}
                         {isEditing && (
                           <div className="border-t pt-4">
-                            {(editForm.achievements?.length || 0) >= 5 ? (
+                            {!isPremier && (editForm.achievements?.length || 0) >= 5 ? (
                               <p className="text-sm text-gray-500 italic">Maximum of 5 achievements reached.</p>
                             ) : (
                               <div className="flex space-x-2">
