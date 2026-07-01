@@ -2813,9 +2813,12 @@ export default function SpeakerDashboard() {
 
               {/* Premium Analytics Sections - Greyed out for Basic tier only */}
               <div className={cn(
-                "space-y-6",
-                (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 pointer-events-none select-none"
-              )}>
+                "space-y-6 relative",
+                (speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && "opacity-50 select-none group cursor-pointer"
+              )}
+              {...((speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? { onClick: () => setActiveTab("subscription") } : {})}
+              data-testid={(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' ? "overlay-analytics-locked" : undefined}
+              >
                 {/* Overview Metrics */}
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
@@ -3180,6 +3183,32 @@ export default function SpeakerDashboard() {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Hover overlay prompting Basic tier speakers to upgrade */}
+                {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && (
+                  <div
+                    className="absolute inset-0 z-10 flex items-center justify-center invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-200 bg-white/80 rounded-lg pointer-events-none group-hover:pointer-events-auto"
+                    data-testid="overlay-analytics-upgrade-hover"
+                  >
+                    <div className="text-center p-6 bg-white rounded-xl shadow-lg border max-w-sm mx-4">
+                      <Lock className="h-8 w-8 mx-auto mb-3 text-primary" />
+                      <p className="font-semibold text-gray-900 mb-1">Unlock Your Analytics</p>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Upgrade your plan to see detailed analytics for your profile.
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveTab("subscription");
+                        }}
+                        data-testid="button-upgrade-analytics-hover"
+                      >
+                        Upgrade Now
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Upgrade prompt for Basic tier only */}
