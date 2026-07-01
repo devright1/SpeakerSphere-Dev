@@ -5,3 +5,4 @@
 - [Discipline vs topics distinction](discipline-topics-distinction.md) — speakerCategoryIds must never be bulk-filled with "every category in a discipline"; disciplineMigrationStatus === "manual" is the only signal that a human actually chose topics.
 - [Stale session auth gaps](session-auth-gaps.md) — no global session validation; profile GETs skip token checks so dashboards load fine on dead tokens, but strict write endpoints 403, making saves look silently broken.
 - [Two parallel speaker-topic systems](two-topic-systems.md) — legacy speakingTopics table vs. speakerCategoryIds/discipline categories; topic display code must handle both or it silently shows nothing.
+- [PDF.js worker version path](pdf-worker-version.md) — versioned workerSrc file must exist under client/public/ exactly, or Vite serves index.html and every PDF preview silently falls back to a plain icon.
