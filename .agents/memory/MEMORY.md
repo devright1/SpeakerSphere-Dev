@@ -4,3 +4,4 @@
 - [Speaker discipline authoritative mapping](discipline-tagging.md) — discipline assignment is driven by a client-provided name→discipline spreadsheet, not algorithmic matching; watch for normalized-name collisions (Dr. X vs X) cross-contaminating disciplines on re-migration.
 - [Discipline vs topics distinction](discipline-topics-distinction.md) — speakerCategoryIds must never be bulk-filled with "every category in a discipline"; disciplineMigrationStatus === "manual" is the only signal that a human actually chose topics.
 - [Stale session auth gaps](session-auth-gaps.md) — no global session validation; profile GETs skip token checks so dashboards load fine on dead tokens, but strict write endpoints 403, making saves look silently broken.
+- [Two parallel speaker-topic systems](two-topic-systems.md) — legacy speakingTopics table vs. speakerCategoryIds/discipline categories; topic display code must handle both or it silently shows nothing.

@@ -1371,10 +1371,26 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.get("/api/speakers/:id/topics", async (req, res) => {
     try {
       const speakerId = parseInt(req.params.id);
-      const topics = await storage.getSpeakerTopicsBySpeakerId(speakerId);
+      let topics: any[] = await storage.getSpeakerTopicsBySpeakerId(speakerId);
       
       // Get speaker to check subscription tier
       const speaker = await storage.getSpeaker(speakerId);
+
+      // Fall back to the newer discipline/category topic selections (used by the
+      // speaker dashboard's "Disciplines & Topics" editor) when the speaker has
+      // none of the legacy speakingTopics junction rows. These are two separate
+      // systems and a speaker who only used the dashboard editor would otherwise
+      // show "No topics available" everywhere except their profile page.
+      if (topics.length === 0 && speaker?.speakerCategoryIds?.length) {
+        const disciplineIds = speaker.speakerDisciplineIds?.length
+          ? speaker.speakerDisciplineIds
+          : (speaker.disciplineId ? [speaker.disciplineId] : []);
+        const categoriesByDiscipline = await Promise.all(
+          disciplineIds.map((id) => storage.getCategoriesByDiscipline(id))
+        );
+        const allDisciplineCategories = categoriesByDiscipline.flat();
+        topics = allDisciplineCategories.filter((c) => speaker.speakerCategoryIds!.includes(c.id));
+      }
       
       // Basic tier speakers (or speakers with no subscription) can only show 3 topics
       const tier = speaker?.subscriptionTier || 'basic';
