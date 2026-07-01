@@ -37,7 +37,7 @@ import {
   User
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { SEOHead } from "@/components/seo-head";
@@ -110,7 +110,9 @@ type SpeakerApplicationForm = z.infer<typeof speakerApplicationSchema>;
 
 export default function ForSpeakers() {
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, user, isAuthenticated } = useAuth();
+  const [, navigate] = useLocation();
+  const isSignedInSpeaker = isAuthenticated && !!user?.speakerId;
   const [activeTab, setActiveTab] = useState("signin");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -526,6 +528,20 @@ export default function ForSpeakers() {
               </TabsList>
               
               <TabsContent value="signin" className="mt-6">
+                {isSignedInSpeaker ? (
+                  <div className="text-center space-y-4 max-w-md mx-auto py-6">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold">You're Already Signed In</h2>
+                    <p className="text-gray-600">
+                      You're currently signed in as a speaker. Head to your dashboard to manage your profile and opportunities.
+                    </p>
+                    <Button onClick={() => navigate("/speaker-dashboard")} data-testid="button-go-to-dashboard">
+                      Go to Speaker Dashboard
+                    </Button>
+                  </div>
+                ) : (
                 <div className="space-y-6">
                   <div className="text-center">
                     <h2 className="text-2xl font-bold mb-2">Welcome Back</h2>
@@ -725,6 +741,7 @@ export default function ForSpeakers() {
                     </div>
                   )}
                 </div>
+                )}
               </TabsContent>
               
               <TabsContent value="apply" className="mt-6">
