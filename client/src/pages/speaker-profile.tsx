@@ -1457,7 +1457,11 @@ export default function SpeakerProfile() {
                               <div className="flex-1 space-y-1">
                                 <p className="font-semibold">{event.eventName}</p>
                                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                  <span>{new Date(event.eventDate + 'T00:00:00').getFullYear()}</span>
+                                  <span>
+                                    {(event as any).eventEndDate && (event as any).eventEndDate !== event.eventDate
+                                      ? `${new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${new Date((event as any).eventEndDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                      : new Date(event.eventDate + 'T00:00:00').getFullYear()}
+                                  </span>
                                   {event.location && (
                                     <span className="flex items-center gap-1">
                                       <MapPin className="h-3.5 w-3.5" /> {event.location}

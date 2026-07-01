@@ -798,6 +798,7 @@ export const speakerEvents = pgTable("speaker_events", {
   speakerId: integer("speaker_id").notNull().references(() => speakers.id, { onDelete: "cascade" }),
   eventName: text("event_name").notNull(),
   eventDate: date("event_date").notNull(),
+  eventEndDate: date("event_end_date"),
   location: text("location"),
   eventUrl: text("event_url"),
   imageUrl: text("image_url"),
@@ -806,6 +807,7 @@ export const speakerEvents = pgTable("speaker_events", {
 
 export const insertSpeakerEventSchema = createInsertSchema(speakerEvents, {
   eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format"),
+  eventEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format").optional().nullable(),
 }).omit({
   id: true,
   createdAt: true,

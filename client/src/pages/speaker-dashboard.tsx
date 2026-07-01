@@ -245,7 +245,8 @@ export default function SpeakerDashboard() {
   // Events state
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<SpeakerEvent | null>(null);
-  const [eventForm, setEventForm] = useState({ eventName: '', eventDate: '', location: '', eventUrl: '', imageUrl: '' });
+  const [eventForm, setEventForm] = useState({ eventName: '', eventDate: '', eventEndDate: '', location: '', eventUrl: '', imageUrl: '' });
+  const [eventIsMultiDay, setEventIsMultiDay] = useState(false);
   const [eventImagePreview, setEventImagePreview] = useState<string | null>(null);
   const [eventImageUploading, setEventImageUploading] = useState(false);
   const eventImageFileRef = useRef<HTMLInputElement>(null);
@@ -561,10 +562,11 @@ export default function SpeakerDashboard() {
 
   const eventLimit = speakerProfile?.subscriptionTier === 'premier' ? 5 : speakerProfile?.subscriptionTier === 'pro' ? 2 : 0;
 
-  type EventPayload = { eventName: string; eventDate: string; location?: string; eventUrl?: string; imageUrl?: string | null };
+  type EventPayload = { eventName: string; eventDate: string; eventEndDate?: string | null; location?: string; eventUrl?: string; imageUrl?: string | null };
 
   const resetEventForm = () => {
-    setEventForm({ eventName: '', eventDate: '', location: '', eventUrl: '', imageUrl: '' });
+    setEventForm({ eventName: '', eventDate: '', eventEndDate: '', location: '', eventUrl: '', imageUrl: '' });
+    setEventIsMultiDay(false);
     setEventImagePreview(null);
     setEventImageUploading(false);
   };
@@ -632,9 +634,13 @@ export default function SpeakerDashboard() {
     if (!eventForm.eventName.trim() || !eventForm.eventDate) {
       toast({ title: 'Event name and date are required', variant: 'destructive' }); return;
     }
+    if (eventIsMultiDay && eventForm.eventEndDate && eventForm.eventEndDate < eventForm.eventDate) {
+      toast({ title: 'End date must be on or after the start date', variant: 'destructive' }); return;
+    }
     const payload: EventPayload = {
       eventName: eventForm.eventName,
       eventDate: eventForm.eventDate,
+      eventEndDate: eventIsMultiDay && eventForm.eventEndDate ? eventForm.eventEndDate : null,
       ...(eventForm.location ? { location: eventForm.location } : {}),
       ...(eventForm.eventUrl ? { eventUrl: eventForm.eventUrl } : {}),
       ...(eventForm.imageUrl ? { imageUrl: eventForm.imageUrl } : { imageUrl: null }),
@@ -4009,7 +4015,9 @@ export default function SpeakerDashboard() {
                             <div className="space-y-1">
                               <p className="font-medium">{event.eventName}</p>
                               <p className="text-sm text-muted-foreground">
-                                {new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                {(event as any).eventEndDate && (event as any).eventEndDate !== event.eventDate
+                                  ? `${new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} – ${new Date((event as any).eventEndDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+                                  : new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                 {event.location ? ` · ${event.location}` : ''}
                               </p>
                               {event.eventUrl && (
@@ -4030,10 +4038,12 @@ export default function SpeakerDashboard() {
                                   setEventForm({
                                     eventName: event.eventName,
                                     eventDate: event.eventDate,
+                                    eventEndDate: (event as any).eventEndDate || '',
                                     location: event.location || '',
                                     eventUrl: event.eventUrl || '',
                                     imageUrl: (event as any).imageUrl || '',
                                   });
+                                  setEventIsMultiDay(!!(event as any).eventEndDate && (event as any).eventEndDate !== event.eventDate);
                                   setEventImagePreview((event as any).imageUrl || null);
                                   setShowEventDialog(true);
                                 }}>
@@ -4072,14 +4082,52 @@ export default function SpeakerDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium block mb-1">Event Date *</label>
-                    <input
-                      type="date"
-                      className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      value={eventForm.eventDate}
-                      onChange={e => setEventForm(f => ({ ...f, eventDate: e.target.value }))}
-                      required
-                    />
+                    <label className="text-sm font-medium block mb-2">Event Date *</label>
+                    <div className="flex gap-4 mb-2">
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="radio"
+                          name="eventDayMode"
+                          checked={!eventIsMultiDay}
+                          onChange={() => { setEventIsMultiDay(false); setEventForm(f => ({ ...f, eventEndDate: '' })); }}
+                        />
+                        Single day
+                      </label>
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="radio"
+                          name="eventDayMode"
+                          checked={eventIsMultiDay}
+                          onChange={() => setEventIsMultiDay(true)}
+                        />
+                        Multiple days
+                      </label>
+                    </div>
+                    <div className={eventIsMultiDay ? "grid grid-cols-2 gap-3" : ""}>
+                      <div>
+                        {eventIsMultiDay && <span className="text-xs text-muted-foreground block mb-1">Start date</span>}
+                        <input
+                          type="date"
+                          className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          value={eventForm.eventDate}
+                          onChange={e => setEventForm(f => ({ ...f, eventDate: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      {eventIsMultiDay && (
+                        <div>
+                          <span className="text-xs text-muted-foreground block mb-1">End date</span>
+                          <input
+                            type="date"
+                            className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={eventForm.eventEndDate}
+                            min={eventForm.eventDate || undefined}
+                            onChange={e => setEventForm(f => ({ ...f, eventEndDate: e.target.value }))}
+                            required
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="text-sm font-medium block mb-1">Location</label>

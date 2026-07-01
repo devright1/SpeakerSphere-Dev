@@ -230,10 +230,14 @@ export async function registerRoutes(app: Express): Promise<Express> {
     const schema = z.object({
       eventName: z.string().min(1),
       eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      eventEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
       location: z.string().optional(),
       eventUrl: z.string().url().optional().or(z.literal('')),
       imageUrl: z.string().optional().nullable(),
-    });
+    }).refine(
+      (data) => !data.eventEndDate || data.eventEndDate >= data.eventDate,
+      { message: "End date must be on or after the start date", path: ["eventEndDate"] }
+    );
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid event data", details: parsed.error.errors });
 
@@ -266,10 +270,17 @@ export async function registerRoutes(app: Express): Promise<Express> {
     const schema = z.object({
       eventName: z.string().min(1).optional(),
       eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      eventEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
       location: z.string().optional().nullable(),
       eventUrl: z.string().url().optional().nullable().or(z.literal('')),
       imageUrl: z.string().optional().nullable(),
-    });
+    }).refine(
+      (data) => {
+        const start = data.eventDate ?? existing.eventDate;
+        return !data.eventEndDate || data.eventEndDate >= start;
+      },
+      { message: "End date must be on or after the start date", path: ["eventEndDate"] }
+    );
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid event data", details: parsed.error.errors });
 
