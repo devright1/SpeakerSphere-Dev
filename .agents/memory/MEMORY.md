@@ -3,3 +3,4 @@
 - [Speaker discipline migration status gotcha](discipline-migration-status.md) — re-migration resets must include "confirmed" status too, not just "auto"/flagged/null, or bulk-confirmed speakers stay stuck on stale tags forever.
 - [Speaker discipline authoritative mapping](discipline-tagging.md) — discipline assignment is driven by a client-provided name→discipline spreadsheet, not algorithmic matching; watch for normalized-name collisions (Dr. X vs X) cross-contaminating disciplines on re-migration.
 - [Discipline vs topics distinction](discipline-topics-distinction.md) — speakerCategoryIds must never be bulk-filled with "every category in a discipline"; disciplineMigrationStatus === "manual" is the only signal that a human actually chose topics.
+- [Stale session auth gaps](session-auth-gaps.md) — no global session validation; profile GETs skip token checks so dashboards load fine on dead tokens, but strict write endpoints 403, making saves look silently broken.

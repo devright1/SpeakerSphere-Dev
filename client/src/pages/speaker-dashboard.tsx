@@ -1088,7 +1088,21 @@ export default function SpeakerDashboard() {
         description: "Your disciplines and topics have been updated successfully.",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      const message = error instanceof Error ? error.message : "";
+      if (message === "Not authorized to update this speaker") {
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+        toast({
+          title: "Session Expired",
+          description: "Your session has expired. Please log in again to save your changes.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
+        return;
+      }
       toast({
         title: "Update Failed",
         description: "Failed to update disciplines. Please try again.",
