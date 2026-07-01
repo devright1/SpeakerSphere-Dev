@@ -386,30 +386,27 @@ function normalizeDisciplineName(name: string): string {
  */
 export async function applyAuthoritativeDisciplineAssignments(): Promise<void> {
   const allDisciplines = await db.select().from(disciplines);
-  const allCategories = await db.select().from(categories);
-  const allSpeakers = await db.select({ id: speakers.id, name: speakers.name }).from(speakers);
+  const allSpeakers = await db
+    .select({ id: speakers.id, name: speakers.name, disciplineMigrationStatus: speakers.disciplineMigrationStatus })
+    .from(speakers);
 
   const disciplineByNormalizedName = new Map(
     allDisciplines.map((d) => [normalizeDisciplineName(d.name), d])
   );
-  const catIdsByDisciplineId = new Map<number, number[]>();
-  for (const cat of allCategories) {
-    if (cat.disciplineId == null) continue;
-    const arr = catIdsByDisciplineId.get(cat.disciplineId) ?? [];
-    arr.push(cat.id);
-    catIdsByDisciplineId.set(cat.disciplineId, arr);
-  }
 
   const speakerIdsByNormalizedName = new Map<string, number[]>();
+  const statusById = new Map<number, string | null>();
   for (const s of allSpeakers) {
     const key = normalizeSpeakerName(s.name);
     const arr = speakerIdsByNormalizedName.get(key) ?? [];
     arr.push(s.id);
     speakerIdsByNormalizedName.set(key, arr);
+    statusById.set(s.id, s.disciplineMigrationStatus);
   }
 
   let matched = 0;
   let unmatched = 0;
+  let skippedManual = 0;
 
   for (const row of DISCIPLINE_SOURCE_DATA) {
     const discipline = disciplineByNormalizedName.get(normalizeDisciplineName(row.discipline));
@@ -419,14 +416,25 @@ export async function applyAuthoritativeDisciplineAssignments(): Promise<void> {
       continue;
     }
 
-    const speakerCategoryIds = catIdsByDisciplineId.get(discipline.id) ?? [];
     for (const speakerId of speakerIds) {
+      // Never clobber a speaker who has manually chosen their own topics —
+      // the spreadsheet only carries a name -> discipline mapping and knows
+      // nothing about topics a speaker picked themselves via their dashboard.
+      if (statusById.get(speakerId) === "manual") {
+        skippedManual++;
+        continue;
+      }
       await db
         .update(speakers)
         .set({
           disciplineId: discipline.id,
           speakerDisciplineIds: [discipline.id],
-          speakerCategoryIds,
+          // Topics/categories are only ever set by a speaker (or admin)
+          // explicitly choosing them — never auto-derived from the full
+          // list of categories under a discipline. Leave empty here so the
+          // public profile only shows the discipline until someone
+          // manually picks topics.
+          speakerCategoryIds: [],
           disciplineMigrationStatus: "confirmed",
         })
         .where(eq(speakers.id, speakerId));
@@ -435,7 +443,7 @@ export async function applyAuthoritativeDisciplineAssignments(): Promise<void> {
   }
 
   console.log(
-    `[seed-disciplines] Applied authoritative discipline mapping: ${matched} speakers matched, ${unmatched} rows had no matching speaker/discipline.`
+    `[seed-disciplines] Applied authoritative discipline mapping: ${matched} speakers matched, ${unmatched} rows had no matching speaker/discipline, ${skippedManual} speakers skipped (manually-set topics preserved).`
   );
 }
 
@@ -484,22 +492,11 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
   const allDisciplines = await db.select().from(disciplines);
   if (allDisciplines.length === 0) return;
 
-  const allCategories = await db.select().from(categories);
-
   // Map discipline names (lowercase) → discipline object
   const disciplineByLowerName = new Map(
     allDisciplines.map((d) => [d.name.toLowerCase().trim(), d])
   );
   const miscDiscipline = allDisciplines.find((d) => d.name === "Miscellaneous");
-
-  // Pre-build: disciplineId → category IDs for fast lookup
-  const catIdsByDisciplineId = new Map<number, number[]>();
-  for (const cat of allCategories) {
-    if (cat.disciplineId == null) continue;
-    const arr = catIdsByDisciplineId.get(cat.disciplineId) ?? [];
-    arr.push(cat.id);
-    catIdsByDisciplineId.set(cat.disciplineId, arr);
-  }
 
   // Process speakers that haven't been migrated yet, are flagged,
   // OR were migrated by an old pass that left speakerDisciplineIds empty.
@@ -543,14 +540,6 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
       matchedDisciplineIds.push(miscDiscipline.id);
     }
 
-    // speakerCategoryIds = all categories across every matched discipline
-    const speakerCategoryIds: number[] = [];
-    for (const dId of matchedDisciplineIds) {
-      for (const catId of catIdsByDisciplineId.get(dId) ?? []) {
-        speakerCategoryIds.push(catId);
-      }
-    }
-
     const primaryDisciplineId = matchedDisciplineIds[0] ?? null;
     const newStatus = primaryDisciplineId !== null ? "auto" : "flagged";
     if (newStatus === "auto") autoCount++;
@@ -561,7 +550,11 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
       .set({
         disciplineId: primaryDisciplineId,
         speakerDisciplineIds: matchedDisciplineIds,
-        speakerCategoryIds,
+        // Topics/categories are a curated, speaker/admin-chosen selection —
+        // never auto-derived from "every category under the discipline".
+        // Leave empty so only the discipline badge shows until someone
+        // manually picks topics.
+        speakerCategoryIds: [],
         disciplineMigrationStatus: newStatus,
       })
       .where(eq(speakers.id, speaker.id));

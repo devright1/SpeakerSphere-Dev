@@ -1271,7 +1271,12 @@ export default function SpeakerProfile() {
                         : speaker?.disciplineId
                         ? [speaker.disciplineId]
                         : [];
-                      const categoryIds: number[] = (speaker as any)?.speakerCategoryIds || [];
+                      // Topics/categories are only ever shown when a speaker (or admin) has
+                      // manually chosen them — never the auto-assigned discipline mapping.
+                      const categoryIds: number[] =
+                        (speaker as any)?.disciplineMigrationStatus === "manual"
+                          ? (speaker as any)?.speakerCategoryIds || []
+                          : [];
                       if (allDisciplineIds.length === 0) return null;
                       return (
                         <div className="mb-6 space-y-5">
