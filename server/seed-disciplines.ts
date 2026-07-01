@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { disciplines, categories, speakers } from "../shared/schema";
 import { eq, isNull, or, and, inArray, sql } from "drizzle-orm";
+import { DISCIPLINE_SOURCE_DATA } from "./discipline-source-data";
 
 /**
  * Two-level taxonomy — exact names taken from the Excel proposal.
@@ -357,6 +358,87 @@ export async function seedDisciplines(): Promise<void> {
   console.log(`[seed-disciplines] Synced ${DISCIPLINE_DATA.length} disciplines and their categories.`);
 }
 
+function normalizeSpeakerName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/^dr\.?\s+/, "")
+    .replace(/\s+/g, " ");
+}
+
+function normalizeDisciplineName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[\u2010-\u2015]/g, "-") // normalize hyphen/dash variants (-, –, —) to "-"
+    .replace(/\s+/g, " ");
+}
+
+/**
+ * Apply the client-provided authoritative speaker -> discipline mapping
+ * (server/discipline-source-data.ts, sourced from their spreadsheet).
+ *
+ * This always wins over the best-effort auto-matcher: it runs first, on every
+ * startup, and marks matched speakers "confirmed" so the auto-matcher and any
+ * stale-record reset logic leave them alone afterward. This is what protects
+ * this specific, client-approved distribution from being silently overwritten
+ * by future re-migrations, checkpoint restores, or admin bulk actions.
+ */
+export async function applyAuthoritativeDisciplineAssignments(): Promise<void> {
+  const allDisciplines = await db.select().from(disciplines);
+  const allCategories = await db.select().from(categories);
+  const allSpeakers = await db.select({ id: speakers.id, name: speakers.name }).from(speakers);
+
+  const disciplineByNormalizedName = new Map(
+    allDisciplines.map((d) => [normalizeDisciplineName(d.name), d])
+  );
+  const catIdsByDisciplineId = new Map<number, number[]>();
+  for (const cat of allCategories) {
+    if (cat.disciplineId == null) continue;
+    const arr = catIdsByDisciplineId.get(cat.disciplineId) ?? [];
+    arr.push(cat.id);
+    catIdsByDisciplineId.set(cat.disciplineId, arr);
+  }
+
+  const speakerIdsByNormalizedName = new Map<string, number[]>();
+  for (const s of allSpeakers) {
+    const key = normalizeSpeakerName(s.name);
+    const arr = speakerIdsByNormalizedName.get(key) ?? [];
+    arr.push(s.id);
+    speakerIdsByNormalizedName.set(key, arr);
+  }
+
+  let matched = 0;
+  let unmatched = 0;
+
+  for (const row of DISCIPLINE_SOURCE_DATA) {
+    const discipline = disciplineByNormalizedName.get(normalizeDisciplineName(row.discipline));
+    const speakerIds = speakerIdsByNormalizedName.get(normalizeSpeakerName(row.name));
+    if (!discipline || !speakerIds || speakerIds.length === 0) {
+      unmatched++;
+      continue;
+    }
+
+    const speakerCategoryIds = catIdsByDisciplineId.get(discipline.id) ?? [];
+    for (const speakerId of speakerIds) {
+      await db
+        .update(speakers)
+        .set({
+          disciplineId: discipline.id,
+          speakerDisciplineIds: [discipline.id],
+          speakerCategoryIds,
+          disciplineMigrationStatus: "confirmed",
+        })
+        .where(eq(speakers.id, speakerId));
+      matched++;
+    }
+  }
+
+  console.log(
+    `[seed-disciplines] Applied authoritative discipline mapping: ${matched} speakers matched, ${unmatched} rows had no matching speaker/discipline.`
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Legacy-category translation keywords
 // Keys are lowercased legacy category strings; values are substrings to match
@@ -494,5 +576,6 @@ export async function migrateSpeakerDisciplines(): Promise<void> {
 
 export async function seedAndMigrateDisciplines(): Promise<void> {
   await seedDisciplines();
+  await applyAuthoritativeDisciplineAssignments();
   await migrateSpeakerDisciplines();
 }
