@@ -19,12 +19,20 @@ authoritative source instead of trusting any algorithm.
 `server/discipline-source-data.ts` from it (same row shape: `{ name,
 discipline }`) rather than tweaking matching heuristics.
 
-**Known caveat:** the speakers table contains genuine duplicate profile rows
-for the same real person (same name, two different speaker IDs — roughly
-25+ pairs, often a "Dr. X" vs "X" name variant). The authoritative mapping
-applies to every DB row matching a given name, so a handful of disciplines
-end up with slightly more tagged speakers than the spreadsheet's unique-name
-count (off by 1-7, worst case Miscellaneous). This is a pre-existing
-duplicate-listing data-quality issue, not a tagging bug — resolving it means
-merging/deleting duplicate speaker profiles, which needs explicit user
-sign-off before doing anything destructive.
+**Resolved duplicate-profile issue (July 2026):** the speakers table used to
+contain ~25 genuine duplicate profile pairs for the same real person (same
+name, two speaker IDs, often a "Dr. X" vs "X" name variant), inflating
+per-discipline counts vs. the spreadsheet's unique-name totals. These were
+merged (keeping the record with the more complete bio as canonical,
+reassigning all referencing rows before deleting the loser). The source
+spreadsheet (`discipline-source-data.ts`) was also deduplicated — it had 21
+redundant name-variant rows, 3 of which pointed to conflicting disciplines
+for the same person; resolved by keeping whichever variant matches the
+canonical DB record.
+
+**Gotcha to watch for:** name normalization (stripping "Dr." prefix) means
+if the DB or spreadsheet ever again gets two rows that normalize to the same
+key, the migration will cross-apply disciplines from both source rows to
+both DB rows (last-processed row wins for all matching IDs) — check for
+normalized-name collisions before trusting per-discipline counts after any
+future bulk import.
