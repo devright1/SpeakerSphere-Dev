@@ -3187,10 +3187,10 @@ export default function SpeakerDashboard() {
                 {/* Hover overlay prompting Basic tier speakers to upgrade */}
                 {(speakerProfile?.subscriptionTier ?? 'basic') === 'basic' && (
                   <div
-                    className="absolute inset-0 z-10 flex items-center justify-center invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-200 bg-white/80 rounded-lg pointer-events-none group-hover:pointer-events-auto"
+                    className="absolute inset-0 z-10 flex items-start justify-center invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-200 bg-white/80 rounded-lg pointer-events-none group-hover:pointer-events-auto"
                     data-testid="overlay-analytics-upgrade-hover"
                   >
-                    <div className="text-center p-6 bg-white rounded-xl shadow-lg border max-w-sm mx-4">
+                    <div className="sticky top-24 text-center p-6 bg-white rounded-xl shadow-lg border max-w-sm mx-4 mt-6">
                       <Lock className="h-8 w-8 mx-auto mb-3 text-primary" />
                       <p className="font-semibold text-gray-900 mb-1">Unlock Your Analytics</p>
                       <p className="text-sm text-gray-600 mb-4">
