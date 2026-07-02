@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, X, Lightbulb } from "lucide-react";
 
 interface TopicRequestItem {
@@ -172,9 +173,19 @@ export default function AdminTopicRequests() {
       {isLoading ? (
         <p className="text-sm text-gray-500">Loading requests…</p>
       ) : requests && requests.length > 0 ? (
-        <>
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-700">New Requests ({pending.length})</h3>
+        <Tabs defaultValue="new" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg">
+            <TabsTrigger value="new" data-testid="tab-new-requests">
+              New Requests ({pending.length})
+            </TabsTrigger>
+            <TabsTrigger value="approved" data-testid="tab-approved-requests">
+              Approved ({approved.length})
+            </TabsTrigger>
+            <TabsTrigger value="declined" data-testid="tab-declined-requests">
+              Declined ({rejected.length})
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="new" className="space-y-3 mt-4">
             {pending.length > 0 ? (
               pending.map((r) => (
                 <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
@@ -182,9 +193,8 @@ export default function AdminTopicRequests() {
             ) : (
               <p className="text-sm text-gray-500">No new requests.</p>
             )}
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-700">Approved ({approved.length})</h3>
+          </TabsContent>
+          <TabsContent value="approved" className="space-y-3 mt-4">
             {approved.length > 0 ? (
               approved.map((r) => (
                 <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
@@ -192,9 +202,8 @@ export default function AdminTopicRequests() {
             ) : (
               <p className="text-sm text-gray-500">No approved requests yet.</p>
             )}
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-700">Declined ({rejected.length})</h3>
+          </TabsContent>
+          <TabsContent value="declined" className="space-y-3 mt-4">
             {rejected.length > 0 ? (
               rejected.map((r) => (
                 <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
@@ -202,8 +211,8 @@ export default function AdminTopicRequests() {
             ) : (
               <p className="text-sm text-gray-500">No declined requests.</p>
             )}
-          </div>
-        </>
+          </TabsContent>
+        </Tabs>
       ) : (
         <p className="text-sm text-gray-500">No topic requests yet.</p>
       )}
