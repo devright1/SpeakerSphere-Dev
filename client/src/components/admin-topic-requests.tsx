@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, X, Lightbulb } from "lucide-react";
 
@@ -53,15 +56,32 @@ async function adminRequest(method: string, url: string, body?: unknown) {
   return res.json();
 }
 
-function RequestCard({ request, disciplineName }: { request: TopicRequestItem; disciplineName?: string }) {
+function RequestCard({
+  request,
+  disciplineName,
+  disciplines,
+}: {
+  request: TopicRequestItem;
+  disciplineName?: string;
+  disciplines?: { id: number; name: string }[];
+}) {
   const { toast } = useToast();
   const [adminNotes, setAdminNotes] = useState("");
+  const [editedTopicName, setEditedTopicName] = useState(request.topicName);
+  const [editedDisciplineId, setEditedDisciplineId] = useState<string>(
+    request.disciplineId != null ? String(request.disciplineId) : "none"
+  );
 
   const approveMutation = useMutation({
-    mutationFn: () => adminRequest("POST", `/api/admin/topic-requests/${request.id}/approve`, { adminNotes: adminNotes || undefined }),
+    mutationFn: () =>
+      adminRequest("POST", `/api/admin/topic-requests/${request.id}/approve`, {
+        adminNotes: adminNotes || undefined,
+        topicName: editedTopicName.trim() || undefined,
+        disciplineId: editedDisciplineId === "none" ? null : parseInt(editedDisciplineId),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/topic-requests"] });
-      toast({ title: "Topic request approved", description: `"${request.topicName}" was added and assigned to ${request.speakerName}.` });
+      toast({ title: "Topic request approved", description: `"${editedTopicName.trim() || request.topicName}" was added and assigned to ${request.speakerName}.` });
     },
     onError: (e: Error) => toast({ title: "Failed to approve request", description: e.message, variant: "destructive" }),
   });
@@ -104,7 +124,38 @@ function RequestCard({ request, disciplineName }: { request: TopicRequestItem; d
         </div>
 
         {isPending && (
-          <div className="space-y-2 pt-2 border-t">
+          <div className="space-y-3 pt-2 border-t">
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor={`topic-name-${request.id}`} className="text-xs text-gray-500">
+                  Topic name
+                </Label>
+                <Input
+                  id={`topic-name-${request.id}`}
+                  value={editedTopicName}
+                  onChange={(e) => setEditedTopicName(e.target.value)}
+                  data-testid={`input-topic-name-${request.id}`}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor={`discipline-${request.id}`} className="text-xs text-gray-500">
+                  Discipline
+                </Label>
+                <Select value={editedDisciplineId} onValueChange={setEditedDisciplineId}>
+                  <SelectTrigger id={`discipline-${request.id}`} data-testid={`select-discipline-${request.id}`}>
+                    <SelectValue placeholder="Select discipline" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No discipline</SelectItem>
+                    {disciplines?.map((d) => (
+                      <SelectItem key={d.id} value={String(d.id)}>
+                        {d.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <Textarea
               placeholder="Optional notes (visible to admin only)"
               value={adminNotes}
@@ -188,7 +239,7 @@ export default function AdminTopicRequests() {
           <TabsContent value="new" className="space-y-3 mt-4">
             {pending.length > 0 ? (
               pending.map((r) => (
-                <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
+                <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} disciplines={disciplines} />
               ))
             ) : (
               <p className="text-sm text-gray-500">No new requests.</p>

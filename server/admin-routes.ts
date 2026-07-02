@@ -1791,7 +1791,21 @@ export function registerAdminRoutes(app: Express) {
         return res.status(400).json({ message: "This request has already been reviewed" });
       }
 
-      const trimmedName = request.topicName.trim();
+      const overrideName = typeof req.body?.topicName === "string" ? req.body.topicName.trim() : undefined;
+      const trimmedName = overrideName || request.topicName.trim();
+      if (!trimmedName) {
+        return res.status(400).json({ message: "Topic name cannot be empty" });
+      }
+
+      let overrideDisciplineId: number | null | undefined = undefined;
+      if (req.body?.disciplineId !== undefined) {
+        overrideDisciplineId = req.body.disciplineId === null ? null : parseInt(req.body.disciplineId);
+        if (overrideDisciplineId !== null && isNaN(overrideDisciplineId)) {
+          return res.status(400).json({ message: "Invalid discipline ID" });
+        }
+      }
+      const finalDisciplineId = overrideDisciplineId !== undefined ? overrideDisciplineId : (request.disciplineId ?? null);
+
       const finalSlug = trimmedName.toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
@@ -1811,7 +1825,7 @@ export function registerAdminRoutes(app: Express) {
             name: trimmedName,
             slug: finalSlug,
             category: null,
-            disciplineId: request.disciplineId ?? null,
+            disciplineId: finalDisciplineId,
           })
           .returning();
         topic = newTopic;
