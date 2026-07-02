@@ -863,6 +863,32 @@ export const insertReviewCommentSchema = createInsertSchema(reviewComments).omit
 export type ReviewComment = typeof reviewComments.$inferSelect;
 export type InsertReviewComment = z.infer<typeof insertReviewCommentSchema>;
 
+// Speaker-submitted requests for brand-new speaking topics not yet in the master list
+export const topicRequests = pgTable("topic_requests", {
+  id: serial("id").primaryKey(),
+  speakerId: integer("speaker_id").notNull().references(() => speakers.id, { onDelete: "cascade" }),
+  topicName: text("topic_name").notNull(),
+  disciplineId: integer("discipline_id"),
+  notes: text("notes"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // "pending" | "approved" | "rejected"
+  adminNotes: text("admin_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+});
+
+export const insertTopicRequestSchema = createInsertSchema(topicRequests, {
+  topicName: z.string().min(1, "Topic name is required"),
+}).omit({
+  id: true,
+  status: true,
+  adminNotes: true,
+  createdAt: true,
+  reviewedAt: true,
+});
+
+export type TopicRequest = typeof topicRequests.$inferSelect;
+export type InsertTopicRequest = z.infer<typeof insertTopicRequestSchema>;
+
 // OTP codes for speaker password reset via email
 export const passwordResetCodes = pgTable("password_reset_codes", {
   id: serial("id").primaryKey(),

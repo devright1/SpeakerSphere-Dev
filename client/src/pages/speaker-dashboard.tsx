@@ -67,14 +67,15 @@ import {
   GraduationCap,
   Newspaper,
   FolderOpen,
-  Pencil
+  Pencil,
+  Lightbulb
 } from "lucide-react";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { getVideoThumbnail } from "@/lib/video-utils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import QRCodeStyling from 'qr-code-styling';
 import devRightLogo from '@assets/DevRight_icon_-_Black_1766077810725.png';
-import type { SpeakerEvent } from "@shared/schema";
+import type { SpeakerEvent, TopicRequest } from "@shared/schema";
 
 // Styled QR Code Component with circular dots
 function StyledQRCode({ value, logoSrc, speakerName }: { value: string; logoSrc: string; speakerName?: string }) {
@@ -561,6 +562,57 @@ export default function SpeakerDashboard() {
   });
 
   const eventLimit = speakerProfile?.subscriptionTier === 'premier' ? 5 : speakerProfile?.subscriptionTier === 'pro' ? 2 : 0;
+
+  // Topic requests — Premier speakers can suggest a brand-new topic not currently in the master list
+  const { data: topicRequestsList, refetch: refetchTopicRequests } = useQuery<TopicRequest[]>({
+    queryKey: ['/api/speakers/topic-requests', speakerProfile?.id],
+    queryFn: async () => {
+      if (!speakerProfile?.id) return [];
+      const token = localStorage.getItem('userToken') || '';
+      const response = await fetch(`/api/speakers/${speakerProfile.id}/topic-requests`, {
+        headers: { 'X-User-ID': token },
+        credentials: 'include',
+      });
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id && isPremier,
+  });
+
+  const [topicRequestForm, setTopicRequestForm] = useState({ topicName: '', notes: '' });
+  const [showTopicRequestDialog, setShowTopicRequestDialog] = useState(false);
+
+  const createTopicRequestMutation = useMutation<TopicRequest, Error, { topicName: string; notes?: string }>({
+    mutationFn: async (data) => {
+      const token = localStorage.getItem('userToken') || '';
+      const response = await fetch(`/api/speakers/${speakerProfile?.id}/topic-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': token },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) { const e = await response.json(); throw new Error(e.error || 'Failed'); }
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchTopicRequests();
+      setShowTopicRequestDialog(false);
+      setTopicRequestForm({ topicName: '', notes: '' });
+      toast({ title: 'Topic request submitted', description: 'An admin will review your suggestion.' });
+    },
+    onError: (e) => toast({ title: 'Failed to submit topic request', description: e.message, variant: 'destructive' }),
+  });
+
+  const handleTopicRequestSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!topicRequestForm.topicName.trim()) {
+      toast({ title: 'Topic name is required', variant: 'destructive' }); return;
+    }
+    createTopicRequestMutation.mutate({
+      topicName: topicRequestForm.topicName.trim(),
+      ...(topicRequestForm.notes.trim() ? { notes: topicRequestForm.notes.trim() } : {}),
+    });
+  };
 
   type EventPayload = { eventName: string; eventDate: string; eventEndDate?: string | null; location?: string; eventUrl?: string; imageUrl?: string | null };
 
@@ -2422,6 +2474,88 @@ export default function SpeakerDashboard() {
 
                   </CardContent>
                 </Card>
+
+                {isPremier && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="flex items-center">
+                            <Lightbulb className="h-5 w-5 mr-2" />
+                            Request a New Topic
+                          </CardTitle>
+                          <CardDescription>
+                            Don't see a topic that fits you? Suggest a brand-new one for an admin to review and add.
+                          </CardDescription>
+                        </div>
+                        <Dialog open={showTopicRequestDialog} onOpenChange={setShowTopicRequestDialog}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" data-testid="button-request-topic">
+                              <Plus className="h-4 w-4 mr-1" />
+                              Request Topic
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Request a New Topic</DialogTitle>
+                              <DialogDescription>
+                                Suggest a speaking topic that isn't currently in our list. An admin will review your request.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleTopicRequestSubmit} className="space-y-4">
+                              <div>
+                                <Label htmlFor="topic-request-name">Topic Name</Label>
+                                <Input
+                                  id="topic-request-name"
+                                  value={topicRequestForm.topicName}
+                                  onChange={(e) => setTopicRequestForm((f) => ({ ...f, topicName: e.target.value }))}
+                                  placeholder="e.g. Digital Smile Design"
+                                  data-testid="input-topic-request-name"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="topic-request-notes">Notes (optional)</Label>
+                                <Textarea
+                                  id="topic-request-notes"
+                                  value={topicRequestForm.notes}
+                                  onChange={(e) => setTopicRequestForm((f) => ({ ...f, notes: e.target.value }))}
+                                  placeholder="Any context that would help the admin review this request"
+                                  data-testid="input-topic-request-notes"
+                                />
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => setShowTopicRequestDialog(false)}>
+                                  Cancel
+                                </Button>
+                                <Button type="submit" disabled={createTopicRequestMutation.isPending} data-testid="button-submit-topic-request">
+                                  {createTopicRequestMutation.isPending ? "Submitting…" : "Submit Request"}
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </CardHeader>
+                    {!!topicRequestsList?.length && (
+                      <CardContent>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Your Requests</h4>
+                        <div className="space-y-2">
+                          {topicRequestsList.map((r) => (
+                            <div key={r.id} className="flex items-center justify-between border rounded-md px-3 py-2 text-sm" data-testid={`topic-request-${r.id}`}>
+                              <span className="font-medium">{r.topicName}</span>
+                              <Badge
+                                variant={r.status === 'approved' ? 'default' : r.status === 'rejected' ? 'destructive' : 'secondary'}
+                                data-testid={`badge-topic-request-status-${r.id}`}
+                              >
+                                {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    )}
+                  </Card>
+                )}
               </div>
             </div>
 

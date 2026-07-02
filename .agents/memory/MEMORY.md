@@ -7,3 +7,6 @@
 - [Two parallel speaker-topic systems](two-topic-systems.md) — legacy speakingTopics table vs. speakerCategoryIds/discipline categories; topic display code must handle both or it silently shows nothing.
 - [PDF.js worker version path](pdf-worker-version.md) — versioned workerSrc file must exist under client/public/ exactly, or Vite serves index.html and every PDF preview silently falls back to a plain icon.
 - [Hover-lock overlay visibility](hover-lock-overlays.md) — toggle invisible/visible, not just opacity, on hover-reveal overlays or automated visibility checks (and some UX cases) misreport hidden state.
+- [DB push blocked by speaking_topics drift](db-push-drift-workaround.md) — `npm run db:push` prompts interactively to truncate speaking_topics; sandbox has no TTY, so apply additive schema changes via direct psql DDL instead.
+- [Admin auth is hardcoded, not a DB user](admin-auth-credentials.md) — admin login checks a single hardcoded email/password pair in code, not a users-table row; needed when e2e-testing any admin-facing flow.
+- [speaker_topics junction has no unique constraint](speaker-topic-assignment.md) — assigning a topic to a speaker inserts into the speaker_topics junction table; always check existing assignments first or duplicate rows appear (React key warnings, inflated topic lists).

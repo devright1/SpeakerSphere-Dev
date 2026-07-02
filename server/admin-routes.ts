@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
 import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics, speakerContent } from "../shared/schema";
+import type { TopicRequest } from "../shared/schema";
 import { eq, desc, and, or, isNotNull } from "drizzle-orm";
 import { EmailService } from "./email-service";
 import { generateVerificationToken, getTokenExpiration } from "./email";
@@ -1751,6 +1752,107 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error("Error creating topic:", error);
       res.status(500).json({ message: "Failed to create topic" });
+    }
+  });
+
+  // Get topic requests submitted by Premier speakers (optionally filtered by status)
+  app.get("/api/admin/topic-requests", async (req, res) => {
+    try {
+      const status = typeof req.query.status === "string" ? req.query.status : undefined;
+      const requests = await storage.getAllTopicRequests(status);
+
+      const speakerIds = Array.from(new Set(requests.map((r) => r.speakerId)));
+      const speakerRows = speakerIds.length
+        ? await db.select().from(speakers).where(or(...speakerIds.map((id) => eq(speakers.id, id))))
+        : [];
+      const speakerById = new Map(speakerRows.map((s) => [s.id, s]));
+
+      const enriched = requests.map((r: TopicRequest) => ({
+        ...r,
+        speakerName: speakerById.get(r.speakerId)?.name ?? "Unknown",
+      }));
+
+      res.json(enriched);
+    } catch (error) {
+      console.error("Error fetching topic requests:", error);
+      res.status(500).json({ message: "Failed to fetch topic requests" });
+    }
+  });
+
+  // Approve a topic request: creates the topic (if it doesn't already exist) and assigns it to the requesting speaker
+  app.post("/api/admin/topic-requests/:id/approve", async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      if (isNaN(requestId)) return res.status(400).json({ message: "Invalid request ID" });
+
+      const request = await storage.getTopicRequestById(requestId);
+      if (!request) return res.status(404).json({ message: "Topic request not found" });
+      if (request.status !== "pending") {
+        return res.status(400).json({ message: "This request has already been reviewed" });
+      }
+
+      const trimmedName = request.topicName.trim();
+      const finalSlug = trimmedName.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+
+      let topic = await db.query.speakingTopics.findFirst({
+        where: or(
+          eq(speakingTopics.name, trimmedName),
+          eq(speakingTopics.slug, finalSlug)
+        )
+      });
+
+      if (!topic) {
+        const [newTopic] = await db.insert(speakingTopics)
+          .values({
+            name: trimmedName,
+            slug: finalSlug,
+            category: null,
+            disciplineId: request.disciplineId ?? null,
+          })
+          .returning();
+        topic = newTopic;
+        console.log(`✅ Created new topic from speaker request: ${topic.name} (${topic.slug})`);
+      }
+
+      const existingSpeakerTopics = await storage.getSpeakerTopicsBySpeakerId(request.speakerId);
+      const alreadyAssigned = existingSpeakerTopics.some((t) => t.id === topic.id);
+      if (!alreadyAssigned) {
+        await storage.addSpeakerTopic(request.speakerId, topic.id);
+      }
+
+      const adminNotes = typeof req.body?.adminNotes === "string" ? req.body.adminNotes : undefined;
+      const updated = await storage.updateTopicRequestStatus(requestId, "approved", adminNotes);
+
+      res.json({ success: true, request: updated, topic });
+    } catch (error) {
+      console.error("Error approving topic request:", error);
+      res.status(500).json({ message: "Failed to approve topic request" });
+    }
+  });
+
+  // Reject a topic request
+  app.post("/api/admin/topic-requests/:id/reject", async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      if (isNaN(requestId)) return res.status(400).json({ message: "Invalid request ID" });
+
+      const request = await storage.getTopicRequestById(requestId);
+      if (!request) return res.status(404).json({ message: "Topic request not found" });
+      if (request.status !== "pending") {
+        return res.status(400).json({ message: "This request has already been reviewed" });
+      }
+
+      const adminNotes = typeof req.body?.adminNotes === "string" ? req.body.adminNotes : undefined;
+      const updated = await storage.updateTopicRequestStatus(requestId, "rejected", adminNotes);
+
+      res.json({ success: true, request: updated });
+    } catch (error) {
+      console.error("Error rejecting topic request:", error);
+      res.status(500).json({ message: "Failed to reject topic request" });
     }
   });
 

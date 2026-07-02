@@ -4,7 +4,7 @@ import { z } from "zod";
 // Removed zfd import as it's not needed for current functionality
 import session from "express-session";
 import { storage } from "./storage";
-import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory, speakers, VIDEO_LINK_LIMITS, insertSpeakerVideoLinkSchema, EVENT_LIMITS } from "../shared/schema";
+import { insertUserSchema, insertSpeakerApplicationSchema, subscriptionPlans, subscriptionHistory, speakers, VIDEO_LINK_LIMITS, insertSpeakerVideoLinkSchema, EVENT_LIMITS, insertTopicRequestSchema } from "../shared/schema";
 import { registerAdminRoutes } from "./admin-routes";
 import { EmailService } from "./email-service";
 import multer from "multer";
@@ -300,6 +300,46 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
     const updated = await storage.updateSpeakerEvent(eventId, parsed.data);
     return res.json(updated);
+  });
+
+  // GET /api/speakers/:id/topic-requests — authenticated, speaker's own submitted requests
+  app.get("/api/speakers/:id/topic-requests", async (req: AuthenticatedRequest, res) => {
+    const speakerId = parseInt(req.params.id);
+    if (isNaN(speakerId)) return res.status(400).json({ error: "Invalid speaker ID" });
+
+    const userId = await resolveUserId(req);
+    if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+    const user = await storage.getUserById(userId);
+    if (!user || user.speakerId !== speakerId) return res.status(403).json({ error: "Forbidden" });
+
+    const requests = await storage.getTopicRequestsBySpeaker(speakerId);
+    return res.json(requests);
+  });
+
+  // POST /api/speakers/:id/topic-requests — submit a request for a brand-new topic (Premier tier only)
+  app.post("/api/speakers/:id/topic-requests", async (req: AuthenticatedRequest, res) => {
+    const speakerId = parseInt(req.params.id);
+    if (isNaN(speakerId)) return res.status(400).json({ error: "Invalid speaker ID" });
+
+    const userId = await resolveUserId(req);
+    if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+    const user = await storage.getUserById(userId);
+    if (!user || user.speakerId !== speakerId) return res.status(403).json({ error: "Forbidden" });
+
+    const speaker = await storage.getSpeaker(speakerId);
+    if (!speaker) return res.status(404).json({ error: "Speaker not found" });
+
+    if (speaker.subscriptionTier !== "premier") {
+      return res.status(403).json({ error: "Requesting new topics is a Premier tier feature" });
+    }
+
+    const parsed = insertTopicRequestSchema.omit({ speakerId: true }).safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid topic request data", details: parsed.error.errors });
+
+    const request = await storage.createTopicRequest({ speakerId, ...parsed.data });
+    return res.status(201).json(request);
   });
 
   // DELETE /api/speakers/:id/events/:eventId — delete event (auth required)

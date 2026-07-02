@@ -69,6 +69,8 @@ import {
   type InsertSpeakerEvent,
   type ReviewComment,
   type InsertReviewComment,
+  type TopicRequest,
+  type InsertTopicRequest,
   reviewReactions,
   reviewComments,
 } from "@shared/schema";
@@ -335,6 +337,13 @@ export interface IStorage {
   updateSpeakerEvent(eventId: number, updates: Partial<InsertSpeakerEvent>): Promise<SpeakerEvent | undefined>;
   deleteSpeakerEvent(eventId: number): Promise<boolean>;
   getSpeakerEventById(eventId: number): Promise<SpeakerEvent | undefined>;
+
+  // Topic Requests (Premier speakers requesting new topics not in the master list)
+  getTopicRequestsBySpeaker(speakerId: number): Promise<TopicRequest[]>;
+  getAllTopicRequests(status?: string): Promise<TopicRequest[]>;
+  createTopicRequest(request: InsertTopicRequest): Promise<TopicRequest>;
+  getTopicRequestById(requestId: number): Promise<TopicRequest | undefined>;
+  updateTopicRequestStatus(requestId: number, status: string, adminNotes?: string): Promise<TopicRequest | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -2000,6 +2009,15 @@ export class MemStorage implements IStorage {
   async updateSpeakerEvent(_eventId: number, _updates: Partial<InsertSpeakerEvent>): Promise<SpeakerEvent | undefined> { return undefined; }
   async deleteSpeakerEvent(_eventId: number): Promise<boolean> { return false; }
   async getSpeakerEventById(_eventId: number): Promise<SpeakerEvent | undefined> { return undefined; }
+
+  // Topic Requests (MemStorage stubs — not used in production)
+  async getTopicRequestsBySpeaker(_speakerId: number): Promise<TopicRequest[]> { return []; }
+  async getAllTopicRequests(_status?: string): Promise<TopicRequest[]> { return []; }
+  async createTopicRequest(request: InsertTopicRequest): Promise<TopicRequest> {
+    return { ...request, id: 1, status: "pending", adminNotes: null, createdAt: new Date(), reviewedAt: null } as TopicRequest;
+  }
+  async getTopicRequestById(_requestId: number): Promise<TopicRequest | undefined> { return undefined; }
+  async updateTopicRequestStatus(_requestId: number, _status: string, _adminNotes?: string): Promise<TopicRequest | undefined> { return undefined; }
 
   // Review Reactions (MemStorage stubs)
   async getReviewReactionCounts(_reviewId: number): Promise<{ likes: number; dislikes: number }> { return { likes: 0, dislikes: 0 }; }

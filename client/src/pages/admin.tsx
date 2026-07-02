@@ -25,6 +25,7 @@ import { ObjectUploader } from "@/components/ObjectUploader";
 import { SubscriptionFeaturesManager } from "@/components/subscription-features-manager";
 import { SpeakerSubscriptionsView } from "@/components/speaker-subscriptions-view";
 import { AdminDisciplines } from "@/components/admin-disciplines";
+import AdminTopicRequests from "@/components/admin-topic-requests";
 import type { User, Speaker, Category, Inquiry } from "@shared/schema";
 
 function AdminContentTable() {
@@ -1705,7 +1706,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9 bg-gray-100 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-10 bg-gray-100 p-1 rounded-lg">
             <TabsTrigger 
               value="analytics"
               className="data-[state=active]:bg-blue-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
@@ -1755,6 +1756,13 @@ export default function AdminDashboard() {
               data-testid="tab-disciplines"
             >
               Disciplines
+            </TabsTrigger>
+            <TabsTrigger 
+              value="topic-requests"
+              className="data-[state=active]:bg-orange-600 data-[state=active]:text-white bg-white hover:bg-gray-50 transition-colors"
+              data-testid="tab-topic-requests"
+            >
+              Topic Requests
             </TabsTrigger>
             <TabsTrigger 
               value="settings"
@@ -4009,6 +4017,9 @@ export default function AdminDashboard() {
                 <DetailedSpeakerAnalytics />
               </CardContent>
             </Card>
+          </TabsContent>
+          <TabsContent value="topic-requests" className="space-y-6">
+            <AdminTopicRequests />
           </TabsContent>
           <TabsContent value="settings" className="space-y-6">
             <Card>

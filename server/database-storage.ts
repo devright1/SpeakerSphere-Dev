@@ -72,6 +72,9 @@ import {
   type InsertSpeakerEvent,
   type ReviewComment,
   type InsertReviewComment,
+  type TopicRequest,
+  type InsertTopicRequest,
+  topicRequests,
   reviewReactions,
   reviewComments,
 } from "@shared/schema";
@@ -2768,6 +2771,42 @@ export class DatabaseStorage implements IStorage {
 
   async getSpeakerEventById(eventId: number): Promise<SpeakerEvent | undefined> {
     const result = await db.select().from(speakerEvents).where(eq(speakerEvents.id, eventId));
+    return result[0];
+  }
+
+  // Topic Requests
+  async getTopicRequestsBySpeaker(speakerId: number): Promise<TopicRequest[]> {
+    return await db
+      .select()
+      .from(topicRequests)
+      .where(eq(topicRequests.speakerId, speakerId))
+      .orderBy(desc(topicRequests.createdAt));
+  }
+
+  async getAllTopicRequests(status?: string): Promise<TopicRequest[]> {
+    const query = db.select().from(topicRequests);
+    if (status) {
+      return await query.where(eq(topicRequests.status, status)).orderBy(desc(topicRequests.createdAt));
+    }
+    return await query.orderBy(desc(topicRequests.createdAt));
+  }
+
+  async createTopicRequest(request: InsertTopicRequest): Promise<TopicRequest> {
+    const result = await db.insert(topicRequests).values(request).returning();
+    return result[0];
+  }
+
+  async getTopicRequestById(requestId: number): Promise<TopicRequest | undefined> {
+    const result = await db.select().from(topicRequests).where(eq(topicRequests.id, requestId));
+    return result[0];
+  }
+
+  async updateTopicRequestStatus(requestId: number, status: string, adminNotes?: string): Promise<TopicRequest | undefined> {
+    const result = await db
+      .update(topicRequests)
+      .set({ status, adminNotes: adminNotes ?? null, reviewedAt: new Date() })
+      .where(eq(topicRequests.id, requestId))
+      .returning();
     return result[0];
   }
 
