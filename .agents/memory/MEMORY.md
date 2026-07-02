@@ -10,3 +10,4 @@
 - [DB push blocked by speaking_topics drift](db-push-drift-workaround.md) — `npm run db:push` prompts interactively to truncate speaking_topics; sandbox has no TTY, so apply additive schema changes via direct psql DDL instead.
 - [Admin auth is hardcoded, not a DB user](admin-auth-credentials.md) — admin login checks a single hardcoded email/password pair in code, not a users-table row; needed when e2e-testing any admin-facing flow.
 - [speaker_topics junction has no unique constraint](speaker-topic-assignment.md) — assigning a topic to a speaker inserts into the speaker_topics junction table; always check existing assignments first or duplicate rows appear (React key warnings, inflated topic lists).
+- [Don't guess test-data vs. real data by tone](test-data-identification.md) — casual/typo-laden wording is NOT a reliable signal that a row is test data; verify against session-scoped IDs/timestamps you created yourself before deleting anything, or ask first.
