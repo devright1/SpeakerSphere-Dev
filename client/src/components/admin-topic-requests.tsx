@@ -81,6 +81,10 @@ function RequestCard({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/topic-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/topics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/topics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/topics/grouped"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/speakers/${request.speakerId}/topics`] });
       toast({ title: "Topic request approved", description: `"${editedTopicName.trim() || request.topicName}" was added and assigned to ${request.speakerName}.` });
     },
     onError: (e: Error) => toast({ title: "Failed to approve request", description: e.message, variant: "destructive" }),
