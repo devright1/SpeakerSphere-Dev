@@ -52,7 +52,7 @@ async function adminRequest(method: string, url: string, body?: unknown) {
   return res.json();
 }
 
-function RequestCard({ request }: { request: TopicRequestItem }) {
+function RequestCard({ request, disciplineName }: { request: TopicRequestItem; disciplineName?: string }) {
   const { toast } = useToast();
   const [adminNotes, setAdminNotes] = useState("");
 
@@ -90,7 +90,10 @@ function RequestCard({ request }: { request: TopicRequestItem }) {
                 {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
               </Badge>
             </div>
-            <p className="text-sm text-gray-500 mt-1">Requested by {request.speakerName} (Speaker #{request.speakerId})</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Requested by {request.speakerName} (Speaker #{request.speakerId})
+              {disciplineName && <> · Discipline: {disciplineName}</>}
+            </p>
             {request.notes && <p className="text-sm text-gray-700 mt-2">"{request.notes}"</p>}
             {request.adminNotes && (
               <p className="text-sm text-gray-500 mt-2">Admin notes: {request.adminNotes}</p>
@@ -140,6 +143,13 @@ export default function AdminTopicRequests() {
     queryFn: () => adminRequest("GET", "/api/admin/topic-requests"),
   });
 
+  const { data: disciplines } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ["/api/disciplines"],
+  });
+
+  const disciplineName = (id: number | null) =>
+    id == null ? undefined : disciplines?.find((d) => d.id === id)?.name;
+
   const pending = (requests ?? []).filter((r) => r.status === "pending");
   const reviewed = (requests ?? []).filter((r) => r.status !== "pending");
 
@@ -165,7 +175,7 @@ export default function AdminTopicRequests() {
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-700">Pending ({pending.length})</h3>
               {pending.map((r) => (
-                <RequestCard key={r.id} request={r} />
+                <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
               ))}
             </div>
           )}
@@ -173,7 +183,7 @@ export default function AdminTopicRequests() {
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-700">Reviewed</h3>
               {reviewed.map((r) => (
-                <RequestCard key={r.id} request={r} />
+                <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
               ))}
             </div>
           )}

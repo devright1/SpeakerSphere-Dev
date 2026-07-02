@@ -579,10 +579,10 @@ export default function SpeakerDashboard() {
     enabled: !!speakerProfile?.id && isPremier,
   });
 
-  const [topicRequestForm, setTopicRequestForm] = useState({ topicName: '', notes: '' });
+  const [topicRequestForm, setTopicRequestForm] = useState({ topicName: '', disciplineId: '', notes: '' });
   const [showTopicRequestDialog, setShowTopicRequestDialog] = useState(false);
 
-  const createTopicRequestMutation = useMutation<TopicRequest, Error, { topicName: string; notes?: string }>({
+  const createTopicRequestMutation = useMutation<TopicRequest, Error, { topicName: string; disciplineId: number; notes?: string }>({
     mutationFn: async (data) => {
       const token = localStorage.getItem('userToken') || '';
       const response = await fetch(`/api/speakers/${speakerProfile?.id}/topic-requests`, {
@@ -597,7 +597,7 @@ export default function SpeakerDashboard() {
     onSuccess: () => {
       refetchTopicRequests();
       setShowTopicRequestDialog(false);
-      setTopicRequestForm({ topicName: '', notes: '' });
+      setTopicRequestForm({ topicName: '', disciplineId: '', notes: '' });
       toast({ title: 'Topic request submitted', description: 'An admin will review your suggestion.' });
     },
     onError: (e) => toast({ title: 'Failed to submit topic request', description: e.message, variant: 'destructive' }),
@@ -608,8 +608,12 @@ export default function SpeakerDashboard() {
     if (!topicRequestForm.topicName.trim()) {
       toast({ title: 'Topic name is required', variant: 'destructive' }); return;
     }
+    if (!topicRequestForm.disciplineId) {
+      toast({ title: 'Please select a discipline', variant: 'destructive' }); return;
+    }
     createTopicRequestMutation.mutate({
       topicName: topicRequestForm.topicName.trim(),
+      disciplineId: parseInt(topicRequestForm.disciplineId, 10),
       ...(topicRequestForm.notes.trim() ? { notes: topicRequestForm.notes.trim() } : {}),
     });
   };
@@ -2514,6 +2518,22 @@ export default function SpeakerDashboard() {
                                 />
                               </div>
                               <div>
+                                <Label htmlFor="topic-request-discipline">Discipline</Label>
+                                <Select
+                                  value={topicRequestForm.disciplineId}
+                                  onValueChange={(value) => setTopicRequestForm((f) => ({ ...f, disciplineId: value }))}
+                                >
+                                  <SelectTrigger id="topic-request-discipline" data-testid="select-topic-request-discipline">
+                                    <SelectValue placeholder="Select a discipline" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {allDisciplines?.map((d) => (
+                                      <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
                                 <Label htmlFor="topic-request-notes">Notes (optional)</Label>
                                 <Textarea
                                   id="topic-request-notes"
@@ -2527,7 +2547,11 @@ export default function SpeakerDashboard() {
                                 <Button type="button" variant="outline" onClick={() => setShowTopicRequestDialog(false)}>
                                   Cancel
                                 </Button>
-                                <Button type="submit" disabled={createTopicRequestMutation.isPending} data-testid="button-submit-topic-request">
+                                <Button
+                                  type="submit"
+                                  disabled={createTopicRequestMutation.isPending || !topicRequestForm.topicName.trim() || !topicRequestForm.disciplineId}
+                                  data-testid="button-submit-topic-request"
+                                >
                                   {createTopicRequestMutation.isPending ? "Submitting…" : "Submit Request"}
                                 </Button>
                               </div>
@@ -2542,7 +2566,14 @@ export default function SpeakerDashboard() {
                         <div className="space-y-2">
                           {topicRequestsList.map((r) => (
                             <div key={r.id} className="flex items-center justify-between border rounded-md px-3 py-2 text-sm" data-testid={`topic-request-${r.id}`}>
-                              <span className="font-medium">{r.topicName}</span>
+                              <div>
+                                <span className="font-medium">{r.topicName}</span>
+                                {r.disciplineId != null && (
+                                  <span className="text-gray-500 ml-2">
+                                    ({allDisciplines?.find((d) => d.id === r.disciplineId)?.name ?? 'Discipline'})
+                                  </span>
+                                )}
+                              </div>
                               <Badge
                                 variant={r.status === 'approved' ? 'default' : r.status === 'rejected' ? 'destructive' : 'secondary'}
                                 data-testid={`badge-topic-request-status-${r.id}`}

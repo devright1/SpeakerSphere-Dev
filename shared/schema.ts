@@ -878,6 +878,7 @@ export const topicRequests = pgTable("topic_requests", {
 
 export const insertTopicRequestSchema = createInsertSchema(topicRequests, {
   topicName: z.string().min(1, "Topic name is required"),
+  disciplineId: z.number({ required_error: "Discipline is required", invalid_type_error: "Discipline is required" }),
 }).omit({
   id: true,
   status: true,
