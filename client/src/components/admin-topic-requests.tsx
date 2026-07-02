@@ -93,6 +93,7 @@ function RequestCard({ request, disciplineName }: { request: TopicRequestItem; d
             <p className="text-sm text-gray-500 mt-1">
               Requested by {request.speakerName} (Speaker #{request.speakerId})
               {disciplineName && <> · Discipline: {disciplineName}</>}
+              {request.createdAt && <> · Submitted {new Date(request.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</>}
             </p>
             {request.notes && <p className="text-sm text-gray-700 mt-2">"{request.notes}"</p>}
             {request.adminNotes && (
@@ -151,7 +152,8 @@ export default function AdminTopicRequests() {
     id == null ? undefined : disciplines?.find((d) => d.id === id)?.name;
 
   const pending = (requests ?? []).filter((r) => r.status === "pending");
-  const reviewed = (requests ?? []).filter((r) => r.status !== "pending");
+  const approved = (requests ?? []).filter((r) => r.status === "approved");
+  const rejected = (requests ?? []).filter((r) => r.status === "rejected");
 
   return (
     <div className="space-y-6">
@@ -171,22 +173,36 @@ export default function AdminTopicRequests() {
         <p className="text-sm text-gray-500">Loading requests…</p>
       ) : requests && requests.length > 0 ? (
         <>
-          {pending.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700">Pending ({pending.length})</h3>
-              {pending.map((r) => (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-gray-700">New Requests ({pending.length})</h3>
+            {pending.length > 0 ? (
+              pending.map((r) => (
                 <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
-              ))}
-            </div>
-          )}
-          {reviewed.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700">Reviewed</h3>
-              {reviewed.map((r) => (
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No new requests.</p>
+            )}
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-gray-700">Approved ({approved.length})</h3>
+            {approved.length > 0 ? (
+              approved.map((r) => (
                 <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
-              ))}
-            </div>
-          )}
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No approved requests yet.</p>
+            )}
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-gray-700">Declined ({rejected.length})</h3>
+            {rejected.length > 0 ? (
+              rejected.map((r) => (
+                <RequestCard key={r.id} request={r} disciplineName={disciplineName(r.disciplineId)} />
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No declined requests.</p>
+            )}
+          </div>
         </>
       ) : (
         <p className="text-sm text-gray-500">No topic requests yet.</p>
