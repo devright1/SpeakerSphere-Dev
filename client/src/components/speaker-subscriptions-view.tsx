@@ -40,21 +40,13 @@ export function SpeakerSubscriptionsView() {
   const sponsorMutation = useMutation({
     mutationFn: async ({ speakerId, tier, note }: { speakerId: number; tier: string | null; note: string }) => {
       const adminEmail = localStorage.getItem("adminEmail") || "";
-      const adminPassword = localStorage.getItem("adminPassword") || "";
-      const credentials = btoa(`${adminEmail}:${adminPassword}`);
       const res = await fetch(`/api/admin/speakers/${speakerId}/sponsored-tier`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Admin-Email": adminEmail,
-          "Authorization": `Basic ${credentials}`,
         },
-        body: JSON.stringify({
-        tier,
-        note: note || null,
-        email: adminEmail,
-        password: adminPassword,
-      }),
+        body: JSON.stringify({ tier, note: note || null }),
       });
       if (!res.ok) {
         const err = await res.json();

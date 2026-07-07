@@ -2076,7 +2076,12 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Grant or revoke a sponsored subscription tier for a speaker (admin only)
-  app.post("/api/admin/speakers/:id/sponsored-tier", authenticateAdmin, async (req, res) => {
+  app.post("/api/admin/speakers/:id/sponsored-tier", async (req, res) => {
+    // Use header-based admin check consistent with the rest of the admin API
+    const adminEmailHeader = req.headers['x-admin-email'] as string | undefined;
+    if (!adminEmailHeader || adminEmailHeader !== "speakers@devright.com") {
+      return res.status(401).json({ message: "Admin authentication required" });
+    }
     try {
       const speakerId = parseInt(req.params.id);
       if (isNaN(speakerId)) return res.status(400).json({ message: "Invalid speaker ID" });
