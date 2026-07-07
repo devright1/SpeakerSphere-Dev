@@ -2287,6 +2287,115 @@ export default function SpeakerDashboard() {
                     )}
                   </CardContent>
                 </Card>
+
+                {isPremier && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="flex items-center">
+                            <Lightbulb className="h-5 w-5 mr-2" />
+                            Request a New Topic
+                          </CardTitle>
+                          <CardDescription>
+                            Don't see a topic that fits you? Suggest a brand-new one for an admin to review and add.
+                          </CardDescription>
+                        </div>
+                        <Dialog open={showTopicRequestDialog} onOpenChange={setShowTopicRequestDialog}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" data-testid="button-request-topic">
+                              <Plus className="h-4 w-4 mr-1" />
+                              Request Topic
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Request a New Topic</DialogTitle>
+                              <DialogDescription>
+                                Suggest a speaking topic that isn't currently in our list. An admin will review your request.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleTopicRequestSubmit} className="space-y-4">
+                              <div>
+                                <Label htmlFor="topic-request-name">Topic Name</Label>
+                                <Input
+                                  id="topic-request-name"
+                                  value={topicRequestForm.topicName}
+                                  onChange={(e) => setTopicRequestForm((f) => ({ ...f, topicName: e.target.value }))}
+                                  placeholder="e.g. Digital Smile Design"
+                                  data-testid="input-topic-request-name"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="topic-request-discipline">Discipline</Label>
+                                <Select
+                                  value={topicRequestForm.disciplineId}
+                                  onValueChange={(value) => setTopicRequestForm((f) => ({ ...f, disciplineId: value }))}
+                                >
+                                  <SelectTrigger id="topic-request-discipline" data-testid="select-topic-request-discipline">
+                                    <SelectValue placeholder="Select a discipline" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {allDisciplines?.map((d) => (
+                                      <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label htmlFor="topic-request-notes">Notes (optional)</Label>
+                                <Textarea
+                                  id="topic-request-notes"
+                                  value={topicRequestForm.notes}
+                                  onChange={(e) => setTopicRequestForm((f) => ({ ...f, notes: e.target.value }))}
+                                  placeholder="Any context that would help the admin review this request"
+                                  data-testid="input-topic-request-notes"
+                                />
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => setShowTopicRequestDialog(false)}>
+                                  Cancel
+                                </Button>
+                                <Button
+                                  type="submit"
+                                  disabled={createTopicRequestMutation.isPending || !topicRequestForm.topicName.trim() || !topicRequestForm.disciplineId}
+                                  data-testid="button-submit-topic-request"
+                                >
+                                  {createTopicRequestMutation.isPending ? "Submitting…" : "Submit Request"}
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </CardHeader>
+                    {!!topicRequestsList?.length && (
+                      <CardContent>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Your Requests</h4>
+                        <div className="space-y-2">
+                          {topicRequestsList.map((r) => (
+                            <div key={r.id} className="flex items-center justify-between border rounded-md px-3 py-2 text-sm" data-testid={`topic-request-${r.id}`}>
+                              <div>
+                                <span className="font-medium">{r.topicName}</span>
+                                {r.disciplineId != null && (
+                                  <span className="text-gray-500 ml-2">
+                                    ({allDisciplines?.find((d) => d.id === r.disciplineId)?.name ?? 'Discipline'})
+                                  </span>
+                                )}
+                              </div>
+                              <Badge
+                                variant={r.status === 'approved' ? 'default' : r.status === 'rejected' ? 'destructive' : 'secondary'}
+                                data-testid={`badge-topic-request-status-${r.id}`}
+                              >
+                                {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    )}
+                  </Card>
+                )}
               </div>
 
               {/* Sidebar */}
@@ -2481,115 +2590,6 @@ export default function SpeakerDashboard() {
 
               </div>
             </div>
-
-            {isPremier && (
-              <Card className="mt-6">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center">
-                        <Lightbulb className="h-5 w-5 mr-2" />
-                        Request a New Topic
-                      </CardTitle>
-                      <CardDescription>
-                        Don't see a topic that fits you? Suggest a brand-new one for an admin to review and add.
-                      </CardDescription>
-                    </div>
-                    <Dialog open={showTopicRequestDialog} onOpenChange={setShowTopicRequestDialog}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" data-testid="button-request-topic">
-                          <Plus className="h-4 w-4 mr-1" />
-                          Request Topic
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Request a New Topic</DialogTitle>
-                          <DialogDescription>
-                            Suggest a speaking topic that isn't currently in our list. An admin will review your request.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleTopicRequestSubmit} className="space-y-4">
-                          <div>
-                            <Label htmlFor="topic-request-name">Topic Name</Label>
-                            <Input
-                              id="topic-request-name"
-                              value={topicRequestForm.topicName}
-                              onChange={(e) => setTopicRequestForm((f) => ({ ...f, topicName: e.target.value }))}
-                              placeholder="e.g. Digital Smile Design"
-                              data-testid="input-topic-request-name"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="topic-request-discipline">Discipline</Label>
-                            <Select
-                              value={topicRequestForm.disciplineId}
-                              onValueChange={(value) => setTopicRequestForm((f) => ({ ...f, disciplineId: value }))}
-                            >
-                              <SelectTrigger id="topic-request-discipline" data-testid="select-topic-request-discipline">
-                                <SelectValue placeholder="Select a discipline" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {allDisciplines?.map((d) => (
-                                  <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label htmlFor="topic-request-notes">Notes (optional)</Label>
-                            <Textarea
-                              id="topic-request-notes"
-                              value={topicRequestForm.notes}
-                              onChange={(e) => setTopicRequestForm((f) => ({ ...f, notes: e.target.value }))}
-                              placeholder="Any context that would help the admin review this request"
-                              data-testid="input-topic-request-notes"
-                            />
-                          </div>
-                          <div className="flex justify-end gap-2">
-                            <Button type="button" variant="outline" onClick={() => setShowTopicRequestDialog(false)}>
-                              Cancel
-                            </Button>
-                            <Button
-                              type="submit"
-                              disabled={createTopicRequestMutation.isPending || !topicRequestForm.topicName.trim() || !topicRequestForm.disciplineId}
-                              data-testid="button-submit-topic-request"
-                            >
-                              {createTopicRequestMutation.isPending ? "Submitting…" : "Submit Request"}
-                            </Button>
-                          </div>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardHeader>
-                {!!topicRequestsList?.length && (
-                  <CardContent>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Your Requests</h4>
-                    <div className="space-y-2">
-                      {topicRequestsList.map((r) => (
-                        <div key={r.id} className="flex items-center justify-between border rounded-md px-3 py-2 text-sm" data-testid={`topic-request-${r.id}`}>
-                          <div>
-                            <span className="font-medium">{r.topicName}</span>
-                            {r.disciplineId != null && (
-                              <span className="text-gray-500 ml-2">
-                                ({allDisciplines?.find((d) => d.id === r.disciplineId)?.name ?? 'Discipline'})
-                              </span>
-                            )}
-                          </div>
-                          <Badge
-                            variant={r.status === 'approved' ? 'default' : r.status === 'rejected' ? 'destructive' : 'secondary'}
-                            data-testid={`badge-topic-request-status-${r.id}`}
-                          >
-                            {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
 
             {/* Change Password Section */}
             <Card className="mt-6">
