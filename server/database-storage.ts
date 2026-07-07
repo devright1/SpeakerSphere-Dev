@@ -445,9 +445,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSpeakersByTier(tier: 'basic' | 'pro' | 'premier'): Promise<Speaker[]> {
+    // Include speakers whose sponsored tier OR paid subscription tier matches
     const result = await db.select().from(speakers).where(
       and(
-        eq(speakers.subscriptionTier, tier),
+        or(
+          eq(speakers.subscriptionTier, tier),
+          eq(speakers.sponsoredTier, tier)
+        ),
         or(eq(speakers.hideProfile, false), isNull(speakers.hideProfile))
       )
     ).orderBy(desc(speakers.overallRating));
