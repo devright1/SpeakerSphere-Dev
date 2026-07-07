@@ -81,6 +81,9 @@ export const speakers = pgTable("speakers", {
   videoCount: integer("video_count").default(0).notNull(),
   // SDS Badge - prioritizes speakers within their subscription tier
   sdsBadge: varchar("sds_badge", { length: 20 }), // null, "sds", or "sds_faculty"
+  // Admin-sponsored subscription override — takes precedence over Stripe tier
+  sponsoredTier: varchar("sponsored_tier", { length: 20 }), // null, "pro", or "premier"
+  sponsoredNote: text("sponsored_note"), // Optional internal admin note
 });
 
 export const reviews = pgTable("reviews", {

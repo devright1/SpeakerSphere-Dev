@@ -2070,6 +2070,36 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Grant or revoke a sponsored subscription tier for a speaker (admin only)
+  app.post("/api/admin/speakers/:id/sponsored-tier", authenticateAdmin, async (req, res) => {
+    try {
+      const speakerId = parseInt(req.params.id);
+      if (isNaN(speakerId)) return res.status(400).json({ message: "Invalid speaker ID" });
+
+      const { tier, note } = req.body;
+      if (tier !== null && tier !== "pro" && tier !== "premier") {
+        return res.status(400).json({ message: "tier must be 'pro', 'premier', or null" });
+      }
+
+      const [updated] = await db
+        .update(speakers)
+        .set({
+          sponsoredTier: tier ?? null,
+          sponsoredNote: note ?? null,
+        })
+        .where(eq(speakers.id, speakerId))
+        .returning();
+
+      if (!updated) return res.status(404).json({ message: "Speaker not found" });
+
+      console.log(`✅ Admin sponsored tier set: speaker ${speakerId} → ${tier ?? "none"}`);
+      res.json({ success: true, speaker: updated });
+    } catch (error) {
+      console.error("Error setting sponsored tier:", error);
+      res.status(500).json({ message: "Failed to set sponsored tier" });
+    }
+  });
+
   // Upload all DevRight logos to object storage (admin only)
   app.post("/api/admin/upload-logos", authenticateAdmin, async (req, res) => {
     try {

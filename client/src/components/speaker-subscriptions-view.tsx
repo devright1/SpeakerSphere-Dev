@@ -1,13 +1,18 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Search, DollarSign, Calendar, CreditCard, Info } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Search, DollarSign, Calendar, Info, Gift } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 import type { Speaker } from "@shared/schema";
 
 interface SpeakerSubscription extends Speaker {
@@ -20,25 +25,82 @@ export function SpeakerSubscriptionsView() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch speaker subscriptions
+  // Sponsor dialog state
+  const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
+  const [selectedSpeaker, setSelectedSpeaker] = useState<SpeakerSubscription | null>(null);
+  const [sponsorTier, setSponsorTier] = useState<string>("none");
+  const [sponsorNote, setSponsorNote] = useState("");
+
+  const { toast } = useToast();
+
   const { data: speakerSubscriptions = [], isLoading } = useQuery<SpeakerSubscription[]>({
     queryKey: ["/api/admin/speaker-subscriptions", { tier: tierFilter !== "all" ? tierFilter : undefined, status: statusFilter !== "all" ? statusFilter : undefined }],
   });
 
-  // Filter speakers by search query
-  const filteredSpeakers = speakerSubscriptions.filter(speaker => 
-    !searchQuery || 
+  const sponsorMutation = useMutation({
+    mutationFn: async ({ speakerId, tier, note }: { speakerId: number; tier: string | null; note: string }) => {
+      const adminEmail = localStorage.getItem("adminEmail") || "";
+      const adminPassword = localStorage.getItem("adminPassword") || "";
+      const credentials = btoa(`${adminEmail}:${adminPassword}`);
+      const res = await fetch(`/api/admin/speakers/${speakerId}/sponsored-tier`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Admin-Email": adminEmail,
+          "Authorization": `Basic ${credentials}`,
+        },
+        body: JSON.stringify({ tier, note: note || null }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to update sponsored tier");
+      }
+      return res.json();
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/speaker-subscriptions"] });
+      setSponsorDialogOpen(false);
+      toast({
+        title: vars.tier ? "Sponsored tier granted" : "Sponsorship removed",
+        description: vars.tier
+          ? `${selectedSpeaker?.name} is now on a sponsored ${vars.tier} plan.`
+          : `${selectedSpeaker?.name}'s sponsorship has been removed.`,
+      });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const openSponsorDialog = (speaker: SpeakerSubscription) => {
+    setSelectedSpeaker(speaker);
+    setSponsorTier((speaker as any).sponsoredTier ?? "none");
+    setSponsorNote((speaker as any).sponsoredNote ?? "");
+    setSponsorDialogOpen(true);
+  };
+
+  const handleSponsorSave = () => {
+    if (!selectedSpeaker) return;
+    sponsorMutation.mutate({
+      speakerId: selectedSpeaker.id,
+      tier: sponsorTier === "none" ? null : sponsorTier,
+      note: sponsorNote,
+    });
+  };
+
+  const filteredSpeakers = speakerSubscriptions.filter(speaker =>
+    !searchQuery ||
     speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     speaker.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Calculate statistics
   const stats = {
     total: speakerSubscriptions.length,
     basic: speakerSubscriptions.filter(s => s.subscriptionTier === "basic").length,
     pro: speakerSubscriptions.filter(s => s.subscriptionTier === "pro").length,
     premier: speakerSubscriptions.filter(s => s.subscriptionTier === "premier").length,
     active: speakerSubscriptions.filter(s => s.subscriptionStatus === "active").length,
+    sponsored: speakerSubscriptions.filter(s => !!(s as any).sponsoredTier).length,
   };
 
   const formatCurrency = (amount: number | undefined) => {
@@ -53,32 +115,24 @@ export function SpeakerSubscriptionsView() {
 
   const formatCancellationReason = (reason: string | null) => {
     if (!reason) return null;
-    
     try {
       const data = JSON.parse(reason);
       const reasons: Record<string, string> = {
-        'too_expensive': 'Too expensive',
-        'not_using_enough': 'Not using enough',
-        'missing_features': 'Missing features',
-        'found_alternative': 'Found alternative',
-        'technical_issues': 'Technical issues',
-        'other': 'Other'
+        too_expensive: "Too expensive",
+        not_using_enough: "Not using enough",
+        missing_features: "Missing features",
+        found_alternative: "Found alternative",
+        technical_issues: "Technical issues",
+        other: "Other",
       };
-      
-      const recommend: Record<string, string> = {
-        'yes': 'Yes',
-        'no': 'No',
-        'maybe': 'Maybe'
-      };
-      
+      const recommend: Record<string, string> = { yes: "Yes", no: "No", maybe: "Maybe" };
       return {
         primaryReason: reasons[data.primaryReason] || data.primaryReason,
         wouldRecommend: data.wouldRecommend ? recommend[data.wouldRecommend] : null,
         missingFeatures: data.missingFeatures || null,
-        additionalFeedback: data.additionalFeedback || null
+        additionalFeedback: data.additionalFeedback || null,
       };
-    } catch (e) {
-      // Fallback for old plain text reasons
+    } catch {
       return { plainText: reason };
     }
   };
@@ -93,7 +147,7 @@ export function SpeakerSubscriptionsView() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Speakers</CardTitle>
@@ -124,6 +178,14 @@ export function SpeakerSubscriptionsView() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600" data-testid="stat-active-subscriptions">{stats.active}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Sponsored</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-600">{stats.sponsored}</div>
           </CardContent>
         </Card>
       </div>
@@ -176,7 +238,7 @@ export function SpeakerSubscriptionsView() {
         <CardHeader>
           <CardTitle>Speaker Subscriptions ({filteredSpeakers.length})</CardTitle>
           <CardDescription>
-            Subscription details and billing information for all speakers
+            Subscription details and billing information for all speakers. Use the <strong>Sponsor</strong> button to grant free tier access.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -194,145 +256,214 @@ export function SpeakerSubscriptionsView() {
                   <TableHead>Period End</TableHead>
                   <TableHead>Cancelled At</TableHead>
                   <TableHead>Cancellation Reason</TableHead>
+                  <TableHead>Sponsor</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredSpeakers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center text-muted-foreground">
                       No speakers found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredSpeakers.map((speaker) => (
-                    <TableRow key={speaker.id} data-testid={`speaker-row-${speaker.id}`}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{speaker.name}</div>
-                          <div className="text-sm text-muted-foreground">{speaker.title}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            speaker.subscriptionTier === "premier" ? "default" :
-                            speaker.subscriptionTier === "pro" ? "secondary" :
-                            "outline"
-                          }
-                          data-testid={`badge-tier-${speaker.id}`}
-                        >
-                          {speaker.subscriptionTier.charAt(0).toUpperCase() + speaker.subscriptionTier.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            speaker.subscriptionStatus === "active" ? "default" :
-                            speaker.subscriptionStatus === "past_due" ? "destructive" :
-                            "outline"
-                          }
-                          data-testid={`badge-status-${speaker.id}`}
-                        >
-                          {speaker.subscriptionStatus}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {speaker.subscriptionInterval ? (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="capitalize">{speaker.subscriptionInterval}</span>
+                  filteredSpeakers.map((speaker) => {
+                    const sponsored = (speaker as any).sponsoredTier as string | null;
+                    const sponsoredNote = (speaker as any).sponsoredNote as string | null;
+                    return (
+                      <TableRow key={speaker.id} data-testid={`speaker-row-${speaker.id}`}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{speaker.name}</div>
+                            <div className="text-sm text-muted-foreground">{speaker.title}</div>
                           </div>
-                        ) : (
-                          "-"
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {speaker.subscriptionAmount ? (
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                            <span>{formatCurrency(speaker.subscriptionAmount)}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <Badge
+                              variant={
+                                speaker.subscriptionTier === "premier" ? "default" :
+                                speaker.subscriptionTier === "pro" ? "secondary" :
+                                "outline"
+                              }
+                              data-testid={`badge-tier-${speaker.id}`}
+                            >
+                              {speaker.subscriptionTier.charAt(0).toUpperCase() + speaker.subscriptionTier.slice(1)}
+                            </Badge>
+                            {sponsored && (
+                              <Badge className="bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-100 text-xs gap-1">
+                                <Gift className="h-3 w-3" />
+                                Sponsored {sponsored.charAt(0).toUpperCase() + sponsored.slice(1)}
+                              </Badge>
+                            )}
                           </div>
-                        ) : (
-                          "-"
-                        )}
-                      </TableCell>
-                      <TableCell>{formatDate(speaker.subscriptionPeriodEnd)}</TableCell>
-                      <TableCell>
-                        {speaker.cancelledAt ? (
-                          <div className="text-sm">
-                            {formatDate(speaker.cancelledAt)}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {speaker.cancellationReason ? (() => {
-                          const feedback = formatCancellationReason(speaker.cancellationReason);
-                          if (!feedback) return <span className="text-muted-foreground">-</span>;
-                          
-                          if ('plainText' in feedback) {
-                            // Old format - plain text
-                            return (
-                              <div className="max-w-xs">
-                                <p className="text-sm truncate" title={feedback.plainText}>
-                                  {feedback.plainText}
-                                </p>
-                              </div>
-                            );
-                          }
-                          
-                          // New structured format
-                          return (
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-muted">
-                                  <div className="flex items-center gap-2 text-left">
-                                    <Info className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                    <span className="text-sm">{feedback.primaryReason}</span>
-                                  </div>
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-80" align="start">
-                                <div className="space-y-3">
-                                  <div>
-                                    <h4 className="font-medium text-sm mb-1">Primary Reason</h4>
-                                    <p className="text-sm text-muted-foreground">{feedback.primaryReason}</p>
-                                  </div>
-                                  {feedback.wouldRecommend && (
-                                    <div>
-                                      <h4 className="font-medium text-sm mb-1">Would Recommend?</h4>
-                                      <p className="text-sm text-muted-foreground">{feedback.wouldRecommend}</p>
-                                    </div>
-                                  )}
-                                  {feedback.missingFeatures && (
-                                    <div>
-                                      <h4 className="font-medium text-sm mb-1">Missing Features</h4>
-                                      <p className="text-sm text-muted-foreground">{feedback.missingFeatures}</p>
-                                    </div>
-                                  )}
-                                  {feedback.additionalFeedback && (
-                                    <div>
-                                      <h4 className="font-medium text-sm mb-1">Additional Feedback</h4>
-                                      <p className="text-sm text-muted-foreground">{feedback.additionalFeedback}</p>
-                                    </div>
-                                  )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              speaker.subscriptionStatus === "active" ? "default" :
+                              speaker.subscriptionStatus === "past_due" ? "destructive" :
+                              "outline"
+                            }
+                            data-testid={`badge-status-${speaker.id}`}
+                          >
+                            {speaker.subscriptionStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {speaker.subscriptionInterval ? (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span className="capitalize">{speaker.subscriptionInterval}</span>
+                            </div>
+                          ) : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {speaker.subscriptionAmount ? (
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              <span>{formatCurrency(speaker.subscriptionAmount)}</span>
+                            </div>
+                          ) : "-"}
+                        </TableCell>
+                        <TableCell>{formatDate(speaker.subscriptionPeriodEnd)}</TableCell>
+                        <TableCell>
+                          {speaker.cancelledAt ? (
+                            <div className="text-sm">{formatDate(speaker.cancelledAt)}</div>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {speaker.cancellationReason ? (() => {
+                            const feedback = formatCancellationReason(speaker.cancellationReason);
+                            if (!feedback) return <span className="text-muted-foreground">-</span>;
+                            if ("plainText" in feedback) {
+                              return (
+                                <div className="max-w-xs">
+                                  <p className="text-sm truncate" title={feedback.plainText}>{feedback.plainText}</p>
                                 </div>
-                              </PopoverContent>
-                            </Popover>
-                          );
-                        })() : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                              );
+                            }
+                            return (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-muted">
+                                    <div className="flex items-center gap-2 text-left">
+                                      <Info className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                      <span className="text-sm">{feedback.primaryReason}</span>
+                                    </div>
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80" align="start">
+                                  <div className="space-y-3">
+                                    <div>
+                                      <h4 className="font-medium text-sm mb-1">Primary Reason</h4>
+                                      <p className="text-sm text-muted-foreground">{feedback.primaryReason}</p>
+                                    </div>
+                                    {feedback.wouldRecommend && (
+                                      <div>
+                                        <h4 className="font-medium text-sm mb-1">Would Recommend?</h4>
+                                        <p className="text-sm text-muted-foreground">{feedback.wouldRecommend}</p>
+                                      </div>
+                                    )}
+                                    {feedback.missingFeatures && (
+                                      <div>
+                                        <h4 className="font-medium text-sm mb-1">Missing Features</h4>
+                                        <p className="text-sm text-muted-foreground">{feedback.missingFeatures}</p>
+                                      </div>
+                                    )}
+                                    {feedback.additionalFeedback && (
+                                      <div>
+                                        <h4 className="font-medium text-sm mb-1">Additional Feedback</h4>
+                                        <p className="text-sm text-muted-foreground">{feedback.additionalFeedback}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            );
+                          })() : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant={sponsored ? "outline" : "ghost"}
+                            size="sm"
+                            className={sponsored ? "border-amber-400 text-amber-700 hover:bg-amber-50" : ""}
+                            onClick={() => openSponsorDialog(speaker)}
+                            title={sponsoredNote || undefined}
+                          >
+                            <Gift className="h-4 w-4 mr-1" />
+                            {sponsored ? "Edit" : "Sponsor"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
+
+      {/* Sponsor Dialog */}
+      <Dialog open={sponsorDialogOpen} onOpenChange={setSponsorDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5 text-amber-600" />
+              Sponsor Subscription
+            </DialogTitle>
+            <DialogDescription>
+              Grant <strong>{selectedSpeaker?.name}</strong> a free subscription tier sponsored by DevRight. This overrides their Stripe tier and takes effect immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Sponsored Tier</Label>
+              <Select value={sponsorTier} onValueChange={setSponsorTier}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (remove sponsorship)</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="premier">Premier</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Internal Note <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <Textarea
+                placeholder="e.g. Sponsored for speaking at DevRight Summit 2026"
+                value={sponsorNote}
+                onChange={(e) => setSponsorNote(e.target.value)}
+                rows={2}
+              />
+            </div>
+            {sponsorTier === "none" && (selectedSpeaker as any)?.sponsoredTier && (
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+                This will remove the existing sponsorship and return the speaker to their paid tier (or Basic if they have none).
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSponsorDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSponsorSave}
+              disabled={sponsorMutation.isPending}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {sponsorMutation.isPending ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

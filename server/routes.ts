@@ -23,6 +23,11 @@ import {
 import { authRoutes } from "./auth-routes";
 import Stripe from "stripe";
 
+// Returns the effective subscription tier for a speaker, respecting admin-sponsored overrides
+export function getEffectiveTier(speaker: { subscriptionTier: string; sponsoredTier?: string | null }): string {
+  return speaker.sponsoredTier ?? speaker.subscriptionTier;
+}
+
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -217,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
     const speaker = await storage.getSpeaker(speakerId);
     if (!speaker) return res.status(404).json({ error: "Speaker not found" });
 
-    const tier = speaker.subscriptionTier as 'basic' | 'pro' | 'premier';
+    const tier = getEffectiveTier(speaker) as 'basic' | 'pro' | 'premier';
     const limit = EVENT_LIMITS[tier] ?? 0;
     if (limit === 0) return res.status(403).json({ error: "Upgrade required to add events" });
 
@@ -263,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
     // Tier check: Basic speakers cannot edit events
     const speaker = await storage.getSpeaker(speakerId);
     if (!speaker) return res.status(404).json({ error: "Speaker not found" });
-    const tier = speaker.subscriptionTier as 'basic' | 'pro' | 'premier';
+    const tier = getEffectiveTier(speaker) as 'basic' | 'pro' | 'premier';
     const limit = EVENT_LIMITS[tier] ?? 0;
     if (limit === 0) return res.status(403).json({ error: "Upgrade required to manage events" });
 
@@ -331,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
     const speaker = await storage.getSpeaker(speakerId);
     if (!speaker) return res.status(404).json({ error: "Speaker not found" });
 
-    if (speaker.subscriptionTier !== "premier") {
+    if (getEffectiveTier(speaker) !== "premier") {
       return res.status(403).json({ error: "Requesting new topics is a Premier tier feature" });
     }
 
@@ -881,7 +886,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
       if (!speaker) {
         return res.status(404).json({ message: "Speaker profile not found" });
       }
-      res.json(speaker);
+      // Return effective tier so all frontend tier checks are automatically correct
+      res.json({ ...speaker, subscriptionTier: getEffectiveTier(speaker) });
     } catch (error) {
       console.error("Error fetching speaker by user:", error);
       res.status(500).json({ message: "Failed to fetch speaker profile" });
