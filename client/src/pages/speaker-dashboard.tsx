@@ -564,6 +564,18 @@ export default function SpeakerDashboard() {
 
   const eventLimit = speakerProfile?.subscriptionTier === 'premier' ? 5 : speakerProfile?.subscriptionTier === 'pro' ? 2 : 0;
 
+  // Individual speaking topics assigned to this speaker (includes admin-approved request topics)
+  const { data: speakerTopicsList, refetch: refetchSpeakerTopics } = useQuery<{ id: number; name: string; category: string | null; slug: string }[]>({
+    queryKey: ['/api/speakers', speakerProfile?.id, 'topics'],
+    queryFn: async () => {
+      if (!speakerProfile?.id) return [];
+      const response = await fetch(`/api/speakers/${speakerProfile.id}/topics`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!speakerProfile?.id,
+  });
+
   // Topic requests — Premier speakers can suggest a brand-new topic not currently in the master list
   const { data: topicRequestsList, refetch: refetchTopicRequests } = useQuery<TopicRequest[]>({
     queryKey: ['/api/speakers/topic-requests', speakerProfile?.id],
@@ -2584,6 +2596,24 @@ export default function SpeakerDashboard() {
                         </div>
                       )}
                     </div>
+
+                    {/* ── Individual Speaking Topics (from speaker_topics) ── */}
+                    {speakerTopicsList && speakerTopicsList.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-semibold text-gray-700">Your Speaking Topics</h4>
+                          <span className="text-xs text-gray-400">{speakerTopicsList.length} topic{speakerTopicsList.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {speakerTopicsList.map((topic) => (
+                            <Badge key={topic.id} variant="outline" className="text-xs">
+                              {topic.name}
+                            </Badge>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2">These appear on your public speaker profile.</p>
+                      </div>
+                    )}
 
                   </CardContent>
                 </Card>
