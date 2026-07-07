@@ -859,7 +859,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(400).json({ message: "Invalid tier. Must be 'basic', 'pro', or 'premier'" });
       }
       const speakers = await storage.getSpeakersByTier(tier);
-      res.json(speakers);
+      res.json(speakers.map(s => ({ ...s, subscriptionTier: getEffectiveTier(s) })));
     } catch (error) {
       console.error("Error fetching speakers by tier:", error);
       res.status(500).json({ message: "Failed to fetch speakers by tier" });
@@ -1046,7 +1046,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         .where(and(...conditions))
         .orderBy(speakers.name);
       
-      res.json(filteredSpeakers);
+      res.json(filteredSpeakers.map((s: any) => ({ ...s, subscriptionTier: getEffectiveTier(s) })));
     } catch (error) {
       console.error("Error fetching speakers by category:", error);
       res.status(500).json({ message: "Failed to fetch speakers by category" });
