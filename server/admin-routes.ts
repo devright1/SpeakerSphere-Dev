@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
-import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics, speakerContent } from "../shared/schema";
+import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics, speakerContent, disciplines } from "../shared/schema";
 import type { TopicRequest } from "../shared/schema";
 import { eq, desc, and, or, isNotNull } from "drizzle-orm";
 import { EmailService } from "./email-service";
@@ -1840,6 +1840,7 @@ export function registerAdminRoutes(app: Express) {
             slug: finalSlug,
             category: finalCategoryName,
             disciplineId: finalDisciplineId,
+            isActive: true,
           })
           .returning();
         topic = newTopic;
@@ -1851,6 +1852,49 @@ export function registerAdminRoutes(app: Express) {
           .where(eq(speakingTopics.id, topic.id))
           .returning();
         topic = updated;
+      }
+
+      // Ensure the topic appears in the admin Disciplines section and the topic selector
+      // under the right category group. If a disciplineId was chosen but no category was
+      // picked from the dropdown, auto-create a categories entry for this topic and set the
+      // category string on the speakingTopics row so it isn't "Uncategorized".
+      if (finalDisciplineId !== null) {
+        // Use the picked category name, or fall back to the discipline name so all
+        // topics approved under the same discipline group together in the topic selector
+        let disciplineName = finalCategoryName;
+        if (!disciplineName) {
+          const [disc] = await db.select({ name: disciplines.name }).from(disciplines).where(eq(disciplines.id, finalDisciplineId));
+          disciplineName = disc?.name || trimmedName;
+        }
+        const categoryLabel = disciplineName;
+
+        // Find or create a categories entry under this discipline
+        const [existingCat] = await db
+          .select()
+          .from(categories)
+          .where(and(eq(categories.name, categoryLabel), eq(categories.disciplineId, finalDisciplineId)));
+
+        let resolvedCat = existingCat;
+        if (!resolvedCat) {
+          const [created] = await db
+            .insert(categories)
+            .values({ name: categoryLabel, disciplineId: finalDisciplineId, description: "" })
+            .returning();
+          resolvedCat = created;
+          console.log(`✅ Created categories entry "${categoryLabel}" under discipline ${finalDisciplineId}`);
+        }
+        finalCategoryId = resolvedCat.id;
+        finalCategoryName = resolvedCat.name;
+
+        // Keep the speakingTopics.category string in sync so the topic selector groups it correctly
+        if (!topic.category || topic.category !== finalCategoryName) {
+          const [updatedTopic] = await db
+            .update(speakingTopics)
+            .set({ category: finalCategoryName, disciplineId: finalDisciplineId })
+            .where(eq(speakingTopics.id, topic.id))
+            .returning();
+          topic = updatedTopic;
+        }
       }
 
       const existingSpeakerTopics = await storage.getSpeakerTopicsBySpeakerId(request.speakerId);
