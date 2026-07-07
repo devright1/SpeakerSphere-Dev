@@ -130,9 +130,17 @@ function RequestCard({
               {disciplineName && <> · Discipline: {disciplineName}</>}
               {request.createdAt && <> · Submitted {new Date(request.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</>}
             </p>
-            {request.notes && <p className="text-sm text-gray-700 mt-2">"{request.notes}"</p>}
+            {request.notes && (
+              <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-sm">
+                <span className="font-medium text-amber-800">Speaker's notes: </span>
+                <span className="text-amber-900">{request.notes}</span>
+              </div>
+            )}
             {request.adminNotes && (
-              <p className="text-sm text-gray-500 mt-2">Admin notes: {request.adminNotes}</p>
+              <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded text-sm">
+                <span className="font-medium text-gray-600">Admin notes: </span>
+                <span className="text-gray-700">{request.adminNotes}</span>
+              </div>
             )}
           </div>
         </div>
