@@ -279,18 +279,18 @@ export function SpeakerSubscriptionsView() {
                           <div className="flex flex-col gap-1">
                             <Badge
                               variant={
-                                speaker.subscriptionTier === "premier" ? "default" :
-                                speaker.subscriptionTier === "pro" ? "secondary" :
+                                (sponsored || speaker.subscriptionTier) === "premier" ? "default" :
+                                (sponsored || speaker.subscriptionTier) === "pro" ? "secondary" :
                                 "outline"
                               }
                               data-testid={`badge-tier-${speaker.id}`}
                             >
-                              {speaker.subscriptionTier.charAt(0).toUpperCase() + speaker.subscriptionTier.slice(1)}
+                              {(sponsored || speaker.subscriptionTier).charAt(0).toUpperCase() + (sponsored || speaker.subscriptionTier).slice(1)}
                             </Badge>
                             {sponsored && (
                               <Badge className="bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-100 text-xs gap-1">
                                 <Gift className="h-3 w-3" />
-                                Sponsored {sponsored.charAt(0).toUpperCase() + sponsored.slice(1)}
+                                Sponsored
                               </Badge>
                             )}
                           </div>
