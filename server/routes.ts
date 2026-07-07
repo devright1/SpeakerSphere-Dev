@@ -1451,7 +1451,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
       
       // Basic tier speakers (or speakers with no subscription) can only show 3 topics
-      const tier = getEffectiveTier(speaker) || 'basic';
+      const tier = (speaker ? getEffectiveTier(speaker) : null) || 'basic';
       if (tier === 'basic' && topics.length > 3) {
         // Use deterministic random selection based on speaker ID for consistency
         const seededRandom = (seed: number) => {

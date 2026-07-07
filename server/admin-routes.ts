@@ -2057,6 +2057,11 @@ export function registerAdminRoutes(app: Express) {
 
   // Speaker Subscriptions for Admin View
   app.get("/api/admin/speaker-subscriptions", async (req, res) => {
+    // Lightweight admin auth for GET endpoint: validate X-Admin-Email header
+    const adminEmailHeader = req.headers['x-admin-email'] as string | undefined;
+    if (!adminEmailHeader || adminEmailHeader !== "speakers@devright.com") {
+      return res.status(401).json({ message: "Admin authentication required" });
+    }
     try {
       const { tier, status } = req.query;
       const speakers = await storage.listSpeakerSubscriptions({

@@ -49,7 +49,12 @@ export function SpeakerSubscriptionsView() {
           "X-Admin-Email": adminEmail,
           "Authorization": `Basic ${credentials}`,
         },
-        body: JSON.stringify({ tier, note: note || null }),
+        body: JSON.stringify({
+        tier,
+        note: note || null,
+        email: adminEmail,
+        password: adminPassword,
+      }),
       });
       if (!res.ok) {
         const err = await res.json();
