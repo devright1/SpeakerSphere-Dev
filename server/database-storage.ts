@@ -90,14 +90,17 @@ import type { IStorage } from "./storage";
  * @param seed Optional seed for deterministic randomization (useful for pagination/caching consistency)
  */
 function buildTierRotationOrder(seed?: string): { seedSql?: any; order: any[] } {
+  // Use COALESCE(sponsored_tier, subscription_tier) so sponsored speakers rank at their effective tier
+  const effectiveTierExpr = sql`COALESCE(${speakers.sponsoredTier}, ${speakers.subscriptionTier})`;
+
   if (seed) {
     // Convert seed string to a number between 0 and 1 for setseed
     const seedValue = parseInt(seed, 36) % 1_000_000 / 1_000_000;
     return {
       seedSql: sql`SELECT setseed(${seedValue})`,
       order: [
-        // First sort by subscription tier (Premier > Pro > Basic)
-        sql`CASE ${speakers.subscriptionTier} WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END`,
+        // First sort by effective tier (sponsored_tier wins over subscription_tier)
+        sql`CASE ${effectiveTierExpr} WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END`,
         // Within each tier, SDS Faculty first, then SDS, then non-badged
         sql`CASE ${speakers.sdsBadge} WHEN 'sds_faculty' THEN 1 WHEN 'sds' THEN 2 ELSE 3 END`,
         // Randomize within same tier+badge, then stable ID for pagination
@@ -110,8 +113,8 @@ function buildTierRotationOrder(seed?: string): { seedSql?: any; order: any[] } 
   // Default: no seed, fresh randomization on each request
   return {
     order: [
-      // First sort by subscription tier (Premier > Pro > Basic)
-      sql`CASE ${speakers.subscriptionTier} WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END`,
+      // First sort by effective tier (sponsored_tier wins over subscription_tier)
+      sql`CASE ${effectiveTierExpr} WHEN 'premier' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END`,
       // Within each tier, SDS Faculty first, then SDS, then non-badged
       sql`CASE ${speakers.sdsBadge} WHEN 'sds_faculty' THEN 1 WHEN 'sds' THEN 2 ELSE 3 END`,
       // Randomize within same tier+badge, then stable ID for pagination

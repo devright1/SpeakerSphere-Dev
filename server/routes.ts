@@ -872,7 +872,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
       if (!speaker) {
         return res.status(404).json({ message: "Speaker not found" });
       }
-      res.json(speaker);
+      // Return effective tier so public profile respects sponsored overrides
+      res.json({ ...speaker, subscriptionTier: getEffectiveTier(speaker) });
     } catch (error) {
       console.error("Error fetching speaker:", error);
       res.status(500).json({ message: "Failed to fetch speaker" });
@@ -1450,7 +1451,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
       
       // Basic tier speakers (or speakers with no subscription) can only show 3 topics
-      const tier = speaker?.subscriptionTier || 'basic';
+      const tier = getEffectiveTier(speaker) || 'basic';
       if (tier === 'basic' && topics.length > 3) {
         // Use deterministic random selection based on speaker ID for consistency
         const seededRandom = (seed: number) => {
@@ -1571,7 +1572,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         speaker.storageUsedBytes || 0,
         speaker.videoCount || 0,
         fileSizeBytes,
-        speaker.subscriptionTier
+        getEffectiveTier(speaker)
       );
 
       if (!uploadCheck.allowed) {
@@ -1673,7 +1674,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       // Import storage limits
       const { getStorageLimits, formatBytes } = await import("../shared/storage-limits");
-      const limits = getStorageLimits(speaker.subscriptionTier);
+      const effectiveTierForStorage = getEffectiveTier(speaker);
+      const limits = getStorageLimits(effectiveTierForStorage);
 
       res.json({
         storageUsedBytes: speaker.storageUsedBytes || 0,
@@ -1683,7 +1685,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         videoCount: speaker.videoCount || 0,
         maxVideos: limits.maxVideos,
         maxVideosFormatted: limits.displayVideos,
-        tier: speaker.subscriptionTier,
+        tier: effectiveTierForStorage,
         storagePercentage: ((speaker.storageUsedBytes || 0) / limits.maxStorageBytes) * 100,
         videosPercentage: limits.maxVideos === -1 ? 0 : ((speaker.videoCount || 0) / limits.maxVideos) * 100
       });
@@ -2453,7 +2455,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
       
       // Check tier limits for file size and storage
-      const tierLimits = await storage.getTierLimit(speaker.subscriptionTier as 'basic' | 'pro' | 'premier');
+      const tierLimits = await storage.getTierLimit(getEffectiveTier(speaker) as 'basic' | 'pro' | 'premier');
       if (!tierLimits) {
         return res.status(500).json({ error: "Tier limits not found" });
       }
@@ -3330,7 +3332,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       // Check Premier tier
       const speaker = await storage.getSpeaker(speakerId);
-      if (!speaker || speaker.subscriptionTier !== 'premier') {
+      if (!speaker || getEffectiveTier(speaker) !== 'premier') {
         return res.status(403).json({ error: "Download analytics export is only available for Premier tier" });
       }
 
@@ -3398,7 +3400,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       const videoLinks = await storage.getSpeakerVideoLinks(speakerId);
-      const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
+      const tier = (getEffectiveTier(speaker) || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
       const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
       
       // Filter by isVisible and limit by tier's visibleLinks count
@@ -3445,7 +3447,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       const videoLinks = await storage.getSpeakerVideoLinks(speakerId);
-      const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
+      const tier = (getEffectiveTier(speaker) || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
       const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
       const currentVisibleCount = videoLinks.filter(link => link.isVisible).length;
       
@@ -3490,7 +3492,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       // Check tier limits
-      const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
+      const tier = (getEffectiveTier(speaker) || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
       const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
       
       if (limits.maxLinks === 0) {
@@ -3760,7 +3762,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(404).json({ error: "Speaker not found" });
       }
 
-      const tier = (speaker.subscriptionTier || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
+      const tier = (getEffectiveTier(speaker) || 'basic') as keyof typeof VIDEO_LINK_LIMITS;
       const limits = VIDEO_LINK_LIMITS[tier] || VIDEO_LINK_LIMITS.basic;
       
       // If trying to make visible, check limit
