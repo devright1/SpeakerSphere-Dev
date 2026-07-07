@@ -2648,13 +2648,13 @@ export class DatabaseStorage implements IStorage {
         query = query.where(and(...conditions)) as any;
       }
       
-      // Order by subscription tier (premier > pro > basic) and then by name
+      // Order by effective tier (sponsored_tier wins over subscription_tier): premier > pro > basic
       query = query.orderBy(
-        sql`CASE ${speakers.subscriptionTier} 
-          WHEN 'premier' THEN 1 
-          WHEN 'pro' THEN 2 
-          WHEN 'basic' THEN 3 
-          ELSE 4 
+        sql`CASE COALESCE(${speakers.sponsoredTier}, ${speakers.subscriptionTier})
+          WHEN 'premier' THEN 1
+          WHEN 'pro' THEN 2
+          WHEN 'basic' THEN 3
+          ELSE 4
         END`,
         speakers.name
       ) as any;
