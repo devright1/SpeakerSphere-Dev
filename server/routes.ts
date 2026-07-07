@@ -774,7 +774,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
         includeHidden: false // Explicitly exclude hidden speakers from public view
       });
       
-      res.json(speakers);
+      // Override subscriptionTier with effective tier so sponsored speakers show correct badge
+      res.json(speakers.map(s => ({ ...s, subscriptionTier: getEffectiveTier(s) })));
     } catch (error) {
       console.error("Error fetching speakers:", error);
       res.status(500).json({ message: "Failed to fetch speakers" });
