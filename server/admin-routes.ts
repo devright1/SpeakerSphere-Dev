@@ -1806,6 +1806,20 @@ export function registerAdminRoutes(app: Express) {
       }
       const finalDisciplineId = overrideDisciplineId !== undefined ? overrideDisciplineId : (request.disciplineId ?? null);
 
+      // Resolve category name from the supplied categoryId (if any)
+      let finalCategoryName: string | null = null;
+      let finalCategoryId: number | null = null;
+      if (req.body?.categoryId !== undefined && req.body.categoryId !== null) {
+        const catId = parseInt(req.body.categoryId);
+        if (!isNaN(catId)) {
+          const [cat] = await db.select().from(categories).where(eq(categories.id, catId));
+          if (cat) {
+            finalCategoryName = cat.name;
+            finalCategoryId = cat.id;
+          }
+        }
+      }
+
       const finalSlug = trimmedName.toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
@@ -1824,18 +1838,36 @@ export function registerAdminRoutes(app: Express) {
           .values({
             name: trimmedName,
             slug: finalSlug,
-            category: null,
+            category: finalCategoryName,
             disciplineId: finalDisciplineId,
           })
           .returning();
         topic = newTopic;
         console.log(`✅ Created new topic from speaker request: ${topic.name} (${topic.slug})`);
+      } else if (finalCategoryName && !topic.category) {
+        // If topic already existed without a category, backfill it
+        const [updated] = await db.update(speakingTopics)
+          .set({ category: finalCategoryName, disciplineId: finalDisciplineId })
+          .where(eq(speakingTopics.id, topic.id))
+          .returning();
+        topic = updated;
       }
 
       const existingSpeakerTopics = await storage.getSpeakerTopicsBySpeakerId(request.speakerId);
       const alreadyAssigned = existingSpeakerTopics.some((t) => t.id === topic.id);
       if (!alreadyAssigned) {
         await storage.addSpeakerTopic(request.speakerId, topic.id);
+      }
+
+      // Add the category to the speaker's speakerCategoryIds so they appear in the discipline's category filter
+      if (finalCategoryId !== null) {
+        const [spk] = await db.select({ speakerCategoryIds: speakers.speakerCategoryIds }).from(speakers).where(eq(speakers.id, request.speakerId));
+        const existingCatIds: number[] = spk?.speakerCategoryIds ?? [];
+        if (!existingCatIds.includes(finalCategoryId)) {
+          await db.update(speakers)
+            .set({ speakerCategoryIds: [...existingCatIds, finalCategoryId] })
+            .where(eq(speakers.id, request.speakerId));
+        }
       }
 
       const adminNotes = typeof req.body?.adminNotes === "string" ? req.body.adminNotes : undefined;

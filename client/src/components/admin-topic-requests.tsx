@@ -71,6 +71,15 @@ function RequestCard({
   const [editedDisciplineId, setEditedDisciplineId] = useState<string>(
     request.disciplineId != null ? String(request.disciplineId) : "none"
   );
+  const [editedCategoryId, setEditedCategoryId] = useState<string>("none");
+
+  const numericDisciplineId = editedDisciplineId !== "none" ? parseInt(editedDisciplineId) : null;
+
+  const { data: disciplineCategories } = useQuery<{ id: number; name: string; disciplineId: number | null }[]>({
+    queryKey: ["/api/disciplines", numericDisciplineId, "categories"],
+    queryFn: () => fetch(`/api/disciplines/${numericDisciplineId}/categories`, { credentials: "include" }).then((r) => r.json()),
+    enabled: numericDisciplineId !== null,
+  });
 
   const approveMutation = useMutation({
     mutationFn: () =>
@@ -78,6 +87,7 @@ function RequestCard({
         adminNotes: adminNotes || undefined,
         topicName: editedTopicName.trim() || undefined,
         disciplineId: editedDisciplineId === "none" ? null : parseInt(editedDisciplineId),
+        categoryId: editedCategoryId === "none" ? undefined : parseInt(editedCategoryId),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/topic-requests"] });
@@ -145,7 +155,7 @@ function RequestCard({
                 <Label htmlFor={`discipline-${request.id}`} className="text-xs text-gray-500">
                   Discipline
                 </Label>
-                <Select value={editedDisciplineId} onValueChange={setEditedDisciplineId}>
+                <Select value={editedDisciplineId} onValueChange={(v) => { setEditedDisciplineId(v); setEditedCategoryId("none"); }}>
                   <SelectTrigger id={`discipline-${request.id}`} data-testid={`select-discipline-${request.id}`}>
                     <SelectValue placeholder="Select discipline" />
                   </SelectTrigger>
@@ -160,6 +170,26 @@ function RequestCard({
                 </Select>
               </div>
             </div>
+            {numericDisciplineId !== null && (
+              <div className="space-y-1">
+                <Label htmlFor={`category-${request.id}`} className="text-xs text-gray-500">
+                  Category <span className="text-gray-400">(assigns topic to this discipline sub-category)</span>
+                </Label>
+                <Select value={editedCategoryId} onValueChange={setEditedCategoryId}>
+                  <SelectTrigger id={`category-${request.id}`} data-testid={`select-category-${request.id}`}>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No category</SelectItem>
+                    {(disciplineCategories ?? []).map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <Textarea
               placeholder="Optional notes (visible to admin only)"
               value={adminNotes}
