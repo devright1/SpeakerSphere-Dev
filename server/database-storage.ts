@@ -575,7 +575,33 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getCategory(id: number): Promise<Category | undefined> {
+    const result = await db.select().from(categories).where(eq(categories.id, id));
+    return result[0];
+  }
+
   async deleteCategory(id: number): Promise<boolean> {
+    const category = await this.getCategory(id);
+    if (!category) return false;
+
+    // Cascade: unlink this category from every speaker that has it selected.
+    await db
+      .update(speakers)
+      .set({ speakerCategoryIds: sql`array_remove(${speakers.speakerCategoryIds}, ${id})` })
+      .where(sql`${speakers.speakerCategoryIds} @> ARRAY[${id}]::integer[]`);
+
+    // Cascade: remove the matching legacy speaking topic assignment (if any),
+    // since admin-approved topics create both a categories row and a
+    // speakingTopics row sharing the same name/discipline.
+    const topicMatchCondition = category.disciplineId !== null
+      ? and(eq(speakingTopics.name, category.name), eq(speakingTopics.disciplineId, category.disciplineId))
+      : and(eq(speakingTopics.name, category.name), isNull(speakingTopics.disciplineId));
+    const [matchingTopic] = await db.select().from(speakingTopics).where(topicMatchCondition);
+    if (matchingTopic) {
+      await db.delete(speakerTopics).where(eq(speakerTopics.topicId, matchingTopic.id));
+      await this.updateTopicSpeakerCount(matchingTopic.id);
+    }
+
     const result = await db.delete(categories).where(eq(categories.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
   }

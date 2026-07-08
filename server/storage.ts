@@ -132,6 +132,7 @@ export interface IStorage {
   // Categories
   getCategories(): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
+  getCategory(id: number): Promise<Category | undefined>;
   deleteCategory(id: number): Promise<boolean>;
 
   // Disciplines & two-level taxonomy
@@ -882,9 +883,38 @@ export class MemStorage implements IStorage {
     return category;
   }
 
+  async getCategory(id: number): Promise<Category | undefined> {
+    return this.categories.get(id);
+  }
+
   async deleteCategory(id: number): Promise<boolean> {
     const category = this.categories.get(id);
     if (!category) return false;
+
+    // Cascade: unlink this category from every speaker that has it selected.
+    Array.from(this.speakers.values()).forEach((speaker) => {
+      if (speaker.speakerCategoryIds && speaker.speakerCategoryIds.includes(id)) {
+        const updated = {
+          ...speaker,
+          speakerCategoryIds: speaker.speakerCategoryIds.filter((catId) => catId !== id),
+        };
+        this.speakers.set(speaker.id, updated);
+      }
+    });
+
+    // Cascade: remove the matching legacy speaking topic assignment (if any),
+    // since admin-approved topics create both a categories row and a
+    // speakingTopics row sharing the same name/discipline.
+    const matchingTopic = Array.from(this.speakingTopics.values()).find(
+      (topic) => topic.name === category.name && topic.disciplineId === category.disciplineId
+    );
+    if (matchingTopic) {
+      const linksToRemove = Array.from(this.speakerTopics.values()).filter(
+        (st) => st.topicId === matchingTopic.id
+      );
+      linksToRemove.forEach((st) => this.speakerTopics.delete(st.id));
+      await this.updateTopicSpeakerCount(matchingTopic.id);
+    }
 
     this.categories.delete(id);
     return true;
