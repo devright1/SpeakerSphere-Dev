@@ -1292,6 +1292,16 @@ export default function SpeakerProfile() {
                               />
                             );
                           })}
+                          {!topicsLoading && speakerTopics && speakerTopics.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Topics</p>
+                              <div className="flex flex-wrap gap-2">
+                                {speakerTopics.map((topic: any) => (
+                                  <Badge key={topic.id} variant="outline">{topic.name}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
