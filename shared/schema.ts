@@ -144,6 +144,12 @@ export const categories = pgTable("categories", {
   // Discipline this category belongs to. NULL = legacy flat category.
   disciplineId: integer("discipline_id"),
   sortOrder: integer("sort_order").default(0),
+  // True when this category originated from an admin-approved speaker topic
+  // request rather than the hardcoded DISCIPLINE_DATA list. Custom categories
+  // are preserved across the seed-disciplines startup sync (which otherwise
+  // deletes any category not in the hardcoded list) and are selectable by
+  // any speaker in that discipline.
+  isCustom: boolean("is_custom").notNull().default(false),
 });
 
 export const videos = pgTable("videos", {

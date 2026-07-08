@@ -308,8 +308,10 @@ export async function seedDisciplines(): Promise<void> {
     const existingCatNames = new Set(existingCats.map((c) => c.name));
     const newCatNames = new Set(catNames);
 
-    // Delete categories removed from this discipline
-    const toDelete = existingCats.filter((c) => !newCatNames.has(c.name));
+    // Delete categories removed from this discipline. Custom categories created
+    // from admin-approved speaker topic requests are never in DISCIPLINE_DATA,
+    // so they must be excluded here or every restart would wipe them out.
+    const toDelete = existingCats.filter((c) => !newCatNames.has(c.name) && !c.isCustom);
     if (toDelete.length > 0) {
       const idsToDelete = toDelete.map((c) => c.id);
       await db.delete(categories).where(inArray(categories.id, idsToDelete));

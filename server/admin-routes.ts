@@ -1859,14 +1859,10 @@ export function registerAdminRoutes(app: Express) {
       // picked from the dropdown, auto-create a categories entry for this topic and set the
       // category string on the speakingTopics row so it isn't "Uncategorized".
       if (finalDisciplineId !== null) {
-        // Use the picked category name, or fall back to the discipline name so all
-        // topics approved under the same discipline group together in the topic selector
-        let disciplineName = finalCategoryName;
-        if (!disciplineName) {
-          const [disc] = await db.select({ name: disciplines.name }).from(disciplines).where(eq(disciplines.id, finalDisciplineId));
-          disciplineName = disc?.name || trimmedName;
-        }
-        const categoryLabel = disciplineName;
+        // Use the picked category, or the approved topic's own name so the new topic
+        // becomes its own distinct, selectable item under the discipline (rather than
+        // being lumped under the discipline's own name, which isn't a real topic).
+        const categoryLabel = finalCategoryName || trimmedName;
 
         // Find or create a categories entry under this discipline
         const [existingCat] = await db
@@ -1878,7 +1874,7 @@ export function registerAdminRoutes(app: Express) {
         if (!resolvedCat) {
           const [created] = await db
             .insert(categories)
-            .values({ name: categoryLabel, disciplineId: finalDisciplineId, description: "" })
+            .values({ name: categoryLabel, disciplineId: finalDisciplineId, description: "", isCustom: true })
             .returning();
           resolvedCat = created;
           console.log(`✅ Created categories entry "${categoryLabel}" under discipline ${finalDisciplineId}`);
