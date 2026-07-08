@@ -9,6 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus, ChevronDown, ChevronUp, RefreshCw, Save, Pencil, Trash2, X, Check, CheckCheck } from "lucide-react";
 
 interface DisciplineWithCounts {
@@ -75,6 +85,7 @@ function CategoriesEditor({ disciplineId }: { disciplineId: number }) {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryItem | null>(null);
 
   const { data: categories, isLoading } = useQuery<CategoryItem[]>({
     queryKey: ["/api/disciplines", disciplineId, "categories"],
@@ -117,9 +128,13 @@ function CategoriesEditor({ disciplineId }: { disciplineId: number }) {
     mutationFn: (id: number) => adminRequest("DELETE", `/api/categories/${id}`),
     onSuccess: () => {
       invalidate();
+      setCategoryToDelete(null);
       toast({ title: "Topic deleted" });
     },
-    onError: (e: Error) => toast({ title: e.message || "Failed to delete topic", variant: "destructive" }),
+    onError: (e: Error) => {
+      setCategoryToDelete(null);
+      toast({ title: e.message || "Failed to delete topic", variant: "destructive" });
+    },
   });
 
   return (
@@ -192,9 +207,7 @@ function CategoriesEditor({ disciplineId }: { disciplineId: number }) {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 text-destructive"
-                      onClick={() => {
-                        if (confirm(`Delete topic "${cat.name}"?`)) deleteCategoryMutation.mutate(cat.id);
-                      }}
+                      onClick={() => setCategoryToDelete(cat)}
                       disabled={deleteCategoryMutation.isPending}
                       data-testid={`button-delete-category-${cat.id}`}
                     >
@@ -226,6 +239,29 @@ function CategoriesEditor({ disciplineId }: { disciplineId: number }) {
           Add
         </Button>
       </div>
+      <AlertDialog open={categoryToDelete !== null} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
+        <AlertDialogContent data-testid="dialog-confirm-delete-category">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete topic?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {categoryToDelete && `Are you sure you want to delete "${categoryToDelete.name}"? This cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete-category">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteCategoryMutation.isPending}
+              onClick={() => {
+                if (categoryToDelete) deleteCategoryMutation.mutate(categoryToDelete.id);
+              }}
+              data-testid="button-confirm-delete-category"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -412,6 +448,7 @@ export function AdminDisciplines() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [disciplineToDelete, setDisciplineToDelete] = useState<DisciplineWithCounts | null>(null);
 
   const { data: disciplines, isLoading } = useQuery<DisciplineWithCounts[]>({
     queryKey: ["/api/disciplines"],
@@ -444,9 +481,13 @@ export function AdminDisciplines() {
     mutationFn: (id: number) => adminRequest("DELETE", `/api/disciplines/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/disciplines"] });
+      setDisciplineToDelete(null);
       toast({ title: "Discipline deleted" });
     },
-    onError: (e: Error) => toast({ title: e.message || "Failed to delete discipline", variant: "destructive" }),
+    onError: (e: Error) => {
+      setDisciplineToDelete(null);
+      toast({ title: e.message || "Failed to delete discipline", variant: "destructive" });
+    },
   });
 
   const runMigrationMutation = useMutation({
@@ -602,14 +643,7 @@ export function AdminDisciplines() {
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8 text-destructive"
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  `Delete discipline "${d.name}"? Its categories will also be removed.`
-                                )
-                              )
-                                deleteDisciplineMutation.mutate(d.id);
-                            }}
+                            onClick={() => setDisciplineToDelete(d)}
                             disabled={deleteDisciplineMutation.isPending}
                             data-testid={`button-delete-discipline-${d.id}`}
                           >
@@ -643,6 +677,31 @@ export function AdminDisciplines() {
       </Card>
 
       <MigrationReview disciplines={disciplines || []} />
+
+      <AlertDialog open={disciplineToDelete !== null} onOpenChange={(open) => !open && setDisciplineToDelete(null)}>
+        <AlertDialogContent data-testid="dialog-confirm-delete-discipline">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete discipline?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {disciplineToDelete &&
+                `Are you sure you want to delete "${disciplineToDelete.name}"? Its topics will also be removed. This cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete-discipline">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteDisciplineMutation.isPending}
+              onClick={() => {
+                if (disciplineToDelete) deleteDisciplineMutation.mutate(disciplineToDelete.id);
+              }}
+              data-testid="button-confirm-delete-discipline"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
