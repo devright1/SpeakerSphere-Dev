@@ -602,6 +602,17 @@ export class DatabaseStorage implements IStorage {
       await this.updateTopicSpeakerCount(matchingTopic.id);
     }
 
+    // Cascade: any speaker topic requests approved into this topic no longer
+    // point at a real topic, so surface that in the speaker's "Your Requests"
+    // list instead of leaving a stale "Approved" badge forever.
+    const topicRequestMatchCondition = category.disciplineId !== null
+      ? and(eq(topicRequests.topicName, category.name), eq(topicRequests.disciplineId, category.disciplineId), eq(topicRequests.status, "approved"))
+      : and(eq(topicRequests.topicName, category.name), isNull(topicRequests.disciplineId), eq(topicRequests.status, "approved"));
+    await db
+      .update(topicRequests)
+      .set({ status: "rejected", adminNotes: "Topic was removed by an admin after approval." })
+      .where(topicRequestMatchCondition);
+
     const result = await db.delete(categories).where(eq(categories.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
   }

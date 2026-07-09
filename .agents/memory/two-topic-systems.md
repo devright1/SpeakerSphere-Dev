@@ -26,3 +26,11 @@ schema or naming makes the split obvious.
 search, filters), check whether the code path reads `speakerTopics`/`speakingTopics` or
 `speakerCategoryIds`/`speakerDisciplineIds`, and whether it needs to handle both. Prefer
 falling back from (1) to (2) rather than assuming only one exists.
+
+There's also a third, adjacent table: `topicRequests` (speaker-submitted requests for new
+topics). Admin approval creates a `categories` row (+ matching `speakingTopics` row sharing
+name/disciplineId) but leaves the original `topicRequests` row's status as `"approved"`
+forever — it is never re-synced. If an admin later deletes that category/topic, any cascade
+cleanup must also flip matching `topicRequests` rows (matched by `topicName` + `disciplineId`)
+away from `"approved"`, or the speaker dashboard's "Your Requests" list keeps showing a stale
+"Approved" badge for a topic that no longer exists anywhere else.
