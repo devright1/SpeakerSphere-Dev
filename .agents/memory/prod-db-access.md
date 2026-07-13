@@ -1,22 +1,42 @@
 ---
 name: Production DB access pattern
-description: How to actually connect to the real production Neon database from the dev shell
+description: How the production database is configured and how to connect to it from dev
 ---
 
-## Rule
-`$PROD_DATABASE_URL` is **empty in the dev bash shell** — it's a production-only env var. `psql "$PROD_DATABASE_URL"` silently falls back to PG* env vars, which point to a **different** Neon database (ep-fancy-mode, us-east-2). That database is NOT what the production app uses.
+## Database layout
 
-## The real production database
-`PROD_DATABASE_URL` in the Replit production environment → ep-gentle-term-ahnvun5c-pooler.c-3.us-east-1.aws.neon.tech (Neon, us-east-1, 560 speakers).
+| Database | Host | Data | Used by |
+|---|---|---|---|
+| Local PostgreSQL | Helium (Replit built-in) | ~524 speakers | Dev app (DATABASE_URL, runtime-managed) |
+| User's Neon DB | ep-dry-sunset-a6dfrrsb.us-west-2 | 560 speakers | Production app via PROD_DATABASE_URL |
+| Abandoned Neon DB | ep-gentle-term-ahnvun5c.us-east-1 | 537 speakers | Was PROD_DATABASE_URL, now unused |
 
-The production app selects it via: `process.env.NODE_ENV === 'production' ? process.env.PROD_DATABASE_URL : process.env.DATABASE_URL` (server/db.ts).
+## How the production app selects its database
 
-**Why:** PROD_DATABASE_URL is stored as a production-scoped env var (not a secret, not shared), so it's invisible in dev.
+`server/db.ts`:
+```javascript
+const connectionString = process.env.NODE_ENV === 'production'
+  ? process.env.PROD_DATABASE_URL
+  : process.env.DATABASE_URL;
+```
 
-## How to apply
-To run DDL/queries against the actual production DB from dev:
-1. `viewEnvVars({ type: "env", keys: ["PROD_DATABASE_URL"] })` — gets the production value
-2. `setEnvVars({ values: { PROD_DATABASE_URL: prodUrl }, environment: "development" })` — adds it to dev
-3. Restart the workflow so the dev shell picks it up
-4. Run `psql "$PROD_DATABASE_URL" ...`
-5. Clean up: `deleteEnvVars({ keys: ["PROD_DATABASE_URL"], environment: "development" })`
+`PROD_DATABASE_URL` is a **production-only** env var → user's Neon DB (ep-dry-sunset, us-west-2).
+
+**Why:** PROD_DATABASE_URL is production-scoped only, invisible in dev.
+
+## Connecting to the user's Neon DB from dev shell
+
+`$PROD_DATABASE_URL` is empty in the dev bash shell (production-only). But PG* env vars point directly to the user's Neon DB, so this works:
+
+```bash
+psql "postgresql://$PGUSER:$PGPASSWORD@$PGHOST/$PGDATABASE?sslmode=require" -c "..."
+```
+
+PG* vars: `PGHOST=ep-dry-sunset-a6dfrrsb.us-west-2.aws.neon.tech`, `PGDATABASE=neondb`, `PGUSER=neondb_owner`
+
+## Updating PROD_DATABASE_URL
+
+1. `viewEnvVars({ type: "env", keys: ["PROD_DATABASE_URL"] })` to see current value
+2. Write new URL to `/tmp/neon_url.txt` in bash (keeps password out of code_execution)
+3. In code_execution: `const fs = await import('fs'); const url = fs.readFileSync('/tmp/neon_url.txt','utf8').trim(); await setEnvVars({ values: { PROD_DATABASE_URL: url }, environment: "production" });`
+4. Republish — change only takes effect after next deployment
