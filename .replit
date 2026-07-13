@@ -54,3 +54,5 @@ timeoutMs = 20000
 
 [userenv.production]
 PROD_DATABASE_URL = "postgresql://neondb_owner:npg_lUOc4MdWBa6x@ep-gentle-term-ahnvun5c-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+[userenv.development]
