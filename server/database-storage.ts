@@ -419,6 +419,9 @@ export class DatabaseStorage implements IStorage {
         }
         await db.delete(speakerContent).where(eq(speakerContent.speakerId, id));
 
+        // Unlink any user account pointing to this speaker (FK, no cascade)
+        await db.update(users).set({ speakerId: null }).where(eq(users.speakerId, id));
+
         // Permanently delete the speaker record
         const result = await db.delete(speakers).where(eq(speakers.id, id));
         return result.rowCount ? result.rowCount > 0 : false;
