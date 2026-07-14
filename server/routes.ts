@@ -583,12 +583,19 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
 
-      // If logging in via the speaker portal, require an active speaker profile
-      if (loginType === "speaker" && !user.speakerId) {
-        return res.status(401).json({
-          success: false,
-          message: "No speaker profile found for this account. Please log in as a user instead."
-        });
+      // If logging in via the speaker portal, require an active (non-deleted) speaker profile
+      if (loginType === "speaker") {
+        let blocked = !user.speakerId;
+        if (!blocked && user.speakerId) {
+          const linkedSpeaker = await storage.getSpeaker(user.speakerId);
+          if (!linkedSpeaker || linkedSpeaker.deletedAt) blocked = true;
+        }
+        if (blocked) {
+          return res.status(401).json({
+            success: false,
+            message: "No active speaker profile found for this account. Please log in as a user instead."
+          });
+        }
       }
 
       // Update last login
