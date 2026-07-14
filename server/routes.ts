@@ -562,6 +562,7 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
+      const loginType = req.body.loginType as "user" | "speaker" | undefined;
       
       // Find user by email
       const user = await storage.getUserByEmail(email);
@@ -579,6 +580,14 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(401).json({
           success: false,
           message: "Invalid email or password"
+        });
+      }
+
+      // If logging in via the speaker portal, require an active speaker profile
+      if (loginType === "speaker" && !user.speakerId) {
+        return res.status(401).json({
+          success: false,
+          message: "No speaker profile found for this account. Please log in as a user instead."
         });
       }
 

@@ -240,7 +240,7 @@ export default function AuthPage() {
   });
 
   const onLoginSubmit = (data: LoginForm) => {
-    loginMutation.mutate(data);
+    loginMutation.mutate({ ...data, loginType: activeTab === "user-login" ? "user" : "speaker" });
   };
 
   const onRegisterSubmit = (data: RegisterForm) => {
