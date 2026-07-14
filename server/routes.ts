@@ -562,7 +562,6 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
-      const loginType = req.body.loginType as "user" | "speaker" | undefined;
       
       // Find user by email
       const user = await storage.getUserByEmail(email);
@@ -649,6 +648,70 @@ export async function registerRoutes(app: Express): Promise<Express> {
         success: false,
         message: "Login failed. Please try again."
       });
+    }
+  });
+
+  // Speaker-only login — always enforces active speaker profile check
+  app.post("/api/auth/speaker-login", async (req, res) => {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ success: false, message: "Invalid email or password" });
+      }
+
+      const isAdminPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      const isUserPasswordValid = user.userPasswordHash ? await bcrypt.compare(password, user.userPasswordHash) : false;
+      if (!isAdminPasswordValid && !isUserPasswordValid) {
+        return res.status(401).json({ success: false, message: "Invalid email or password" });
+      }
+
+      // Always require an active (non-deleted) speaker profile for this endpoint
+      if (!user.speakerId) {
+        return res.status(401).json({ success: false, message: "No active speaker profile found for this account. Please log in as a user instead." });
+      }
+      const linkedSpeaker = await storage.getSpeaker(user.speakerId);
+      if (!linkedSpeaker || linkedSpeaker.deletedAt) {
+        return res.status(401).json({ success: false, message: "No active speaker profile found for this account. Please log in as a user instead." });
+      }
+
+      await storage.updateUserLastLogin(user.id);
+
+      if (!(req as any).session) (req as any).session = {};
+      (req as any).session.user = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        speakerId: user.speakerId,
+      };
+
+      (req as any).session.save((err: any) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ success: false, message: "Login failed - session error" });
+        }
+        const sessionToken = (req as any).session.id || (req as any).sessionID;
+        res.json({
+          success: true,
+          message: "Login successful",
+          token: sessionToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            speakerId: user.speakerId,
+          }
+        });
+      });
+    } catch (error: any) {
+      console.error("Speaker login error:", error);
+      if (error.name === "ZodError") {
+        return res.status(400).json({ success: false, message: "Invalid login data" });
+      }
+      res.status(500).json({ success: false, message: "Login failed. Please try again." });
     }
   });
 

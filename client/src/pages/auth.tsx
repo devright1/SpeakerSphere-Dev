@@ -134,21 +134,46 @@ export default function AuthPage() {
     onSuccess: (data) => {
       setSubmitStep("success");
       setIsSuccess(true);
-      
-      // Use the auth context login method to properly update state  
       login(data.token, data.user);
-      
       setTimeout(() => {
         toast({
           title: "Welcome back!",
           description: "You've been successfully logged in.",
         });
-        // Check if user has a speaker profile to redirect to speaker dashboard
         if (data.user.speakerId) {
           setLocation('/speaker-dashboard');
         } else {
           setLocation('/');
         }
+      }, 1500);
+    },
+    onError: (error: any) => {
+      setSubmitStep("error");
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid email or password.",
+        variant: "destructive",
+      });
+      setTimeout(() => setSubmitStep("idle"), 2000);
+    },
+  });
+
+  // Separate mutation for the Speaker tab — always hits the speaker-only endpoint
+  const speakerLoginMutation = useMutation({
+    mutationFn: async (data: LoginForm) => {
+      setSubmitStep("loading");
+      return apiRequest('POST', '/api/auth/speaker-login', data);
+    },
+    onSuccess: (data) => {
+      setSubmitStep("success");
+      setIsSuccess(true);
+      login(data.token, data.user);
+      setTimeout(() => {
+        toast({
+          title: "Welcome back!",
+          description: "You've been successfully logged in.",
+        });
+        setLocation('/speaker-dashboard');
       }, 1500);
     },
     onError: (error: any) => {
@@ -765,7 +790,7 @@ export default function AuthPage() {
                   
                   {/* Speaker Sign In */}
                   <TabsContent value="speaker-signin" className="space-y-4">
-                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                    <form onSubmit={loginForm.handleSubmit((data) => speakerLoginMutation.mutate(data))} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="speaker-login-email">Email</Label>
                         <Input
@@ -809,7 +834,7 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full bg-green-600 hover:bg-green-700"
-                        disabled={loginMutation.isPending}
+                        disabled={speakerLoginMutation.isPending}
                       >
                         {getButtonContent(true)}
                       </Button>
