@@ -440,24 +440,6 @@ export default function SpeakerApplicationPage() {
                         }
                       />
 
-                      {/* Specific Topics */}
-                      <div className="space-y-2">
-                        <Label htmlFor="specificTopics">Specific Topics of Expertise *</Label>
-                        <Textarea
-                          id="specificTopics"
-                          {...form.register("specificTopics")}
-                          placeholder="List your specific areas of expertise and topics you can speak about in detail (e.g., 'All-on-4 implants, Digital workflow integration, Guided surgery protocols')"
-                          className="min-h-[100px]"
-                        />
-                        {form.formState.errors.specificTopics && (
-                          <p className="text-sm text-red-600">{form.formState.errors.specificTopics.message}</p>
-                        )}
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                          Please be specific about your expertise areas. This helps us match you with relevant speaking opportunities.
-                        </p>
-                      </div>
-
-
                       <div className="space-y-2">
                         <Label htmlFor="previousExperience">Previous Speaking Experience *</Label>
                         <Textarea
