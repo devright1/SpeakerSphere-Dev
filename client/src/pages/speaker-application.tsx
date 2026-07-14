@@ -44,13 +44,15 @@ const speakerApplicationSchema = z.object({
   selectedTopicIds: z.array(z.number()).optional().default([]), // Legacy, no longer required
   selectedDisciplineId: z.number({ required_error: "Please select a discipline" }),
   selectedCategoryIds: z.array(z.number()).min(1, "Please select at least one discipline").max(3, "Please select up to 3 disciplines"),
-  specificTopics: z.string().min(10, "Please provide specific topics (at least 10 characters)"),
   previousExperience: z.string().min(1, "Previous speaking experience is required"),
   availableFormats: z.array(z.string()).min(1, "Please select at least one format"),
   travelWillingness: z.string().min(1, "Please specify travel willingness"),
   
   // Additional Information
-  biography: z.string().min(100, "Biography must be at least 100 characters"),
+  biography: z.string().min(10, "Biography is required").refine(
+    (val) => countWords(val) <= 50,
+    { message: "Biography cannot exceed 50 words (Basic tier limit)" }
+  ),
   specialRequirements: z.string().optional(),
   references: z.string().optional(),
   
@@ -79,6 +81,12 @@ const travelOptions = [
 
 type ApplicationStep = "idle" | "submitting" | "success";
 
+const BIO_WORD_LIMIT = 50;
+const countWords = (text: string) => {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(w => w.length > 0).length;
+};
+
 export default function SpeakerApplicationPage() {
   const [submitStep, setSubmitStep] = useState<ApplicationStep>("idle");
   const { toast } = useToast();
@@ -103,7 +111,6 @@ export default function SpeakerApplicationPage() {
       selectedTopicIds: [],
       selectedDisciplineId: undefined,
       selectedCategoryIds: [],
-      specificTopics: "",
       previousExperience: "",
       availableFormats: [],
       travelWillingness: "",
@@ -505,12 +512,20 @@ export default function SpeakerApplicationPage() {
                         <Textarea
                           id="biography"
                           {...form.register("biography")}
-                          placeholder="Write a comprehensive professional biography (minimum 100 characters)"
-                          className="min-h-[120px]"
+                          placeholder="Write a professional biography (up to 50 words for Basic tier)"
+                          className={`min-h-[120px] ${countWords(form.watch("biography") || "") > BIO_WORD_LIMIT ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                         />
-                        <p className="text-xs text-muted-foreground">
-                          This will be used for your speaker profile. Include your background, achievements, and areas of expertise.
-                        </p>
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs text-muted-foreground">
+                            This will be used for your speaker profile. Basic tier allows up to {BIO_WORD_LIMIT} words.
+                          </p>
+                          <p className={`text-xs font-medium ${countWords(form.watch("biography") || "") > BIO_WORD_LIMIT ? "text-red-500" : "text-muted-foreground"}`}>
+                            {countWords(form.watch("biography") || "")} / {BIO_WORD_LIMIT} words
+                          </p>
+                        </div>
+                        {countWords(form.watch("biography") || "") > BIO_WORD_LIMIT && (
+                          <p className="text-xs text-red-500">Bio exceeds the 50-word Basic tier limit. Please shorten it, or you can expand it after upgrading your plan.</p>
+                        )}
                         {form.formState.errors.biography && (
                           <p className="text-sm text-red-600">{form.formState.errors.biography.message}</p>
                         )}
