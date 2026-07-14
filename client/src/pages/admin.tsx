@@ -2423,6 +2423,29 @@ export default function AdminDashboard() {
                             </div>
                           </div>
 
+                          {/* Deletion Countdown Banner */}
+                          {speaker.deletedAt && (() => {
+                            const deletedDate = new Date(speaker.deletedAt);
+                            const expiresDate = new Date(deletedDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+                            const daysLeft = Math.ceil((expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                            const isExpiringSoon = daysLeft <= 3;
+                            return (
+                              <div className={`mt-3 px-4 py-2 rounded-lg flex items-center gap-3 ${isExpiringSoon ? 'bg-red-100 border border-red-300' : 'bg-orange-50 border border-orange-300'}`}>
+                                <Trash2 className={`h-4 w-4 flex-shrink-0 ${isExpiringSoon ? 'text-red-600' : 'text-orange-600'}`} />
+                                <div className="flex-1 min-w-0">
+                                  <span className={`font-semibold text-sm ${isExpiringSoon ? 'text-red-700' : 'text-orange-700'}`}>
+                                    Deleted — scheduled for permanent removal
+                                  </span>
+                                  <span className={`ml-2 text-sm ${isExpiringSoon ? 'text-red-600' : 'text-orange-600'}`}>
+                                    {daysLeft > 0
+                                      ? `${daysLeft} day${daysLeft === 1 ? '' : 's'} remaining (erased on ${expiresDate.toLocaleDateString()})`
+                                      : 'Permanent deletion overdue'}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })()}
+
                           {/* Visibility Controls Row */}
                           <div className="mt-3 pt-3 border-t">
                             <div className="flex items-center justify-between">
