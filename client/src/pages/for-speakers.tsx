@@ -257,7 +257,7 @@ export default function ForSpeakers() {
   });
 
   const onSignInSubmit = (data: SignInForm) => {
-    signInMutation.mutate(data);
+    signInMutation.mutate({ ...data, loginType: "speaker" });
   };
 
   const onApplicationSubmit = (data: SpeakerApplicationForm) => {
