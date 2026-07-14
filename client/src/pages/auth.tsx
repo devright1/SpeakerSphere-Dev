@@ -900,7 +900,7 @@ export default function AuthPage() {
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                           Apply for a Speaker Sphere Profile
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-400">If you see yourself in our speaker directory, fill out the application to claim and manage your profile. </p>
+                        <p className="text-gray-600 dark:text-gray-400">Apply to join as a new speaker, or if you already see yourself in our directory, fill out the application to claim and manage your profile.</p>
                       </div>
                       
                       <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
