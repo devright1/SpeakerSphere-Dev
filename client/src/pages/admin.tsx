@@ -450,6 +450,10 @@ export default function AdminDashboard() {
     queryKey: ["/api/categories"],
   });
 
+  const { data: disciplines } = useQuery<any[]>({
+    queryKey: ["/api/disciplines"],
+  });
+
   // Query for all topics
   const { data: topics } = useQuery({
     queryKey: ["/api/admin/topics"],
@@ -4740,33 +4744,30 @@ export default function AdminDashboard() {
                   <div className="bg-gray-50 p-4 rounded-lg space-y-4">
                     {!isEditingApplication ? (
                       <>
-                        {/* Categories */}
-                        {selectedApplicationDetails.selectedCategories && selectedApplicationDetails.selectedCategories.length > 0 && (
+                        {/* Discipline */}
+                        {selectedApplicationDetails.selectedDisciplineId && (
                           <div>
-                            <p className="font-medium text-sm mb-2">Selected Categories:</p>
-                            <div className="flex flex-wrap gap-1">
-                              {selectedApplicationDetails.selectedCategories.map((category: string, index: number) => (
-                                <Badge key={`${category}-${index}`} className="bg-purple-100 text-purple-800">
-                                  {category}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Specific Topics */}
-                        {selectedApplicationDetails.specificTopics && (
-                          <div>
-                            <p className="font-medium text-sm mb-2">Specific Topics of Expertise:</p>
-                            <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.specificTopics}</p>
+                            <p className="font-medium text-sm mb-2">Discipline:</p>
+                            <Badge className="bg-indigo-100 text-indigo-800">
+                              {disciplines?.find((d: any) => d.id === selectedApplicationDetails.selectedDisciplineId)?.name || `ID: ${selectedApplicationDetails.selectedDisciplineId}`}
+                            </Badge>
                           </div>
                         )}
 
-                        {/* Speaking Topics (backward compatibility) */}
-                        {selectedApplicationDetails.speakingTopics && selectedApplicationDetails.speakingTopics !== selectedApplicationDetails.specificTopics && (
+                        {/* Topics */}
+                        {selectedApplicationDetails.selectedCategoryIds && selectedApplicationDetails.selectedCategoryIds.length > 0 && (
                           <div>
-                            <p className="font-medium text-sm mb-2">Speaking Topics:</p>
-                            <p className="text-sm text-gray-600 bg-white p-3 rounded border">{selectedApplicationDetails.speakingTopics}</p>
+                            <p className="font-medium text-sm mb-2">Topics:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {selectedApplicationDetails.selectedCategoryIds.map((id: number) => {
+                                const cat = categoriesArray.find((c: any) => c.id === id);
+                                return (
+                                  <Badge key={id} className="bg-purple-100 text-purple-800">
+                                    {cat?.name || `ID: ${id}`}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
 
