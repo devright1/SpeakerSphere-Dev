@@ -221,7 +221,7 @@ export const speakerApplications = pgTable("speaker_applications", {
   // New two-level taxonomy selection
   selectedDisciplineId: integer("selected_discipline_id"),
   selectedCategoryIds: integer("selected_category_ids").array().default([]),
-  specificTopics: text("specific_topics").notNull(), // Detailed list of specific expertise topics
+  specificTopics: text("specific_topics").default(""), // Deprecated — no longer collected on the form
   previousExperience: text("previous_experience").notNull(),
   availableFormats: text("available_formats").array().notNull(),
   travelWillingness: text("travel_willingness").notNull(),
