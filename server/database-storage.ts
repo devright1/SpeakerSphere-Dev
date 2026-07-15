@@ -985,7 +985,7 @@ export class DatabaseStorage implements IStorage {
       slug: uniqueSlug,
       title: application.title,
       bio: application.biography,
-      expertise: application.specificTopics.split(',').map(s => s.trim()),
+      expertise: [],
       location: "Location TBD",
       imageUrl: "/api/placeholder/300/300",
       verified: true, // Set to true so Speaker Resources tab appears

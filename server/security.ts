@@ -174,7 +174,6 @@ export const validators = {
     body('selectedCategoryIds.*').isInt().withMessage('Category IDs must be valid integers'),
     body('selectedTopicIds').optional().isArray({ max: 3 }).withMessage('You may select up to 3 speaking topics'),
     body('selectedTopicIds.*').optional().isInt().withMessage('Topic IDs must be valid integers'),
-    body('specificTopics').trim().isLength({ min: 1, max: 1000 }).withMessage('Please describe your specific topics').escape(),
     body('previousExperience').trim().isLength({ min: 1, max: 2000 }).withMessage('Previous speaking experience is required').escape(),
     body('availableFormats').isArray({ min: 1, max: 10 }).withMessage('Please select at least one speaking format'),
     body('availableFormats.*').trim().isLength({ max: 100 }).escape(),

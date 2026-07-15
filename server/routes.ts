@@ -424,7 +424,6 @@ export async function registerRoutes(app: Express): Promise<Express> {
         yearsExperience: SecurityUtils.sanitizeText(req.body.yearsExperience),
         credentials: SecurityUtils.sanitizeText(req.body.credentials),
         selectedCategories: req.body.selectedCategories?.map((category: string) => SecurityUtils.sanitizeText(category)),
-        specificTopics: SecurityUtils.sanitizeText(req.body.specificTopics),
         previousExperience: SecurityUtils.sanitizeText(req.body.previousExperience),
         availableFormats: req.body.availableFormats?.map((format: string) => SecurityUtils.sanitizeText(format)),
         travelWillingness: SecurityUtils.sanitizeText(req.body.travelWillingness),
