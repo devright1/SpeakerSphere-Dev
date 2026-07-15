@@ -532,16 +532,6 @@ export default function SpeakerApplicationPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="specialRequirements">Special Requirements (Optional)</Label>
-                        <Textarea
-                          id="specialRequirements"
-                          {...form.register("specialRequirements")}
-                          placeholder="Any special requirements for speaking engagements (e.g., equipment, setup, accessibility needs)"
-                          className="min-h-[80px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
                         <Label htmlFor="references">Professional References (Optional)</Label>
                         <Textarea
                           id="references"
