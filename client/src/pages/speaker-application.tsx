@@ -55,6 +55,9 @@ const speakerApplicationSchema = z.object({
   ),
   specialRequirements: z.string().optional(),
   references: z.string().optional(),
+  referenceName: z.string().optional(),
+  referenceEmail: z.string().email("Please enter a valid email").optional().or(z.literal("")),
+  referencePhone: z.string().optional(),
   
   // Profile Claim
   claimExistingProfile: z.boolean().default(false),
@@ -117,14 +120,22 @@ export default function SpeakerApplicationPage() {
       biography: "",
       specialRequirements: "",
       references: "",
+      referenceName: "",
+      referenceEmail: "",
+      referencePhone: "",
       claimExistingProfile: false
     }
   });
 
   const applicationMutation = useMutation({
     mutationFn: async (data: SpeakerApplicationForm) => {
-      console.log("Submitting speaker application:", data);
-      const response = await apiRequest("POST", "/api/auth/speaker-application", data);
+      const parts = [
+        data.referenceName ? `Name: ${data.referenceName}` : "",
+        data.referenceEmail ? `Email: ${data.referenceEmail}` : "",
+        data.referencePhone ? `Phone: ${data.referencePhone}` : "",
+      ].filter(Boolean);
+      const payload = { ...data, references: parts.length ? parts.join(" | ") : "" };
+      const response = await apiRequest("POST", "/api/auth/speaker-application", payload);
       return response;
     },
     onSuccess: () => {
@@ -531,14 +542,39 @@ export default function SpeakerApplicationPage() {
                         )}
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="references">Professional References (Optional)</Label>
-                        <Textarea
-                          id="references"
-                          {...form.register("references")}
-                          placeholder="Names and contact information of professional references"
-                          className="min-h-[80px]"
-                        />
+                      <div className="space-y-3">
+                        <Label>Professional References (Optional)</Label>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <div className="space-y-1">
+                            <Label htmlFor="referenceName" className="text-xs text-gray-500">Name</Label>
+                            <Input
+                              id="referenceName"
+                              {...form.register("referenceName")}
+                              placeholder="Dr. Jane Smith"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="referenceEmail" className="text-xs text-gray-500">Email</Label>
+                            <Input
+                              id="referenceEmail"
+                              type="email"
+                              {...form.register("referenceEmail")}
+                              placeholder="jane@example.com"
+                            />
+                            {form.formState.errors.referenceEmail && (
+                              <p className="text-xs text-red-600">{form.formState.errors.referenceEmail.message}</p>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="referencePhone" className="text-xs text-gray-500">Phone</Label>
+                            <Input
+                              id="referencePhone"
+                              type="tel"
+                              {...form.register("referencePhone")}
+                              placeholder="555-123-4567"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
