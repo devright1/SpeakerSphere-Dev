@@ -51,7 +51,7 @@ const speakerApplicationSchema = z.object({
   // Additional Information
   biography: z.string().min(10, "Biography is required").refine(
     (val) => countWords(val) <= 50,
-    { message: "Biography cannot exceed 50 words (Basic tier limit)" }
+    { message: "Biography cannot exceed 50 words" }
   ),
   specialRequirements: z.string().optional(),
   references: z.string().optional(),
@@ -512,19 +512,19 @@ export default function SpeakerApplicationPage() {
                         <Textarea
                           id="biography"
                           {...form.register("biography")}
-                          placeholder="Write a professional biography (up to 50 words for Basic tier)"
+                          placeholder="Write a professional biography (up to 50 words)"
                           className={`min-h-[120px] ${countWords(form.watch("biography") || "") > BIO_WORD_LIMIT ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                         />
                         <div className="flex justify-between items-center">
                           <p className="text-xs text-muted-foreground">
-                            This will be used for your speaker profile. Basic tier allows up to {BIO_WORD_LIMIT} words.
+                            This will be used for your speaker profile. Up to {BIO_WORD_LIMIT} words.
                           </p>
                           <p className={`text-xs font-medium ${countWords(form.watch("biography") || "") > BIO_WORD_LIMIT ? "text-red-500" : "text-muted-foreground"}`}>
                             {countWords(form.watch("biography") || "")} / {BIO_WORD_LIMIT} words
                           </p>
                         </div>
                         {countWords(form.watch("biography") || "") > BIO_WORD_LIMIT && (
-                          <p className="text-xs text-red-500">Bio exceeds the 50-word Basic tier limit. Please shorten it, or you can expand it after upgrading your plan.</p>
+                          <p className="text-xs text-red-500">Bio exceeds 50 words. Please shorten it.</p>
                         )}
                         {form.formState.errors.biography && (
                           <p className="text-sm text-red-600">{form.formState.errors.biography.message}</p>
