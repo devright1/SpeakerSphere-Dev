@@ -454,6 +454,16 @@ export default function AdminDashboard() {
     queryKey: ["/api/disciplines"],
   });
 
+  const { data: applicationDisciplineCategories } = useQuery<any[]>({
+    queryKey: ["/api/disciplines", selectedApplicationDetails?.selectedDisciplineId, "categories"],
+    queryFn: async () => {
+      const res = await fetch(`/api/disciplines/${selectedApplicationDetails!.selectedDisciplineId}/categories`);
+      if (!res.ok) throw new Error("Failed to fetch categories");
+      return res.json();
+    },
+    enabled: !!selectedApplicationDetails?.selectedDisciplineId,
+  });
+
   // Query for all topics
   const { data: topics } = useQuery({
     queryKey: ["/api/admin/topics"],
@@ -4760,7 +4770,7 @@ export default function AdminDashboard() {
                             <p className="font-medium text-sm mb-2">Topics:</p>
                             <div className="flex flex-wrap gap-1">
                               {selectedApplicationDetails.selectedCategoryIds.map((id: number) => {
-                                const cat = categoriesArray.find((c: any) => c.id === id);
+                                const cat = applicationDisciplineCategories?.find((c: any) => c.id === id);
                                 return (
                                   <Badge key={id} className="bg-purple-100 text-purple-800">
                                     {cat?.name || `ID: ${id}`}
