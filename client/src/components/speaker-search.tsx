@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 interface SpeakerSearchProps {
   onSearch: (searchTerm: string) => void;
@@ -55,13 +55,22 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
           <Input 
             type="text" 
             placeholder="Search speakers, topics, or expertise..." 
-            className="w-full px-4 py-3 border-gray-300 text-gray-900 h-12"
+            className="w-full px-4 py-3 border-gray-300 text-gray-900 h-12 pr-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyPress={handleKeyPress}
             onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           />
+          {searchTerm && (
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              onClick={() => { setSearchTerm(""); onSearch(""); setShowSuggestions(false); }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
           
           {/* Search Suggestions */}
           {showSuggestions && suggestions.length > 0 && (
