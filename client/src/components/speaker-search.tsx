@@ -51,7 +51,8 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl p-6 shadow-2xl">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2 relative">
+        <div className="md:col-span-2">
+          <div className="relative">
           <Input 
             type="text" 
             placeholder="Search speakers, topics, or expertise..." 
@@ -65,8 +66,8 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
           {searchTerm && (
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              onClick={() => { setSearchTerm(""); onSearch(""); setShowSuggestions(false); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 text-gray-500 hover:text-gray-800 bg-white rounded-full p-0.5"
+              onMouseDown={(e) => { e.preventDefault(); setSearchTerm(""); onSearch(""); setShowSuggestions(false); }}
             >
               <X className="w-4 h-4" />
             </button>
@@ -86,6 +87,7 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
               ))}
             </div>
           )}
+          </div>
         </div>
         
         <div>
