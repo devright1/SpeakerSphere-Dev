@@ -65,6 +65,13 @@
     transform: scale(1.05);
     transform-origin: center;
   }
+
+  .speaker-image-zoom-upper {
+    object-fit: cover;
+    object-position: center 8%;
+    transform: scale(1.75);
+    transform-origin: center 8%;
+  }
   
   .speaker-image-position-top {
     object-position: center 15%;

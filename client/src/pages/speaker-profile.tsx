@@ -962,6 +962,8 @@ export default function SpeakerProfile() {
                             ? "object-contain bg-gray-100"
                             : speaker.name === "Dr. Robert Levine"
                             ? "object-[center_20%] speaker-image-scale-md"
+                            : speaker.name === "Dr. Adam Hamilton"
+                            ? "speaker-image-zoom-upper"
                             : "speaker-image-position-center speaker-image-scale-md"
                         }`}
                       />
