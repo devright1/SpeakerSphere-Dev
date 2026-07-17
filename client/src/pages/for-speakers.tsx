@@ -380,7 +380,11 @@ export default function ForSpeakers() {
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm">Up to 3 speaking topics</span>
+                  <span className="text-sm font-medium">1 discipline</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm font-medium">3 topics per discipline</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -420,15 +424,19 @@ export default function ForSpeakers() {
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm font-medium">2 disciplines</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm font-medium">5 topics per discipline</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                   <span className="text-sm">Homepage rotation (bottom 12 spots)</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                   <span className="text-sm">Expanded bio & custom sections</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm">Up to 5 speaking topics</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -466,6 +474,14 @@ export default function ForSpeakers() {
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                   <span className="text-sm font-medium">Everything in Pro, plus:</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm font-medium">3 disciplines</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm font-medium">7 topics per discipline</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
