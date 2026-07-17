@@ -5082,11 +5082,25 @@ export default function AdminDashboard() {
                           <div key={match.id} className="border rounded-lg overflow-hidden">
                             <div className="flex items-center justify-between p-3">
                               <div className="flex items-center space-x-3">
-                                <img 
-                                  src={match.imageUrl || "/api/placeholder/40/40"} 
-                                  alt={match.name}
-                                  className="w-10 h-10 rounded-full object-cover"
-                                />
+                                {(fullSpeaker?.imageUrl || match.imageUrl) ? (
+                                  <img 
+                                    src={fullSpeaker?.imageUrl || match.imageUrl} 
+                                    alt={match.name}
+                                    className="w-10 h-10 rounded-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.currentTarget;
+                                      target.style.display = 'none';
+                                      const sibling = target.nextElementSibling as HTMLElement;
+                                      if (sibling) sibling.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <div
+                                  className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-sm"
+                                  style={{ display: (fullSpeaker?.imageUrl || match.imageUrl) ? 'none' : 'flex' }}
+                                >
+                                  {match.name?.charAt(0)?.toUpperCase() || '?'}
+                                </div>
                                 <div>
                                   <p className="font-medium">{match.name}</p>
                                   <p className="text-sm text-gray-600">{match.title}</p>
