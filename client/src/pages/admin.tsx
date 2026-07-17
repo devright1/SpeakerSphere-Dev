@@ -297,6 +297,7 @@ export default function AdminDashboard() {
   const [currentApplication, setCurrentApplication] = useState<any>(null);
   const [potentialDuplicates, setPotentialDuplicates] = useState<any[]>([]);
   const [selectedExistingSpeaker, setSelectedExistingSpeaker] = useState<number | null>(null);
+  const [previewSpeakerId, setPreviewSpeakerId] = useState<number | null>(null);
   const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
   const [actionType, setActionType] = useState<'create_new' | 'add_to_existing' | null>(null);
   const [selectedApplicationDetails, setSelectedApplicationDetails] = useState<any>(null);
@@ -5074,43 +5075,84 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3">Potential Matches Found ({potentialDuplicates.length} matches)</h4>
                     <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {potentialDuplicates.map((match: any) => (
-                        <div key={match.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <img 
-                              src={match.imageUrl || "/api/placeholder/40/40"} 
-                              alt={match.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                            <div>
-                              <p className="font-medium">{match.name}</p>
-                              <p className="text-sm text-gray-600">{match.title}</p>
-                              <p className="text-xs text-gray-500">{match.location}</p>
+                      {potentialDuplicates.map((match: any) => {
+                        const fullSpeaker = speakersArray.find((s: any) => s.id === match.id);
+                        const isExpanded = previewSpeakerId === match.id;
+                        return (
+                          <div key={match.id} className="border rounded-lg overflow-hidden">
+                            <div className="flex items-center justify-between p-3">
+                              <div className="flex items-center space-x-3">
+                                <img 
+                                  src={match.imageUrl || "/api/placeholder/40/40"} 
+                                  alt={match.name}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                                <div>
+                                  <p className="font-medium">{match.name}</p>
+                                  <p className="text-sm text-gray-600">{match.title}</p>
+                                  <p className="text-xs text-gray-500">{match.location}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-blue-600 border-blue-300"
+                                  onClick={() => setPreviewSpeakerId(isExpanded ? null : match.id)}
+                                >
+                                  {isExpanded ? <ChevronUp className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+                                  {isExpanded ? "Hide" : "Details"}
+                                </Button>
+                                {actionType === 'add_to_existing' && (
+                                  <Button
+                                    size="sm"
+                                    variant={selectedExistingSpeaker === match.id ? "default" : "outline"}
+                                    onClick={() => setSelectedExistingSpeaker(match.id)}
+                                  >
+                                    {selectedExistingSpeaker === match.id ? "Selected" : "Select"}
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-blue-600 hover:text-blue-800"
-                              onClick={() => window.open(`/speakers/${match.slug || match.id}`, '_blank')}
-                              title="View speaker profile"
-                            >
-                              <ExternalLink className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                            {actionType === 'add_to_existing' && (
-                              <Button
-                                size="sm"
-                                variant={selectedExistingSpeaker === match.id ? "default" : "outline"}
-                                onClick={() => setSelectedExistingSpeaker(match.id)}
-                              >
-                                {selectedExistingSpeaker === match.id ? "Selected" : "Select"}
-                              </Button>
+                            {isExpanded && (
+                              <div className="border-t bg-gray-50 p-4 space-y-3 text-sm">
+                                {(fullSpeaker?.bio || fullSpeaker?.biography) && (
+                                  <div>
+                                    <p className="font-medium text-gray-700 mb-1">Bio</p>
+                                    <p className="text-gray-600 leading-relaxed line-clamp-4">{fullSpeaker?.bio || fullSpeaker?.biography}</p>
+                                  </div>
+                                )}
+                                <div className="grid grid-cols-2 gap-3">
+                                  {(fullSpeaker?.specialty || match.specialty) && (
+                                    <div>
+                                      <p className="font-medium text-gray-700">Specialty</p>
+                                      <p className="text-gray-600">{fullSpeaker?.specialty || match.specialty}</p>
+                                    </div>
+                                  )}
+                                  {(fullSpeaker?.location || match.location) && (
+                                    <div>
+                                      <p className="font-medium text-gray-700">Location</p>
+                                      <p className="text-gray-600">{fullSpeaker?.location || match.location}</p>
+                                    </div>
+                                  )}
+                                  {(fullSpeaker?.email || match.email) && (
+                                    <div>
+                                      <p className="font-medium text-gray-700">Email</p>
+                                      <p className="text-gray-600">{fullSpeaker?.email || match.email}</p>
+                                    </div>
+                                  )}
+                                  {fullSpeaker?.website && (
+                                    <div>
+                                      <p className="font-medium text-gray-700">Website</p>
+                                      <p className="text-gray-600 truncate">{fullSpeaker.website}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
