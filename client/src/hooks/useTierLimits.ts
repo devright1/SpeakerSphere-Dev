@@ -16,7 +16,7 @@ export function useTierLimit(tier: 'basic' | 'pro' | 'premier') {
 
 export function getTierLimitValue(limits: TierLimit | undefined, limitType: 'bioWordLimit' | 'topicLimit' | 'uploadLimit'): number | null {
   if (!limits) return null;
-  return limits[limitType];
+  return limits[limitType] ?? null;
 }
 
 export function isWithinLimit(currentValue: number, limit: number | null): boolean {
@@ -34,15 +34,20 @@ export function getUsagePercentage(currentValue: number, limit: number | null): 
   return Math.min((currentValue / limit) * 100, 100);
 }
 
-export function formatTierLimit(tierLimits: TierLimit[] | undefined, tier: string, limitType: 'bioWordLimit' | 'topicLimit' | 'uploadLimit' | 'storageLimitMb' | 'maxFileSizeMb'): string {
+export function formatTierLimit(tierLimits: TierLimit[] | undefined, tier: string, limitType: 'bioWordLimit' | 'disciplineLimit' | 'topicLimit' | 'uploadLimit' | 'storageLimitMb' | 'maxFileSizeMb'): string {
   if (!tierLimits) return '';
   const tierData = tierLimits.find(t => t.tier === tier);
   if (!tierData) return '';
-  
-  const value = tierData[limitType];
+
+  const value = (tierData as any)[limitType] ?? null;
+
+  if (limitType === 'disciplineLimit') {
+    if (value === null) return 'Unlimited disciplines';
+    return value === 1 ? '1 discipline' : `${value} disciplines`;
+  }
   if (limitType === 'topicLimit') {
-    if (value === null) return 'Unlimited topics';
-    return `Up to ${value} topics`;
+    if (value === null) return 'Unlimited topics per discipline';
+    return `${value} topics per discipline`;
   }
   if (limitType === 'bioWordLimit') {
     if (value === null) return '';

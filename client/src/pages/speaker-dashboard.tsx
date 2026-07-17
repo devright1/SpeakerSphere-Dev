@@ -4660,10 +4660,13 @@ export default function SpeakerDashboard() {
                     <div className="space-y-4">
                       {!allTierLimitsLoading && allTierLimits && (
                         <>
-                          {/* Profile Limits */}
                           <div className="flex items-start space-x-3">
                             <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'basic', 'bioWordLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'basic', 'disciplineLimit')}</span>
                           </div>
                           <div className="flex items-start space-x-3">
                             <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -4726,10 +4729,13 @@ export default function SpeakerDashboard() {
                     <div className="space-y-4">
                       {!allTierLimitsLoading && allTierLimits && (
                         <>
-                          {/* Profile Limits */}
                           <div className="flex items-start space-x-3">
                             <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'pro', 'bioWordLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'pro', 'disciplineLimit')}</span>
                           </div>
                           <div className="flex items-start space-x-3">
                             <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -4804,10 +4810,13 @@ export default function SpeakerDashboard() {
                     <div className="space-y-4">
                       {!allTierLimitsLoading && allTierLimits && (
                         <>
-                          {/* Profile Limits */}
                           <div className="flex items-start space-x-3">
                             <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'premier', 'bioWordLimit')}</span>
+                          </div>
+                          <div className="flex items-start space-x-3">
+                            <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-semibold">{formatTierLimit(allTierLimits, 'premier', 'disciplineLimit')}</span>
                           </div>
                           <div className="flex items-start space-x-3">
                             <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
