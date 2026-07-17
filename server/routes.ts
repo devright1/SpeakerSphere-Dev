@@ -453,7 +453,17 @@ export async function registerRoutes(app: Express): Promise<Express> {
       
       // Create speaker application record
       const application = await storage.createSpeakerApplication(validatedData);
-      
+
+      // Send confirmation email (fire-and-forget — don't block the response)
+      const emailService = EmailService.getInstance();
+      emailService.sendApplicationConfirmation(validatedData.email, validatedData.firstName)
+        .then((sent) => {
+          console.log(`📧 Application confirmation email for ${validatedData.email}: ${sent ? 'sent' : 'failed'}`);
+        })
+        .catch((err) => {
+          console.error(`📧 Application confirmation email error for ${validatedData.email}:`, err);
+        });
+
       res.status(201).json({
         success: true,
         message: "Speaker application submitted successfully! We'll review your application within 5-7 business days.",

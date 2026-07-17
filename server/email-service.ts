@@ -727,4 +727,53 @@ The SpeakerSphere Team`
 
     return await this.sendEmail(template);
   }
+
+  async sendApplicationConfirmation(email: string, firstName: string): Promise<boolean> {
+    const template: EmailTemplate = {
+      to: email,
+      from: FROM_EMAIL,
+      subject: 'Your SpeakerSphere Application Has Been Received',
+      html: getEmailWrapper(`
+          <h2 style="color: #1e4347; margin-top: 0; font-size: 22px;">Application Received!</h2>
+          
+          <p style="color: #3a3a3a; line-height: 1.6;">Dear ${firstName},</p>
+          
+          <p style="color: #3a3a3a; line-height: 1.6;">Thank you for applying to join SpeakerSphere as a featured speaker. We've successfully received your application and our team will review it shortly.</p>
+          
+          <div style="background-color: #f0f7f7; padding: 20px 24px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #1e4347;">
+            <h3 style="color: #1e4347; margin-top: 0; font-size: 15px;">What Happens Next?</h3>
+            <ul style="color: #4a6568; font-size: 13px; line-height: 2; padding-left: 18px; margin-bottom: 0;">
+              <li>Our team will review your application within <strong>5–7 business days</strong></li>
+              <li>You'll receive an email once a decision has been made</li>
+              <li>If approved, you'll be sent your login credentials to access your speaker dashboard</li>
+            </ul>
+          </div>
+          
+          <p style="color: #3a3a3a; line-height: 1.6;">In the meantime, feel free to browse our speaker directory at <a href="https://thespeakersphere.com" style="color: #1e4347;">thespeakersphere.com</a>.</p>
+          
+          <p style="color: #3a3a3a; line-height: 1.6;">If you have any questions about your application, please don't hesitate to reach out to us.</p>
+          
+          <p style="color: #3a3a3a;">Best regards,<br><strong style="color: #1e4347;">The SpeakerSphere Team</strong></p>
+      `),
+      text: `Application Received!
+
+Dear ${firstName},
+
+Thank you for applying to join SpeakerSphere as a featured speaker. We've successfully received your application and our team will review it shortly.
+
+What Happens Next?
+- Our team will review your application within 5-7 business days
+- You'll receive an email once a decision has been made
+- If approved, you'll be sent your login credentials to access your speaker dashboard
+
+In the meantime, feel free to browse our speaker directory at thespeakersphere.com.
+
+If you have any questions about your application, please don't hesitate to reach out to us.
+
+Best regards,
+The SpeakerSphere Team`
+    };
+
+    return await this.sendEmail(template);
+  }
 }
