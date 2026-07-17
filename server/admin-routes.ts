@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import Stripe from "stripe";
 import { storage } from "./storage";
 import { db } from "./db";
 import { speakers, users, speakerApplications, reviews, userLikes, userBookmarks, userSessions, categories, speakingTopics, speakerContent, disciplines } from "../shared/schema";
@@ -8,7 +9,6 @@ import { EmailService } from "./email-service";
 import { generateVerificationToken, getTokenExpiration } from "./email";
 import bcrypt from "bcryptjs";
 import { BulkSpeakerImporter } from "./bulk-speaker-import";
-
 import { GNYAPSpeakerImporter } from "./gnyap-speaker-import";
 import { AAEDSpeakerImporter } from "./aaed-speaker-import";
 import { UFCIDSpeakerImporter } from "./uf-cid-speaker-import";
@@ -21,6 +21,8 @@ import { importEvent9Speakers } from "./event9-speaker-import";
 import { importEvent23Speakers } from "./event23-speaker-import";
 import { importEvent14Speakers } from "./event14-speaker-import";
 import { importSpeakersFromCSV } from "./comprehensive-speaker-import";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-11-20.acacia" });
 
 // Utility functions
 const generateTemporaryPassword = (): string => {
@@ -556,6 +558,19 @@ export function registerAdminRoutes(app: Express) {
       
       if (!speaker) {
         return res.status(404).json({ message: "Speaker not found" });
+      }
+
+      // Cancel Stripe subscription immediately if one exists
+      if (speaker.stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.cancel(speaker.stripeSubscriptionId);
+          console.log(`💳 Stripe subscription ${speaker.stripeSubscriptionId} cancelled immediately for deleted speaker ${speaker.name}`);
+        } catch (stripeError: any) {
+          // If subscription is already cancelled or not found, that's fine — proceed with deletion
+          if (stripeError?.code !== 'resource_missing' && stripeError?.status !== 404) {
+            console.error(`⚠️ Failed to cancel Stripe subscription for speaker ${speaker.name}:`, stripeError.message);
+          }
+        }
       }
 
       // Delete speaker with specified type
