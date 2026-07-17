@@ -5088,15 +5088,27 @@ export default function AdminDashboard() {
                               <p className="text-xs text-gray-500">{match.location}</p>
                             </div>
                           </div>
-                          {actionType === 'add_to_existing' && (
+                          <div className="flex items-center space-x-2">
                             <Button
                               size="sm"
-                              variant={selectedExistingSpeaker === match.id ? "default" : "outline"}
-                              onClick={() => setSelectedExistingSpeaker(match.id)}
+                              variant="ghost"
+                              className="text-blue-600 hover:text-blue-800"
+                              onClick={() => window.open(`/speakers/${match.slug || match.id}`, '_blank')}
+                              title="View speaker profile"
                             >
-                              {selectedExistingSpeaker === match.id ? "Selected" : "Select"}
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              View
                             </Button>
-                          )}
+                            {actionType === 'add_to_existing' && (
+                              <Button
+                                size="sm"
+                                variant={selectedExistingSpeaker === match.id ? "default" : "outline"}
+                                onClick={() => setSelectedExistingSpeaker(match.id)}
+                              >
+                                {selectedExistingSpeaker === match.id ? "Selected" : "Select"}
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -5122,7 +5134,7 @@ export default function AdminDashboard() {
                           const matches = speakersArray
                             .filter((s: any) => s.name.toLowerCase().includes(query))
                             .slice(0, 10)
-                            .map((s: any) => ({ id: s.id, name: s.name, title: s.title, email: s.email, hidden: s.hideProfile }));
+                            .map((s: any) => ({ id: s.id, name: s.name, title: s.title, email: s.email, slug: s.slug, imageUrl: s.imageUrl, location: s.location, hidden: s.hideProfile }));
                           setPotentialDuplicates((prev: any[]) => {
                             const autoMatchIds = new Set(prev.filter((p: any) => p._autoMatch).map((p: any) => p.id));
                             const autoMatches = prev.filter((p: any) => p._autoMatch);
