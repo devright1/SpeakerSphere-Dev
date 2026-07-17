@@ -55,7 +55,7 @@ export default function SpeakerSearch({ onSearch }: SpeakerSearchProps) {
           <div className="relative">
           <Input 
             type="text" 
-            placeholder="Search speakers, disciplines, or topics..." 
+            placeholder="Search speakers, Disciplines, or Topics..." 
             className="w-full px-4 py-3 border-gray-300 text-gray-900 h-12 pr-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
