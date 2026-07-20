@@ -244,11 +244,7 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
                     </Badge>
                   )}
                 </>
-              ) : (
-                <Badge variant="outline" className="text-xs text-muted-foreground">
-                  No topics available
-                </Badge>
-              )}
+              ) : null}
             </div>
             
             {/* Social Media Icons (Premier: all platforms, Pro: selected platform only) */}
