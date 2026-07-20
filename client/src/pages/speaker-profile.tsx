@@ -1022,7 +1022,7 @@ export default function SpeakerProfile() {
                     <p className="text-xl text-primary font-semibold mb-3">{speaker.title}</p>
                     
                     <div className="flex items-center justify-center md:justify-start gap-6 mb-4">
-                      {!speaker.hideRatings && (
+                      {!speaker.hideRatings && speaker.reviewCount > 0 && (
                         <div className="flex items-center">
                           <StarRating rating={speaker.overallRating || "0"} size="lg" className="mr-2" />
                           <span className="font-semibold">{parseFloat(speaker.overallRating || "0").toFixed(1)}</span>
