@@ -205,7 +205,7 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
         </div>
 
         <div className="flex items-center justify-between mb-3">
-          {!speaker.hideRatings && (
+          {!speaker.hideRatings && speaker.reviewCount > 0 && (
             <div className="flex items-center">
               <div className="flex text-yellow-400 mr-2">
                 <StarRating rating={speaker.overallRating || "0"} size="md" />
