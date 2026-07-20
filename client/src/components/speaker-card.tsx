@@ -247,22 +247,10 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
               ) : null}
             </div>
             
-            {/* Social Media Icons (Premier: all platforms, Pro: selected platform only) */}
-            {!speaker.hideSocial && (
-              ((speaker.subscriptionTier ?? 'basic') === 'premier' && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || speaker.tiktokHandle || (speaker.socialMedia && speaker.socialMedia.length > 0))) ||
-              ((speaker.subscriptionTier ?? 'basic') === 'pro' && speaker.selectedSocialPlatform && (
-                (speaker.selectedSocialPlatform === 'instagram' && speaker.instagramHandle) ||
-                (speaker.selectedSocialPlatform === 'linkedin' && speaker.linkedinHandle) ||
-                (speaker.selectedSocialPlatform === 'facebook' && speaker.facebookHandle) ||
-                (speaker.selectedSocialPlatform === 'x' && speaker.xHandle) ||
-                (speaker.selectedSocialPlatform === 'tiktok' && speaker.tiktokHandle)
-              ))
-            ) && (
+            {/* Social Media Icons */}
+            {!speaker.hideSocial && (speaker.instagramHandle || speaker.linkedinHandle || speaker.facebookHandle || speaker.xHandle || speaker.tiktokHandle || (speaker.socialMedia && speaker.socialMedia.length > 0)) && (
               <div className="flex items-center gap-2 mt-2">
-                {/* Instagram - show for Premier always, or Pro if selected */}
                 {speaker.instagramHandle && (
-                  (speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'instagram'))
-                ) && (
                   <a 
                     href={speaker.instagramHandle.includes('instagram.com') ? speaker.instagramHandle : `https://instagram.com/${speaker.instagramHandle}`}
                     target="_blank" 
@@ -274,10 +262,7 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
                     <FaInstagram className="w-4 h-4" />
                   </a>
                 )}
-                {/* LinkedIn - show for Premier always, or Pro if selected */}
                 {speaker.linkedinHandle && (
-                  (speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'linkedin'))
-                ) && (
                   <a 
                     href={speaker.linkedinHandle.includes('linkedin.com') ? speaker.linkedinHandle : `https://linkedin.com/in/${speaker.linkedinHandle}`}
                     target="_blank" 
@@ -289,10 +274,7 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
                     <FaLinkedin className="w-4 h-4" />
                   </a>
                 )}
-                {/* Facebook - show for Premier always, or Pro if selected */}
                 {speaker.facebookHandle && (
-                  (speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'facebook'))
-                ) && (
                   <a 
                     href={speaker.facebookHandle.includes('facebook.com') ? speaker.facebookHandle : `https://facebook.com/${speaker.facebookHandle}`}
                     target="_blank" 
@@ -304,10 +286,7 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
                     <FaFacebook className="w-4 h-4" />
                   </a>
                 )}
-                {/* X/Twitter - show for Premier always, or Pro if selected */}
                 {speaker.xHandle && (
-                  (speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'x'))
-                ) && (
                   <a 
                     href={speaker.xHandle.includes('x.com') || speaker.xHandle.includes('twitter.com') ? speaker.xHandle : `https://x.com/${speaker.xHandle}`}
                     target="_blank" 
@@ -319,10 +298,7 @@ export default function SpeakerCard({ speaker, featured = false, discoverySource
                     <FaXTwitter className="w-4 h-4" />
                   </a>
                 )}
-                {/* TikTok - show for Premier always, or Pro if selected */}
                 {speaker.tiktokHandle && (
-                  (speaker.subscriptionTier === 'premier' || (speaker.subscriptionTier === 'pro' && speaker.selectedSocialPlatform === 'tiktok'))
-                ) && (
                   <a 
                     href={speaker.tiktokHandle.includes('tiktok.com') ? speaker.tiktokHandle : `https://tiktok.com/@${speaker.tiktokHandle}`}
                     target="_blank" 
