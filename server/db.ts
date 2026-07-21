@@ -5,7 +5,9 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-const connectionString = process.env.DATABASE_URL;
+// In production, PROD_DATABASE_URL points to the Neon database that holds all speaker data.
+// In development, DATABASE_URL points to the local Replit PostgreSQL.
+const connectionString = process.env.PROD_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
   throw new Error(
