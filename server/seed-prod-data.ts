@@ -1,5 +1,14 @@
 import { db } from "./db";
 import { sql } from "drizzle-orm";
+import {
+  speakers as speakersTable,
+  disciplines as disciplinesTable,
+  categories as categoriesTable,
+  speakingTopics as speakingTopicsTable,
+  speakerTopics as speakerTopicsTable,
+  speakerEvents as speakerEventsTable,
+  subscriptionPlans as subscriptionPlansTable,
+} from "../shared/schema";
 import fs from "fs";
 import path from "path";
 
@@ -23,116 +32,133 @@ export async function seedProdDataIfEmpty() {
 
     // ── 1. Subscription plans ──────────────────────────────────────────────────
     for (const p of data.subscriptionPlans) {
-      await db.execute(sql`
-        INSERT INTO subscription_plans
-          (id, name, slug, description, price, yearly_price, features,
-           max_bookmarks, max_inquiries, max_reviews,
-           advanced_filters, priority_support, custom_reports, is_active)
-        VALUES (
-          ${p.id}, ${p.name}, ${p.slug}, ${p.description},
-          ${p.price}, ${p.yearly_price}, ${p.features},
-          ${p.max_bookmarks}, ${p.max_inquiries}, ${p.max_reviews},
-          ${p.advanced_filters}, ${p.priority_support}, ${p.custom_reports}, ${p.is_active}
-        )
-        ON CONFLICT (id) DO NOTHING
-      `);
+      await db.insert(subscriptionPlansTable).values({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        description: p.description,
+        price: p.price,
+        yearlyPrice: p.yearly_price,
+        features: p.features ?? [],
+        maxBookmarks: p.max_bookmarks,
+        maxInquiries: p.max_inquiries,
+        maxReviews: p.max_reviews,
+        advancedFilters: p.advanced_filters ?? false,
+        prioritySupport: p.priority_support ?? false,
+        customReports: p.custom_reports ?? false,
+        isActive: p.is_active ?? true,
+      }).onConflictDoNothing();
     }
     console.log(`[prod-seed] ✓ ${data.subscriptionPlans.length} subscription plans`);
 
     // ── 2. Disciplines ─────────────────────────────────────────────────────────
     for (const d of data.disciplines) {
-      await db.execute(sql`
-        INSERT INTO disciplines (id, name, slug, description, sort_order)
-        VALUES (${d.id}, ${d.name}, ${d.slug}, ${d.description}, ${d.sort_order ?? 0})
-        ON CONFLICT (id) DO NOTHING
-      `);
+      await db.insert(disciplinesTable).values({
+        id: d.id,
+        name: d.name,
+        slug: d.slug,
+        description: d.description,
+        sortOrder: d.sort_order ?? 0,
+      }).onConflictDoNothing();
     }
     console.log(`[prod-seed] ✓ ${data.disciplines.length} disciplines`);
 
-    // ── 3. Categories  (no slug column in this table) ─────────────────────────
+    // ── 3. Categories ──────────────────────────────────────────────────────────
     for (const c of data.categories) {
-      await db.execute(sql`
-        INSERT INTO categories
-          (id, name, description, speaker_count, discipline_id, sort_order, is_custom)
-        VALUES (
-          ${c.id}, ${c.name}, ${c.description ?? ""},
-          ${c.speaker_count ?? 0}, ${c.discipline_id},
-          ${c.sort_order ?? 0}, ${c.is_custom ?? false}
-        )
-        ON CONFLICT (id) DO NOTHING
-      `);
+      await db.insert(categoriesTable).values({
+        id: c.id,
+        name: c.name,
+        description: c.description ?? "",
+        speakerCount: c.speaker_count ?? 0,
+        disciplineId: c.discipline_id,
+        sortOrder: c.sort_order ?? 0,
+        isCustom: c.is_custom ?? false,
+      }).onConflictDoNothing();
     }
     console.log(`[prod-seed] ✓ ${data.categories.length} categories`);
 
     // ── 4. Speaking topics ─────────────────────────────────────────────────────
     for (const t of data.speakingTopics) {
-      await db.execute(sql`
-        INSERT INTO speaking_topics (id, name, slug, category, description, is_active)
-        VALUES (
-          ${t.id}, ${t.name}, ${t.slug}, ${t.category},
-          ${t.description}, ${t.is_active ?? true}
-        )
-        ON CONFLICT (id) DO NOTHING
-      `);
+      await db.insert(speakingTopicsTable).values({
+        id: t.id,
+        name: t.name,
+        slug: t.slug,
+        category: t.category,
+        description: t.description,
+        isActive: t.is_active ?? true,
+      }).onConflictDoNothing();
     }
     console.log(`[prod-seed] ✓ ${data.speakingTopics.length} speaking topics`);
 
     // ── 5. Speakers ────────────────────────────────────────────────────────────
-    // education/certifications/affiliations/publications are plain text columns
     let inserted = 0;
     let failed = 0;
     for (const s of data.speakers) {
       try {
-        await db.execute(sql`
-          INSERT INTO speakers (
-            id, name, slug, title, bio, expertise, location,
-            overall_rating, review_count, image_url, verified, featured,
-            is_featured_override, categories,
-            discipline_id, speaker_category_ids, speaker_discipline_ids,
-            discipline_migration_status,
-            achievements, lectures, event_photos, speaking_videos,
-            email, phone, website, social_media,
-            instagram_handle, facebook_handle, x_handle, linkedin_handle,
-            tiktok_handle, selected_social_platform,
-            languages, medical_specialties, speaker_type,
-            fee, experience, education, certifications, affiliations, publications,
-            subscription_tier, stripe_customer_id, stripe_subscription_id,
-            subscription_status, subscription_period_end,
-            cancellation_reason, cancelled_at,
-            hide_profile, hide_ratings, hide_social, hide_contact, deleted_at,
-            storage_used_bytes, video_count, sds_badge, sponsored_tier, sponsored_note
-          ) VALUES (
-            ${s.id}, ${s.name}, ${s.slug}, ${s.title}, ${s.bio},
-            ${s.expertise}, ${s.location},
-            ${s.overall_rating}, ${s.review_count}, ${s.image_url},
-            ${s.verified ?? false}, ${s.featured ?? false},
-            ${s.is_featured_override ?? false}, ${s.categories ?? []},
-            ${s.discipline_id},
-            ${s.speaker_category_ids ?? []}, ${s.speaker_discipline_ids ?? []},
-            ${s.discipline_migration_status},
-            ${s.achievements ?? []}, ${s.lectures ?? []},
-            ${s.event_photos ?? []}, ${s.speaking_videos ?? []},
-            ${s.email}, ${s.phone}, ${s.website}, ${s.social_media ?? []},
-            ${s.instagram_handle}, ${s.facebook_handle}, ${s.x_handle}, ${s.linkedin_handle},
-            ${s.tiktok_handle}, ${s.selected_social_platform},
-            ${s.languages ?? []}, ${s.medical_specialties ?? []}, ${s.speaker_type},
-            ${s.fee}, ${s.experience},
-            ${s.education}, ${s.certifications}, ${s.affiliations}, ${s.publications},
-            ${s.subscription_tier ?? "basic"},
-            ${s.stripe_customer_id}, ${s.stripe_subscription_id},
-            ${s.subscription_status}, ${s.subscription_period_end},
-            ${s.cancellation_reason}, ${s.cancelled_at},
-            ${s.hide_profile ?? false}, ${s.hide_ratings ?? false},
-            ${s.hide_social ?? false}, ${s.hide_contact ?? false}, ${s.deleted_at},
-            ${s.storage_used_bytes ?? 0}, ${s.video_count ?? 0},
-            ${s.sds_badge}, ${s.sponsored_tier}, ${s.sponsored_note}
-          )
-          ON CONFLICT (id) DO NOTHING
-        `);
+        await db.insert(speakersTable).values({
+          id: s.id,
+          name: s.name,
+          slug: s.slug,
+          title: s.title,
+          bio: s.bio,
+          expertise: s.expertise ?? [],
+          location: s.location,
+          overallRating: s.overall_rating,
+          reviewCount: s.review_count ?? 0,
+          imageUrl: s.image_url,
+          verified: s.verified ?? false,
+          featured: s.featured ?? false,
+          isFeaturedOverride: s.is_featured_override ?? false,
+          categories: s.categories ?? [],
+          disciplineId: s.discipline_id,
+          speakerCategoryIds: s.speaker_category_ids ?? [],
+          speakerDisciplineIds: s.speaker_discipline_ids ?? [],
+          disciplineMigrationStatus: s.discipline_migration_status,
+          achievements: s.achievements ?? [],
+          lectures: s.lectures ?? [],
+          eventPhotos: s.event_photos ?? [],
+          speakingVideos: s.speaking_videos ?? [],
+          email: s.email,
+          phone: s.phone,
+          website: s.website,
+          socialMedia: s.social_media ?? [],
+          instagramHandle: s.instagram_handle,
+          facebookHandle: s.facebook_handle,
+          xHandle: s.x_handle,
+          linkedinHandle: s.linkedin_handle,
+          tiktokHandle: s.tiktok_handle,
+          selectedSocialPlatform: s.selected_social_platform,
+          languages: s.languages ?? [],
+          medicalSpecialties: s.medical_specialties ?? [],
+          speakerType: s.speaker_type,
+          fee: s.fee,
+          experience: s.experience,
+          education: s.education,
+          certifications: s.certifications,
+          affiliations: s.affiliations,
+          publications: s.publications,
+          subscriptionTier: s.subscription_tier ?? "basic",
+          stripeCustomerId: s.stripe_customer_id,
+          stripeSubscriptionId: s.stripe_subscription_id,
+          subscriptionStatus: s.subscription_status,
+          subscriptionPeriodEnd: s.subscription_period_end ? new Date(s.subscription_period_end) : null,
+          cancellationReason: s.cancellation_reason,
+          cancelledAt: s.cancelled_at ? new Date(s.cancelled_at) : null,
+          hideProfile: s.hide_profile ?? false,
+          hideRatings: s.hide_ratings ?? false,
+          hideSocial: s.hide_social ?? false,
+          hideContact: s.hide_contact ?? false,
+          deletedAt: s.deleted_at ? new Date(s.deleted_at) : null,
+          storageUsedBytes: s.storage_used_bytes ?? 0,
+          videoCount: s.video_count ?? 0,
+          sdsBadge: s.sds_badge,
+          sponsoredTier: s.sponsored_tier,
+          sponsoredNote: s.sponsored_note,
+        }).onConflictDoNothing();
         inserted++;
       } catch (err: any) {
         failed++;
-        if (failed <= 3) {
+        if (failed <= 5) {
           console.error(`[prod-seed] Speaker ${s.id} (${s.name}) failed:`, err.message);
         }
       }
@@ -141,29 +167,29 @@ export async function seedProdDataIfEmpty() {
 
     // ── 6. Speaker–topic links ─────────────────────────────────────────────────
     for (const st of data.speakerTopics) {
-      await db.execute(sql`
-        INSERT INTO speaker_topics (speaker_id, topic_id)
-        VALUES (${st.speaker_id}, ${st.topic_id})
-        ON CONFLICT DO NOTHING
-      `);
+      await db.insert(speakerTopicsTable).values({
+        speakerId: st.speaker_id,
+        topicId: st.topic_id,
+      }).onConflictDoNothing();
     }
     console.log(`[prod-seed] ✓ ${data.speakerTopics.length} speaker-topic links`);
 
     // ── 7. Speaker events ──────────────────────────────────────────────────────
     for (const e of data.speakerEvents) {
-      await db.execute(sql`
-        INSERT INTO speaker_events
-          (id, speaker_id, event_name, event_date, location, event_url, event_end_date, image_url)
-        VALUES (
-          ${e.id}, ${e.speaker_id}, ${e.event_name}, ${e.event_date},
-          ${e.location}, ${e.event_url}, ${e.event_end_date}, ${e.image_url}
-        )
-        ON CONFLICT (id) DO NOTHING
-      `);
+      await db.insert(speakerEventsTable).values({
+        id: e.id,
+        speakerId: e.speaker_id,
+        eventName: e.event_name,
+        eventDate: e.event_date ? new Date(e.event_date) : new Date(),
+        location: e.location,
+        eventUrl: e.event_url,
+        eventEndDate: e.event_end_date ? new Date(e.event_end_date) : null,
+        imageUrl: e.image_url,
+      }).onConflictDoNothing();
     }
     console.log(`[prod-seed] ✓ ${data.speakerEvents.length} speaker events`);
 
-    // ── 8. Reset sequences ─────────────────────────────────────────────────────
+    // ── 8. Reset sequences so new inserts don't collide ───────────────────────
     await db.execute(sql`SELECT setval('speakers_id_seq', GREATEST((SELECT MAX(id) FROM speakers), 1))`);
     await db.execute(sql`SELECT setval('disciplines_id_seq', GREATEST((SELECT MAX(id) FROM disciplines), 1))`);
     await db.execute(sql`SELECT setval('categories_id_seq', GREATEST((SELECT MAX(id) FROM categories), 1))`);
