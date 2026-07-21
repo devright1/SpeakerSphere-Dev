@@ -5,10 +5,8 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-// Always use DATABASE_URL — Replit provisions a separate PostgreSQL database
-// for production vs development, so this is safe in both environments.
-// PROD_DATABASE_URL (Neon) is no longer used; data is seeded from prod-seed-data.json.
-const connectionString = process.env.DATABASE_URL;
+// Production uses PROD_DATABASE_URL (Neon). Dev falls back to DATABASE_URL (Replit PostgreSQL).
+const connectionString = process.env.PROD_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
   throw new Error(
