@@ -5,7 +5,8 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-// Production uses PROD_DATABASE_URL (Neon). Dev falls back to DATABASE_URL (Replit PostgreSQL).
+// Railway sets DATABASE_URL per environment (dev/staging/prod each point to their Neon branch).
+// Replit production sets PROD_DATABASE_URL instead. Both are supported.
 const connectionString = process.env.PROD_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
