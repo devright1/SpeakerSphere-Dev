@@ -5,9 +5,7 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-const connectionString = process.env.NODE_ENV === 'production'
-  ? process.env.PROD_DATABASE_URL
-  : process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
   throw new Error(
